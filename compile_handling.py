@@ -1,9 +1,12 @@
+"""
+"""
 import subprocess
-from tkinter import *
-from os.path import exists
+import tkinter as tk
 from tkinter import messagebox
+from os.path import exists
 from datetime import datetime
 import os
+import re
 
 
 import main_window
@@ -16,9 +19,10 @@ def compile():
             messagebox.showerror("Error", "The working directory\n" + main_window.working_directory_value.get() + "\ndoes not exist.")
             return
     show_compile_messages_tab()
-    main_window.log_frame_text.config(state=NORMAL)
-    main_window.log_frame_text.insert(END, "\n++++++++++++++++++++++++++++++++++++++ " + datetime.today().ctime() +" +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
-    main_window.log_frame_text.config(state=DISABLED)
+    main_window.log_frame_text.config(state=tk.NORMAL)
+    main_window.log_frame_text.insert(tk.END,
+                 "\n++++++++++++++++++++++++++++++++++++++ " + datetime.today().ctime() +" +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
+    main_window.log_frame_text.config(state=tk.DISABLED)
     commands = get_command_list()
     #print("compile_handling: commands =", commands)
     for command in commands:
@@ -26,27 +30,32 @@ def compile():
 
 def execute(command):
     command_array_new = replace_variables_and_convert_into_list(command)
-    #print("command_array_new =", command_array_new)
     if command_array_new is None:
         return
+    for command_part in command_array_new:
+        insert_line_in_log(command_part+" ")
+    insert_line_in_log("\n")
     try:
         process = subprocess.Popen(command_array_new,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
+                                    text=True, # Decoding is done by Popen.
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT)
+        for line in process.stdout: # Terminates when process.stdout is closed.
+            if line!="\n": # VHDL report-statements cause empty lines which mess up the protocol.
+                insert_line_in_log(line)
     except FileNotFoundError:
-        command_new_string = ""
-        for c in command_array_new:
-            command_new_string += c + " "
-        messagebox.showerror("Error", "Error in compile command: " + command_new_string)
-        return
-    stdout, stderr = process.communicate()
-    copy_into_compile_messages_tab(stdout, stderr, command_array_new)
+        command_string = ""
+        for word in command_array_new:
+            command_string += word + " "
+        messagebox.showerror("Error in HDL-FSM-Editor", "FileNotFoundError caused by compile command:\n" + command_string)
+        return False
+    return True
 
 def show_compile_messages_tab():
     notebook_ids = main_window.notebook.tabs()
-    for id in notebook_ids:
-        if main_window.notebook.tab(id, option="text")=="Compile Messages":
-            main_window.notebook.select(id)
+    for notebook_id in notebook_ids:
+        if main_window.notebook.tab(notebook_id, option="text")=="Compile Messages":
+            main_window.notebook.select(notebook_id)
 
 def get_command_list():
     command_string_tmp = main_window.compile_cmd.get()
@@ -98,14 +107,31 @@ def replace_variables_and_convert_into_list(command):
     return command_array_new
 
 def copy_into_compile_messages_tab(stdout, stderr, command_array_new):
-    main_window.log_frame_text.config(state=NORMAL)
+    main_window.log_frame_text.config(state=tk.NORMAL)
     for part in command_array_new:
-        main_window.log_frame_text.insert(END, part + " ")
-    main_window.log_frame_text.insert(END, "\n")
-    main_window.log_frame_text.insert(END, "STDERR:\n")
-    main_window.log_frame_text.insert(END, stderr)
-    main_window.log_frame_text.insert(END, "STDOUT:\n")
-    main_window.log_frame_text.insert(END, stdout)
-    main_window.log_frame_text.insert(END, "=========================================================================\n")
-    main_window.log_frame_text.config(state=DISABLED)
-    main_window.log_frame_text.see(END)
+        main_window.log_frame_text.insert(tk.END, part + " ")
+    main_window.log_frame_text.insert(tk.END, "\n")
+    main_window.log_frame_text.insert(tk.END, "STDERR:\n")
+    main_window.log_frame_text.insert(tk.END, stderr)
+    main_window.log_frame_text.insert(tk.END, "STDOUT:\n")
+    main_window.log_frame_text.insert(tk.END, stdout)
+    main_window.log_frame_text.insert(tk.END, "=========================================================================\n")
+    main_window.log_frame_text.config(state=tk.DISABLED)
+    main_window.log_frame_text.see(tk.END)
+
+def insert_line_in_log(text):
+    if main_window.language=="VHDL":
+        regex_message_find = main_window.regex_message_find_for_vhdl
+    else:
+        regex_message_find = main_window.regex_message_find_for_verilog
+    text_low = text.lower()
+    match_object_of_message = re.match(regex_message_find, text)
+    main_window.log_frame_text.config(state=tk.NORMAL)
+    if match_object_of_message is not None or "error" in text_low  or "warning" in text_low:
+        if main_window.language=="VHDL" and "report note" in text_low:
+            main_window.log_frame_text.insert(tk.END, text, ("message_green"))
+        else:
+            main_window.log_frame_text.insert(tk.END, text, ("message_red"))
+    else:
+        main_window.log_frame_text.insert(tk.END, text)
+    main_window.log_frame_text.config(state=tk.DISABLED)

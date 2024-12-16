@@ -399,9 +399,7 @@ def open_file_with_name(read_filename):
     #main_window.root.update()
     dir_name, file_name = os.path.split(read_filename)
     main_window.root.title(file_name + " (" + dir_name + ")")
-    main_window.canvas.after_idle(canvas_editing.view_all)
-    #main_window.interface_ports_text.format() # Call format() at this object, as it is for sure existing, and activate in this way the not_read/written highlighting.
-    #canvas_editing.priority_distance = 1.5*canvas_editing.state_radius
+    canvas_editing.view_all()
 
 def remove_old_design():
     global filename
@@ -523,6 +521,7 @@ def save_in_file_new(save_filename):
     design_dictionary["internals_architecture"]              = main_window.internals_architecture_text.get         ("1.0",tk.END + "-1 chars")
     design_dictionary["internals_process"]                   = main_window.internals_process_clocked_text.get      ("1.0",tk.END + "-1 chars")
     design_dictionary["internals_process_combinatorial"]     = main_window.internals_process_combinatorial_text.get("1.0",tk.END + "-1 chars")
+    design_dictionary["sash_positions"]                      = main_window.sash_positions
     design_dictionary["state"]                               = []
     design_dictionary["text"]                                = []
     design_dictionary["line"]                                = []
@@ -625,6 +624,13 @@ def open_file_with_name_new(read_filename):
             main_window.diagram_background_color.set(diagram_background_color)
         else:
             diagram_background_color = "white"
+        if "sash_positions" in design_dictionary:
+            main_window.show_tab("Interface") # The tab must be shown at least once, so that the sash_positions do not have the default-value 0.
+            for key, value in design_dictionary["sash_positions"]["interface_tab"].items():
+                main_window.paned_window_interface.sashpos(key, value) # Works only if new position does not outrange actual position.
+            main_window.show_tab("Internals") # The tab must be shown at least once, so that the sash_positions do not have the default-value 0.
+            for key, value in design_dictionary["sash_positions"]["internals_tab"].items():
+                main_window.paned_window_internals.sashpos(key, value) # Works only if new position does not outrange actual position.
         main_window.canvas.configure(bg=diagram_background_color)
         main_window.interface_package_text.insert              ("1.0", design_dictionary["interface_package"])
         main_window.interface_generics_text.insert             ("1.0", design_dictionary["interface_generics"])
@@ -760,7 +766,9 @@ def open_file_with_name_new(read_filename):
             canvas_id = main_window.canvas.create_rectangle(coords, tag=tags, fill=rectangle_color)
             if rectangle_color==constants.STATE_COLOR: # priority rectangle
                 ids_of_rectangles_to_raise.append(canvas_id)
-            #main_window.canvas.tag_raise(id) # priority rectangles are always in "foreground"
+            else:
+                main_window.canvas.tag_bind(canvas_id,"<Enter>", lambda event, id=canvas_id : main_window.canvas.itemconfig(id, width=2))
+                main_window.canvas.tag_bind(canvas_id,"<Leave>", lambda event, id=canvas_id : main_window.canvas.itemconfig(id, width=1))
         for definition in design_dictionary["window_state_action_block"]:
             coords = definition[0]
             text   = definition[1]
@@ -846,7 +854,7 @@ def open_file_with_name_new(read_filename):
         update_hdl_tab.UpdateHdlTab(design_dictionary["language"     ], design_dictionary["number_of_files"], read_filename,
                                     design_dictionary["generate_path"], design_dictionary["modulename"     ])
         main_window.show_tab("Diagram")
-        main_window.canvas.after_idle(canvas_editing.view_all)
+        canvas_editing.view_all()
     except FileNotFoundError:
         messagebox.showerror("Error", "File " + read_filename + " could not be found.")
     except ValueError: # includes JSONDecodeError

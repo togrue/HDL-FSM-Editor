@@ -16,6 +16,8 @@ def move_finish(event, move_list, move_do_funcid):
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
 
     item_ids_at_moving_end_location = get_item_ids_at_moving_end_location(event_x, event_y, move_list)
+    if move_list==[]:
+        return
     transition_start_or_end_point_is_moved = check_if_only_transition_start_or_end_point_is_moved(move_list)
     if transition_start_or_end_point_is_moved and moving_of_transition_start_or_end_point_ends_at_illegal_place(item_ids_at_moving_end_location, move_list):
         return
@@ -35,6 +37,7 @@ def move_finish(event, move_list, move_do_funcid):
     shorten_all_moved_transitions_to_the_state_borders(move_list)
     move_all_ca_connection_end_points_to_the_new_transition_start_points(move_list)
     hide_the_connection_line_of_moved_condition_action_window(move_list) # needed when a condition_action_window is moved alone.
+    main_window.canvas.tag_lower("grid_line")
     undo_handling.design_has_changed()
 
 def get_item_ids_at_moving_end_location(event_x, event_y, move_list):

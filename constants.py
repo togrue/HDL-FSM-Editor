@@ -17,6 +17,7 @@ vhdl_keywords_for_signal_handling = (
 " or ",
 " others ",
 " rem ",
+" report .*?;", # muessen komplett geloescht werden!
 " return ",
 " rol ",
 " ror ",
@@ -26,12 +27,14 @@ vhdl_keywords_for_signal_handling = (
 " srl ",
 " to ",
 " transport ",
+" wait .*?;", # muessen komplett geloescht werden!
 " while ",
 " xnor ",
 " xor ")
 
 vhdl_keywords_all_unused = vhdl_keywords_for_signal_handling + (
 " access ",
+" assert ",
 " alias ",
 " all ",
 " architecture ",
@@ -211,7 +214,7 @@ keywords = {"not_read" :    ["dummy_entry_so_that_this_list_is_no_empty"],
             "not_written" : ["dummy_entry_so_that_this_list_is_no_empty"],
             "control"  : ["library", "use", "all", "entity", "is", "port", "generic", "end", "if", "then", "else", "elsif", "downto", "to",
                             "architecture", "of", "type", "signal", "variable", "constant", "begin", "process", "case", "others", "while", "select",
-                            "when", "in", "out", "inout", "buffer", "for", "loop"],
+                            "when", "in", "out", "inout", "buffer", "for", "loop", "assert", "report", "lf", "severity"],
             "datatype" : ["std_logic", "std_logic_vector", "integer", "boolean", "bit", "bit_vector", "real", "natural",
                             "signed", "unsigned", "ieee", "std_logic_1164", "numeric_std"],
             # From std_logic_1164, numeric_std:
@@ -226,7 +229,7 @@ vhdl_keywords = {
             "not_written" : ["dummy_entry_so_that_this_list_is_no_empty"],
             "control"  : ["library", "use", "all", "entity", "is", "port", "generic", "end", "if", "then", "else", "elsif", "downto", "to",
                             "architecture", "of", "type", "signal", "variable", "constant", "begin", "process", "case", "others", "while", "select", "with",
-                            "when", "=>", "in", "out", "inout", "buffer", "for", "loop"],
+                            "when", "=>", "in", "out", "inout", "buffer", "for", "loop", "assert", "report", "lf", "severity"],
             "datatype" : ["std_logic", "std_logic_vector", "integer", "boolean", "bit", "bit_vector", "real", "natural",
                             "signed", "unsigned", "ieee", "std_logic_1164", "numeric_std"],
             # From std_logic_1164, numeric_std:

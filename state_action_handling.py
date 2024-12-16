@@ -1,4 +1,7 @@
-from tkinter import *
+"""
+Handles the state action of a single state.
+"""
+import tkinter as tk
 from tkinter import ttk
 
 import canvas_editing
@@ -18,7 +21,7 @@ class MyText():
         self.difference_y = 0
         self.first_call_of_move_item = True
         # Create frame:
-        self.frame_id = ttk.Frame(main_window.canvas, relief=FLAT, padding=padding, style="StateActionsWindow.TFrame")
+        self.frame_id = ttk.Frame(main_window.canvas, relief=tk.FLAT, padding=padding, style="StateActionsWindow.TFrame")
         self.frame_id.bind("<Enter>", lambda event, self=self : self.activate  ())
         self.frame_id.bind("<Leave>", lambda event, self=self : self.deactivate())
         # Create label object inside frame:
@@ -26,7 +29,7 @@ class MyText():
                         font=("Arial",int(canvas_editing.label_fontsize)),
                         style='StateActionsWindow.TLabel')
         # Create text object inside frame:
-        self.text_id = custom_text.CustomText(self.frame_id, type="action", height=height, width=width, undo=True, maxundo=-1 , font=("Courier",int(canvas_editing.fontsize)))
+        self.text_id = custom_text.CustomText(self.frame_id, text_type="action", height=height, width=width, undo=True, maxundo=-1 , font=("Courier",int(canvas_editing.fontsize)))
         self.text = ""
         self.text_id .bind("<Control-z>"     , lambda event : self.text_id.undo())
         self.text_id .bind("<Control-Z>"     , lambda event : self.text_id.redo())
@@ -38,10 +41,11 @@ class MyText():
         self.label_id.bind("<B1-Motion>"     , self.move_item) # Touching inside the window.
         self.text_id .bind("<B1-Motion>"     , self.move_item) # Touching inside the window.
         # Create canvas window for frame and text:
-        self.window_id = main_window.canvas.create_window(menu_x+100,menu_y,window=self.frame_id, anchor=W)
+        self.window_id = main_window.canvas.create_window(menu_x+100,menu_y,window=self.frame_id, anchor=tk.W)
         MyText.mytext_dict[self.window_id] = self
-        self.label_id.grid(column=0, row=0, sticky=(N, W, E)) 
-        self.text_id.grid (column=0, row=1, sticky=(S, W, E))
+        self.label_id.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E))
+        self.text_id.grid (column=0, row=1, sticky=(tk.S, tk.W, tk.E))
+        self.line_id = None
 
     def move_item(self, event):
         bbox_canvas_x1, bbox_canvas_y1, _, _, = main_window.canvas.bbox(self.window_id)
@@ -87,12 +91,12 @@ class MyText():
 
     def activate(self):
         self.frame_id.configure(style='Window.TFrame',padding=3) # increase the width of the line around the box
-        self.text = self.text_id.get("1.0", END)
+        self.text = self.text_id.get("1.0", tk.END)
 
     def deactivate(self):
         self.frame_id.configure(style='Window.TFrame',padding=1) # decrease the width of the line around the box
         self.frame_id.focus() # "unfocus" the Text, when the mouse leaves the text.
-        if self.text_id.get("1.0", END)!= self.text:
+        if self.text_id.get("1.0", tk.END)!= self.text:
             undo_handling.design_has_changed()
 
     def activate_line(self):
@@ -103,7 +107,7 @@ class MyText():
 
     def move_to(self, event_x, event_y, first, last):
         self.frame_id.configure(padding=1) # decrease the width of the line around the box
-        if first==True:
+        if first:
             self.frame_id.configure(padding=4) # increase the width of the line around the box
             # Calculate the difference between the "anchor" point and the event:
             coords = main_window.canvas.coords(self.window_id)
@@ -119,7 +123,7 @@ class MyText():
         for t in window_tags:
             if t.startswith("connection"):
                 line_tag = t[:-6]
-        self.line_coords = main_window.canvas.coords(line_tag)
-        self.line_coords[0] = event_x
-        self.line_coords[1] = event_y
-        main_window.canvas.coords(line_tag, self.line_coords)
+        line_coords = main_window.canvas.coords(line_tag)
+        line_coords[0] = event_x
+        line_coords[1] = event_y
+        main_window.canvas.coords(line_tag, line_coords)

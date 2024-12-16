@@ -8,7 +8,6 @@ import canvas_editing
 import undo_handling
 import custom_text
 import main_window
-import move_handling_initialization
 import move_handling
 import move_handling_finish
 
@@ -34,9 +33,9 @@ class ConditionAction():
             label_action_text = "Transition actions (clocked):"
         self.condition_label = ttk.Label             (self.frame_id, text="Transition condition: ", font=("Arial",int(canvas_editing.label_fontsize)))
         self.action_label    = ttk.Label             (self.frame_id, text=label_action_text       , font=("Arial",int(canvas_editing.label_fontsize)))
-        self.action_id       = custom_text.CustomText(self.frame_id, type="action"   , takefocus=0, height=height, width=width, undo=True, maxundo=-1,
+        self.action_id       = custom_text.CustomText(self.frame_id, text_type="action"   , takefocus=0, height=height, width=width, undo=True, maxundo=-1,
                                                       font=("Courier",int(canvas_editing.fontsize)))
-        self.condition_id    = custom_text.CustomText(self.frame_id, type="condition", takefocus=0, height=height, width=width, undo=True, maxundo=-1,
+        self.condition_id    = custom_text.CustomText(self.frame_id, text_type="condition", takefocus=0, height=height, width=width, undo=True, maxundo=-1,
                                                       font=("Courier",int(canvas_editing.fontsize)))
         # Create bindings for Undo/Redo:
         self.action_id      .bind("<Control-z>"     , lambda event : self.action_id.undo())

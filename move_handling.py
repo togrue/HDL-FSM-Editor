@@ -23,7 +23,7 @@ def move_do(event, move_list, first):
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
     if state_is_moved_to_near_to_state_or_connector(move_list, event_x, event_y):
         return
-    if too_near_to_connector(move_list, event_x, event_y):
+    if connector_moved_too_close_to_other_object(move_list, event_x, event_y):
         return
     for entry in move_list:
         item_id            = entry[0]
@@ -85,25 +85,26 @@ def state_is_moved_to_near_to_state_or_connector(move_list, event_x, event_y):
                     return True
     return False
 
-def too_near_to_connector(move_list, event_x, event_y):
+def connector_moved_too_close_to_other_object(move_list, event_x, event_y):
     for entry in move_list:
         moved_item_id = entry[0]
         if main_window.canvas.type(moved_item_id)=='rectangle' and main_window.canvas.itemcget(moved_item_id, "fill")==constants.CONNECTOR_COLOR:
             # Keep the distance between event and anchor point constant:
             event_x_mod, event_y_mod = event_x + connector_handling.difference_x, event_y + connector_handling.difference_y
-            event_x_mod = canvas_editing.state_radius * round(event_x_mod/canvas_editing.state_radius)
-            event_y_mod = canvas_editing.state_radius * round(event_y_mod/canvas_editing.state_radius)
-            rectangle_coords = main_window.canvas.coords(moved_item_id)
-            edge_length = rectangle_coords[2] - rectangle_coords[0]
+            event_x_mod = canvas_editing.state_radius * round(event_x_mod/canvas_editing.state_radius) # move event_x to grid.
+            event_y_mod = canvas_editing.state_radius * round(event_y_mod/canvas_editing.state_radius) # move event_y to grid.
+            connector_coords = main_window.canvas.coords(moved_item_id)
+            edge_length = connector_coords[2] - connector_coords[0]
             new_upper_left_corner  = [event_x_mod-edge_length/2, event_y_mod-edge_length/2]
             new_lower_right_corner = [event_x_mod+edge_length/2, event_y_mod+edge_length/2]
-            moved_rectangle_coords = [*new_upper_left_corner, *new_lower_right_corner]
-            overlapping_list = main_window.canvas.find_overlapping(moved_rectangle_coords[0]-canvas_editing.state_radius/2,
-                                                                   moved_rectangle_coords[1]-canvas_editing.state_radius/2,
-                                                                   moved_rectangle_coords[2]+canvas_editing.state_radius/2,
-                                                                   moved_rectangle_coords[3]+canvas_editing.state_radius/2)
+            moved_connector_coords = [*new_upper_left_corner, *new_lower_right_corner]
+            overlapping_list = main_window.canvas.find_overlapping(moved_connector_coords[0]-canvas_editing.state_radius/2,
+                                                                   moved_connector_coords[1]-canvas_editing.state_radius/2,
+                                                                   moved_connector_coords[2]+canvas_editing.state_radius/2,
+                                                                   moved_connector_coords[3]+canvas_editing.state_radius/2)
             for overlapping_item in overlapping_list:
-                if overlapping_item!=moved_item_id and (main_window.canvas.type(overlapping_item)=="oval" or
-                                                        main_window.canvas.type(overlapping_item)=="rectangle"):
+                if overlapping_item!=moved_item_id and (main_window.canvas.type     (overlapping_item)=="oval" or
+                                                        (main_window.canvas.type    (overlapping_item)=="rectangle"and
+                                                         main_window.canvas.itemcget(overlapping_item, "fill")==constants.CONNECTOR_COLOR)):
                     return True
     return False

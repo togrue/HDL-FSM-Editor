@@ -18,7 +18,7 @@ class GlobalActionsCombinatorial():
         self.label    = ttk.Label(self.frame_id, text="Global actions combinatorial: " ,
                                   font=("Arial",int(canvas_editing.label_fontsize)),
                                   style="GlobalActionsWindow.TLabel")
-        self.text_id  = custom_text.CustomText(self.frame_id, type="action", height=height, width=width, undo=True, maxundo=-1, font=("Courier",int(canvas_editing.fontsize)))
+        self.text_id  = custom_text.CustomText(self.frame_id, text_type="action", height=height, width=width, undo=True, maxundo=-1, font=("Courier",int(canvas_editing.fontsize)))
         self.text_id .bind("<Control-z>"     , lambda event : self.text_id.undo())
         self.text_id .bind("<Control-Z>"     , lambda event : self.text_id.redo())
         self.text_id .bind("<<TextModified>>", lambda event : undo_handling.modify_window_title())

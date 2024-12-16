@@ -132,7 +132,7 @@ def get_complete_design_as_text_object ():
             design += main_window.canvas.itemcget(i, "text") + " "
             design += get_tags  (i)
             design += "\n"
-        elif main_window.canvas.type(i)=="line":
+        elif main_window.canvas.type(i)=="line" and "grid_line" not in main_window.canvas.gettags(i):
             design += "line|"
             design += get_coords(i)
             design += get_tags  (i)
@@ -220,6 +220,7 @@ def set_diagram_to_version_selected_by_stack_pointer():
     # Remove the old design:
     state_action_handling.MyText.mytext_dict = {}
     condition_action_handling.ConditionAction.dictionary = {}
+    state_comment.StateComment.dictionary = {}
     main_window.canvas.delete("all")
     # Bring the notebook tab with the diagram into the foreground:
     notebook_ids = main_window.notebook.tabs()
@@ -235,6 +236,7 @@ def set_diagram_to_version_selected_by_stack_pointer():
         lines.append(line + "\n")
     # Build the new design:
     line_index = 0
+    list_of_states = []
     while line_index<len(lines):
         if lines[line_index].startswith("state_number|"):
             rest_of_line   = remove_keyword_from_line(lines[line_index],"state_number|")
@@ -318,6 +320,7 @@ def set_diagram_to_version_selected_by_stack_pointer():
             main_window.canvas.tag_bind(state_id,"<Enter>"    , lambda event, id=state_id : main_window.canvas.itemconfig(id, width=4))
             main_window.canvas.tag_bind(state_id,"<Leave>"    , lambda event, id=state_id : main_window.canvas.itemconfig(id, width=2))
             main_window.canvas.tag_bind(state_id,"<Button-3>" , lambda event, id=state_id : state_handling.show_menu(event, id))
+            list_of_states.append(state_id)
         elif lines[line_index].startswith("polygon|"):
             rest_of_line   = remove_keyword_from_line(lines[line_index],"polygon|")
             coords = []
@@ -517,6 +520,9 @@ def set_diagram_to_version_selected_by_stack_pointer():
             action_ref.text_id.format()
             main_window.canvas.itemconfigure(action_ref.window_id,tag=tags)
         line_index += 1
+    for state in list_of_states:
+        canvas_editing.adapt_visibility_of_priority_rectangles_at_state(state)
+    main_window.grid_drawer.draw_grid()
 
 def remove_keyword_from_line(line, keyword):
     return line[len(keyword):]

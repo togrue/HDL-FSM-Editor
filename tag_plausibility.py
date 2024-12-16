@@ -72,7 +72,9 @@ class TagPlausibility():
                         break # A "connector"-rectangle was found
                 if not rectangle_was_identified:
                     print("Fatal in TagPlausibility-Checks: a rectangle could not be identified, because it has these unknown tags:", rectangle_tags)
-            elif main_window.canvas.type(canvas_item)=='line':
+            elif main_window.canvas.type(canvas_item)=='line' and "grid_line" in main_window.canvas.gettags(canvas_item):
+                pass
+            elif main_window.canvas.type(canvas_item)=='line' and "grid_line" not in main_window.canvas.gettags(canvas_item):
                 line_was_identified = False
                 line_tags = main_window.canvas.gettags(canvas_item)
                 for line_tag in line_tags:

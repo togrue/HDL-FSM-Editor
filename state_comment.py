@@ -25,9 +25,8 @@ class StateComment:
                         font=("Arial",int(canvas_editing.label_fontsize)),
                         style='StateActionsWindow.TLabel')
         # Create text object inside frame:
-        # ACHTUNG: unklar, ob type="comment" wichtig ist!!!!!
         self.text = ""
-        self.text_id = custom_text.CustomText(self.frame_id, type="comment", height=height, width=width, undo=True, maxundo=-1,
+        self.text_id = custom_text.CustomText(self.frame_id, text_type="comment", height=height, width=width, undo=True, maxundo=-1,
                                               font=("Courier",int(canvas_editing.fontsize)), foreground="blue")
         self.text_id. bind("<Control-z>"     , lambda event : self.text_id.undo())
         self.text_id. bind("<Control-Z>"     , lambda event : self.text_id.redo())

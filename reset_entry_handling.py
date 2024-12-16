@@ -28,22 +28,25 @@ def create_reset_entry(canvas_grid_coordinates_of_the_event):
     reset_entry_polygon = create_polygon_shape_for_reset_entry()
     reset_entry_polygon = move_reset_entry_polygon_to_event(canvas_grid_coordinates_of_the_event, reset_entry_polygon)
     polygon_id = main_window.canvas.create_polygon(*reset_entry_polygon, fill='red', outline="orange", tag="reset_entry")
-    main_window.canvas.create_text(*canvas_grid_coordinates_of_the_event, text="Reset", tag="reset_text", font=canvas_editing.state_name_font)
+    main_window.canvas.create_text(canvas_grid_coordinates_of_the_event[0]-4*canvas_editing.reset_entry_size/5,
+                                   canvas_grid_coordinates_of_the_event[1],
+                                   text="Reset", tag="reset_text", font=canvas_editing.state_name_font)
     main_window.canvas.tag_bind(polygon_id,"<Enter>", lambda event, id=polygon_id : main_window.canvas.itemconfig(id, width=2))
     main_window.canvas.tag_bind(polygon_id,"<Leave>", lambda event, id=polygon_id : main_window.canvas.itemconfig(id, width=1))
 
 def create_polygon_shape_for_reset_entry():
     # upper_left_corner  = [-20,-12]
     # upper_right_corner = [+20,-12]
-    # point_corner       = [+32, 0]
+    # point_corner       = [+32, 0]   connect-point for transition
     # lower_right_corner = [+20,+12]
     # lower_left_corner  = [-20,+12]
     size = canvas_editing.reset_entry_size
-    upper_left_corner  = [-size/2,-3*size/10]
-    upper_right_corner = [+size/2,-3*size/10]
-    point_corner       = [+4*size/5, 0]
-    lower_right_corner = [+size/2,+3*size/10]
-    lower_left_corner  = [-size/2,+3*size/10]
+    # Coordinates when the mouse-pointer is at point_corner of the polygon:
+    upper_left_corner  = [-size/2-4*size/5,-3*size/10]
+    upper_right_corner = [+size/2-4*size/5,-3*size/10]
+    point_corner       = [0, 0]
+    lower_right_corner = [+size/2-4*size/5,+3*size/10]
+    lower_left_corner  = [-size/2-4*size/5,+3*size/10]
     return [upper_left_corner, upper_right_corner, point_corner, lower_right_corner, lower_left_corner]
 
 def move_reset_entry_polygon_to_event(canvas_grid_coordinates_of_the_event, reset_entry_polygon):

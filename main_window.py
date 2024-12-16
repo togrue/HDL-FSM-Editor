@@ -23,8 +23,9 @@ import compile_handling
 import constants
 import link_dictionary
 import color_changer
+import grid_drawing
 
-VERSION = "4.4"
+VERSION = "4.5"
 header_string ="HDL-FSM-Editor\nVersion " + VERSION + "\nCreated by Matthias Schweikart\nContact: matthias.schweikart@gmx.de"
 
 state_action_default_button        = None
@@ -87,6 +88,15 @@ module_name_entry = None
 clock_signal_name_entry = None
 diagram_background_color = "white"
 diagram_background_color_error = None
+show_grid = True
+grid_drawer = None
+paned_window_interface  = None
+interface_package_frame = None
+paned_window_internals  = None
+internals_package_frame = None
+sash_positions          = {}
+sash_positions["interface_tab"] = {}
+sash_positions["internals_tab"] = {}
 
 keyword_color = {"not_read": "red", "not_written": "red", "control": "green4", "datatype": "brown", "function": "violet", "comment": "blue"}
 keywords = constants.vhdl_keywords
@@ -184,15 +194,23 @@ def create_menu_bar():
 
     tool_title = ttk.Label(menue_frame, text="HDL-FSM-Editor", font=("Arial", 15))
 
-    search_frame = ttk.Frame(menue_frame, borderwidth=2)#, relief=RAISED)
     search_string = tk.StringVar()
     search_string.set("")
-    search_button       = ttk.Button(search_frame, text="Find",  command=lambda : canvas_editing.find(search_string), style='Find.TButton')
+    replace_string = tk.StringVar()
+    replace_string.set("")
+    search_frame        = ttk.Frame(menue_frame, borderwidth=2)#, relief=RAISED)
+    search_button       = ttk.Button(search_frame, text="Find",  command=lambda : canvas_editing.find(search_string, replace_string, replace=False), style='Find.TButton')
     search_string_entry = ttk.Entry (search_frame, width=23, textvariable=search_string)
-    search_string_entry.bind('<Return>', lambda event : canvas_editing.find(search_string))
-    search_button.bind      ('<Return>', lambda event : canvas_editing.find(search_string))
+    replace_string_entry= ttk.Entry (search_frame, width=23, textvariable=replace_string)
+    replace_button      = ttk.Button(search_frame, text="Find & Replace",  command=lambda : canvas_editing.find(search_string, replace_string, replace=True), style='Find.TButton')
+    search_string_entry.bind ('<Return>', lambda event : canvas_editing.find(search_string, replace_string, replace=False))
+    search_button.bind       ('<Return>', lambda event : canvas_editing.find(search_string, replace_string, replace=False))
+    replace_string_entry.bind('<Return>', lambda event : canvas_editing.find(search_string, replace_string, replace=True))
+    replace_button.bind      ('<Return>', lambda event : canvas_editing.find(search_string, replace_string, replace=True))
     search_string_entry.grid (row=0, column=0)
     search_button.grid       (row=0, column=1)
+    replace_string_entry.grid(row=0, column=2)
+    replace_button.grid      (row=0, column=3)
 
     info_menu_button = ttk.Menubutton(menue_frame, text="Info", style="Window.TMenubutton")
     info_menu = tk.Menu(info_menu_button)
@@ -311,7 +329,7 @@ def create_control_notebook_tab():
     control_frame.columnconfigure((8,1), weight=1)
 
     working_directory_value = tk.StringVar(value="")
-    working_directory_value.trace('w', show_path_has_changed)
+    working_directory_value.trace_add("write", show_path_has_changed)
     working_directory_label  = ttk.Label (control_frame, text="Working directory:", padding=5)
     working_directory_entry  = ttk.Entry (control_frame, textvariable=working_directory_value, width=80)
     working_directory_button = ttk.Button(control_frame, text="Select...",  command=set_working_directory, style='Path.TButton')
@@ -355,119 +373,149 @@ def create_interface_notebook_tab():
     global interface_package_text, interface_generics_text, interface_ports_text
     global interface_package_label, interface_package_scroll
     global interface_generics_label, interface_ports_label
+    global paned_window_interface, interface_package_frame
 
-    interface_frame = ttk.Frame(notebook)
-    interface_frame.grid()
-    interface_frame.columnconfigure(0, weight=1)
-    interface_frame.rowconfigure   (0, weight=0)
-    interface_frame.rowconfigure   (1, weight=1)
-    interface_frame.rowconfigure   (2, weight=0)
-    interface_frame.rowconfigure   (3, weight=1)
-    interface_frame.rowconfigure   (4, weight=0)
-    interface_frame.rowconfigure   (5, weight=10)
+    paned_window_interface = ttk.PanedWindow(notebook, orient=tk.VERTICAL, takefocus=True)
 
-    interface_package_label  = ttk.Label             (interface_frame, text="Packages:", padding=5)
-    interface_package_text   = custom_text.CustomText(interface_frame, type="package", height=3, width=10, undo=True, font=("Courier", 10))
+    interface_package_frame  = ttk.Frame(paned_window_interface)
+    interface_package_frame.columnconfigure(0, weight=1)
+    interface_package_frame.columnconfigure(1, weight=0)
+    interface_package_frame.rowconfigure(0, weight=0)
+    interface_package_frame.rowconfigure(1, weight=1)
+    interface_package_label  = ttk.Label             (interface_package_frame, text="Packages:", padding=5)
+    interface_package_text   = custom_text.CustomText(interface_package_frame, text_type="package", height=3, width=10, undo=True, font=("Courier", 10))
+    interface_package_text.insert("1.0", "library ieee;\nuse ieee.std_logic_1164.all;")
+    interface_package_text.update_highlight_tags(10, ["not_read" , "not_written" , "control" , "datatype" , "function" , "comment"])
     interface_package_text.bind ("<Control-Z>"     , lambda event : interface_package_text.edit_redo())
     interface_package_text.bind ("<<TextModified>>", lambda event : undo_handling.modify_window_title())
     interface_package_text.bind ("<Key>"           , lambda event, id=interface_package_text : handle_key(event, id))
-    interface_package_scroll = ttk.Scrollbar         (interface_frame, orient=tk.VERTICAL, cursor='arrow', command=interface_package_text.yview)
+    interface_package_scroll = ttk.Scrollbar         (interface_package_frame, orient=tk.VERTICAL, cursor='arrow', command=interface_package_text.yview)
     interface_package_text.config(yscrollcommand=interface_package_scroll.set)
+    interface_package_label.grid  (row=0, column=0, sticky=(tk.W, tk.N, tk.S)) # "W" nötig, damit Text links bleibt
+    interface_package_text.grid   (row=1, column=0, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
+    interface_package_scroll.grid (row=1, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
+    paned_window_interface.add(interface_package_frame, weight=1)
 
-    interface_generics_label = ttk.Label             (interface_frame, text="Generics:", padding=5)
-    interface_generics_text  = custom_text.CustomText(interface_frame, type="generics", height=3, width=10, undo=True, font=("Courier", 10))
+    interface_generics_frame = ttk.Frame(paned_window_interface)
+    interface_generics_frame.columnconfigure(0, weight=1)
+    interface_generics_frame.columnconfigure(1, weight=0)
+    interface_generics_frame.rowconfigure(0, weight=0)
+    interface_generics_frame.rowconfigure(1, weight=1)
+    interface_generics_label = ttk.Label             (interface_generics_frame, text="Generics:", padding=5)
+    interface_generics_text  = custom_text.CustomText(interface_generics_frame, text_type="generics", height=3, width=10, undo=True, font=("Courier", 10))
     interface_generics_text.bind("<Control-Z>"      , lambda event : interface_generics_text.edit_redo())
     interface_generics_text.bind("<<TextModified>>" , lambda event : undo_handling.modify_window_title())
     interface_generics_text.bind("<Key>"            , lambda event, id=interface_generics_text : handle_key_at_generics(id))
-    interface_generics_scroll= ttk.Scrollbar         (interface_frame, orient=tk.VERTICAL, cursor='arrow', command=interface_generics_text.yview)
+    interface_generics_scroll= ttk.Scrollbar         (interface_generics_frame, orient=tk.VERTICAL, cursor='arrow', command=interface_generics_text.yview)
     interface_generics_text.config(yscrollcommand=interface_generics_scroll.set)
+    interface_generics_label.grid (row=0, column=0, sticky=(tk.W, tk.N, tk.S))
+    interface_generics_text.grid  (row=1, column=0, sticky=(tk.N,tk.W,tk.E,tk.S))
+    interface_generics_scroll.grid(row=1, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
+    paned_window_interface.add(interface_generics_frame, weight=1)
+    interface_generics_frame.bind("<Configure>", __resize_event_interface_tab_frames)
 
-    interface_ports_label    = ttk.Label             (interface_frame, text="Ports:"   , padding=5)
-    interface_ports_text     = custom_text.CustomText(interface_frame, type="ports", height=3, width=10, undo=True, font=("Courier", 10))
+    interface_ports_frame    = ttk.Frame(paned_window_interface)
+    interface_ports_frame.columnconfigure(0, weight=1)
+    interface_ports_frame.columnconfigure(1, weight=0)
+    interface_ports_frame.rowconfigure(0, weight=0)
+    interface_ports_frame.rowconfigure(1, weight=1)
+    interface_ports_label    = ttk.Label             (interface_ports_frame, text="Ports:"   , padding=5)
+    interface_ports_text     = custom_text.CustomText(interface_ports_frame, text_type="ports", height=3, width=10, undo=True, font=("Courier", 10))
     interface_ports_text.bind   ("<Control-z>"      , lambda event : interface_ports_text.undo())
     interface_ports_text.bind   ("<Control-Z>"      , lambda event : interface_ports_text.redo())
     interface_ports_text.bind   ("<<TextModified>>" , lambda event : undo_handling.modify_window_title())
     interface_ports_text.bind   ("<Key>"            , lambda event, id=interface_ports_text : handle_key_at_ports(id))
-    interface_ports_scroll   = ttk.Scrollbar         (interface_frame, orient=tk.VERTICAL, cursor='arrow', command=interface_ports_text.yview)
+    interface_ports_scroll   = ttk.Scrollbar         (interface_ports_frame, orient=tk.VERTICAL, cursor='arrow', command=interface_ports_text.yview)
     interface_ports_text.config(yscrollcommand=interface_ports_scroll.set)
+    interface_ports_label.grid    (row=0, column=0, sticky=tk.W)
+    interface_ports_text.grid     (row=1, column=0, sticky=(tk.N,tk.W,tk.E,tk.S))
+    interface_ports_scroll.grid   (row=1, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
+    paned_window_interface.add(interface_ports_frame, weight=1)
 
-    interface_package_label.grid  (row=0, column=0, sticky=tk.W) # "W" nötig, damit Text links bleibt
-    interface_package_text.grid   (row=1, column=0, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
-    interface_package_scroll.grid (row=1, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
-    interface_generics_label.grid (row=2, column=0, sticky=tk.W)
-    interface_generics_text.grid  (row=3, column=0, sticky=(tk.N,tk.W,tk.E,tk.S))
-    interface_generics_scroll.grid(row=3, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
-    interface_ports_label.grid    (row=4, column=0, sticky=tk.W)
-    interface_ports_text.grid     (row=5, column=0, sticky=(tk.N,tk.W,tk.E,tk.S))
-    interface_ports_scroll.grid   (row=5, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
-
-    notebook.add(interface_frame, sticky=tk.N+tk.E+tk.W+tk.S, text="Interface")
+    notebook.add(paned_window_interface, sticky=tk.N+tk.E+tk.W+tk.S, text="Interface")
 
 def create_internals_notebook_tab():
     global internals_package_text, internals_architecture_text, internals_process_clocked_text, internals_process_combinatorial_text
     global internals_package_label, internals_package_scroll
     global internals_architecture_label, internals_process_clocked_label, internals_process_combinatorial_label
-    internals_frame = ttk.Frame(notebook)
-    internals_frame.grid()
-    internals_frame.columnconfigure(0, weight=1)
-    internals_frame.rowconfigure   (0, weight=0)
-    internals_frame.rowconfigure   (1, weight=1)
-    internals_frame.rowconfigure   (2, weight=0)
-    internals_frame.rowconfigure   (3, weight=10)
-    internals_frame.rowconfigure   (4, weight=0)
-    internals_frame.rowconfigure   (5, weight=1)
-    internals_frame.rowconfigure   (6, weight=0)
-    internals_frame.rowconfigure   (7, weight=1)
+    global paned_window_internals, internals_package_frame
 
-    internals_package_label     = ttk.Label             (internals_frame, text="Packages:", padding=5)
-    internals_package_text      = custom_text.CustomText(internals_frame, type="package", height=3, width=10, undo=True, font=("Courier", 10))
+    paned_window_internals = ttk.PanedWindow(notebook, orient=tk.VERTICAL, takefocus=True)
+
+    internals_package_frame     = ttk.Frame(paned_window_internals)
+    internals_package_frame.columnconfigure(0, weight=1)
+    internals_package_frame.columnconfigure(1, weight=0)
+    internals_package_frame.rowconfigure(0, weight=0)
+    internals_package_frame.rowconfigure(1, weight=1)
+    internals_package_label     = ttk.Label             (internals_package_frame, text="Packages:", padding=5)
+    internals_package_text      = custom_text.CustomText(internals_package_frame, text_type="package", height=3, width=10, undo=True, font=("Courier", 10))
     internals_package_text.bind("<Control-Z>"     , lambda event : internals_package_text.edit_redo())
     internals_package_text.bind("<<TextModified>>", lambda event : undo_handling.modify_window_title())
     internals_package_text.bind("<Key>"           , lambda event, id=internals_package_text : handle_key(event, id))
-    internals_package_scroll    = ttk.Scrollbar         (internals_frame, orient=tk.VERTICAL, cursor='arrow', command=internals_package_text.yview)
+    internals_package_scroll    = ttk.Scrollbar         (internals_package_frame, orient=tk.VERTICAL, cursor='arrow', command=internals_package_text.yview)
     internals_package_text.config(yscrollcommand=internals_package_scroll.set)
+    internals_package_label.grid (row=0, column=0, sticky=tk.W) # "W" nötig, damit Text links bleibt
+    internals_package_text.grid  (row=1, column=0, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
+    internals_package_scroll.grid(row=1, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
+    paned_window_internals.add(internals_package_frame, weight=1)
 
-    internals_architecture_label = ttk.Label             (internals_frame, text="Architecture Declarations:", padding=5)
-    internals_architecture_text  = custom_text.CustomText(internals_frame, type="declarations", height=3, width=10, undo=True, font=("Courier", 10))
+    internals_architecture_frame = ttk.Frame(paned_window_internals)
+    internals_architecture_frame.columnconfigure(0, weight=1)
+    internals_architecture_frame.columnconfigure(1, weight=0)
+    internals_architecture_frame.rowconfigure(0, weight=0)
+    internals_architecture_frame.rowconfigure(1, weight=1)
+    internals_architecture_label = ttk.Label             (internals_architecture_frame, text="Architecture Declarations:", padding=5)
+    internals_architecture_text  = custom_text.CustomText(internals_architecture_frame, text_type="declarations", height=3, width=10, undo=True, font=("Courier", 10))
     internals_architecture_text.bind("<Control-z>"     , lambda event : internals_architecture_text.undo())
     internals_architecture_text.bind("<Control-Z>"     , lambda event : internals_architecture_text.redo())
     internals_architecture_text.bind("<<TextModified>>", lambda event : undo_handling.modify_window_title())
     internals_architecture_text.bind("<Key>"           , lambda event, id=internals_architecture_text : handle_key_at_declarations(id))
-    internals_architecture_scroll= ttk.Scrollbar         (internals_frame, orient=tk.VERTICAL, cursor='arrow', command=internals_architecture_text.yview)
+    internals_architecture_scroll= ttk.Scrollbar         (internals_architecture_frame, orient=tk.VERTICAL, cursor='arrow', command=internals_architecture_text.yview)
     internals_architecture_text.config(yscrollcommand=internals_architecture_scroll.set)
+    internals_architecture_label.grid (row=0, column=0, sticky=tk.W)
+    internals_architecture_text.grid  (row=1, column=0, sticky=(tk.N,tk.W,tk.E,tk.S))
+    internals_architecture_scroll.grid(row=1, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
+    paned_window_internals.add(internals_architecture_frame, weight=1)
+    internals_architecture_frame.bind("<Configure>", __resize_event_internals_tab_frames)
 
-    internals_process_clocked_label      = ttk.Label             (internals_frame, text="Variable Declarations for clocked process:"   , padding=5)
-    internals_process_clocked_text       = custom_text.CustomText(internals_frame, type="variable", height=3, width=10, undo=True, font=("Courier", 10))
+    internals_process_clocked_frame      = ttk.Frame(paned_window_internals)
+    internals_process_clocked_frame.columnconfigure(0, weight=1)
+    internals_process_clocked_frame.columnconfigure(1, weight=0)
+    internals_process_clocked_frame.rowconfigure(0, weight=0)
+    internals_process_clocked_frame.rowconfigure(1, weight=1)
+    internals_process_clocked_label      = ttk.Label             (internals_process_clocked_frame, text="Variable Declarations for clocked process:"   , padding=5)
+    internals_process_clocked_text       = custom_text.CustomText(internals_process_clocked_frame, text_type="variable", height=3, width=10, undo=True, font=("Courier", 10))
     internals_process_clocked_text.bind("<Control-z>"     , lambda event : internals_process_clocked_text.undo())
     internals_process_clocked_text.bind("<Control-Z>"     , lambda event : internals_process_clocked_text.redo())
     internals_process_clocked_text.bind("<<TextModified>>", lambda event : undo_handling.modify_window_title())
     internals_process_clocked_text.bind("<Key>"           , lambda event, id=internals_process_clocked_text : handle_key_at_declarations(id))
-    internals_process_clocked_scroll     = ttk.Scrollbar         (internals_frame, orient=tk.VERTICAL, cursor='arrow', command=internals_process_clocked_text.yview)
+    internals_process_clocked_scroll     = ttk.Scrollbar         (internals_process_clocked_frame, orient=tk.VERTICAL, cursor='arrow', command=internals_process_clocked_text.yview)
     internals_process_clocked_text.config(yscrollcommand=internals_process_clocked_scroll.set)
+    internals_process_clocked_label.grid (row=0, column=0, sticky=tk.W)
+    internals_process_clocked_text.grid  (row=1, column=0, sticky=(tk.N,tk.W,tk.E,tk.S))
+    internals_process_clocked_scroll.grid(row=1, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
+    paned_window_internals.add(internals_process_clocked_frame, weight=1)
 
-    internals_process_combinatorial_label      = ttk.Label             (internals_frame, text="Variable Declarations for combinatorial process:"   , padding=5)
-    internals_process_combinatorial_text       = custom_text.CustomText(internals_frame, type="variable", height=3, width=10, undo=True, font=("Courier", 10))
+    internals_process_combinatorial_frame  = ttk.Frame(paned_window_internals)
+    internals_process_combinatorial_frame.columnconfigure(0, weight=1)
+    internals_process_combinatorial_frame.columnconfigure(1, weight=0)
+    internals_process_combinatorial_frame.rowconfigure(0, weight=0)
+    internals_process_combinatorial_frame.rowconfigure(1, weight=1)
+    internals_process_combinatorial_label  = ttk.Label             (internals_process_combinatorial_frame, text="Variable Declarations for combinatorial process:"   , padding=5)
+    internals_process_combinatorial_text   = custom_text.CustomText(internals_process_combinatorial_frame, text_type="variable", height=3, width=10, undo=True,
+                                                                    font=("Courier", 10))
     internals_process_combinatorial_text.bind("<Control-z>"     , lambda event : internals_process_combinatorial_text.undo())
     internals_process_combinatorial_text.bind("<Control-Z>"     , lambda event : internals_process_combinatorial_text.redo())
     internals_process_combinatorial_text.bind("<<TextModified>>", lambda event : undo_handling.modify_window_title())
     internals_process_combinatorial_text.bind("<Key>"           , lambda event, id=internals_process_combinatorial_text : handle_key_at_declarations(id))
-    internals_process_combinatorial_scroll     = ttk.Scrollbar         (internals_frame, orient=tk.VERTICAL, cursor='arrow', command=internals_process_combinatorial_text.yview)
+    internals_process_combinatorial_scroll=ttk.Scrollbar(internals_process_combinatorial_frame,orient=tk.VERTICAL,cursor='arrow',command=internals_process_combinatorial_text.yview)
     internals_process_combinatorial_text.config(yscrollcommand=internals_process_combinatorial_scroll.set)
+    internals_process_combinatorial_label.grid (row=0, column=0, sticky=tk.W)
+    internals_process_combinatorial_text.grid  (row=1, column=0, sticky=(tk.N,tk.W,tk.E,tk.S))
+    internals_process_combinatorial_scroll.grid(row=1, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
+    paned_window_internals.add(internals_process_combinatorial_frame, weight=1)
 
-    internals_package_label.grid               (row=0, column=0, sticky=tk.W) # "W" nötig, damit Text links bleibt
-    internals_package_text.grid                (row=1, column=0, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
-    internals_package_scroll.grid              (row=1, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
-    internals_architecture_label.grid          (row=2, column=0, sticky=tk.W)
-    internals_architecture_text.grid           (row=3, column=0, sticky=(tk.N,tk.W,tk.E,tk.S))
-    internals_architecture_scroll.grid         (row=3, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
-    internals_process_clocked_label.grid       (row=4, column=0, sticky=tk.W)
-    internals_process_clocked_text.grid        (row=5, column=0, sticky=(tk.N,tk.W,tk.E,tk.S))
-    internals_process_clocked_scroll.grid      (row=5, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
-    internals_process_combinatorial_label.grid (row=6, column=0, sticky=tk.W)
-    internals_process_combinatorial_text.grid  (row=7, column=0, sticky=(tk.N,tk.W,tk.E,tk.S))
-    internals_process_combinatorial_scroll.grid(row=7, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
-
-    notebook.add(internals_frame, sticky=tk.N+tk.E+tk.W+tk.S, text="Internals")
+    notebook.add(paned_window_internals, sticky=tk.N+tk.E+tk.W+tk.S, text="Internals")
 
 def create_diagram_notebook_tab():
     global canvas
@@ -475,6 +523,7 @@ def create_diagram_notebook_tab():
     global global_action_clocked_button
     global global_action_combinatorial_button
     global reset_entry_button
+    global grid_drawer
 
     diagram_frame = ttk.Frame(notebook, borderwidth=0, relief='flat')
     diagram_frame.grid()
@@ -487,8 +536,8 @@ def create_diagram_notebook_tab():
     v = ttk.Scrollbar(diagram_frame, orient=tk.VERTICAL  , cursor='arrow')
     canvas = tk.Canvas(diagram_frame, borderwidth=2, bg="white", scrollregion=(-100000, -100000, 100000, 100000),
                        xscrollcommand=h.set, yscrollcommand=v.set, highlightthickness=0, relief=tk.SUNKEN)
-    h['command'] = canvas.xview
-    v['command'] = canvas.yview
+    h['command'] = __scroll_xview
+    v['command'] = __scroll_yview
     button_frame = ttk.Frame(diagram_frame, padding="3 3 3 3", borderwidth=1)
 
     # Layout of the drawing area:
@@ -559,8 +608,24 @@ def create_diagram_notebook_tab():
     canvas.bind    ('<Control-B1-Motion>' , canvas_editing.scroll_move         )
     canvas.bind    ("<MouseWheel>"        , canvas_editing.scroll_wheel        )
     canvas.bind    ('<Button-3>'          , canvas_editing.start_view_rectangle)
+    canvas.bind    ('<Configure>'         , __check_for_window_resize)
 
     canvas_editing.create_font_for_state_names()
+    grid_drawer = grid_drawing.GridDraw(canvas)
+
+def __scroll_xview(*args):
+    grid_drawer.remove_grid()
+    canvas.xview(*args)
+    grid_drawer.draw_grid()
+
+def __scroll_yview(*args):
+    grid_drawer.remove_grid()
+    canvas.yview(*args)
+    grid_drawer.draw_grid()
+
+def __check_for_window_resize(_):
+    grid_drawer.remove_grid()
+    grid_drawer.draw_grid()
 
 def enable_undo_redo_if_diagram_tab_is_active_else_disable():
     if notebook.index(notebook.select())==3:
@@ -581,7 +646,7 @@ def create_hdl_notebook_tab():
     hdl_frame.columnconfigure(0, weight=1)
     hdl_frame.rowconfigure   (0, weight=1)
 
-    hdl_frame_text = custom_text.CustomText(hdl_frame, type="generated", undo=False, font=("Courier", 10))
+    hdl_frame_text = custom_text.CustomText(hdl_frame, text_type="generated", undo=False, font=("Courier", 10))
     hdl_frame_text.grid(row=0, column=0, sticky=(tk.N,tk.W,tk.E,tk.S))
     hdl_frame_text.columnconfigure((0,0), weight=1)
     hdl_frame_text.config(state=tk.DISABLED)
@@ -602,14 +667,18 @@ def create_log_notebook_tab():
     log_frame.rowconfigure   (1, weight=1)
 
     log_frame_button_frame = ttk.Frame(log_frame)
-    log_frame_text = custom_text.CustomText(log_frame, type="log", undo=False)
+    log_frame_text = custom_text.CustomText(log_frame, text_type="log", undo=False)
     log_frame_button_frame.grid(row=0, column=0, sticky=(tk.W,tk.E))
     log_frame_text        .grid(row=1, column=0, sticky=(tk.N,tk.W,tk.E,tk.S))
     log_frame_text.columnconfigure((0,0), weight=1)
     log_frame_text.config(state=tk.DISABLED)
 
+    log_frame_clear_button = ttk.Button(log_frame_button_frame, takefocus=False, text="Clear" , style="Find.TButton")
+    log_frame_clear_button.grid(row=0, column=0, sticky=tk.W)
+    log_frame_clear_button.bind('<Button-1>', clear_log_tab)
+
     log_frame_regex_button = ttk.Button(log_frame_button_frame, takefocus=False, text="Define Regex for Hyperlinks" , style="Find.TButton")
-    log_frame_regex_button.grid(row=0, column=0, sticky=tk.W)
+    log_frame_regex_button.grid(row=0, column=1, sticky=tk.W)
     log_frame_regex_button.bind('<Button-1>', edit_regex)
 
     log_frame_text_scroll = ttk.Scrollbar (log_frame, orient=tk.VERTICAL, cursor='arrow', command=log_frame_text.yview)
@@ -621,6 +690,11 @@ def create_log_notebook_tab():
     notebook.add(log_frame, sticky=tk.N+tk.E+tk.W+tk.S, text="Compile Messages")
     debug_active = tk.IntVar()
     debug_active.set(1) # 1: inactive, 2: active
+
+def clear_log_tab(_):
+    log_frame_text.config(state=tk.NORMAL)
+    log_frame_text.delete("1.0", tk.END)
+    log_frame_text.config(state=tk.DISABLED)
 
 def edit_regex(*_):
     global regex_dialog, regex_dialog_entry, regex_dialog_filename_entry, regex_dialog_linenumber_entry
@@ -799,20 +873,15 @@ def switch_language_mode():
         select_file_number_text.set(2)
         select_file_number_label.grid        (row=3, column=0, sticky=tk.W)
         select_file_number_frame.grid        (row=3, column=1, sticky=tk.W)
-         # Interface: Enable VHDL-package text field
-        interface_package_label.grid  (row=0, column=0, sticky=tk.W) # "W" nötig, damit Text links bleibt
-        interface_package_text.grid   (row=1, column=0, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
-        interface_package_scroll.grid (row=1, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
         # Interface: Adapt documentation for generics and ports
+        paned_window_interface.insert(0, interface_package_frame, weight=1)
         interface_generics_label.config(text="Generics:")
-        interface_ports_label.config   (text="Ports:")
+        interface_ports_label   .config(text="Ports:")
         # Internals: Enable VHDL-package text field
-        internals_package_label.grid  (row=0, column=0, sticky=tk.W) # "W" nötig, damit Text links bleibt
-        internals_package_text.grid   (row=1, column=0, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
-        internals_package_scroll.grid (row=1, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
+        paned_window_internals.insert(0, internals_package_frame, weight=1)
         # Internals: Architecture-Declarations, 2*Variable Declarations umbenennen
-        internals_architecture_label.config         (text="Architecture Declarations:")
-        internals_process_clocked_label.config      (text="Variable Declarations for clocked process:")
+        internals_architecture_label         .config(text="Architecture Declarations:")
+        internals_process_clocked_label      .config(text="Variable Declarations for clocked process:")
         internals_process_combinatorial_label.config(text="Variable Declarations for combinatorial process:")
         # Modify compile command:
         compile_cmd.set("ghdl -a $file1 $file2; ghdl -e $name; ghdl -r $name")
@@ -825,21 +894,15 @@ def switch_language_mode():
         select_file_number_label.grid_forget()
         select_file_number_frame.grid_forget()
         # Interface: Remove VHDL-package text field
-        interface_package_label.grid_forget()
-        interface_package_text.grid_forget()
-        interface_package_text.delete("1.0", tk.END)
-        interface_package_scroll.grid_forget()
+        paned_window_interface.forget(interface_package_frame)
         # Interface: Adapt documentation for generics and ports
         interface_generics_label.config(text="Parameters:")
-        interface_ports_label.config   (text="Ports:")
+        interface_ports_label.config(text="Ports:")
         # Internals: Remove VHDL-package text field
-        internals_package_label.grid_forget()
-        internals_package_text.grid_forget()
-        internals_package_text.delete("1.0", tk.END)
-        internals_package_scroll.grid_forget()
+        paned_window_internals.forget(internals_package_frame)
         # Internals: Architecture-Declarations umbenennen, 2*Variable Declarations umbenennen
-        internals_architecture_label.config(text="Internal Declarations:")
-        internals_process_clocked_label.config(text="Local Variable Declarations for clocked always process (not supported by all Verilog compilers):")
+        internals_architecture_label         .config(text="Internal Declarations:")
+        internals_process_clocked_label      .config(text="Local Variable Declarations for clocked always process (not supported by all Verilog compilers):")
         internals_process_combinatorial_label.config(text="Local Variable Declarations for combinatorial always process (not supported by all Verilog compilers):")
         # Modify compile command:
         if new_language=="Verilog":
@@ -847,10 +910,6 @@ def switch_language_mode():
         else:
             compile_cmd.set("iverilog -g2012 -o $name $file; vvp $name")
         compile_cmd_docu.config(text="Variables for compile command:\n$file\t= Module-File\n$name\t= Module Name")
-
-
-
-
 
 def handle_key(event, custom_text_ref):
     custom_text_ref.after_idle(custom_text_ref.update_highlight_tags, canvas_editing.fontsize, ["control" , "datatype" , "function" , "comment"])
@@ -900,3 +959,16 @@ def run_color_changer():
     if new_color is not None:
         canvas.configure(bg=new_color)
         diagram_background_color.set(new_color)
+
+def __resize_event_interface_tab_frames(event):
+    global sash_positions
+    sash_positions["interface_tab"][0] = paned_window_interface.sashpos(0)
+    if language.get()=="VHDL":
+        sash_positions["interface_tab"][1] = paned_window_interface.sashpos(1)
+
+def __resize_event_internals_tab_frames(event):
+    global sash_positions
+    sash_positions["internals_tab"][0] = paned_window_internals.sashpos(0)
+    sash_positions["internals_tab"][1] = paned_window_internals.sashpos(1)
+    if language.get()=="VHDL":
+        sash_positions["internals_tab"][2] = paned_window_internals.sashpos(2)

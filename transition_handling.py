@@ -37,6 +37,7 @@ def move_to(event_x, event_y, transition_id, point, first, move_list, last):
                 point_to_move = [coords[-2], coords[-1]]
             else:
                 print("transition_handling: Fatal, unknown point =", point)
+                return
             difference_x, difference_y = - event_x + point_to_move[0], - event_y + point_to_move[1]
     else:
         difference_x = 0
@@ -46,8 +47,13 @@ def move_to(event_x, event_y, transition_id, point, first, move_list, last):
     if last is True:
         event_x = canvas_editing.state_radius * round(event_x/canvas_editing.state_radius)
         event_y = canvas_editing.state_radius * round(event_y/canvas_editing.state_radius)
-    transition_tag = main_window.canvas.gettags(transition_id)[0]
-    main_window.canvas.tag_lower(transition_tag)
+    all_transition_tags = main_window.canvas.gettags(transition_id)
+    for single_transition_tag in all_transition_tags:
+        if (single_transition_tag.startswith("transition") or
+            single_transition_tag.startswith("connection") or
+            single_transition_tag.endswith  ("comment_line")):
+            transition_tag = single_transition_tag
+            main_window.canvas.tag_lower(transition_tag)
     # Move transition:
     transition_coords = main_window.canvas.coords(transition_tag)
     if   point=="start":
@@ -60,6 +66,8 @@ def move_to(event_x, event_y, transition_id, point, first, move_list, last):
         main_window.canvas.coords(transition_tag, *transition_coords[-8:-2], event_x, event_y)
     else:
         print("transition_handling: Fatal, unknown point =", point)
+    if main_window.show_grid:
+        main_window.canvas.tag_raise(transition_tag, "grid_line")
     # Move priority rectangle:
     if transition_tag.startswith("transition"): # There is no priority rectangle at a "connection".
         # The tag "transition_tag + '_start'" is already removed from the old start state when the transition start-point is moved.
@@ -72,7 +80,7 @@ def move_to(event_x, event_y, transition_id, point, first, move_list, last):
             else:                      #  State with connected transition is moved.
                 start_state_radius = abs(start_state_coords[2] - start_state_coords[0])/2
             # Calculates the position of the priority rectangle by shortening the vector from the event (= first point of transition) to the second point of the transition.
-            [priority_middle_x,priority_middle_y,dummy_x,dummy_y] = vector_handling.shorten_vector(
+            [priority_middle_x,priority_middle_y,_,_] = vector_handling.shorten_vector(
                                                                         start_state_radius+canvas_editing.priority_distance,event_x,event_y,
                                                                         0,transition_coords[2] ,transition_coords[3],
                                                                         1,0)
@@ -81,7 +89,7 @@ def move_to(event_x, event_y, transition_id, point, first, move_list, last):
             start_state_radius = abs(start_state_coords[2] - start_state_coords[0])/2
             # Because the transition is already extended to the start-state middle, the length of the vector must be shortened additionally by the start state radius,
             # to keep the priority outside of the start-state.
-            [priority_middle_x,priority_middle_y,dummy_x,dummy_y] = vector_handling.shorten_vector(
+            [priority_middle_x,priority_middle_y,_,_] = vector_handling.shorten_vector(
                                                                         start_state_radius+canvas_editing.priority_distance, transition_coords[0], transition_coords[1],
                                                                         0, transition_coords[2], transition_coords[3],
                                                                         1, 0)
@@ -137,9 +145,10 @@ def distance_from_point_to_line(point_x, point_y, line):
                                  (half_circumference-length_of_triangle_side1) *
                                  (half_circumference-length_of_triangle_side2) *
                                  (half_circumference-length_of_triangle_side3))  # Heron's formula
-    height_of_triangle = 2*area_of_triangle/length_of_triangle_side3
-    #print("distances are:", distance, height_of_triangle)
-    return height_of_triangle
+    if length_of_triangle_side3!=0: # This value is 0 when the 2 line points are identical.
+        height_of_triangle = 2*area_of_triangle/length_of_triangle_side3
+        return height_of_triangle
+    return length_of_triangle_side1
 
 def get_point_to_move(item_id, event_x, event_y):
     # Determine which point of the transition is nearest to the event:
@@ -162,38 +171,34 @@ def get_point_to_move(item_id, event_x, event_y):
                 minimum = i
         if minimum==0:
             return "start"
-        elif minimum==1:
+        if minimum==1:
             distance_to_point1 = math.sqrt((event_x-transition_coords[2])**2 + (event_y-transition_coords[3])**2)
             distance_to_point2 = math.sqrt((event_x-transition_coords[4])**2 + (event_y-transition_coords[5])**2)
             if distance_to_point1<distance_to_point2:
                 return "next_to_start"
-            else:
-                return "next_to_end"
-        else:
-            return 'end'
+            return "next_to_end"
+        return 'end'
     elif number_of_points==3:
         if   distance_to_event[0]<distance_to_neighbour[0]/4:
             return "start"
-        elif distance_to_event[0]<distance_to_neighbour[0]*3/4:
+        if distance_to_event[0]<distance_to_neighbour[0]*3/4:
             main_window.canvas.coords(item_id, *transition_coords[0:2], event_x, event_y, *transition_coords[2:6]) # insert new point into transition
             return "next_to_start"
-        elif distance_to_event[0]<distance_to_neighbour[0]:
+        if distance_to_event[0]<distance_to_neighbour[0]:
             return "next_to_start"
-        elif distance_to_event[1]<distance_to_neighbour[1]/4:
+        if distance_to_event[1]<distance_to_neighbour[1]/4:
             return "next_to_start"
-        elif distance_to_event[1]<distance_to_neighbour[1]*3/4:
+        if distance_to_event[1]<distance_to_neighbour[1]*3/4:
             main_window.canvas.coords(item_id, *transition_coords[0:4], event_x, event_y, *transition_coords[4:6]) # insert new point into transition
             return "next_to_end"
-        else:
-            return 'end'
+        return 'end'
     else:
         if   distance_to_event[0]<distance_to_neighbour[0]/3:
             return "start"
-        elif distance_to_event[0]<distance_to_neighbour[0]*2/3:
+        if distance_to_event[0]<distance_to_neighbour[0]*2/3:
             main_window.canvas.coords(item_id, *transition_coords[0:2], event_x, event_y, *transition_coords[2:4])
             return "next_to_start"
-        else:
-            return 'end'
+        return 'end'
 
 def shorten_to_state_border(transition_tag):
     transition_coords = main_window.canvas.coords(transition_tag)
@@ -224,11 +229,12 @@ def shorten_to_state_border(transition_tag):
         transition_coords[ 1] = transition_start_coords[ 1]
         transition_coords[-2] = transition_end_coords  [-2]
         transition_coords[-1] = transition_end_coords  [-1]
+        transition_coords = remove_duplicate_points(transition_coords)
         main_window.canvas.coords(transition_tag,transition_coords)
         main_window.canvas.tag_lower(transition_tag)
         # Move priority rectangle:
         start_state_radius = abs(start_state_coords[2] - start_state_coords[0])/2
-        [priority_middle_x,priority_middle_y,dummy_x,dummy_y] = vector_handling.shorten_vector(0+canvas_editing.priority_distance,transition_coords[0],transition_coords[1],
+        [priority_middle_x,priority_middle_y,_,_] = vector_handling.shorten_vector(0+canvas_editing.priority_distance,transition_coords[0],transition_coords[1],
                                                                                                0,transition_coords[2] ,transition_coords[3] ,1,0)
         [rectangle_width_half, rectangle_height_half] = get_rectangle_dimensions(transition_tag+'rectangle')
         main_window.canvas.coords(transition_tag+'rectangle',priority_middle_x-rectangle_width_half, priority_middle_y-rectangle_height_half,
@@ -244,6 +250,16 @@ def shorten_to_state_border(transition_tag):
         transition_coords[-1] = transition_end_coords  [-1]
         main_window.canvas.coords(transition_tag,transition_coords)
         main_window.canvas.tag_lower(transition_tag)
+
+def remove_duplicate_points(transition_coords):
+    new_transition_coords = []
+    new_transition_coords.append(transition_coords[0])
+    new_transition_coords.append(transition_coords[1])
+    for i in range(int(len(transition_coords)/2)-1):
+        if transition_coords[2*i]!=transition_coords[2*i+2] or transition_coords[2*i+1]!=transition_coords[2*i+3]:
+            new_transition_coords.append(transition_coords[2*i+2])
+            new_transition_coords.append(transition_coords[2*i+3])
+    return new_transition_coords
 
 def transition_start(event):
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)

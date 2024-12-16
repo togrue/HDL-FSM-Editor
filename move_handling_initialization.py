@@ -10,24 +10,13 @@ import transition_handling
 import canvas_editing
 import main_window
 
-# works bad, not used:
-# def move_initialization_window(event, canvas_id_window):
-#     window_canvas_x, window_canvas_y = main_window.canvas.coords(canvas_id_window)
-#     # Calculate the event-coordinates from the sub-window event coordinates:
-#     x0 = main_window.canvas.canvasx(0)
-#     y0 = main_window.canvas.canvasy(0)
-#     event.x = window_canvas_x - x0
-#     event.y = window_canvas_y - y0
-#     main_window.canvas.coords(canvas_id_window, window_canvas_x + 5, window_canvas_y )
-#     move_initialization_overlapping(event, window_canvas_x, window_canvas_y)
-
 def move_initialization(event):
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
     move_initialization_overlapping(event, event_x, event_y)
 
 def move_initialization_overlapping(event, event_x, event_y):
     items_near_mouse_click_location = create_a_list_of_overlapping_items_near_the_mouse_click_location(event_x, event_y)
-    if items_near_mouse_click_location==():
+    if not items_near_mouse_click_location:
         return
     if mouse_click_happened_in_state_name     (items_near_mouse_click_location):
         return # The state name shall be changed and no moving is required.
@@ -37,6 +26,8 @@ def move_initialization_overlapping(event, event_x, event_y):
         return # No connection-line can be moved.
     if mouse_click_happened_in_state_comment_line(items_near_mouse_click_location):
         return # No state-comment-line can be moved.
+    if mouse_click_happened_in_grid_line(items_near_mouse_click_location):
+        return # No grid_line can be moved.
     move_list = create_move_list(items_near_mouse_click_location, event_x, event_y)
     # The move_list has an entry for each item, which must be moved.
     # The first entry contains always the object, the user wants to move.
@@ -71,7 +62,14 @@ def create_a_list_of_overlapping_items_near_the_mouse_click_location(event_x, ev
     # it would return event coordinates from inside the window, which cannot be easily converted into canvas coordinates,
     # as the window does not know its own location. So here a bigger overlapping area must be used,
     # so that the user can click beneath the window and catch it.
-    return main_window.canvas.find_overlapping(event_x-6, event_y-6, event_x+6, event_y+6) # Find which Canvas-Items are near to the mouse-click.
+    list_of_overlapping_items = []
+    overlapping_items = main_window.canvas.find_overlapping(event_x-canvas_editing.state_radius/4, event_y-canvas_editing.state_radius/4,
+                                                            event_x+canvas_editing.state_radius/4, event_y+canvas_editing.state_radius/4)
+    for overlapping_item in overlapping_items:
+        if "grid_line" not in main_window.canvas.gettags(overlapping_item):
+            list_of_overlapping_items.append(overlapping_item)
+    return list_of_overlapping_items
+
 def mouse_click_happened_in_state_name(items_near_mouse_click_location):
     list_item_types = []
     for item_id in items_near_mouse_click_location:
@@ -103,6 +101,11 @@ def mouse_click_happened_in_state_comment_line(items_near_mouse_click_location):
                 if t.startswith("state") and t.endswith("_comment_line"):
                     return True
     return False
+def mouse_click_happened_in_grid_line(items_near_mouse_click_location):
+    for item_id in items_near_mouse_click_location:
+        if "grid_line" not in main_window.canvas.gettags(item_id):
+            return False
+    return True
 
 def create_move_list(items_near_mouse_click_location, event_x, event_y):
     move_list = []
@@ -116,17 +119,20 @@ def create_move_list(items_near_mouse_click_location, event_x, event_y):
 def create_move_list_entry_if_a_diagram_object_is_moved(items_near_mouse_click_location):
     move_list_entry = None
     for item_id in items_near_mouse_click_location:
-        if (main_window.canvas.gettags(item_id)[0].startswith("state")                        or
-            main_window.canvas.gettags(item_id)[0].startswith("state_action")                 or
-            main_window.canvas.gettags(item_id)[0].startswith("condition_action")             or
-            main_window.canvas.gettags(item_id)[0].startswith("reset_entry")                  or
-            main_window.canvas.gettags(item_id)[0].startswith("global_actions")               or
-            main_window.canvas.gettags(item_id)[0].startswith("global_actions_combinatorial") or
-            main_window.canvas.gettags(item_id)[0].startswith("connector")
-           ):
-            # The move_list_entry must contain item_ids (and not tags), as only the item_id can later be used as a key for a dictionary.
-            move_list_entry = [item_id, ""] # The empty second entry must be generated, as later on it will be accessed in move_handling.move_do without checking if its exists.
-            return move_list_entry
+        tags_of_item_id = main_window.canvas.gettags(item_id)
+        if tags_of_item_id!=(): # If left mouse button is pressed during view-area with the right mouse-button, the list is empty.
+            for tag in tags_of_item_id:
+                if (tag.startswith("state")                        or
+                    tag.startswith("state_action")                 or
+                    tag.startswith("condition_action")             or
+                    tag.startswith("reset_entry")                  or
+                    tag.startswith("global_actions")               or
+                    tag.startswith("global_actions_combinatorial") or
+                    tag.startswith("connector")
+                   ):
+                    # The move_list_entry must contain item_ids (and not tags), as only the item_id can later be used as a key for a dictionary.
+                    move_list_entry = [item_id, ""] # The empty second entry is needed, as later on it will be accessed in move_handling.move_do without checking if its exists.
+                    return move_list_entry
     return move_list_entry
 def add_lines_connected_to_the_diagram_object_to_the_list(move_list):
     tag_list_of_object_to_move = main_window.canvas.gettags(move_list[0][0])
@@ -153,6 +159,8 @@ def get_move_list_entry_for_line_of_condition_action_block(transition_tag):
     return []
 def add_items_for_moving_a_single_line_point_to_the_list( move_list, items_near_mouse_click_location, event_x, event_y):
     line_id = find_the_item_id_of_the_line(items_near_mouse_click_location)
+    if line_id is None:
+        return # move_list is emtpy in this case.
     transition_tags = search_for_the_tags_of_a_transition(line_id) # A line can represent a "transition" or a "connection" (connections are ignored here).
     if transition_tags!=():
         moving_point = transition_handling.get_point_to_move(line_id, event_x, event_y)
@@ -168,7 +176,7 @@ def add_items_for_moving_a_single_line_point_to_the_list( move_list, items_near_
         return # move_list is emtpy in this case.
 def find_the_item_id_of_the_line(items_near_mouse_click_location):
     for item_id in items_near_mouse_click_location:
-        if main_window.canvas.type(item_id)=='line':
+        if main_window.canvas.type(item_id)=='line' and "grid_line" not in main_window.canvas.gettags(item_id):
             return item_id
 def search_for_the_tags_of_a_transition(line_id):
     line_tags = main_window.canvas.gettags(line_id)

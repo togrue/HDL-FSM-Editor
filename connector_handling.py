@@ -15,9 +15,11 @@ def insert_connector(event):
     connector_number += 1
     # Translate the window coordinate into the canvas coordinate (the Canvas is bigger than the window):
     event_x, event_y = canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(event)
-    if main_window.canvas.find_overlapping(event_x-canvas_editing.state_radius/2, event_y-canvas_editing.state_radius/2,
-                                           event_x+canvas_editing.state_radius/2, event_y+canvas_editing.state_radius/2):
-        return
+    overlapping_items = main_window.canvas.find_overlapping(event_x-canvas_editing.state_radius/2, event_y-canvas_editing.state_radius/2,
+                                                            event_x+canvas_editing.state_radius/2, event_y+canvas_editing.state_radius/2)
+    for overlapping_item in overlapping_items:
+        if "grid_line" not in main_window.canvas.gettags(overlapping_item):
+            return
     connector_id = main_window.canvas.create_rectangle(event_x-canvas_editing.state_radius/4, event_y-canvas_editing.state_radius/4,
                                                        event_x+canvas_editing.state_radius/4, event_y+canvas_editing.state_radius/4,
                                                        fill=constants.CONNECTOR_COLOR, tag="connector" + str(connector_number))

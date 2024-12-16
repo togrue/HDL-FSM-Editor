@@ -60,13 +60,15 @@ def insert_state(event):
     global state_number
     state_number += 1
     event_x, event_y = canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(event)
-    if main_window.canvas.find_overlapping(event_x-canvas_editing.state_radius, event_y-canvas_editing.state_radius,
-                                           event_x+canvas_editing.state_radius, event_y+canvas_editing.state_radius):
-        return
+    overlapping_items = main_window.canvas.find_overlapping(event_x-canvas_editing.state_radius, event_y-canvas_editing.state_radius,
+                                           event_x+canvas_editing.state_radius, event_y+canvas_editing.state_radius)
+    for overlapping_item in overlapping_items:
+        if "grid_line" not in main_window.canvas.gettags(overlapping_item):
+            return
     state_id = main_window.canvas.create_oval(event_x-canvas_editing.state_radius, event_y-canvas_editing.state_radius,
                                               event_x+canvas_editing.state_radius, event_y+canvas_editing.state_radius,
                                               fill=constants.STATE_COLOR, width=2, outline='blue', tags='state' + str(state_number))
-    main_window.canvas.tag_lower(state_id,'all')
+    #main_window.canvas.tag_lower(state_id,'all')
     text_id  = main_window.canvas.create_text(event_x, event_y, text='S' + str(state_number), tags='state' + str(state_number) + "_name", font=canvas_editing.state_name_font)
     main_window.canvas.tag_bind(text_id ,"<Double-Button-1>", lambda event, text_id=text_id : edit_state_name(event, text_id))
     main_window.canvas.tag_bind(state_id,"<Enter>"          , lambda event, id=state_id     : main_window.canvas.itemconfig(id, width=4))
@@ -77,7 +79,7 @@ def insert_state(event):
     #print ("New Statename", text_id , main_window.canvas.coords(text_id))
 
 def show_menu(event, state_id):
-    listbox = OptionMenu.MyListbox(main_window.canvas, ["add action", "add comment", "change color"], height=3, bg='grey', width=14, activestyle='dotbox', relief=tk.RAISED)
+    listbox = OptionMenu.MyListbox(main_window.canvas, ["add action", "add comment", "change color"], height=3, bg='lightgrey', width=14, activestyle='dotbox', relief=tk.RAISED)
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
     window = main_window.canvas.create_window(event_x+40,event_y,window=listbox)
     listbox.bind("<Button-1>", lambda event, window=window, listbox=listbox, menu_x=event_x, menu_y=event_y, state_id=state_id:

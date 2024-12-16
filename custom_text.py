@@ -18,10 +18,10 @@ class CustomText(tk.Text):
     read_variables_of_all_windows    = {}
     written_variables_of_all_windows = {}
 
-    def __init__(self, *args, type, **kwargs):
+    def __init__(self, *args, text_type, **kwargs):
         """A text widget that report on internal widget commands"""
         tk.Text.__init__(self, *args, **kwargs) # does not help: pady=5, pagdy is used to make sure that the undserscore line "_" is always visible at most font sizes.
-        self.type = type
+        self.text_type = text_type
         # create a proxy for the underlying widget
         self._orig = self._w + "_orig"
         self.tk.call("rename", self._w, self._orig)
@@ -29,6 +29,10 @@ class CustomText(tk.Text):
         self.bind("<Tab>"      , lambda event : self.replace_tabs_by_blanks())
         self.bind("<Control-e>", lambda event : self.edit_in_external_editor()) # Overwrites the default control-e = "move cursor to end of line"
         self.bind("<Control-o>", lambda event : self._open())                   # Overwrites the default control-o = "insert a new line", needed for opening a new file.
+        # After pressing the key 2 things happen:
+        # 1. The new character is inserted in the text.
+        # 2. format() is started
+        # But as inserting the character takes a while, format() will still find the old text, so it must be delayed until the character was inserted:
         self.bind("<Key>"      , lambda event : self.format_after_idle())
         self.bind("<Button-1>" , lambda event : self.tag_delete("highlight"))
         self.signals_list        = []
@@ -39,6 +43,8 @@ class CustomText(tk.Text):
         self.port_types_list     = []
         CustomText.read_variables_of_all_windows   [self] = []
         CustomText.written_variables_of_all_windows[self] = []
+        self.tag_config("message_red"  , foreground="red")
+        self.tag_config("message_green", foreground="green")
 
     def _open(self):
         file_handling.open_file()
@@ -102,8 +108,7 @@ class CustomText(tk.Text):
             for c in text:
                 if c!='\n':
                     nr_of_characters_in_line += 1
-                    if nr_of_characters_in_line>max_line_length:
-                        max_line_length = nr_of_characters_in_line
+                    max_line_length = max(nr_of_characters_in_line, max_line_length)
                 else:
                     nr_of_lines += 1
                     nr_of_characters_in_line = 0
@@ -121,43 +126,60 @@ class CustomText(tk.Text):
         for keyword_type in keyword_type_list:
             self.tag_delete(keyword_type)
             for keyword in main_window.keywords[keyword_type]:
-                if self.type=="comment": # State comment text
+                if self.text_type=="comment": # State comment text
                     if keyword=="comment": # keywords "not_read", "not_written" are ignored.
                         self.add_highlight_tag_for_single_keyword(keyword_type, keyword)
                 else:
                     self.add_highlight_tag_for_single_keyword(keyword_type, keyword)
-            if self.type in ("condition", "action", "comment"):
+            if self.text_type in ("condition", "action", "comment"):
                 self.tag_configure(keyword_type, foreground=main_window.keyword_color[keyword_type],
                                    font=("Courier", int(fontsize), "bold")) # int() is necessary, because fontsize can be a "real" number.
             else:
                 self.tag_configure(keyword_type, foreground=main_window.keyword_color[keyword_type], font=("Courier", 10))
 
     def add_highlight_tag_for_single_keyword(self, keyword_type, keyword):
-        count = tk.IntVar()
-        start = "1.0"
+        copy_of_text = self.get("1.0", tk.END + "- 1 chars")
+        if copy_of_text=="":
+            return
+        copy_of_text = self.replace_strings_and_attributes_by_blanks(copy_of_text)
         while True:
             if keyword_type=="comment":
-                index = self.search(keyword, start, tk.END, count=count, regexp=True, nocase=1) # index = "line.column"
-                if index=="" or count.get()==0:
+                match_object = re.search(keyword, copy_of_text, flags=re.IGNORECASE|re.MULTILINE)
+                if not match_object:
                     break
-                self.tag_add   ("comment"    , index, index + " + " + str(count.get()) + " chars")
-                self.tag_remove("control"    , index, index + " + " + str(count.get()) + " chars")
-                self.tag_remove("datatype"   , index, index + " + " + str(count.get()) + " chars")
-                self.tag_remove("function"   , index, index + " + " + str(count.get()) + " chars")
-                self.tag_remove("not_read"   , index, index + " + " + str(count.get()) + " chars")
-                self.tag_remove("not_written", index, index + " + " + str(count.get()) + " chars")
-                start = index + " + " + str(count.get()) + " chars"
+                replace_string = ' '*(match_object.end()-match_object.start())
+                copy_of_text   = copy_of_text[:match_object.start()] + replace_string + copy_of_text[match_object.end():]
+                self.tag_add("comment", "1.0 + " + str(match_object.start()) + " chars",
+                                        "1.0 + " + str(match_object.end  ()) + " chars")
             else:
-                index = self.search("([^a-zA-Z0-9_]|^)" + keyword + "([^a-zA-Z0-9_]|$)", start, tk.END, count=count, regexp=True, nocase=1) # index = "line.column"
-                if index=="" or count.get()==0:
+                search_string = "([^a-zA-Z0-9_]|^)" + keyword + "([^a-zA-Z0-9_]|$)" # Prevent a hit, when the keyword is part of another word.
+                match_object = re.search(search_string, copy_of_text, flags=re.IGNORECASE)
+                if not match_object:
                     break
-                if   count.get()==len(keyword)+2:
-                    index = self.index(index + " + 1 chars")
-                elif count.get()==len(keyword)+1:
-                    if self.get(index, index + " + " + str(count.get()) + " chars").endswith(keyword):
-                        index = self.index(index + " + 1 chars")
-                self.tag_add(keyword_type, index, index + " + " + str(len(keyword)) + " chars")
-                start = index + " + " + str(len(keyword)) + " chars"
+                match_start, match_end = self.remove_surrounding_characters_from_the_match(match_object, keyword)
+                copy_of_text   = copy_of_text[:match_start] + ' '*len(keyword) + copy_of_text[match_end:]
+                self.tag_add(keyword_type, "1.0 + " + str(match_start) + " chars",
+                                           "1.0 + " + str(match_end  ) + " chars")
+
+    def replace_strings_and_attributes_by_blanks(self, copy_of_text):
+        for search_string in ["'image", "'length", '".*?"', "'.*?'"]:
+            while True:
+                match_object = re.search(search_string, copy_of_text, flags=re.IGNORECASE)
+                if match_object:
+                    replace_string = ' '*(match_object.end()-match_object.start())
+                    copy_of_text = copy_of_text[:match_object.start()] + replace_string + copy_of_text[match_object.end():]
+                else:
+                    break
+        return copy_of_text
+
+    def remove_surrounding_characters_from_the_match(self, match_object, keyword):
+        if match_object.end()-match_object.start()==len(keyword)+2:
+            return match_object.start() + 1, match_object.end() - 1
+        if match_object.end()-match_object.start()==len(keyword)+1:
+            if match_object.group().endswith(keyword):
+                return match_object.start() + 1, match_object.end()
+            return match_object.start(), match_object.end() - 1
+        return match_object.start(), match_object.end()
 
     def undo(self):
         #self.edit_undo() # causes a second "undo", as Ctrl-z automatically starts edit_undo()
@@ -195,13 +217,11 @@ class CustomText(tk.Text):
         CustomText.written_variables_of_all_windows[self] = []
         text = self.get("1.0", tk.END + "- 1 chars")
         text = hdl_generation_library.convert_hdl_lines_into_a_searchable_string(text)
-        #print("text 0 =", text)
         text = self.__remove_keywords(text)
-        #print("text 1 =", text)
-        if self.type=="condition":
+        if self.text_type=="condition":
             text = self.__remove_condition_keywords(text)
             CustomText.read_variables_of_all_windows[self] = text.split()
-        elif self.type=="action":
+        elif self.text_type=="action":
             text = self.__add_read_variables_from_with_select_blocks_to_read_variables_of_all_windows(text)
             text = self.__add_read_variables_from_conditions_to_read_variables_of_all_windows        (text)
             text = self.__add_read_variables_from_case_constructs_to_read_variables_of_all_windows   (text)
@@ -232,17 +252,20 @@ class CustomText(tk.Text):
 
     def __remove_keywords_from_vhdl(self, text):
         for keyword in constants.vhdl_keywords_for_signal_handling + (
-                    " process[^;]*?begin ",
+                    " process.*?begin ",      # Remove complete process headers, if some exist.
+                    " end\\s+?process\\s*?;", # remove end of process, before ...
+                    " process .*?$",          # ... when not complete process headers exist, remove until a return is found.
                     " end\\s+?case\\s*?;",
-                    " end\\s+?process\\s*?;",
                     " end\\s+?if\\s*?;",
+                    " end\\s*?;",
+                    " end\\s*",
                     "\\(" ,
                     "\\)" ,
-                    "\\+" ,              
-                    "-"   ,              
-                    "/"   ,              
-                    "%"   ,              
-                    "&"   ,              
+                    "\\+" ,
+                    "-"   ,
+                    "/"   ,
+                    "%"   ,
+                    "&"   ,
                     "=>",                   # something like "others =>"
                     " [0-9]+ ",             # something like " 123 "
                     "'.'" ,                 # something like the std_logic value '1' or '0'

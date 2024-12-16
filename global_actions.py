@@ -1,4 +1,7 @@
-from tkinter import *
+"""
+Handles the global actions window in the diagram.
+"""
+import tkinter as tk
 from tkinter import ttk
 
 import canvas_editing
@@ -12,7 +15,7 @@ class GlobalActions():
     global_actions_number = 1
     dictionary = {}
     def __init__(self, menu_x, menu_y, height, width, padding):
-        self.frame_id = ttk.Frame(main_window.canvas, relief=FLAT, padding=padding, style='GlobalActionsWindow.TFrame')
+        self.frame_id = ttk.Frame(main_window.canvas, relief=tk.FLAT, padding=padding, style='GlobalActionsWindow.TFrame')
         self.frame_id.bind("<Enter>", lambda event, self=self : self.activate())
         self.frame_id.bind("<Leave>", lambda event, self=self : self.deactivate())
         # Create label object inside frame:
@@ -22,8 +25,10 @@ class GlobalActions():
         self.label_after     = ttk.Label(self.frame_id, text="Global actions clocked (executed after running the state machine):",
                                          font=("Arial", int(canvas_editing.label_fontsize)),
                                          style="GlobalActionsWindow.TLabel")
-        self.text_before_id  = custom_text.CustomText(self.frame_id, type="action", height=height, width=width, undo=True, maxundo=-1, font=("Courier",int(canvas_editing.fontsize)))
-        self.text_after_id   = custom_text.CustomText(self.frame_id, type="action", height=height, width=width, undo=True, maxundo=-1, font=("Courier",int(canvas_editing.fontsize)))
+        self.text_before_id  = custom_text.CustomText(self.frame_id, text_type="action", height=height, width=width, undo=True, maxundo=-1,
+                                                      font=("Courier",int(canvas_editing.fontsize)))
+        self.text_after_id   = custom_text.CustomText(self.frame_id, text_type="action", height=height, width=width, undo=True, maxundo=-1,
+                                                      font=("Courier",int(canvas_editing.fontsize)))
         self.text_before_id.bind("<Control-z>"     , lambda event : self.text_before_id.undo())
         self.text_before_id.bind("<Control-Z>"     , lambda event : self.text_before_id.redo())
         self.text_after_id .bind("<Control-z>"     , lambda event : self.text_after_id.undo())
@@ -41,16 +46,16 @@ class GlobalActions():
         self.label_after   .bind("<B1-Motion>"     , self.move_item) # Touching inside the window.
         self.text_after_id .bind("<B1-Motion>"     , self.move_item) # Touching inside the window.
 
-        self.label_before.grid   (row=0, column=0, sticky=(N, W, E))
-        self.text_before_id.grid (row=1, column=0, sticky=(E,W))
-        self.label_after.grid    (row=2, column=0, sticky=(E,W))
-        self.text_after_id.grid  (row=3, column=0, sticky=(E,W,S))
+        self.label_before.grid   (row=0, column=0, sticky=(tk.N, tk.W, tk.E))
+        self.text_before_id.grid (row=1, column=0, sticky=(tk.E,tk.W))
+        self.label_after.grid    (row=2, column=0, sticky=(tk.E,tk.W))
+        self.text_after_id.grid  (row=3, column=0, sticky=(tk.E,tk.W,tk.S))
         self.difference_x = 0
         self.difference_y = 0
         self.first_call_of_move_item = True
 
         # Create canvas window for frame and text:
-        self.window_id = main_window.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=W)
+        self.window_id = main_window.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
         GlobalActions.dictionary[self.window_id] = self
         canvas_modify_bindings.switch_to_move_mode()
 
@@ -86,26 +91,26 @@ class GlobalActions():
         undo_handling.design_has_changed()
 
     def tag(self):
-        main_window.canvas.itemconfigure(self.window_id, tag=('global_actions'+str(GlobalActions.global_actions_number)))
+        main_window.canvas.itemconfigure(self.window_id, tag='global_actions'+str(GlobalActions.global_actions_number))
 
     def activate(self):
         self.frame_id.configure(padding=3) # increase the width of the line around the box
-        self.text_before = self.text_before_id.get("1.0", END)
-        self.text_after  = self.text_after_id.get ("1.0", END)
+        self.text_before = self.text_before_id.get("1.0", tk.END)
+        self.text_after  = self.text_after_id.get ("1.0", tk.END)
 
     def deactivate(self):
         self.frame_id.configure(padding=1) # decrease the width of the line around the box
         self.frame_id.focus() # "unfocus" the Text, when the mouse leaves the text.
         #self.text_before_id.format() # needed sometimes, when undo or redo happened.
         #self.text_after_id.format()
-        if self.text_before_id.get("1.0", END)!=self.text_before:
+        if self.text_before_id.get("1.0", tk.END)!=self.text_before:
             undo_handling.design_has_changed()
-        if self.text_after_id.get("1.0", END)!=self.text_after:
+        if self.text_after_id.get("1.0", tk.END)!=self.text_after:
             undo_handling.design_has_changed()
 
     def move_to(self, event_x, event_y, first, last):
         self.frame_id.configure(padding=1) # Set the width of the line around the box
-        if first==True:
+        if first:
             self.frame_id.configure(padding=4) # increase the width of the line around the box
             # Calculate the difference between the "anchor" point and the event:
             coords = main_window.canvas.coords(self.window_id)

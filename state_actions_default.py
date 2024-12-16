@@ -1,4 +1,7 @@
-from tkinter import *
+"""
+Handles the combinatorial default actions for all states.
+"""
+import tkinter as tk
 from tkinter import ttk
 
 import canvas_editing
@@ -11,7 +14,7 @@ import move_handling
 class StateActionsDefault():
     dictionary = {}
     def __init__(self, menu_x, menu_y, height, width, padding):
-        self.frame_id = ttk.Frame(main_window.canvas, relief=FLAT, padding=padding, style='StateActionsWindow.TFrame')#, borderwidth=10)
+        self.frame_id = ttk.Frame(main_window.canvas, relief=tk.FLAT, padding=padding, style='StateActionsWindow.TFrame')#, borderwidth=10)
         self.frame_id.bind("<Enter>", lambda event, self=self : self.activate())
         self.frame_id.bind("<Leave>", lambda event, self=self : self.deactivate())
         #self.frame_id.bind("<Button-1>", self.hallo)
@@ -19,7 +22,8 @@ class StateActionsDefault():
         self.label    = ttk.Label(self.frame_id, text="Default state actions (combinatorial): ",
                         font=("Arial",int(canvas_editing.label_fontsize)),
                         style="StateActionsWindow.TLabel")
-        self.text_id  = custom_text.CustomText     (self.frame_id, type="action", height=height, width=width, undo=True, maxundo=-1, font=("Courier",int(canvas_editing.fontsize)))
+        self.text_id  = custom_text.CustomText(self.frame_id, text_type="action", height=height, width=width, undo=True, maxundo=-1,
+                                               font=("Courier",int(canvas_editing.fontsize)))
         self.text_id .bind("<Control-z>"     , lambda event : self.text_id.undo())
         self.text_id .bind("<Control-Z>"     , lambda event : self.text_id.redo())
         self.text_id .bind("<<TextModified>>", lambda event : undo_handling.modify_window_title())
@@ -30,15 +34,15 @@ class StateActionsDefault():
         self.label   .bind("<B1-Motion>"     , self.move_item) # Touching inside the window.
         self.text_id .bind("<B1-Motion>"     , self.move_item) # Touching inside the window.
 
-        self.label.grid   (row=0, column=0, sticky=(N, W, E))
-        self.text_id.grid (row=1, column=0, sticky=(E,W))
+        self.label.grid   (row=0, column=0, sticky=(tk.N, tk.W, tk.E))
+        self.text_id.grid (row=1, column=0, sticky=(tk.E, tk.W))
 
         self.difference_x = 0
         self.difference_y = 0
         self.first_call_of_move_item = True
 
         # Create canvas window for frame and text:
-        self.window_id = main_window.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=W)
+        self.window_id = main_window.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
         # works bad, not used: self.frame_id.bind("<Button-1>", lambda event: move_handling_initialization.move_initialization_window(event, self.window_id))
         StateActionsDefault.dictionary[self.window_id] = self
         canvas_modify_bindings.switch_to_move_mode()
@@ -75,18 +79,18 @@ class StateActionsDefault():
 
     def activate(self):
         self.frame_id.configure(padding=3) # increase the width of the line around the box
-        self.text = self.text_id.get("1.0", END)
+        self.text = self.text_id.get("1.0", tk.END)
 
     def deactivate(self):
         self.frame_id.configure(padding=1) # decrease the width of the line around the box
         self.frame_id.focus() # "unfocus" the Text, when the mouse leaves the text.
         #self.text_id.format() # needed sometimes, when undo or redo happened.
-        if self.text_id.get("1.0", END)!=self.text:
+        if self.text_id.get("1.0", tk.END)!=self.text:
             undo_handling.design_has_changed()
 
     def move_to(self, event_x, event_y, first, last):
         self.frame_id.configure(padding=1) # decrease the width of the line around the box
-        if first==True:
+        if first:
             self.frame_id.configure(padding=4) # increase the width of the line around the box
             # Calculate the difference between the "anchor" point and the event:
             coords = main_window.canvas.coords(self.window_id)

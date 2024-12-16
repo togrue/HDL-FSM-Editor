@@ -13,6 +13,7 @@ import main_window
 import link_dictionary
 import tag_plausibility
 import list_separation_check
+import file_handling
 
 last_line_number_of_file1 = 0
 
@@ -22,6 +23,8 @@ def run_hdl_generation(write_to_file):
     if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
         messagebox.showerror("Error", 'The database is corrupt.\nHDL is not generated.\nSee details at STDOUT.')
         return
+    if main_window.root.title().endswith('*'):
+        file_handling.save()
     if main_window.language.get()=="VHDL":
         header = "-- Created by HDL-FSM-Editor at " + datetime.today().ctime() + "\n"
     else:
