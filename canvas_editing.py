@@ -340,10 +340,10 @@ def decrement_font_size_if_window_is_too_wide():
     visible_rectangle = [main_window.canvas.canvasx(0), main_window.canvas.canvasy(0),
                          main_window.canvas.canvasx(main_window.canvas.winfo_width()), main_window.canvas.canvasy(main_window.canvas.winfo_height())]
     complete_rectangle = main_window.canvas.bbox("all")
-    if (complete_rectangle[0]<visible_rectangle[0] or
+    if ((complete_rectangle[0]<visible_rectangle[0] or
         complete_rectangle[1]<visible_rectangle[1] or
         complete_rectangle[2]>visible_rectangle[2] or
-        complete_rectangle[3]>visible_rectangle[3]
+        complete_rectangle[3]>visible_rectangle[3]) and fontsize!=1 # When fontsize==1 then zoom_factor calculates to 0, which makes no sense.
     ):
         complete_center = determine_center_of_rectangle(complete_rectangle)
         visible_center  = determine_center_of_rectangle(visible_rectangle)
