@@ -256,6 +256,7 @@ def delete():
 def adapt_visibility_of_priority_rectangles_at_state(start_state):
     tags_of_start_state = main_window.canvas.gettags(start_state)
     number_of_outgoing_transitions = 0
+    tag_of_outgoing_transition     = ""
     for start_state_tag in tags_of_start_state:
         if start_state_tag.startswith("transition") and start_state_tag.endswith("_start"):
             number_of_outgoing_transitions += 1
@@ -588,6 +589,7 @@ def find(search_string, replace_string, replace):
             number_of_hits_all += number_of_hits
     if continue_search:
         if replace:
+            undo_handling.design_has_changed()
             messagebox.showinfo("HDL-FSM-Editor", "Number of replacements = " + str(number_of_hits_all))
         else:
             messagebox.showinfo("HDL-FSM-Editor", "Number of hits = " + str(number_of_hits_all))
@@ -630,25 +632,24 @@ def search_in_text_widget(text_id, search_pattern, count, canvas_window, replace
         index = text_id.search(search_pattern, start, tk.END, count=count, regexp=True, nocase=1) # index = "line.column"
         if index=="" or count.get()==0:
             break
+        number_of_hits += 1
+        if replace:
+            end_index = index + "+" + str(len(search_pattern)) + " chars"
+            text_id.delete(index, end_index)
+            text_id.insert(index, replace_pattern)
+            start = index + "+" + str(len(replace_pattern)) + " chars"
         else:
-            number_of_hits += 1
-            if replace:
-                end_index = index + "+" + str(len(search_pattern)) + " chars"
-                text_id.delete(index, end_index)
-                text_id.insert(index, replace_pattern)
-                start = index + "+" + str(len(replace_pattern)) + " chars"
-            else:
-                move_in_foreground("Diagram")
-                text_id.tag_add("hit", index, index + " + " + str(count.get()) + " chars")
-                text_id.tag_configure("hit" , background="blue" )
-                object_coords = main_window.canvas.bbox(canvas_window)
-                view_rectangle(object_coords, check_fit=False)
-                continue_search = messagebox.askyesno("Continue", "Find next")
-                text_id.tag_remove("hit", index, index + " + " + str(count.get()) + " chars")
-                if continue_search is False:
-                    number_of_hits = -1
-                    break
-                start = index + " + " + str(count.get()) + " chars"
+            move_in_foreground("Diagram")
+            text_id.tag_add("hit", index, index + " + " + str(count.get()) + " chars")
+            text_id.tag_configure("hit" , background="blue" )
+            object_coords = main_window.canvas.bbox(canvas_window)
+            view_rectangle(object_coords, check_fit=False)
+            continue_search = messagebox.askyesno("Continue", "Find next")
+            text_id.tag_remove("hit", index, index + " + " + str(count.get()) + " chars")
+            if continue_search is False:
+                number_of_hits = -1
+                break
+            start = index + " + " + str(count.get()) + " chars"
     return number_of_hits
 
 def search_in_canvas_text(item, search_pattern, replace, replace_pattern):
@@ -657,28 +658,27 @@ def search_in_canvas_text(item, search_pattern, replace, replace_pattern):
     number_of_hits = 0
     while True:
         hit_begin = text.find(search_pattern, start, len(text))
-        if hit_begin!=-1:
-            if replace:
-                number_of_hits = len(re.findall(search_pattern, text, flags=re.IGNORECASE))
-                text = re.sub(search_pattern, replace_pattern, text, flags=re.IGNORECASE)
-                main_window.canvas.itemconfigure(item, text=text)
-                start = len(text) # The search-pattern cannot be found again in the next loop.
-            else:
-                number_of_hits += 1
-                move_in_foreground("Diagram")
-                main_window.canvas.select_from(item, hit_begin)
-                main_window.canvas.select_to  (item, hit_begin + len(search_pattern) - 1)
-                object_coords = main_window.canvas.bbox(item)
-                view_rectangle(object_coords, check_fit=False)
-                object_center = main_window.canvas.coords(item)
-                canvas_zoom(object_center, 0.25)
-                continue_search = messagebox.askyesno("Continue", "Find next")
-                if continue_search is False:
-                    number_of_hits = -1
-                    break
-                start = hit_begin + len(search_pattern)
-        else:
+        if hit_begin==-1:
             break
+        if replace:
+            number_of_hits = len(re.findall(search_pattern, text, flags=re.IGNORECASE))
+            text = re.sub(search_pattern, replace_pattern, text, flags=re.IGNORECASE)
+            main_window.canvas.itemconfigure(item, text=text)
+            start = len(text) # The search-pattern cannot be found again in the next loop.
+        else:
+            number_of_hits += 1
+            move_in_foreground("Diagram")
+            main_window.canvas.select_from(item, hit_begin)
+            main_window.canvas.select_to  (item, hit_begin + len(search_pattern) - 1)
+            object_coords = main_window.canvas.bbox(item)
+            view_rectangle(object_coords, check_fit=False)
+            object_center = main_window.canvas.coords(item)
+            canvas_zoom(object_center, 0.25)
+            continue_search = messagebox.askyesno("Continue", "Find next")
+            if continue_search is False:
+                number_of_hits = -1
+                break
+            start = hit_begin + len(search_pattern)
     return number_of_hits
 
 def search_in_text_fields_of_a_tab(tab, search_pattern, interface_text_fields, replace, replace_pattern):
@@ -690,25 +690,24 @@ def search_in_text_fields_of_a_tab(tab, search_pattern, interface_text_fields, r
             index = text_id.search(search_pattern, start, tk.END, count=count, regexp=True, nocase=1) # index = "line.column"
             if index=="" or count.get()==0:
                 break
+            number_of_hits += 1
+            if replace:
+                end_index = index + "+" + str(len(search_pattern)) + " chars"
+                text_id.delete(index, end_index)
+                text_id.insert(index, replace_pattern)
+                start = index + "+" + str(len(replace_pattern)) + " chars"
+                if text_id.cget("state")==tk.DISABLED:
+                    number_of_hits -= 1
             else:
-                number_of_hits += 1
-                if replace:
-                    end_index = index + "+" + str(len(search_pattern)) + " chars"
-                    text_id.delete(index, end_index)
-                    text_id.insert(index, replace_pattern)
-                    start = index + "+" + str(len(replace_pattern)) + " chars"
-                    if text_id.cget("state")==tk.DISABLED:
-                        number_of_hits -= 1
-                else:
-                    move_in_foreground(tab)
-                    text_id.tag_add("hit", index, index + " + " + str(count.get()) + " chars")
-                    text_id.tag_configure("hit" , background="blue" )
-                    text_id.see(index)
-                    answer = messagebox.askyesno("Continue", "Find next")
-                    text_id.tag_remove("hit", index, index + " + " + str(count.get()) + " chars")
-                    if answer is False:
-                        return -1
-                    start = index + " + " + str(count.get()) + " chars"
+                move_in_foreground(tab)
+                text_id.tag_add("hit", index, index + " + " + str(count.get()) + " chars")
+                text_id.tag_configure("hit" , background="blue" )
+                text_id.see(index)
+                answer = messagebox.askyesno("Continue", "Find next")
+                text_id.tag_remove("hit", index, index + " + " + str(count.get()) + " chars")
+                if answer is False:
+                    return -1
+                start = index + " + " + str(count.get()) + " chars"
     return number_of_hits
 
 def move_in_foreground(tab):

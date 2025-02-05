@@ -41,7 +41,10 @@ def undo():
     # As <Control-z> is bound with the bind_all-command to the diagram, this binding must be ignored, when
     # the focus is on a customtext-widget: Then a Control-z must change the text and must not change the diagram.
     focus = str(main_window.canvas.focus_get())
-    if ("customtext" not in focus and stack_write_pointer>1):
+    if "customtext" not in focus and stack_write_pointer>1:
+        # stack_write_pointer points at an empty place in stack.
+        # stack_write_pointer-1 points at the version which contains the last change
+        # stack_write_pointer-2 points at the version before the last change:
         stack_write_pointer -= 2
         set_diagram_to_version_selected_by_stack_pointer()
         stack_write_pointer += 1
@@ -50,6 +53,9 @@ def undo():
             title = main_window.root.title()
             if title.endswith("*"):
                 main_window.root.title(title[:-1])
+        if stack_write_pointer==1: # 1 is the next free place in the stack, 0 is the empty design, so nothing to undo is left
+            main_window.undo_button.config(state="disabled")
+        main_window.redo_button.config(state="enabled")
 
 def redo():
     global stack_write_pointer
@@ -59,14 +65,21 @@ def redo():
     if ("customtext" not in focus and stack_write_pointer<len(stack)):
         set_diagram_to_version_selected_by_stack_pointer()
         stack_write_pointer += 1
+        main_window.undo_button.config(state="enabled")
         #print("Redo                       : After redo,    stack_write_pointer =", stack_write_pointer)
+    if stack_write_pointer==len(stack):
+        main_window.redo_button.config(state="disabled")
 
 def add_changes_to_design_stack():
     global stack_write_pointer
     remove_stack_entries_from_write_pointer_to_the_end_of_the_stack()
     new_design = get_complete_design_as_text_object()
+    #print("append stack entry at stack-pointer =", stack_write_pointer)
     stack.append(new_design)
     stack_write_pointer += 1
+    if stack_write_pointer>1:
+        main_window.undo_button.config(state="enabled")
+    main_window.redo_button.config(state="disabled")
 
 def remove_stack_entries_from_write_pointer_to_the_end_of_the_stack():
     if len(stack)>stack_write_pointer:
@@ -519,6 +532,54 @@ def set_diagram_to_version_selected_by_stack_pointer():
             action_ref.text_id.insert("1.0", text)
             action_ref.text_id.format()
             main_window.canvas.itemconfigure(action_ref.window_id,tag=tags)
+
+        elif lines[line_index].startswith("interface_package|"):
+            rest_of_line   = remove_keyword_from_line(lines[line_index],"interface_package|")
+            data           = get_data(rest_of_line, lines)
+            main_window.interface_package_text.delete("1.0", tk.END)
+            main_window.interface_package_text.insert("1.0", data)
+            main_window.interface_package_text.update_highlight_tags(10, ["not_read" , "not_written" , "control" , "datatype" , "function" , "comment"])
+        elif lines[line_index].startswith("interface_generics|"):
+            rest_of_line   = remove_keyword_from_line(lines[line_index],"interface_generics|")
+            data           = get_data(rest_of_line, lines)
+            main_window.interface_generics_text.delete("1.0", tk.END)
+            main_window.interface_generics_text.insert("1.0", data)
+            main_window.interface_generics_text.update_highlight_tags(10, ["not_read" , "not_written" , "control" , "datatype" , "function" , "comment"])
+            main_window.interface_generics_text.update_custom_text_class_generics_list()
+        elif lines[line_index].startswith("interface_ports|"):
+            rest_of_line   = remove_keyword_from_line(lines[line_index],"interface_ports|")
+            data           = get_data(rest_of_line, lines)
+            main_window.interface_ports_text.delete("1.0", tk.END)
+            main_window.interface_ports_text.insert("1.0", data)
+            main_window.interface_ports_text.update_highlight_tags(10, ["not_read" , "not_written" , "control" , "datatype" , "function" , "comment"])
+            main_window.interface_ports_text.update_custom_text_class_ports_list()
+        elif lines[line_index].startswith("internals_package|"):
+            rest_of_line   = remove_keyword_from_line(lines[line_index],"internals_package|")
+            data           = get_data(rest_of_line, lines)
+            main_window.internals_package_text.delete("1.0", tk.END)
+            main_window.internals_package_text.insert("1.0", data)
+            main_window.internals_package_text.update_highlight_tags(10, ["not_read" , "not_written" , "control" , "datatype" , "function" , "comment"])
+        elif lines[line_index].startswith("internals_architecture|"):
+            rest_of_line   = remove_keyword_from_line(lines[line_index],"internals_architecture|")
+            data           = get_data(rest_of_line, lines)
+            main_window.internals_architecture_text.delete("1.0", tk.END)
+            main_window.internals_architecture_text.insert("1.0", data)
+            main_window.internals_architecture_text.update_highlight_tags(10, ["not_read" , "not_written" , "control" , "datatype" , "function" , "comment"])
+            main_window.internals_architecture_text.update_custom_text_class_signals_list()
+        elif lines[line_index].startswith("internals_process|"):
+            rest_of_line   = remove_keyword_from_line(lines[line_index],"internals_process|")
+            data           = get_data(rest_of_line, lines)
+            main_window.internals_process_clocked_text.delete("1.0", tk.END)
+            main_window.internals_process_clocked_text.insert("1.0", data)
+            main_window.internals_process_clocked_text.update_highlight_tags(10, ["not_read" , "not_written" , "control" , "datatype" , "function" , "comment"])
+            main_window.internals_process_clocked_text.update_custom_text_class_signals_list()
+        elif lines[line_index].startswith("internals_process_combinatorial|"):
+            rest_of_line   = remove_keyword_from_line(lines[line_index],"internals_process_combinatorial|")
+            data           = get_data(rest_of_line, lines)
+            main_window.internals_process_combinatorial_text.delete("1.0", tk.END)
+            main_window.internals_process_combinatorial_text.insert("1.0", data)
+            main_window.internals_process_combinatorial_text.update_highlight_tags(10, ["not_read" , "not_written" , "control" , "datatype" , "function" , "comment"])
+            main_window.internals_process_combinatorial_text.update_custom_text_class_signals_list()
         line_index += 1
     for state in list_of_states:
         canvas_editing.adapt_visibility_of_priority_rectangles_at_state(state)
@@ -533,10 +594,10 @@ def get_data(rest_of_line, lines):
     data           = get_remaining_data(lines, length_of_data, first_data)
     return data
 def get_length_info_from_line(rest_of_line):
-    return int(re.sub("\|.*","",rest_of_line))
+    return int(re.sub(r"\|.*","",rest_of_line))
 
 def remove_length_info(rest_of_line):
-    return re.sub(".*\|","", rest_of_line)
+    return re.sub(r".*\|","", rest_of_line)
 
 def get_remaining_data(lines, length_of_data, first_data):
     global line_index

@@ -574,7 +574,8 @@ def save_in_file_new(save_filename):
                                                                             main_window.canvas.gettags(i)])
             elif i in global_actions_combinatorial.GlobalActionsCombinatorial.dictionary:
                 design_dictionary["window_global_actions_combinatorial"].append([main_window.canvas.coords(i),
-                                                                            global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[i].text_id.get("1.0",tk.END+"-1 chars"),
+                                                                            global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[i].text_id.get("1.0",
+                                                                                                                                                              tk.END+"-1 chars"),
                                                                             main_window.canvas.gettags(i)])
             elif i in state_actions_default.StateActionsDefault.dictionary:
                 design_dictionary["window_state_actions_default"].append    ([main_window.canvas.coords(i),
@@ -691,6 +692,7 @@ def open_file_with_name_new(read_filename):
         canvas_editing.label_fontsize                                = design_dictionary["label_fontsize"]
         canvas_editing.shift_visible_center_to_window_center(design_dictionary["visible_center"])
         hide_priority_rectangle_list = []
+        transition_identifier = ""
         for definition in design_dictionary["state"]:
             coords = definition[0]
             tags   = definition[1]
@@ -845,7 +847,10 @@ def open_file_with_name_new(read_filename):
             main_window.canvas.itemconfigure(transition_identifer + 'priority' , state=tk.HIDDEN)
             main_window.canvas.itemconfigure(transition_identifer + 'rectangle', state=tk.HIDDEN)
         undo_handling.stack = []
+        # Loading the design created by "traces" some stack-entries, which are removed here:
         undo_handling.stack_write_pointer = 0
+        main_window.undo_button.config(state="disabled")
+        # Put the read design into stack[0]:
         undo_handling.design_has_changed() # Initialize the stack with the read design.
         main_window.root.update()
         dir_name, file_name = os.path.split(read_filename)

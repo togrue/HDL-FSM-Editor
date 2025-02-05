@@ -20,17 +20,24 @@ class UpdateHdlTab():
             filename = generate_path + "/" + module_name + ".v"
             filename_architecture = None
         # Compare modification time of HDL file against modification_time of design file (.hse):
-        hdl = ""
+        main_window.hdl_frame_text.config(state=tk.NORMAL)
+        main_window.hdl_frame_text.insert("1.0", "")
+        main_window.hdl_frame_text.config(state=tk.DISABLED)
         if not self.hdl_must_be_generated(readfile, filename, filename_architecture, show_message=False):
-            # HDL-file(s) exists and are "newer" than the design-file.
+            #print("HDL-file(s) exists and are 'newer' than the design-file.")
             try:
                 fileobject = open(filename, 'r', encoding="utf-8")
                 entity = fileobject.read()
                 fileobject.close()
-                hdl += self._add_line_numbers(entity)
+                #print("entity = \n" + entity)
+                hdl = self._add_line_numbers(entity)
+                #print("hdl = \n" + hdl + "--------------")
                 # self.last_line_number_of_file1 = hdl.count("\n")
                 # self.size_of_file1_line_number = len(str(self.last_line_number_of_file1)) + 2 # "+2" because of string ": "
                 # self.size_of_file2_line_number = 0
+                main_window.hdl_frame_text.config(state=tk.NORMAL)
+                main_window.hdl_frame_text.insert("1.0", hdl)
+                main_window.hdl_frame_text.config(state=tk.DISABLED)
             except FileNotFoundError:
                 messagebox.showerror("Error in HDL-FSM-Editor", "File " + filename + " could not be opened for copying into HDL-Tab.")
             if number_of_files==2:
@@ -39,10 +46,15 @@ class UpdateHdlTab():
                     fileobject = open(filename_architecture, 'r', encoding="utf-8")
                     arch = fileobject.read()
                     fileobject.close()
-                    hdl += self._add_line_numbers(arch)
+                    hdl = self._add_line_numbers(arch)
                     #self.size_of_file2_line_number = len(str(hdl.count("\n"))) + 2 # "+2" because of string ": "
+                    main_window.hdl_frame_text.config(state=tk.NORMAL)
+                    main_window.hdl_frame_text.insert(tk.END, hdl)
+                    main_window.hdl_frame_text.config(state=tk.DISABLED)
                 except FileNotFoundError:
                     messagebox.showwarning("Error in HDL-FSM-Editor", "File " + filename + " (architecture-file) could not be opened for copying into HDL-Tab.")
+            main_window.hdl_frame_text.update_highlight_tags(10, ["not_read" , "not_written" , "control" , "datatype" , "function" , "comment"])
+            # Create hdl (is identical beside the time-stamp to the read one) for Link-Generation:
             hdl_generation.run_hdl_generation(write_to_file=False)
         else:
             # No HDL was found which could be loaded into HDL-tab, so clear the HDL-tab:

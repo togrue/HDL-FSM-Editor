@@ -25,7 +25,7 @@ import link_dictionary
 import color_changer
 import grid_drawing
 
-VERSION = "4.6"
+VERSION = "4.7"
 header_string ="HDL-FSM-Editor\nVersion " + VERSION + "\nCreated by Matthias Schweikart\nContact: matthias.schweikart@gmx.de"
 
 state_action_default_button        = None
@@ -97,6 +97,8 @@ internals_package_frame = None
 sash_positions          = {}
 sash_positions["interface_tab"] = {}
 sash_positions["internals_tab"] = {}
+undo_button = None
+redo_button = None
 
 keyword_color = {"not_read": "red", "not_written": "red", "control": "green4", "datatype": "brown", "function": "violet", "comment": "blue"}
 keywords = constants.vhdl_keywords
@@ -142,14 +144,21 @@ def evaluate_commandline_parameters():
     if args.filename is not None:
         if not exists(args.filename):
             messagebox.showerror("Error in HDL-SCHEM-Editor", "File " + args.filename + " was not found.")
+        elif not args.filename.endswith(".hfe"):
+            messagebox.showerror("Error in HDL-SCHEM-Editor", "File " + args.filename + " cannot be read. Must have extension '.hfe'.")
         else:
             file_handling.filename = args.filename
             file_handling.open_file_with_name_new(args.filename)
             if args.generate_hdl:
                 hdl_generation.run_hdl_generation(write_to_file=True)
                 sys.exit()
+            canvas.bind("<Visibility>", lambda event: view_all_after_window_is_built())
     root.wm_deiconify()
     return
+
+def view_all_after_window_is_built():
+    canvas_editing.view_all()
+    canvas.unbind("<Visibility>")
 
 def close_tool():
     title = root.title()
@@ -383,6 +392,7 @@ def create_interface_notebook_tab():
     interface_package_frame.rowconfigure(0, weight=0)
     interface_package_frame.rowconfigure(1, weight=1)
     interface_package_label  = ttk.Label             (interface_package_frame, text="Packages:", padding=5)
+    interface_package_info   = ttk.Label             (interface_package_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5)
     interface_package_text   = custom_text.CustomText(interface_package_frame, text_type="package", height=3, width=10, undo=True, font=("Courier", 10))
     interface_package_text.insert("1.0", "library ieee;\nuse ieee.std_logic_1164.all;")
     interface_package_text.update_highlight_tags(10, ["not_read" , "not_written" , "control" , "datatype" , "function" , "comment"])
@@ -392,6 +402,7 @@ def create_interface_notebook_tab():
     interface_package_scroll = ttk.Scrollbar         (interface_package_frame, orient=tk.VERTICAL, cursor='arrow', command=interface_package_text.yview)
     interface_package_text.config(yscrollcommand=interface_package_scroll.set)
     interface_package_label.grid  (row=0, column=0, sticky=(tk.W, tk.N, tk.S)) # "W" nötig, damit Text links bleibt
+    interface_package_info.grid   (row=0, column=0, sticky=tk.E)
     interface_package_text.grid   (row=1, column=0, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
     interface_package_scroll.grid (row=1, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_interface.add(interface_package_frame, weight=1)
@@ -402,6 +413,7 @@ def create_interface_notebook_tab():
     interface_generics_frame.rowconfigure(0, weight=0)
     interface_generics_frame.rowconfigure(1, weight=1)
     interface_generics_label = ttk.Label             (interface_generics_frame, text="Generics:", padding=5)
+    interface_generics_info  = ttk.Label             (interface_generics_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5)
     interface_generics_text  = custom_text.CustomText(interface_generics_frame, text_type="generics", height=3, width=10, undo=True, font=("Courier", 10))
     interface_generics_text.bind("<Control-Z>"      , lambda event : interface_generics_text.edit_redo())
     interface_generics_text.bind("<<TextModified>>" , lambda event : undo_handling.modify_window_title())
@@ -409,6 +421,7 @@ def create_interface_notebook_tab():
     interface_generics_scroll= ttk.Scrollbar         (interface_generics_frame, orient=tk.VERTICAL, cursor='arrow', command=interface_generics_text.yview)
     interface_generics_text.config(yscrollcommand=interface_generics_scroll.set)
     interface_generics_label.grid (row=0, column=0, sticky=(tk.W, tk.N, tk.S))
+    interface_generics_info.grid  (row=0, column=0, sticky=tk.E)
     interface_generics_text.grid  (row=1, column=0, sticky=(tk.N,tk.W,tk.E,tk.S))
     interface_generics_scroll.grid(row=1, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_interface.add(interface_generics_frame, weight=1)
@@ -420,6 +433,7 @@ def create_interface_notebook_tab():
     interface_ports_frame.rowconfigure(0, weight=0)
     interface_ports_frame.rowconfigure(1, weight=1)
     interface_ports_label    = ttk.Label             (interface_ports_frame, text="Ports:"   , padding=5)
+    interface_ports_info     = ttk.Label             (interface_ports_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5)
     interface_ports_text     = custom_text.CustomText(interface_ports_frame, text_type="ports", height=3, width=10, undo=True, font=("Courier", 10))
     interface_ports_text.bind   ("<Control-z>"      , lambda event : interface_ports_text.undo())
     interface_ports_text.bind   ("<Control-Z>"      , lambda event : interface_ports_text.redo())
@@ -428,6 +442,7 @@ def create_interface_notebook_tab():
     interface_ports_scroll   = ttk.Scrollbar         (interface_ports_frame, orient=tk.VERTICAL, cursor='arrow', command=interface_ports_text.yview)
     interface_ports_text.config(yscrollcommand=interface_ports_scroll.set)
     interface_ports_label.grid    (row=0, column=0, sticky=tk.W)
+    interface_ports_info.grid     (row=0, column=0, sticky=tk.E)
     interface_ports_text.grid     (row=1, column=0, sticky=(tk.N,tk.W,tk.E,tk.S))
     interface_ports_scroll.grid   (row=1, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_interface.add(interface_ports_frame, weight=1)
@@ -448,6 +463,7 @@ def create_internals_notebook_tab():
     internals_package_frame.rowconfigure(0, weight=0)
     internals_package_frame.rowconfigure(1, weight=1)
     internals_package_label     = ttk.Label             (internals_package_frame, text="Packages:", padding=5)
+    interface_package_info      = ttk.Label             (internals_package_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5)
     internals_package_text      = custom_text.CustomText(internals_package_frame, text_type="package", height=3, width=10, undo=True, font=("Courier", 10))
     internals_package_text.bind("<Control-Z>"     , lambda event : internals_package_text.edit_redo())
     internals_package_text.bind("<<TextModified>>", lambda event : undo_handling.modify_window_title())
@@ -455,6 +471,7 @@ def create_internals_notebook_tab():
     internals_package_scroll    = ttk.Scrollbar         (internals_package_frame, orient=tk.VERTICAL, cursor='arrow', command=internals_package_text.yview)
     internals_package_text.config(yscrollcommand=internals_package_scroll.set)
     internals_package_label.grid (row=0, column=0, sticky=tk.W) # "W" nötig, damit Text links bleibt
+    interface_package_info.grid  (row=0, column=0, sticky=tk.E)
     internals_package_text.grid  (row=1, column=0, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
     internals_package_scroll.grid(row=1, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_internals.add(internals_package_frame, weight=1)
@@ -465,6 +482,7 @@ def create_internals_notebook_tab():
     internals_architecture_frame.rowconfigure(0, weight=0)
     internals_architecture_frame.rowconfigure(1, weight=1)
     internals_architecture_label = ttk.Label             (internals_architecture_frame, text="Architecture Declarations:", padding=5)
+    interface_architecture_info  = ttk.Label             (internals_architecture_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5)
     internals_architecture_text  = custom_text.CustomText(internals_architecture_frame, text_type="declarations", height=3, width=10, undo=True, font=("Courier", 10))
     internals_architecture_text.bind("<Control-z>"     , lambda event : internals_architecture_text.undo())
     internals_architecture_text.bind("<Control-Z>"     , lambda event : internals_architecture_text.redo())
@@ -473,6 +491,7 @@ def create_internals_notebook_tab():
     internals_architecture_scroll= ttk.Scrollbar         (internals_architecture_frame, orient=tk.VERTICAL, cursor='arrow', command=internals_architecture_text.yview)
     internals_architecture_text.config(yscrollcommand=internals_architecture_scroll.set)
     internals_architecture_label.grid (row=0, column=0, sticky=tk.W)
+    interface_architecture_info.grid  (row=0, column=0, sticky=tk.E)
     internals_architecture_text.grid  (row=1, column=0, sticky=(tk.N,tk.W,tk.E,tk.S))
     internals_architecture_scroll.grid(row=1, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_internals.add(internals_architecture_frame, weight=1)
@@ -484,6 +503,7 @@ def create_internals_notebook_tab():
     internals_process_clocked_frame.rowconfigure(0, weight=0)
     internals_process_clocked_frame.rowconfigure(1, weight=1)
     internals_process_clocked_label      = ttk.Label             (internals_process_clocked_frame, text="Variable Declarations for clocked process:"   , padding=5)
+    interface_process_clocked_info       = ttk.Label             (internals_process_clocked_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5)
     internals_process_clocked_text       = custom_text.CustomText(internals_process_clocked_frame, text_type="variable", height=3, width=10, undo=True, font=("Courier", 10))
     internals_process_clocked_text.bind("<Control-z>"     , lambda event : internals_process_clocked_text.undo())
     internals_process_clocked_text.bind("<Control-Z>"     , lambda event : internals_process_clocked_text.redo())
@@ -492,6 +512,7 @@ def create_internals_notebook_tab():
     internals_process_clocked_scroll     = ttk.Scrollbar         (internals_process_clocked_frame, orient=tk.VERTICAL, cursor='arrow', command=internals_process_clocked_text.yview)
     internals_process_clocked_text.config(yscrollcommand=internals_process_clocked_scroll.set)
     internals_process_clocked_label.grid (row=0, column=0, sticky=tk.W)
+    interface_process_clocked_info.grid  (row=0, column=0, sticky=tk.E)
     internals_process_clocked_text.grid  (row=1, column=0, sticky=(tk.N,tk.W,tk.E,tk.S))
     internals_process_clocked_scroll.grid(row=1, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_internals.add(internals_process_clocked_frame, weight=1)
@@ -502,6 +523,7 @@ def create_internals_notebook_tab():
     internals_process_combinatorial_frame.rowconfigure(0, weight=0)
     internals_process_combinatorial_frame.rowconfigure(1, weight=1)
     internals_process_combinatorial_label  = ttk.Label             (internals_process_combinatorial_frame, text="Variable Declarations for combinatorial process:"   , padding=5)
+    interface_process_combinatorial_info   = ttk.Label             (internals_process_combinatorial_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5)
     internals_process_combinatorial_text   = custom_text.CustomText(internals_process_combinatorial_frame, text_type="variable", height=3, width=10, undo=True,
                                                                     font=("Courier", 10))
     internals_process_combinatorial_text.bind("<Control-z>"     , lambda event : internals_process_combinatorial_text.undo())
@@ -511,6 +533,7 @@ def create_internals_notebook_tab():
     internals_process_combinatorial_scroll=ttk.Scrollbar(internals_process_combinatorial_frame,orient=tk.VERTICAL,cursor='arrow',command=internals_process_combinatorial_text.yview)
     internals_process_combinatorial_text.config(yscrollcommand=internals_process_combinatorial_scroll.set)
     internals_process_combinatorial_label.grid (row=0, column=0, sticky=tk.W)
+    interface_process_combinatorial_info.grid  (row=0, column=0, sticky=tk.E)
     internals_process_combinatorial_text.grid  (row=1, column=0, sticky=(tk.N,tk.W,tk.E,tk.S))
     internals_process_combinatorial_scroll.grid(row=1, column=1, sticky=(tk.W,tk.E,tk.S,tk.N)) # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_internals.add(internals_process_combinatorial_frame, weight=1)
@@ -524,6 +547,7 @@ def create_diagram_notebook_tab():
     global global_action_combinatorial_button
     global reset_entry_button
     global grid_drawer
+    global undo_button, redo_button
 
     diagram_frame = ttk.Frame(notebook, borderwidth=0, relief='flat')
     diagram_frame.grid()
@@ -548,8 +572,8 @@ def create_diagram_notebook_tab():
 
     # Implement the buttons of the drawing area:
     undo_redo_frame = ttk.Frame(button_frame, borderwidth=2)
-    undo_button = ttk.Button(undo_redo_frame, text="Undo (Ctrl-z)",  command=undo_handling.undo, style='Undo.TButton')
-    redo_button = ttk.Button(undo_redo_frame, text="Redo(Ctrl-Z)" ,  command=undo_handling.redo, style='Redo.TButton')
+    undo_button = ttk.Button(undo_redo_frame, text="Undo (Ctrl-z)",  command=undo_handling.undo, style='Undo.TButton', state="disabled")
+    redo_button = ttk.Button(undo_redo_frame, text="Redo(Ctrl-Z)" ,  command=undo_handling.redo, style='Redo.TButton', state="disabled")
     undo_button.grid(row=0, column=0)
     redo_button.grid(row=0, column=1)
 
@@ -757,18 +781,17 @@ def cursor_move_hdl_tab(*_):
     # Determine current cursor position:
     delta_x = hdl_frame_text.winfo_pointerx() - hdl_frame_text.winfo_rootx()
     delta_y = hdl_frame_text.winfo_pointery() - hdl_frame_text.winfo_rooty()
-    index_string = hdl_frame_text.index(f"@{delta_x},{delta_y}")
+    index_string = hdl_frame_text.index(f"@{delta_x},{delta_y}") # index_string has the format "1.34"
     # Determine current line number:
-    line_number = int(re.sub(r"\..*", "", index_string))
+    line_number = int(re.sub(r"\..*", "", index_string)) # Remove everything after '.'
     if line_number!=line_number_under_pointer_hdl_tab:
-        #print("cursor_move_hdl_tab: line_number =", line_number)
+        #print("cursor_move_hdl_tab: line_number =", line_number, index_string)
         hdl_frame_text.tag_delete("underline")
         file_name, file_name_architecture = hdl_generation.get_file_names()
         if line_number>hdl_generation.last_line_number_of_file1:
             line_number_in_file = line_number - hdl_generation.last_line_number_of_file1
             selected_file = file_name_architecture
             start_index   = size_of_file2_line_number
-            #print("In architect: selected_file, start_index =", selected_file, start_index, line_number_in_file)
         else:
             line_number_in_file = line_number
             selected_file = file_name

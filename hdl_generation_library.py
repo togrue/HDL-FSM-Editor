@@ -24,9 +24,9 @@ def indent_text_by_the_given_number_of_tabs(number_of_tabs, text):
     return result_string
 
 def get_text_from_text_widget(wiget_id):
-    text = wiget_id.get("1.0", tk.END + "-1 chars")
-    if text!="":
-        return text + "\n"
+    text = wiget_id.get("1.0", tk.END)
+    if text!="\n":
+        return text
     return ""
 
 def get_a_list_of_all_state_names():
@@ -53,6 +53,7 @@ def get_a_list_of_all_state_names():
     return state_name_list_sorted
 
 def get_target_state_name(all_reset_transition_tags):
+    target_state_tag = ""
     for t in all_reset_transition_tags:
         if t.startswith("going_to_state"):
             target_state_tag = t[9:]
@@ -94,9 +95,10 @@ def get_reset_transition_tag():
 
 def get_transition_target_condition_action(transition_tag):
     tags = main_window.canvas.gettags(transition_tag)
-    transition_condition = ""
-    transition_action    = ""
+    transition_condition       = ""
+    transition_action          = ""
     condition_action_reference = ""
+    transition_target          = ""
     for tag in tags:
         if tag.startswith("going_to_state"):
             transition_target_tag = tag[9:]
@@ -163,6 +165,7 @@ def optimize_transition_specifications(transition_specifications):
     expand_transition_specifications_by_if_identifier(transition_specifications) # Add an unique identifier for each if-construct.
     action_target_array, branchnumber_array = create_action_and_branch_array_for_each_if_construct(transition_specifications)
     changes_were_implemented = False
+    index_of_if_in_transition_specifications = 0
     for entry in action_target_array.items():
         state_name                  = entry[0]
         action_target_if_dictionary = entry[1]
@@ -270,6 +273,7 @@ def action_is_present_in_each_branch(action, state_name, if_identifier, action_t
     return True
 
 def remove_action_from_branches(transition_specifications, state_name, if_identifier, action, moved_actions):
+    index_of_if_in_transition_specifications = 0
     for index, transition_specification in enumerate(transition_specifications):
         #print("transition_specification =", transition_specification)
         if (transition_specification["state_name"]==state_name and
@@ -284,6 +288,7 @@ def remove_action_from_branches(transition_specifications, state_name, if_identi
     return index_of_if_in_transition_specifications
 
 def remove_target_from_branches(transition_specifications, state_name, if_identifier, target, moved_target):
+    index_of_if_in_transition_specifications = 0
     for index, transition_specification in enumerate(transition_specifications):
         #print("transition_specification =", transition_specification)
         if (transition_specification["state_name"]==state_name and
@@ -336,6 +341,7 @@ def merge_trace_array(trace_array):
                     search_index = 1 # Look into the next command of the two traces.
                     #print("traces_of_a_state_reversed = ", traces_of_a_state_reversed)
                     #print("trace[search_index] = ", trace[search_index])
+                    target_at_error = ""
                     while ((trace                                 [search_index]["command"] + trace                                    [search_index]["condition"])==
                         (traces_of_a_state_reversed[trace_index+1][search_index]["command"] + traces_of_a_state_reversed[trace_index+1][search_index]["condition"])):
                         if trace[search_index]["target"]!="":
@@ -358,7 +364,7 @@ def merge_trace_array(trace_array):
                     else: # The command is an "action" without any condition, so it must be converted into an "else".
                         traces_of_a_state_reversed[trace_index+1][-(search_index+1):-(search_index+1)] = [{"state_name": trace[search_index]["state_name"],
                                                                                                            "command": "else", "condition": ""}]
-                        traces_of_a_state_reversed[trace_index+1][-(search_index+1):-(search_index+1)] = trace[search_index:search_index+1]#copy action into new "else" before "endif"
+                        traces_of_a_state_reversed[trace_index+1][-(search_index+1):-(search_index+1)] = trace[search_index:search_index+1]#copy action to new "else" before "endif"
                         traces_of_a_state_reversed[trace_index+1][-(search_index  ):-(search_index  )] = trace[search_index+1:] # copy rest of trace after the endif
                         traces_of_a_state_reversed[trace_index+1] = traces_of_a_state_reversed[trace_index+1][:-search_index] # remove superfluous "endifs"
                 #print("traces_of_a_state_reversed[trace_index+1] =", traces_of_a_state_reversed[trace_index+1])
