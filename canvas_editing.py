@@ -65,7 +65,7 @@ def delete():
     # The event coordinates cannot be used, as the event is caused by pressing the delete-button and the delete-button "coordinates" are useless.
     # When moving the mouse into a window-canvas-item the mouse position in the canvas can not
     # detected anymore (only the mouse position in the window can be detected now).
-    # So the last mouse position outside the canvas is the only available information.
+    # So the last mouse position outside the window-canvas-item is the only available information.
     # But this position may be by 1 pixel outside the window-canvas-item.
     # So the area is increased here:
     ids = main_window.canvas.find_overlapping(canvas_x_coordinate-2, canvas_y_coordinate-2, canvas_x_coordinate+2, canvas_y_coordinate+2)
@@ -75,10 +75,10 @@ def delete():
             # This item i is a member of the list stored in ids but was already deleted,
             # when one of the items earlier in the list was deleted.
             pass
-        elif main_window.canvas.type(i)=='polygon':
-            for tag in tags_of_item_i:
+        elif main_window.canvas.type(i)=='polygon': # Only the reset_entry is a polygon.
+            for tag in tags_of_item_i: # Remove reset entry and connected transition.
                 if tag.startswith("reset_entry"):
-                    main_window.canvas.delete(tag) # delete ploygon
+                    main_window.canvas.delete(tag) # delete polygon
                     main_window.canvas.delete("reset_text") # delete text item
                     reset_entry_handling.reset_entry_number = 0
                     main_window.reset_entry_button.config(state=tk.NORMAL)
@@ -96,7 +96,7 @@ def delete():
                     main_window.canvas.delete(transition + "rectangle") # delete priority rectangle
                     main_window.canvas.delete(transition + "priority")  # delete priority
             undo_handling.design_has_changed()
-        elif main_window.canvas.type(i)=='window': # The underlying widgets (Frame, Text, line) are never part of ids and must all be deleted here.
+        elif main_window.canvas.type(i)=='window':
             # Delete the window and all tags which refer to this window:
             for tag in tags_of_item_i:
                 item_id = main_window.canvas.find_withtag(tag)
@@ -206,6 +206,7 @@ def delete():
                         if transition_tag.startswith("coming_from_"):
                             state = transition_tag[12:]
                             main_window.canvas.dtag(state, transition + "_start")
+                            adapt_visibility_of_priority_rectangles_at_state(state)
                         elif transition_tag.startswith("ca_connection"):
                             condition_action_tag = transition_tag[:-4]
                             main_window.canvas.delete(condition_action_tag+ "_anchor")
@@ -299,6 +300,7 @@ def view_area_by_button3(rectangle_id):
         main_window.canvas.bind  ('<Motion>'  , store_mouse_position)
 
 def view_area(rectangle_id): # Called by Button-1("view area"-button)/Button-3(view area per right mouse-button)-Release-Event.
+    main_window.grid_drawer.remove_grid()
     complete_rectangle = main_window.canvas.coords(rectangle_id)
     view_rectangle(complete_rectangle, check_fit=False)
     main_window.canvas.delete(rectangle_id)
@@ -308,13 +310,15 @@ def view_area(rectangle_id): # Called by Button-1("view area"-button)/Button-3(v
     # Restore the original binding (Button-1 is bound to start_view_rectangle(), when "view area"-Button was used):
     main_window.canvas.bind  ("<Button-1>", move_handling_initialization.move_initialization)
     main_window.canvas.bind  ("<Motion>"  , store_mouse_position)
+    main_window.grid_drawer.draw_grid()
 
 def view_all():
     main_window.grid_drawer.remove_grid()
     complete_rectangle = main_window.canvas.bbox("all")
     if complete_rectangle is not None:
         view_rectangle(complete_rectangle, check_fit=True)
-    main_window.grid_drawer.draw_grid()
+    main_window.canvas.update_idletasks() # helps to get "after_idle" in view_rectangle() ready?!
+    main_window.canvas.after_idle(main_window.grid_drawer.draw_grid) # "after_idle" is needed because view_rectangle calls decrement_font_size_if_window_is_too_wide after idle.
 
 def view_rectangle(complete_rectangle, check_fit):
     if complete_rectangle[2]-complete_rectangle[0]!=0 and complete_rectangle[3]-complete_rectangle[1]!=0:
@@ -332,7 +336,7 @@ def view_rectangle(complete_rectangle, check_fit):
             move_canvas_point_from_to(complete_center, visible_center)
             canvas_zoom(complete_center, factor)
             if check_fit:
-                decrement_font_size_if_window_is_too_wide()
+                main_window.canvas.after_idle(decrement_font_size_if_window_is_too_wide)
         else:
             messagebox.showerror("Fatal", "Zoom factor is too big.")
     canvas_modify_bindings.switch_to_move_mode()
@@ -342,16 +346,16 @@ def decrement_font_size_if_window_is_too_wide():
                          main_window.canvas.canvasx(main_window.canvas.winfo_width()), main_window.canvas.canvasy(main_window.canvas.winfo_height())]
     complete_rectangle = main_window.canvas.bbox("all")
     if ((complete_rectangle[0]<visible_rectangle[0] or
-        complete_rectangle[1]<visible_rectangle[1] or
-        complete_rectangle[2]>visible_rectangle[2] or
-        complete_rectangle[3]>visible_rectangle[3]) and fontsize!=1 # When fontsize==1 then zoom_factor calculates to 0, which makes no sense.
+         complete_rectangle[1]<visible_rectangle[1] or
+         complete_rectangle[2]>visible_rectangle[2] or
+         complete_rectangle[3]>visible_rectangle[3]) and fontsize!=1 # When fontsize==1 then zoom_factor calculates to 0, which makes no sense.
     ):
         complete_center = determine_center_of_rectangle(complete_rectangle)
         visible_center  = determine_center_of_rectangle(visible_rectangle)
         move_canvas_point_from_to(complete_center, visible_center)
         zoom_factor = (fontsize-1)/fontsize
         canvas_zoom(complete_center, zoom_factor)
-        decrement_font_size_if_window_is_too_wide()
+        main_window.canvas.after_idle(decrement_font_size_if_window_is_too_wide)
 
 def determine_center_of_rectangle(rectangle_coords):
     return [(rectangle_coords[0]+rectangle_coords[2])/2, (rectangle_coords[1]+rectangle_coords[3])/2]
@@ -371,7 +375,7 @@ def calculate_zoom_factor(complete_rectangle, visible_rectangle):
     return factor
 
 def zoom_wheel(event):
-    main_window.canvas.grid_remove() # Make the canvas invisible.
+    main_window.canvas.grid_remove() # Make the canvas invisible, but remember all options for the the next grid() call.
     main_window.grid_drawer.remove_grid()
     # event.delta: attribute of the mouse wheel under Windows and MacOs.
     # One "felt step" at the mouse wheel gives this value:
@@ -442,10 +446,14 @@ def adapt_global_size_variables(factor):
     modify_font_sizes_of_all_canvas_items(factor)
 
 def scroll_start(event):
+    main_window.grid_drawer.remove_grid()
     main_window.canvas.scan_mark(event.x,event.y)
 
 def scroll_move(event):
     main_window.canvas.scan_dragto(event.x,event.y,gain=1)
+
+def scroll_end(event):
+    main_window.grid_drawer.draw_grid()
 
 def scroll_wheel(event):
     main_window.grid_drawer.remove_grid()
@@ -477,12 +485,12 @@ def modify_font_sizes_of_all_canvas_items(factor):
                 state_action_handling.MyText.mytext_dict[i].text_id.configure (font=("Courier", int(fontsize)))
                 for keyword in main_window.keywords:
                     state_action_handling.MyText.mytext_dict[i].text_id.tag_configure(keyword , foreground=main_window.keyword_color[keyword],
-                                                                                      font=("Courier",int(fontsize), "bold"))
+                                                                                      font=("Courier",int(fontsize), "normal"))
             elif i in state_comment.StateComment.dictionary:
                 state_comment.StateComment.dictionary[i].label_id.configure(font=("Arial", int(used_label_fontsize)))
                 state_comment.StateComment.dictionary[i].text_id.configure (font=("Courier", int(fontsize)))
                 for keyword in main_window.keywords:
-                    state_comment.StateComment.dictionary[i].text_id.tag_configure(keyword , foreground=main_window.keyword_color[keyword] , font=("Courier",int(fontsize), "bold"))
+                    state_comment.StateComment.dictionary[i].text_id.tag_configure(keyword , foreground=main_window.keyword_color[keyword] , font=("Courier",int(fontsize), "normal"))
             elif i in condition_action_handling.ConditionAction.dictionary:
                 condition_action_handling.ConditionAction.dictionary[i].condition_label.configure(font=("Arial", int(used_label_fontsize)))
                 condition_action_handling.ConditionAction.dictionary[i].action_label.configure   (font=("Arial", int(used_label_fontsize)))
@@ -490,9 +498,9 @@ def modify_font_sizes_of_all_canvas_items(factor):
                 condition_action_handling.ConditionAction.dictionary[i].action_id.configure      (font=("Courier", int(fontsize)))
                 for keyword in main_window.keywords:
                     condition_action_handling.ConditionAction.dictionary[i].condition_id.tag_configure(keyword , foreground=main_window.keyword_color[keyword],
-                                                                                                       font=("Courier",int(fontsize), "bold"))
+                                                                                                       font=("Courier",int(fontsize), "normal"))
                     condition_action_handling.ConditionAction.dictionary[i].action_id.tag_configure   (keyword , foreground=main_window.keyword_color[keyword],
-                                                                                                       font=("Courier",int(fontsize), "bold"))
+                                                                                                       font=("Courier",int(fontsize), "normal"))
             elif i in global_actions.GlobalActions.dictionary:
                 global_actions.GlobalActions.dictionary[i].label_before.configure  (font=("Arial", int(used_label_fontsize)))
                 global_actions.GlobalActions.dictionary[i].label_after.configure   (font=("Arial", int(used_label_fontsize)))
@@ -500,22 +508,22 @@ def modify_font_sizes_of_all_canvas_items(factor):
                 global_actions.GlobalActions.dictionary[i].text_after_id.configure (font=("Courier", int(fontsize)))
                 for keyword in main_window.keywords:
                     global_actions.GlobalActions.dictionary[i].text_before_id.tag_configure(keyword , foreground=main_window.keyword_color[keyword],
-                                                                                            font=("Courier",int(fontsize), "bold"))
+                                                                                            font=("Courier",int(fontsize), "normal"))
                     global_actions.GlobalActions.dictionary[i].text_after_id.tag_configure (keyword , foreground=main_window.keyword_color[keyword],
-                                                                                            font=("Courier",int(fontsize), "bold"))
+                                                                                            font=("Courier",int(fontsize), "normal"))
             elif i in global_actions_combinatorial.GlobalActionsCombinatorial.dictionary:
                 global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[i].label.configure  (font=("Arial", int(used_label_fontsize)))
                 global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[i].text_id.configure(font=("Courier", int(fontsize)))
                 for keyword in main_window.keywords:
                     global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[i].text_id.tag_configure(keyword,
                                                                                                                 foreground=main_window.keyword_color[keyword],
-                                                                                                                font=("Courier",int(fontsize), "bold"))
+                                                                                                                font=("Courier",int(fontsize), "normal"))
             elif i in state_actions_default.StateActionsDefault.dictionary:
                 state_actions_default.StateActionsDefault.dictionary[i].label.configure  (font=("Arial", int(used_label_fontsize)))
                 state_actions_default.StateActionsDefault.dictionary[i].text_id.configure(font=("Courier", int(fontsize)))
                 for keyword in main_window.keywords:
                     state_actions_default.StateActionsDefault.dictionary[i].text_id.tag_configure(keyword, foreground=main_window.keyword_color[keyword],
-                                                                                                  font=("Courier",int(fontsize), "bold"))
+                                                                                                  font=("Courier",int(fontsize), "normal"))
             else:
                 print("canvas_editing: Fatal, unknown dictionary key ", i)
 
@@ -637,6 +645,7 @@ def search_in_text_widget(text_id, search_pattern, count, canvas_window, replace
             end_index = index + "+" + str(len(search_pattern)) + " chars"
             text_id.delete(index, end_index)
             text_id.insert(index, replace_pattern)
+            text_id.format_after_idle()
             start = index + "+" + str(len(replace_pattern)) + " chars"
         else:
             move_in_foreground("Diagram")
@@ -695,6 +704,7 @@ def search_in_text_fields_of_a_tab(tab, search_pattern, interface_text_fields, r
                 end_index = index + "+" + str(len(search_pattern)) + " chars"
                 text_id.delete(index, end_index)
                 text_id.insert(index, replace_pattern)
+                text_id.update_custom_text_class_signals_list()
                 start = index + "+" + str(len(replace_pattern)) + " chars"
                 if text_id.cget("state")==tk.DISABLED:
                     number_of_hits -= 1

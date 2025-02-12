@@ -33,7 +33,7 @@ class CustomText(tk.Text):
         # 1. The new character is inserted in the text.
         # 2. format() is started
         # But as inserting the character takes a while, format() will still find the old text, so it must be delayed until the character was inserted:
-        self.bind("<Key>"      , lambda event : self.format_after_idle())
+        self.bind("<Key>"      , lambda event : self.format_after_idle()) # This binding will be overwritten for the CustomText objects in Interface/internals tab.
         self.bind("<Button-1>" , lambda event : self.tag_delete("highlight"))
         self.signals_list        = []
         self.constants_list      = []
@@ -133,7 +133,7 @@ class CustomText(tk.Text):
                     self.add_highlight_tag_for_single_keyword(keyword_type, keyword)
             if self.text_type in ("condition", "action", "comment"):
                 self.tag_configure(keyword_type, foreground=main_window.keyword_color[keyword_type],
-                                   font=("Courier", int(fontsize), "bold")) # int() is necessary, because fontsize can be a "real" number.
+                                   font=("Courier", int(fontsize), "normal")) # int() is necessary, because fontsize can be a "real" number.
             else:
                 self.tag_configure(keyword_type, foreground=main_window.keyword_color[keyword_type], font=("Courier", 10))
 
@@ -201,6 +201,8 @@ class CustomText(tk.Text):
         all_signal_declarations  = self.get ("1.0",tk.END).lower()
         self.signals_list   = hdl_generation_library.get_all_declared_signal_names  (all_signal_declarations)
         self.constants_list = hdl_generation_library.get_all_declared_constant_names(all_signal_declarations)
+        self.__update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows()
+        self.update_highlighting()
 
     def update_custom_text_class_ports_list(self):
         all_port_declarations    = main_window.interface_ports_text.get("1.0",tk.END).lower()

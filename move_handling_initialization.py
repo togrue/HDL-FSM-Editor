@@ -30,7 +30,7 @@ def move_initialization_overlapping(event, event_x, event_y):
         return # No grid_line can be moved.
     move_list = create_move_list(items_near_mouse_click_location, event_x, event_y)
     # The move_list has an entry for each item, which must be moved.
-    # The first entry contains always the object, the user wants to move.
+    # The first entry belongs always to the object, the user wants to move.
     # All following entries are objects, which are "connected" to the object of the first entry and must also be moved.
     # These items can be moved:
     # reset_entry, state, transition, connector, state_action_window, condition_action_window, global_action windows.

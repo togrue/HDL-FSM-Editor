@@ -25,7 +25,7 @@ import link_dictionary
 import color_changer
 import grid_drawing
 
-VERSION = "4.7"
+VERSION = "4.8"
 header_string ="HDL-FSM-Editor\nVersion " + VERSION + "\nCreated by Matthias Schweikart\nContact: matthias.schweikart@gmx.de"
 
 state_action_default_button        = None
@@ -630,6 +630,7 @@ def create_diagram_notebook_tab():
     canvas.bind    ("<Control-Button-5>"  , canvas_editing.zoom_wheel          ) # MouseWheel-Scroll-Down used at Linux.
     canvas.bind    ('<Control-Button-1>'  , canvas_editing.scroll_start        )
     canvas.bind    ('<Control-B1-Motion>' , canvas_editing.scroll_move         )
+    canvas.bind    ('<Control-ButtonRelease-1>', canvas_editing.scroll_end         )
     canvas.bind    ("<MouseWheel>"        , canvas_editing.scroll_wheel        )
     canvas.bind    ('<Button-3>'          , canvas_editing.start_view_rectangle)
     canvas.bind    ('<Configure>'         , __check_for_window_resize)

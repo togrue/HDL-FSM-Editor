@@ -67,7 +67,9 @@ def move_to(event_x, event_y, transition_id, point, first, move_list, last):
     else:
         print("transition_handling: Fatal, unknown point =", point)
     if main_window.show_grid:
-        main_window.canvas.tag_raise(transition_tag, "grid_line")
+        list_of_grid_line_canvas_ids = main_window.canvas.find_withtag("grid_line")
+        if list_of_grid_line_canvas_ids:
+            main_window.canvas.tag_raise(transition_tag, "grid_line")
     # Move priority rectangle:
     if transition_tag.startswith("transition"): # There is no priority rectangle at a "connection".
         # The tag "transition_tag + '_start'" is already removed from the old start state when the transition start-point is moved.
@@ -121,81 +123,116 @@ def extend_transition_to_state_middle_points(transition_tag):
     main_window.canvas.tag_lower(transition_tag, transition_tag + "_start")
     main_window.canvas.tag_lower(transition_tag, transition_tag + "_end")
 
-def distance_from_point_to_line(point_x, point_y, line):
-    # Gabi's solution:
-    # if (line[2] - line[0])==0: # line is vertical
-    #     distance = abs(point_x - line[0])
-    # else:
-    #     if (line[3] - line[1])==0: # line is horizontal
-    #         distance = abs(point_y - line[1])
-    #     else:
-    #         m_line = (line[3] - line[1])/(line[2] - line[0])
-    #         line_offset = line[1] - m_line * line[0]
-    #         m_distance_line = - 1/m_line
-    #         distance_line_offset = point_y - m_distance_line * point_x
-    #         x_cut = (distance_line_offset - line_offset)/(m_line - m_distance_line)
-    #         y_cut = m_line * x_cut + line_offset
-    #         distance = math.sqrt((point_x - x_cut)**2 + (point_y - y_cut)**2)
-    #return distance
-    length_of_triangle_side1 = math.sqrt((point_x-line[0])**2 + (point_y-line[1])**2)
-    length_of_triangle_side2 = math.sqrt((point_x-line[2])**2 + (point_y-line[3])**2)
-    length_of_triangle_side3 = math.sqrt((line[2]-line[0])**2 + (line[3]-line[1])**2)
-    half_circumference = (length_of_triangle_side1 + length_of_triangle_side2 + length_of_triangle_side3)/2
-    area_of_triangle = math.sqrt(half_circumference *
-                                 (half_circumference-length_of_triangle_side1) *
-                                 (half_circumference-length_of_triangle_side2) *
-                                 (half_circumference-length_of_triangle_side3))  # Heron's formula
-    if length_of_triangle_side3!=0: # This value is 0 when the 2 line points are identical.
-        height_of_triangle = 2*area_of_triangle/length_of_triangle_side3
-        return height_of_triangle
-    return length_of_triangle_side1
+# def distance_from_point_to_line(point_x, point_y, line):
+#     # Gabi's solution:
+#     # if (line[2] - line[0])==0: # line is vertical
+#     #     distance = abs(point_x - line[0])
+#     # else:
+#     #     if (line[3] - line[1])==0: # line is horizontal
+#     #         distance = abs(point_y - line[1])
+#     #     else:
+#     #         m_line = (line[3] - line[1])/(line[2] - line[0])
+#     #         line_offset = line[1] - m_line * line[0]
+#     #         m_distance_line = - 1/m_line
+#     #         distance_line_offset = point_y - m_distance_line * point_x
+#     #         x_cut = (distance_line_offset - line_offset)/(m_line - m_distance_line)
+#     #         y_cut = m_line * x_cut + line_offset
+#     #         distance = math.sqrt((point_x - x_cut)**2 + (point_y - y_cut)**2)
+#     #return distance
+#     length_of_triangle_side1 = math.sqrt((point_x-line[0])**2 + (point_y-line[1])**2)
+#     length_of_triangle_side2 = math.sqrt((point_x-line[2])**2 + (point_y-line[3])**2)
+#     length_of_triangle_side3 = math.sqrt((line[2]-line[0])**2 + (line[3]-line[1])**2)
+#     half_circumference = (length_of_triangle_side1 + length_of_triangle_side2 + length_of_triangle_side3)/2
+#     area_of_triangle = math.sqrt(half_circumference *
+#                                  (half_circumference-length_of_triangle_side1) *
+#                                  (half_circumference-length_of_triangle_side2) *
+#                                  (half_circumference-length_of_triangle_side3))  # Heron's formula
+#     if length_of_triangle_side3!=0: # This value is 0 when the 2 line points are identical.
+#         height_of_triangle = 2*area_of_triangle/length_of_triangle_side3
+#         return height_of_triangle
+#     return length_of_triangle_side1
 
 def get_point_to_move(item_id, event_x, event_y):
     # Determine which point of the transition is nearest to the event:
     transition_coords = main_window.canvas.coords(item_id)
     number_of_points  = len(transition_coords)//2
-    distance_to_event     = []
-    distance_to_neighbour = []
+    #print("number_of_points =", number_of_points)
+    distance_event_to_point = []
+    distance_to_neighbour   = []
     for i in range(number_of_points):
-        distance_to_event.append(math.sqrt((event_x-transition_coords[2*i])**2+(event_y-transition_coords[2*i+1])**2))
+        distance_event_to_point.append(math.sqrt((event_x-transition_coords[2*i])**2+(event_y-transition_coords[2*i+1])**2))
         if i<number_of_points-1:
             distance_to_neighbour.append(math.sqrt((transition_coords[2*i]-transition_coords[2*i+2])**2+(transition_coords[2*i+1]-transition_coords[2*i+3])**2))
+    # if number_of_points==4:
+    #     dist = []
+    #     dist.append(distance_from_point_to_line(event_x, event_y, transition_coords[0:4]))
+    #     dist.append(distance_from_point_to_line(event_x, event_y, transition_coords[2:6]))
+    #     dist.append(distance_from_point_to_line(event_x, event_y, transition_coords[4:]))
+    #     minimum = 0
+    #     for i in range(1,3):
+    #         if dist[i]<dist[minimum]:
+    #             minimum = i
+    #     if minimum==0:
+    #         return "start"
+    #     if minimum==1:
+    #         distance_to_point1 = math.sqrt((event_x-transition_coords[2])**2 + (event_y-transition_coords[3])**2)
+    #         distance_to_point2 = math.sqrt((event_x-transition_coords[4])**2 + (event_y-transition_coords[5])**2)
+    #         if distance_to_point1<distance_to_point2:
+    #             return "next_to_start"
+    #         return "next_to_end"
+    #     return 'end'
     if number_of_points==4:
-        dist = []
-        dist.append(distance_from_point_to_line(event_x, event_y, transition_coords[0:4]))
-        dist.append(distance_from_point_to_line(event_x, event_y, transition_coords[2:6]))
-        dist.append(distance_from_point_to_line(event_x, event_y, transition_coords[4:]))
-        minimum = 0
-        for i in range(1,3):
-            if dist[i]<dist[minimum]:
-                minimum = i
-        if minimum==0:
-            return "start"
-        if minimum==1:
-            distance_to_point1 = math.sqrt((event_x-transition_coords[2])**2 + (event_y-transition_coords[3])**2)
-            distance_to_point2 = math.sqrt((event_x-transition_coords[4])**2 + (event_y-transition_coords[5])**2)
-            if distance_to_point1<distance_to_point2:
-                return "next_to_start"
-            return "next_to_end"
-        return 'end'
+        return_value = ""
+        #print("distance_event_to_point =", distance_event_to_point)
+        #print("canvas_editing.state_radius =", canvas_editing.state_radius)
+        if distance_event_to_point[0]<2*canvas_editing.state_radius:
+            return_value = "start"
+        if distance_event_to_point[3]<2*canvas_editing.state_radius and distance_event_to_point[3]<distance_event_to_point[0]:
+            return_value = "end"
+        if return_value=="":
+            if distance_event_to_point[1]<distance_event_to_point[2]:
+                return_value = "next_to_start"
+            else:
+                return_value = "next_to_end"
+        return return_value
     elif number_of_points==3:
-        if   distance_to_event[0]<distance_to_neighbour[0]/4:
-            return "start"
-        if distance_to_event[0]<distance_to_neighbour[0]*3/4:
-            main_window.canvas.coords(item_id, *transition_coords[0:2], event_x, event_y, *transition_coords[2:6]) # insert new point into transition
-            return "next_to_start"
-        if distance_to_event[0]<distance_to_neighbour[0]:
-            return "next_to_start"
-        if distance_to_event[1]<distance_to_neighbour[1]/4:
-            return "next_to_start"
-        if distance_to_event[1]<distance_to_neighbour[1]*3/4:
+        #print("distance_event_to_point =", distance_event_to_point)
+        #print("distance_to_neighbour   =", distance_to_neighbour)
+        # if   distance_event_to_point[0]<distance_to_neighbour[0]/4:
+        #     return "start"
+        # if distance_event_to_point[0]<distance_to_neighbour[0]*3/4:
+        #     main_window.canvas.coords(item_id, *transition_coords[0:2], event_x, event_y, *transition_coords[2:6]) # insert new point into transition
+        #     return "next_to_start"
+        # if distance_event_to_point[0]<distance_to_neighbour[0]:
+        #     return "next_to_start"
+        # if distance_event_to_point[1]<distance_to_neighbour[1]/4:
+        #     return "next_to_start"
+        # if distance_event_to_point[1]<distance_to_neighbour[1]*3/4:
+        #     main_window.canvas.coords(item_id, *transition_coords[0:4], event_x, event_y, *transition_coords[4:6]) # insert new point into transition
+        #     return "next_to_end"
+        # return 'end'
+        return_value = ""
+        if distance_event_to_point[0]<2*canvas_editing.state_radius:
+            return_value = "start"
+        if distance_event_to_point[2]<2*canvas_editing.state_radius and distance_event_to_point[2]<distance_event_to_point[0]:
+            return_value = "end"
+        if return_value!="":
+            return return_value
+        ratio = distance_event_to_point[0]/distance_event_to_point[2]
+        if 0.8<ratio<1.2:
+            return "next_to_start" # equal to "next_to_end" because no new point is inserted.
+        if distance_event_to_point[2]<distance_event_to_point[0]:
+            #print("neuer Punkt am Ende")
             main_window.canvas.coords(item_id, *transition_coords[0:4], event_x, event_y, *transition_coords[4:6]) # insert new point into transition
             return "next_to_end"
-        return 'end'
+        else:
+            #print("neuer Punkt am Anfang")
+            main_window.canvas.coords(item_id, *transition_coords[0:2], event_x, event_y, *transition_coords[2:6]) # insert new point into transition
+            return "next_to_start"
     else:
-        if   distance_to_event[0]<distance_to_neighbour[0]/3:
+        if   distance_event_to_point[0]<distance_to_neighbour[0]/3:
             return "start"
-        if distance_to_event[0]<distance_to_neighbour[0]*2/3:
+        if distance_event_to_point[0]<distance_to_neighbour[0]*2/3:
             main_window.canvas.coords(item_id, *transition_coords[0:2], event_x, event_y, *transition_coords[2:4])
             return "next_to_start"
         return 'end'
@@ -240,6 +277,9 @@ def shorten_to_state_border(transition_tag):
         main_window.canvas.coords(transition_tag+'rectangle',priority_middle_x-rectangle_width_half, priority_middle_y-rectangle_height_half,
                                                              priority_middle_x+rectangle_width_half, priority_middle_y+rectangle_height_half)
         main_window.canvas.coords(transition_tag+'priority',priority_middle_x, priority_middle_y)
+        list_of_grid_line_canvas_ids = main_window.canvas.find_withtag("grid_line")
+        if list_of_grid_line_canvas_ids:
+            main_window.canvas.tag_raise(transition_tag, "grid_line")
     else:
         #print ("shorten_to_state_border: end_state_tag =", end_state_tag)
         end_state_coords   = main_window.canvas.coords(end_state_tag)
@@ -268,13 +308,13 @@ def transition_start(event):
         for canvas_id in ids:
             element_type = main_window.canvas.type(canvas_id)
             if ( element_type=='oval' or
-                 (element_type=='polygon' and reset_entry_has_no_transition(canvas_id)) or
+                (element_type=='polygon' and reset_entry_has_no_transition(canvas_id)) or
                 (element_type=='rectangle' and main_window.canvas.gettags(canvas_id)[0].startswith("connector"))
                ):
                 for tag in main_window.canvas.gettags(canvas_id):
                     if tag.startswith("state") or tag.startswith("connector") or tag.startswith("reset_entry"):
                         tag_of_object_where_transition_starts = tag
-                main_window.canvas.addtag_withtag("transition"+str(transition_number)+'_start',tag_of_object_where_transition_starts)
+                main_window.canvas.addtag_withtag("transition"+str(transition_number)+'_start', tag_of_object_where_transition_starts)
                 start_object_coords = main_window.canvas.coords(tag_of_object_where_transition_starts)
                 if element_type in ["oval", "rectangle"]:
                     line_start_x = start_object_coords[0]/2 + start_object_coords[2]/2
@@ -363,7 +403,7 @@ def add_tags_to_end_state_and_transition(end_state_canvas_id):
         if tag.startswith("state") or tag.startswith("connector"):
             end_state_tag = tag
             break
-    main_window.canvas.addtag_withtag("going_to_" + end_state_tag ,"transition"+str(transition_number))
+    main_window.canvas.addtag_withtag("going_to_" + end_state_tag , "transition"+str(transition_number))
 
 def move_transition_end_point_to_the_middle_of_the_end_state(end_state_canvas_id, transition_id):
     end_state_coords      = main_window.canvas.coords(end_state_canvas_id)

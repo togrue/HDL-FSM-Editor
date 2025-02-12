@@ -521,12 +521,13 @@ class TagPlausibility():
                             number_of_good_hits += 1
                         else:
                             number_of_bad_hits += 1 # The transition leaves a connector which is not the defined start-state.
-            for outgoing_transition in reset_dict["reset_outgoing_transitions"]:
-                if outgoing_transition==transition_identifier:
-                    if reset_dict["reset_identifier"]==transition_start_state_identifier:
-                        number_of_good_hits += 1
-                    else:
-                        number_of_bad_hits += 1 # The transition leaves the reset-entry which is not the defined start-state.
+            if "reset_outgoing_transitions" in reset_dict:
+                for outgoing_transition in reset_dict["reset_outgoing_transitions"]:
+                    if outgoing_transition==transition_identifier:
+                        if "reset_identifier" in reset_dict and reset_dict["reset_identifier"]==transition_start_state_identifier:
+                            number_of_good_hits += 1
+                        else:
+                            number_of_bad_hits += 1 # The transition leaves the reset-entry which is not the defined start-state.
             if number_of_good_hits==0:
                 self.tag_status_is_okay = False
                 state_name = ""
@@ -623,7 +624,9 @@ class TagPlausibility():
                         found_transition = True
                 if not found_transition:
                     self.tag_status_is_okay = False
-                    print('Fatal in TagPlausibility-Checks: a connector has an outgoing transition, which does not exist in the list of transitions.')
+                    main_window.canvas.dtag(connector_dict["connector_identifier"], outgoing_transition + "_start")
+                    print('Fatal in TagPlausibility-Checks: The connector ' + connector_dict["connector_identifier"] + ' has the outgoing transition ' +
+                          outgoing_transition + ', which does not exist in the list of transitions.\nThis outgoing transition was removed from the database.')
             for incoming_transition in connector_dict["connector_incoming_transitions"]: # Check each incoming transition
                 found_transition = False
                 for transition_dict in transition_dict_list: # Search the incoming transition.

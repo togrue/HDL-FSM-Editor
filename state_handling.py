@@ -144,8 +144,8 @@ def update_state_name(text_id, text_box):
     for t in tags:
         if t.startswith("state"): # Format of text_id tag: 'state' + str(state_number) + "_name"
             state_tag = t[:-5]
-    show_new_state_name(new_text, text_id)
-    resize_state(state_tag, text_id)
+            show_new_state_name(new_text, text_id)
+            resize_state(state_tag, text_id)
     undo_handling.design_has_changed()
     main_window.canvas.bind    ('<Button-1>', move_handling_initialization.move_initialization)
     main_window.canvas.bind_all('<Delete>'  , lambda event : canvas_editing.delete())

@@ -147,52 +147,59 @@ def extract_transition_specifications_from_the_graph():
             state_comments = ""
         condition_level = 0
         moved_actions   = []
-        trace           = []
+        trace           = [] # Is temporarily used when a path from a state to a target state passes connectors.
         trace_array     = []
+        # Each entry of trace_array shall describe a path from this state to a target state (target state is always also this state).
+        # The entries of trace_array are ordered regarding their priority in the HDL, the first entry has the highest priority.
+        # Each entry is a ordered list of dictionaries.
+        # The order of the dictionaries is defined by the order in which the HDL lines must be generated.
+        # Each dictionary contains all information to create one or several HDL lines.
         extract_conditions_for_all_outgoing_transitions_of_the_state(state_name, state_tag, moved_actions, condition_level,
                                                                      trace, trace_array
                                                                      )
         transition_specifications.append({"state_name": state_name, "command" : "when",
                                           "state_comments": state_comments, "state_comments_canvas_id": canvas_id_of_comment_text_widget})
-        #print("state_tag = ", state_tag)
-        #print("trace_array = ", trace_array)
+        # The separated paths of trace_array are merged together into transition_specifications by adding "else" commands,
+        # so if the first path cannot be choosen, then the else path of the first path contains the second path and so on:
         transition_specifications += merge_trace_array(trace_array)
     optimize_transition_specifications(transition_specifications)
-    #print("transition_specifications =", transition_specifications)
     return transition_specifications
 
 def optimize_transition_specifications(transition_specifications):
-    expand_transition_specifications_by_if_identifier(transition_specifications) # Add an unique identifier for each if-construct.
+    # Add an unique if-identifier to each transition_specification of the transition_specifications.
+    # At each if, the identifier is incremented, at each end-if it is decremented.
+    # Also add to each end-if transition specification the number of branches of this ending if-construct:
+    expand_transition_specifications_by_if_identifier(transition_specifications)
+    # action_target_array is a dictionary with the state name as key.
+    # It contains for each state name a dictionary which describes the actions to a specific target state:
     action_target_array, branchnumber_array = create_action_and_branch_array_for_each_if_construct(transition_specifications)
     changes_were_implemented = False
     index_of_if_in_transition_specifications = 0
-    for entry in action_target_array.items():
-        state_name                  = entry[0]
-        action_target_if_dictionary = entry[1]
+    for state_name, action_target_if_dictionary in action_target_array.items():
         for if_identifier in action_target_if_dictionary:
-            if if_identifier!=0:
-                if len(action_target_array[state_name][if_identifier])==branchnumber_array[state_name][if_identifier]!=1: # Each branch has an action and it is more than 1 branch.
-                    #print("action_array:", action_target_array[state_name][if_identifier])
+            if if_identifier!=0: # if_identifier==0 means this is an entry caused by a "when"-command.
+                if (len(action_target_array[state_name][if_identifier])==  # This is the number of different actions&targets which exist for the if_identifier.
+                   branchnumber_array[state_name][if_identifier]!=         # This is the number of branches which exist for the if_identifier.
+                   1):                                                     # There is more than 1 branch for the if_identifier.
                     moved_actions = []
                     moved_target  = [] # will get only 1 entry
                     for action_target_dict in action_target_array[state_name][if_identifier]:
                         for action in action_target_dict["actions"]:
                             if action_is_present_in_each_branch(action, state_name, if_identifier, action_target_array):
-                                changes_were_implemented = True
-                                #print("action can be removed:", state_name, if_identifier, action, action_target_dict)
                                 index_of_if_in_transition_specifications = remove_action_from_branches(transition_specifications, state_name, if_identifier, action, moved_actions)
+                                changes_were_implemented = True
                         target = action_target_dict["target"]
                         if target!="":
                             if target_is_present_in_each_branch(target, state_name, if_identifier, action_target_array):
-                                changes_were_implemented = True
                                 #print("target can be removed:", state_name, if_identifier, target, action_target_dict)
                                 index_of_if_in_transition_specifications = remove_target_from_branches(transition_specifications, state_name, if_identifier, target, moved_target)
+                                changes_were_implemented = True
                     if moved_actions or moved_target:
                         if not moved_target:
                             target = ""
                         else:
                             target = moved_target[0]
-                        #print("insert:", state_name, moved_actions, target, if_identifier-1 )
+                        # Insert a new entry into the list of transition_specifications:
                         transition_specifications[index_of_if_in_transition_specifications:index_of_if_in_transition_specifications] = [{"state_name"   : state_name,
                                                                                                                                          "command"      : "action",
                                                                                                                                          "condition"    : "",
@@ -201,15 +208,13 @@ def optimize_transition_specifications(transition_specifications):
                                                                                                                                          "if_identifier": if_identifier-1}]
     if changes_were_implemented:
         optimize_transition_specifications(transition_specifications)
-    #print(transition_specifications)
     return
 def expand_transition_specifications_by_if_identifier(transition_specifications):
     if_identifier = 0
     if_identifier_max = 0
     for transition_specification in transition_specifications:
         if transition_specification["command"]=="when":
-            if if_identifier>if_identifier_max:
-                if_identifier_max = if_identifier
+            if_identifier_max = max(if_identifier_max, if_identifier)
             if_identifier = 0
             stack_of_if_identifier = [0]
             stack_of_branch_number = [0]
@@ -221,7 +226,7 @@ def expand_transition_specifications_by_if_identifier(transition_specifications)
             stack_of_branch_number.append(1)
         elif transition_specification["command"]=="endif":
             transition_specification["if_identifier"] = stack_of_if_identifier[-1]
-            transition_specification["branch_number"] = stack_of_branch_number[-1]
+            transition_specification["branch_number"] = stack_of_branch_number[-1] # This entry counts how many branches an "if" has, starting with 1.
             stack_of_if_identifier.pop()
             stack_of_branch_number.pop()
         elif transition_specification["command"]=="elsif":
@@ -233,9 +238,11 @@ def expand_transition_specifications_by_if_identifier(transition_specifications)
         else: # "action"
             transition_specification["if_identifier"] = stack_of_if_identifier[-1]
 def create_action_and_branch_array_for_each_if_construct(transition_specifications):
-    # action_target_array[state_name][if_identifier][0..n] is an dictionary with the keys "actions" and "target".
+    # The return dictionary action_target_array[state_name][if_identifier][0..n] is an dictionary with the keys "actions" and "target".
     # The key "actions" stores a list of actions which are executed in this branch.
     # The key "target" stores the target state of this branch.
+    # The return dictionary branchnumber_array contains for each state a dictionary with transition_specification["if_identifier"] as key,
+    # where the value is the number of branches the "if" has.
     action_target_array_of_state = {}
     branchnumber_array_of_state  = {}
     action_target_array          = {}
@@ -261,9 +268,6 @@ def create_action_and_branch_array_for_each_if_construct(transition_specificatio
     if action_target_array_of_state: # Needed for the last state, as no new "when" will come after the last state.
         action_target_array[state_name] = action_target_array_of_state
         branchnumber_array [state_name] = branchnumber_array_of_state
-
-    #print("action_target_array =", action_target_array)
-    #print("branchnumber_array  =", branchnumber_array)
     return action_target_array, branchnumber_array
 
 def action_is_present_in_each_branch(action, state_name, if_identifier, action_target_array):
@@ -275,14 +279,18 @@ def action_is_present_in_each_branch(action, state_name, if_identifier, action_t
 def remove_action_from_branches(transition_specifications, state_name, if_identifier, action, moved_actions):
     index_of_if_in_transition_specifications = 0
     for index, transition_specification in enumerate(transition_specifications):
-        #print("transition_specification =", transition_specification)
         if (transition_specification["state_name"]==state_name and
             transition_specification["if_identifier"]==if_identifier):
             if transition_specification["command"]=="if":
                 index_of_if_in_transition_specifications = index
             elif transition_specification["command"]=="action":
                 if action in transition_specification["actions"]:
-                    transition_specification["actions"].remove(action) # does not change action_target_dict["actions"], as it was created by copying.
+                    # This creates problems:
+                    #transition_specification["actions"].remove(action)
+                    # The reason is, that when the entry "action" is removed from the list, also in another transition_specification["actions"]
+                    # a entry disappears, if it is identical to action.
+                    # The solution is to create a new list:
+                    transition_specification["actions"] = [x for x in transition_specification["actions"] if x!=action]
                 if action not in moved_actions:
                     moved_actions.append(action)
     return index_of_if_in_transition_specifications
@@ -290,7 +298,6 @@ def remove_action_from_branches(transition_specifications, state_name, if_identi
 def remove_target_from_branches(transition_specifications, state_name, if_identifier, target, moved_target):
     index_of_if_in_transition_specifications = 0
     for index, transition_specification in enumerate(transition_specifications):
-        #print("transition_specification =", transition_specification)
         if (transition_specification["state_name"]==state_name and
             transition_specification["if_identifier"]==if_identifier):
             if transition_specification["command"]=="if":
@@ -388,6 +395,7 @@ def extract_conditions_for_all_outgoing_transitions_of_the_state(state_name, sta
                                                                      trace, trace_array # initialized by trace_array = []
                                                                      ):
     outgoing_transition_tags = get_all_outgoing_transitions_in_priority_order(start_point)
+    #print("outgoing_transition_tags", outgoing_transition_tags)
     if not outgoing_transition_tags and start_point.startswith("connector"):
         if trace:
             messagebox.showerror("Warning", 'There is a connector reached from state ' +
@@ -398,6 +406,7 @@ def extract_conditions_for_all_outgoing_transitions_of_the_state(state_name, sta
                                             'which has no outgoing transition,\ntherefore the generated HDL may be corrupted.')
     for _, transition_tag in enumerate(outgoing_transition_tags):
         transition_target, transition_condition, transition_action, condition_action_reference = get_transition_target_condition_action(transition_tag)
+        #print("transition_target, transition_condition, transition_action", transition_target, '|' + transition_condition + '|', '|'+transition_action+'|')
         transition_condition_is_a_comment = check_if_condition_is_a_comment(transition_condition)
         if transition_action!="" or transition_condition_is_a_comment:
             if transition_action!="":
@@ -410,7 +419,7 @@ def extract_conditions_for_all_outgoing_transitions_of_the_state(state_name, sta
                                                                              "moved_condition_lines": transition_condition.count("\n")}
                 else:
                     moved_actions_dict = {"moved_action": transition_action, "moved_action_ref": condition_action_reference.action_id}
-            else:
+            else: # transition condition is a comment.
                 moved_actions_dict = {"moved_action": transition_condition, "moved_action_ref": condition_action_reference.condition_id}
             transition_action_new = []
             for entry in moved_actions:

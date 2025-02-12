@@ -12,13 +12,13 @@ import re
 import main_window
 
 def compile():
+    show_compile_messages_tab()
     if main_window.working_directory_value.get()!="" and not main_window.working_directory_value.get().isspace():
         try:
             os.chdir(main_window.working_directory_value.get())
         except FileNotFoundError:
             messagebox.showerror("Error", "The working directory\n" + main_window.working_directory_value.get() + "\ndoes not exist.")
             return
-    show_compile_messages_tab()
     main_window.log_frame_text.config(state=tk.NORMAL)
     main_window.log_frame_text.insert(tk.END,
                  "\n++++++++++++++++++++++++++++++++++++++ " + datetime.today().ctime() +" +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
@@ -65,8 +65,8 @@ def get_command_list():
 def replace_variables_and_convert_into_list(command):
     command_array_new = []
     command_array = command.split()
-    for command in command_array:
-        if command=="$file":
+    for entry in command_array:
+        if entry=="$file":
             if main_window.select_file_number_text.get()==2:
                 messagebox.showerror("Error", 'The compile command uses $file, but the "2 files mode" is selected, so only $file1 and $file2 are allowed.')
                 return
@@ -82,7 +82,7 @@ def replace_variables_and_convert_into_list(command):
                 messagebox.showerror("Error", "Compile is not possible, HDL file " + file_name + " does not exist.")
                 return
             command_array_new.append(file_name)
-        elif command=="$file1":
+        elif entry=="$file1":
             if main_window.select_file_number_text.get()==1:
                 messagebox.showerror("Error", 'The compile command uses $file1, but the "1 files mode" is selected, so only $file is allowed).')
                 return
@@ -91,7 +91,7 @@ def replace_variables_and_convert_into_list(command):
                 messagebox.showerror("Error", "Compile is not possible, as HDL file" + file_name1 + " does not exist.")
                 return
             command_array_new.append(file_name1)
-        elif command=="$file2":
+        elif entry=="$file2":
             if main_window.select_file_number_text.get()==1:
                 messagebox.showerror("Error", 'The compile command uses $file2, but the "1 files mode" is selected, so only $file is allowed).')
                 return
@@ -100,10 +100,10 @@ def replace_variables_and_convert_into_list(command):
                 messagebox.showerror("Error", "Compile is not possible, as HDL file" + file_name2 + " does not exist.")
                 return
             command_array_new.append(file_name2)
-        elif command=="$name":
+        elif entry=="$name":
             command_array_new.append(main_window.module_name.get())
         else:
-            command_array_new.append(command)
+            command_array_new.append(entry)
     return command_array_new
 
 def copy_into_compile_messages_tab(stdout, stderr, command_array_new):

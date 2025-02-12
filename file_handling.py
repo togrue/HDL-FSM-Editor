@@ -25,6 +25,7 @@ import custom_text
 import state_comment
 import update_hdl_tab
 import constants
+import tag_plausibility
 
 filename = ""
 
@@ -547,7 +548,7 @@ def save_in_file_new(save_filename):
             design_dictionary["state"].append     ([main_window.canvas.coords(i), main_window.canvas.gettags(i), main_window.canvas.itemcget(i, "fill")])
         elif main_window.canvas.type(i)=="text":
             design_dictionary["text"].append      ([main_window.canvas.coords(i), main_window.canvas.gettags(i), main_window.canvas.itemcget(i, "text")])
-        elif main_window.canvas.type(i)=="line":
+        elif main_window.canvas.type(i)=="line" and "grid_line" not in main_window.canvas.gettags(i):
             design_dictionary["line"].append      ([main_window.canvas.coords(i), main_window.canvas.gettags(i)])
         elif main_window.canvas.type(i)=="polygon":
             design_dictionary["polygon"].append   ([main_window.canvas.coords(i), main_window.canvas.gettags(i)])
@@ -585,6 +586,8 @@ def save_in_file_new(save_filename):
                 print("file_handling: Fatal, unknown dictionary key ", i)
     fileobject.write(json.dumps(design_dictionary, indent=4, default=str))
     fileobject.close()
+    if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
+        messagebox.showerror("Error", 'The database is corrupt.\nDo not use the written file.\nSee details at STDOUT.')
 
 def open_file_with_name_new(read_filename):
     global filename
@@ -628,10 +631,20 @@ def open_file_with_name_new(read_filename):
         if "sash_positions" in design_dictionary:
             main_window.show_tab("Interface") # The tab must be shown at least once, so that the sash_positions do not have the default-value 0.
             for key, value in design_dictionary["sash_positions"]["interface_tab"].items():
-                main_window.paned_window_interface.sashpos(key, value) # Works only if new position does not outrange actual position.
+                #main_window.paned_window_interface.sashpos(key, value) # Works only if new position does not outrange actual position.
+                if (main_window.paned_window_interface.sashpos(0)!=0 and
+                    main_window.paned_window_interface.sashpos(0)!=1 and
+                    value<0.9*main_window.paned_window_interface.winfo_height()
+                    ):
+                    main_window.paned_window_interface.sashpos(key, value)
             main_window.show_tab("Internals") # The tab must be shown at least once, so that the sash_positions do not have the default-value 0.
             for key, value in design_dictionary["sash_positions"]["internals_tab"].items():
-                main_window.paned_window_internals.sashpos(key, value) # Works only if new position does not outrange actual position.
+                #main_window.paned_window_internals.sashpos(key, value) # Works only if new position does not outrange actual position.
+                if (main_window.paned_window_internals.sashpos(0)!=0 and
+                    main_window.paned_window_internals.sashpos(0)!=1 and
+                    value<0.9*main_window.paned_window_internals.winfo_height()
+                    ):
+                    main_window.paned_window_internals.sashpos(key, value)
         main_window.canvas.configure(bg=diagram_background_color)
         main_window.interface_package_text.insert              ("1.0", design_dictionary["interface_package"])
         main_window.interface_generics_text.insert             ("1.0", design_dictionary["interface_generics"])
@@ -860,6 +873,8 @@ def open_file_with_name_new(read_filename):
                                     design_dictionary["generate_path"], design_dictionary["modulename"     ])
         main_window.show_tab("Diagram")
         canvas_editing.view_all()
+        if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
+            messagebox.showerror("Error", 'The database is corrupt.\nDo not use this file.\nSee details at STDOUT.')
     except FileNotFoundError:
         messagebox.showerror("Error", "File " + read_filename + " could not be found.")
     except ValueError: # includes JSONDecodeError

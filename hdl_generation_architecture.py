@@ -88,7 +88,7 @@ def create_architecture(file_name, file_line_number):
     architecture += "            -- State Machine:\n"
     architecture += "            case state is\n"
     file_line_number += 2
-    transition_specifications       = hdl_generation_library.extract_transition_specifications_from_the_graph()
+    transition_specifications = hdl_generation_library.extract_transition_specifications_from_the_graph()
     state_sequence, file_line_number = hdl_generation_architecture_state_sequence.create_vhdl_for_the_state_sequence(transition_specifications, file_name, file_line_number)
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(4, state_sequence)
     architecture += "            end case;\n"
