@@ -142,3 +142,4 @@ def insert_line_in_log(text):
     else:
         main_window.log_frame_text.insert(tk.END, text)
     main_window.log_frame_text.config(state=tk.DISABLED)
+    main_window.log_frame_text.see(tk.END)
