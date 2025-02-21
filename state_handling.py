@@ -188,7 +188,7 @@ def resize_state(state_tag, text_id):
     state_coords = main_window.canvas.coords(state_tag)
     state_width = state_coords[2] - state_coords[0]
     size = main_window.canvas.bbox(text_id)
-    text_width = size[2] - size[0] + 5 # Make the text a little bit bigger, so that it does not touch the state circle.
+    text_width = size[2] - size[0] + 15 # Make the text a little bit bigger, so that it does not touch the state circle.
     if text_width<2*canvas_editing.state_radius:
         text_width = 2*canvas_editing.state_radius
     difference = text_width - state_width

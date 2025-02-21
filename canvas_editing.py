@@ -490,7 +490,7 @@ def modify_font_sizes_of_all_canvas_items(factor):
                 state_comment.StateComment.dictionary[i].label_id.configure(font=("Arial", int(used_label_fontsize)))
                 state_comment.StateComment.dictionary[i].text_id.configure (font=("Courier", int(fontsize)))
                 for keyword in main_window.keywords:
-                    state_comment.StateComment.dictionary[i].text_id.tag_configure(keyword , foreground=main_window.keyword_color[keyword] , font=("Courier",int(fontsize), "normal"))
+                    state_comment.StateComment.dictionary[i].text_id.tag_configure(keyword, foreground=main_window.keyword_color[keyword], font=("Courier",int(fontsize), "normal"))
             elif i in condition_action_handling.ConditionAction.dictionary:
                 condition_action_handling.ConditionAction.dictionary[i].condition_label.configure(font=("Arial", int(used_label_fontsize)))
                 condition_action_handling.ConditionAction.dictionary[i].action_label.configure   (font=("Arial", int(used_label_fontsize)))
@@ -569,11 +569,18 @@ def find(search_string, replace_string, replace):
         if continue_search is False:
             break
     if continue_search:
-        if main_window.language.get()=="VHDL":
-            interface_text_fields = [main_window.interface_package_text, main_window.interface_generics_text, main_window.interface_ports_text]
+        interface_text_fields = [main_window.interface_generics_text]
+        number_of_hits = search_in_text_fields_of_a_tab("Interface", "Generics", search_pattern, interface_text_fields, replace, replace_pattern)
+        if number_of_hits==-1:
+            continue_search = False
         else:
-            interface_text_fields = [main_window.interface_generics_text, main_window.interface_ports_text]
-        number_of_hits = search_in_text_fields_of_a_tab("Interface", search_pattern, interface_text_fields, replace, replace_pattern)
+            number_of_hits_all += number_of_hits
+    if continue_search:
+        if main_window.language.get()=="VHDL":
+            interface_text_fields = [main_window.interface_ports_text, main_window.interface_package_text]
+        else:
+            interface_text_fields = [main_window.interface_ports_text]
+        number_of_hits = search_in_text_fields_of_a_tab("Interface", "Ports", search_pattern, interface_text_fields, replace, replace_pattern)
         if number_of_hits==-1:
             continue_search = False
         else:
@@ -584,13 +591,13 @@ def find(search_string, replace_string, replace):
                                     main_window.internals_process_clocked_text, main_window.internals_process_combinatorial_text]
         else:
             internals_text_fields = [main_window.internals_architecture_text, main_window.internals_process_clocked_text, main_window.internals_process_combinatorial_text]
-        number_of_hits = search_in_text_fields_of_a_tab("Internals", search_pattern, internals_text_fields, replace, replace_pattern)
+        number_of_hits = search_in_text_fields_of_a_tab("Internals", "", search_pattern, internals_text_fields, replace, replace_pattern)
         if number_of_hits==-1:
             continue_search = False
         else:
             number_of_hits_all += number_of_hits
     if continue_search:
-        number_of_hits = search_in_text_fields_of_a_tab("generated HDL", search_pattern, [main_window.hdl_frame_text], replace, replace_pattern)
+        number_of_hits = search_in_text_fields_of_a_tab("generated HDL", "", search_pattern, [main_window.hdl_frame_text], replace, replace_pattern)
         if number_of_hits==-1:
             continue_search = False
         else:
@@ -629,8 +636,7 @@ def search_in_text_fields_of_canvas_window(search_pattern, canvas_window, text_i
         if number_of_hits==-1:
             number_of_hits_all = -1
             break
-        else:
-            number_of_hits_all += number_of_hits
+        number_of_hits_all += number_of_hits
     return number_of_hits_all
 
 def search_in_text_widget(text_id, search_pattern, count, canvas_window, replace, replace_pattern):
@@ -690,7 +696,7 @@ def search_in_canvas_text(item, search_pattern, replace, replace_pattern):
             start = hit_begin + len(search_pattern)
     return number_of_hits
 
-def search_in_text_fields_of_a_tab(tab, search_pattern, interface_text_fields, replace, replace_pattern):
+def search_in_text_fields_of_a_tab(tab, kind, search_pattern, interface_text_fields, replace, replace_pattern):
     count = tk.IntVar()
     number_of_hits = 0
     for text_id in interface_text_fields:
@@ -704,7 +710,15 @@ def search_in_text_fields_of_a_tab(tab, search_pattern, interface_text_fields, r
                 end_index = index + "+" + str(len(search_pattern)) + " chars"
                 text_id.delete(index, end_index)
                 text_id.insert(index, replace_pattern)
-                text_id.update_custom_text_class_signals_list()
+                if tab=="Interface":
+                    if kind=="Generics":
+                        text_id.update_custom_text_class_generics_list()
+                    else: # kind=="ports"
+                        text_id.update_custom_text_class_ports_list()
+                elif tab=="Internals":
+                    text_id.update_custom_text_class_signals_list()
+                else: # tab="generated HDL"
+                    pass
                 start = index + "+" + str(len(replace_pattern)) + " chars"
                 if text_id.cget("state")==tk.DISABLED:
                     number_of_hits -= 1

@@ -2,6 +2,26 @@
 Constants for all modules of HDL-FSM-Editor
 """
 vhdl_keywords_for_signal_handling = (
+" to_stdulogic ",
+" to_stdlogicvector ",
+" to_stdulogicvector ",
+" to_integer ",
+" to_unsigned ",
+" to_signed ",
+" shift_left ",
+" shift_right ",
+" rotate_left ",
+" rotate_right ",
+" length ",
+" resize ",
+" high ",
+" low ",
+" right ",
+" left ",
+" image ",
+" value ",
+" pos ",
+" val ",
 " abs ",
 " after ",
 " and ",
@@ -218,9 +238,9 @@ keywords = {"not_read" :    ["dummy_entry_so_that_this_list_is_no_empty"],
             "datatype" : ["std_logic", "std_logic_vector", "integer", "boolean", "bit", "bit_vector", "real", "natural",
                             "signed", "unsigned", "ieee", "std_logic_1164", "numeric_std"],
             # From std_logic_1164, numeric_std:
-            "function" : ["rising_edge", "falling_edge", "and", "nand", "or", "nor", "xnor", "xor", "not", "to_stdulogic", "to_stdlogicvector", "to_stdlogicvector",
-                            "to_stdulogicvector", "to_stdulogicvector", "abs", "rem", "mod", "shift_left", "shiftright", "rotate_left", "rotate_right", "resize",
-                            "to_integer", "to_unsigned", "to_signed", "to_stdlogicvector", "std_match"],
+            "function" : ["rising_edge", "falling_edge", "and", "nand", "or", "nor", "xnor", "xor", "not", "to_stdulogic", "to_stdlogicvector",
+                            "to_stdulogicvector", "abs", "rem", "mod", "shift_left", "shift_right", "rotate_left", "rotate_right", "resize",
+                            "to_integer", "to_unsigned", "to_signed", "std_match"],
             # It is important to have "comment" at the end, as all other highlighting-tags are removed in the comment area.
             "comment"  : ["--.*$"]} 
 
@@ -233,9 +253,9 @@ vhdl_keywords = {
             "datatype" : ["std_logic", "std_logic_vector", "integer", "boolean", "bit", "bit_vector", "real", "natural",
                             "signed", "unsigned", "ieee", "std_logic_1164", "numeric_std"],
             # From std_logic_1164, numeric_std:
-            "function" : ["rising_edge", "falling_edge", "and", "nand", "or", "nor", "xnor", "xor", "not", "to_stdulogic", "to_stdlogicvector", "to_stdlogicvector",
-                            "to_stdulogicvector", "to_stdulogicvector", "abs", "rem", "mod", "shift_left", "shiftright", "rotate_left", "rotate_right", "resize",
-                            "to_integer", "to_unsigned", "to_signed", "to_stdlogicvector", "std_match"],
+            "function" : ["rising_edge", "falling_edge", "and", "nand", "or", "nor", "xnor", "xor", "not", "to_stdulogic", "to_stdlogicvector",
+                            "to_stdulogicvector", "abs", "rem", "mod", "shift_left", "shift_right", "rotate_left", "rotate_right", "resize",
+                            "to_integer", "to_unsigned", "to_signed", "std_match"],
             # It is important to have "comment" at the end, as all other highlighting-tags are removed in the comment area.
             "comment"  : ["--.*$"]
             }

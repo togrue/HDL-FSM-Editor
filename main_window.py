@@ -7,6 +7,7 @@ from tkinter import messagebox
 from tkinter.filedialog import askdirectory
 import sys
 import argparse
+import os
 from os.path import exists
 import urllib.request
 import re
@@ -25,7 +26,7 @@ import link_dictionary
 import color_changer
 import grid_drawing
 
-VERSION = "4.8"
+VERSION = "4.9"
 header_string ="HDL-FSM-Editor\nVersion " + VERSION + "\nCreated by Matthias Schweikart\nContact: matthias.schweikart@gmx.de"
 
 state_action_default_button        = None
@@ -70,7 +71,7 @@ compile_cmd_docu = None
 debug_active = None
 regex_dialog = None
 regex_message_find_for_vhdl      = "(.*?):([0-9]+):[0-9]+:.*"
-regex_message_find_for_verilog   = "(.*?):([0-9]+):.*"
+regex_message_find_for_verilog   = "(.*?):([0-9]+): .*"        # Added ' ' after the second ':', to get no hit at time stamps (i.e. 16:58:36).
 regex_file_name_quote        = "\\1"
 regex_file_line_number_quote = "\\2"
 regex_dialog_entry = None
@@ -99,6 +100,8 @@ sash_positions["interface_tab"] = {}
 sash_positions["internals_tab"] = {}
 undo_button = None
 redo_button = None
+trace_id_generate_path_value     = None
+trace_id_working_directory_value = None
 
 keyword_color = {"not_read": "red", "not_written": "red", "control": "green4", "datatype": "brown", "function": "violet", "comment": "blue"}
 keywords = constants.vhdl_keywords
@@ -148,13 +151,16 @@ def evaluate_commandline_parameters():
             messagebox.showerror("Error in HDL-SCHEM-Editor", "File " + args.filename + " cannot be read. Must have extension '.hfe'.")
         else:
             file_handling.filename = args.filename
+            file_handling.remove_old_design() # Needed, because at starting HDL-FSM-Editor "library ieee; ..." was inserted.
             file_handling.open_file_with_name_new(args.filename)
             if args.generate_hdl:
                 hdl_generation.run_hdl_generation(write_to_file=True)
                 sys.exit()
             canvas.bind("<Visibility>", lambda event: view_all_after_window_is_built())
-    root.wm_deiconify()
     return
+
+def show_window():
+    root.wm_deiconify()
 
 def view_all_after_window_is_built():
     canvas_editing.view_all()
@@ -165,8 +171,12 @@ def close_tool():
     if title.endswith("*"):
         discard = messagebox.askokcancel("Exit", "There are unsaved changes, do you want to discard them?", default="cancel")
         if discard is True:
+            if os.path.isfile(file_handling.filename + ".tmp"):
+                os.remove(file_handling.filename + ".tmp")
             sys.exit()
     else:
+        if os.path.isfile(file_handling.filename + ".tmp"):
+            os.remove(file_handling.filename + ".tmp")
         sys.exit()
 
 def create_root():
@@ -178,6 +188,7 @@ def create_root():
     root.columnconfigure(0, weight=1)
     root.rowconfigure   (1, weight=1)
     root.grid()
+    root.protocol("WM_DELETE_WINDOW", close_tool)
     link_dictionary.LinkDictionary(root)
 
 def create_menu_bar():
@@ -199,7 +210,7 @@ def create_menu_bar():
     hdl_menu = tk.Menu(hdl_menu_button)
     hdl_menu_button.configure(menu=hdl_menu)
     hdl_menu.add_command(label="Generate", accelerator="Ctrl+g", command=lambda: hdl_generation.run_hdl_generation(write_to_file=True), font=("Arial", 10))
-    hdl_menu.add_command(label="Compile" , accelerator="Ctrl+p", command=compile_handling.compile         , font=("Arial", 10))
+    hdl_menu.add_command(label="Compile" , accelerator="Ctrl+p", command=compile_handling.compile_hdl                                 , font=("Arial", 10))
 
     tool_title = ttk.Label(menue_frame, text="HDL-FSM-Editor", font=("Arial", 15))
 
@@ -242,7 +253,7 @@ def create_menu_bar():
     root.bind_all("<Control-s>", lambda event : file_handling.save())
     root.bind_all("<Control-g>", lambda event : hdl_generation.run_hdl_generation(write_to_file=True))
     root.bind_all("<Control-n>", lambda event : file_handling.remove_old_design())
-    root.bind_all("<Control-p>", lambda event : compile_handling.compile())
+    root.bind_all("<Control-p>", lambda event : compile_handling.compile_hdl())
     root.bind_all('<Control-f>', lambda event : search_string_entry.focus_set())
 
 def create_notebook():
@@ -274,7 +285,7 @@ def create_control_notebook_tab():
     language_combobox.grid(row=1, column=1, sticky=tk.W)
 
     generate_path_value = tk.StringVar(value="")
-    generate_path_value.trace('w', show_path_has_changed)
+    generate_path_value.trace_add("write", show_path_has_changed)
     generate_path_label  = ttk.Label (control_frame, text="Path for generated HDL:", padding=5)
     generate_path_entry  = ttk.Entry (control_frame, textvariable=generate_path_value, width=80)
     generate_path_button = ttk.Button(control_frame, text="Select...",  command=set_path, style='Path.TButton')
@@ -939,16 +950,12 @@ def handle_key(event, custom_text_ref):
     custom_text_ref.after_idle(custom_text_ref.update_highlight_tags, canvas_editing.fontsize, ["control" , "datatype" , "function" , "comment"])
 
 def handle_key_at_ports(custom_text_ref):
-    custom_text_ref.after_idle(update_custom_text_instance_of_ports, custom_text_ref)
-def update_custom_text_instance_of_ports(custom_text_ref):
-    custom_text_ref.update_custom_text_class_ports_list()
-    custom_text_ref.update_highlighting()
+    custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_ports_list)
+    custom_text_ref.after_idle(custom_text_ref.update_highlighting)
 
 def handle_key_at_generics(custom_text_ref):
-    custom_text_ref.after_idle(update_custom_text_instance_of_generics, custom_text_ref)
-def update_custom_text_instance_of_generics(custom_text_ref):
-    custom_text_ref.update_custom_text_class_generics_list()
-    custom_text_ref.update_highlighting()
+    custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_generics_list)
+    custom_text_ref.after_idle(custom_text_ref.update_highlighting)
 
 def handle_key_at_declarations(custom_text_ref):
     custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_signals_list)
@@ -996,3 +1003,12 @@ def __resize_event_internals_tab_frames(event):
     sash_positions["internals_tab"][1] = paned_window_internals.sashpos(1)
     if language.get()=="VHDL":
         sash_positions["internals_tab"][2] = paned_window_internals.sashpos(2)
+
+def set_word_boundaries():
+    # this first statement triggers tcl to autoload the library
+    # that defines the variables we want to override.
+    root.tk.call('tcl_wordBreakAfter', '', 0)
+    # this defines what tcl considers to be a "word". For more
+    # information see http://www.tcl.tk/man/tcl8.5/TclCmd/library.htm#M19
+    root.tk.call('set', 'tcl_wordchars'   , '[a-zA-Z0-9_]')
+    root.tk.call('set', 'tcl_nonwordchars','[^a-zA-Z0-9_]')

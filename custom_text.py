@@ -418,6 +418,7 @@ class CustomText(tk.Text):
                 hit = re.sub(","     , "", hit) # Remove "," of a "with .. select" statement.
                 hit = re.sub(" when | when$|^when |^when$", "", hit, flags=re.I) # remove remaining "when" of a "with .. select"-statement (right hand side).
                 hit = re.sub(" else | else$|^else |^else$", "", hit, flags=re.I) # remove remaining "else" of an "when .. else"-clause (right hand side).
+                hit = re.sub(" ' "                        , "", hit, flags=re.I) # remove remaining "ticks" of VHDL attributes
                 CustomText.read_variables_of_all_windows[self] += hit.split()
             else:
                 break

@@ -27,23 +27,30 @@ import update_hdl_tab
 import constants
 import tag_plausibility
 
-filename = ""
+filename     = ""
+filename_old = ""
 
 def save_as():
-    global filename
+    global filename, filename_old
+    filename_old = filename
     filename = asksaveasfilename(defaultextension=".hfe",
                                  initialfile = main_window.module_name.get(),
                                  filetypes=(("HDL-FSM-Editor files","*.hfe"),("all files","*.*")))
     if filename!="":
+        dir_name, file_name = os.path.split(filename)
+        main_window.root.title(file_name + " (" + dir_name + ")")
         save_in_file_new(filename)
 
 def save():
-    global filename
+    global filename, filename_old
+    filename_old = filename
     if filename=="":
         filename = asksaveasfilename(defaultextension=".hfe",
                                      initialfile = main_window.module_name.get(),
                                      filetypes=(("HDL-FSM-Editor files","*.hfe"),("all files","*.*")))
     if filename!="":
+        dir_name, file_name = os.path.split(filename)
+        main_window.root.title(file_name + " (" + dir_name + ")")
         save_in_file_new(filename)
 
 def write_coords(fileobject, canvas_id):
@@ -486,9 +493,6 @@ def print_canvas():
 #########################################################################################################################################
 
 def save_in_file_new(save_filename):
-    dir_name, file_name = os.path.split(save_filename)
-    main_window.root.title(file_name + " (" + dir_name + ")")
-    fileobject = open(save_filename,'w', encoding="utf-8")
     design_dictionary = {}
     design_dictionary["modulename"]                          = main_window.module_name.get()
     design_dictionary["language"]                            = main_window.language.get()
@@ -584,15 +588,29 @@ def save_in_file_new(save_filename):
                                                                             main_window.canvas.gettags(i)])
             else:
                 print("file_handling: Fatal, unknown dictionary key ", i)
-    fileobject.write(json.dumps(design_dictionary, indent=4, default=str))
-    fileobject.close()
+    try:
+        fileobject = open(save_filename,'w', encoding="utf-8")
+        fileobject.write(json.dumps(design_dictionary, indent=4, default=str))
+        fileobject.close()
+        if os.path.isfile(filename_old + ".tmp"):
+            os.remove(filename_old + ".tmp")
+    except Exception as _:
+        messagebox.showerror("Error in HDL-FSM-Editor", "Writing to file " + save_filename + " caused exception ")
     if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
         messagebox.showerror("Error", 'The database is corrupt.\nDo not use the written file.\nSee details at STDOUT.')
 
 def open_file_with_name_new(read_filename):
     global filename
+    replaced_read_filename = read_filename
+    if os.path.isfile(read_filename + ".tmp"):
+        answer = messagebox.askyesno("HDL-FSM-Editor",
+                                     "Found BackUp-File\n" + read_filename + ".tmp\n" +
+                                     "This file remains after a HDL-FSM-Editor crash and contains all latest changes.\n" +
+                                     "Shall this file be read?")
+        if answer is True:
+            replaced_read_filename = read_filename + ".tmp"
     try:
-        fileobject = open(read_filename, 'r', encoding="utf-8")
+        fileobject = open(replaced_read_filename, 'r', encoding="utf-8")
         data = fileobject.read()
         fileobject.close()
         filename = read_filename
@@ -872,7 +890,7 @@ def open_file_with_name_new(read_filename):
         update_hdl_tab.UpdateHdlTab(design_dictionary["language"     ], design_dictionary["number_of_files"], read_filename,
                                     design_dictionary["generate_path"], design_dictionary["modulename"     ])
         main_window.show_tab("Diagram")
-        canvas_editing.view_all()
+        main_window.root.after_idle(canvas_editing.view_all)
         if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
             messagebox.showerror("Error", 'The database is corrupt.\nDo not use this file.\nSee details at STDOUT.')
     except FileNotFoundError:

@@ -7,11 +7,11 @@ from os.path import exists
 from datetime import datetime
 import os
 import re
-
+import shlex
 
 import main_window
 
-def compile():
+def compile_hdl():
     show_compile_messages_tab()
     if main_window.working_directory_value.get()!="" and not main_window.working_directory_value.get().isspace():
         try:
@@ -23,15 +23,23 @@ def compile():
     main_window.log_frame_text.insert(tk.END,
                  "\n++++++++++++++++++++++++++++++++++++++ " + datetime.today().ctime() +" +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
     main_window.log_frame_text.config(state=tk.DISABLED)
+    start_time = datetime.now()
     commands = get_command_list()
     #print("compile_handling: commands =", commands)
     for command in commands:
-        execute(command)
+        success = execute(command)
+        if not success:
+            break
+    end_time = datetime.now()
+    main_window.log_frame_text.config(state=tk.NORMAL)
+    insert_line_in_log("Finished user commands from Control-Tab after " + str(end_time - start_time) + ".\n")
+    main_window.log_frame_text.config(state=tk.DISABLED)
 
 def execute(command):
-    command_array_new = replace_variables_and_convert_into_list(command)
+    command_array = shlex.split(command) # Does not split quoted sub-strings with blanks.
+    command_array_new = replace_variables(command_array)
     if command_array_new is None:
-        return
+        return False
     for command_part in command_array_new:
         insert_line_in_log(command_part+" ")
     insert_line_in_log("\n")
@@ -62,9 +70,8 @@ def get_command_list():
     command_string = command_string_tmp.replace(";", " ; ")
     return command_string.split(";")
 
-def replace_variables_and_convert_into_list(command):
+def replace_variables(command_array):
     command_array_new = []
-    command_array = command.split()
     for entry in command_array:
         if entry=="$file":
             if main_window.select_file_number_text.get()==2:
@@ -120,7 +127,7 @@ def copy_into_compile_messages_tab(stdout, stderr, command_array_new):
     main_window.log_frame_text.see(tk.END)
 
 def insert_line_in_log(text):
-    if main_window.language=="VHDL":
+    if main_window.language.get()=="VHDL":
         regex_message_find = main_window.regex_message_find_for_vhdl
     else:
         regex_message_find = main_window.regex_message_find_for_verilog
@@ -128,7 +135,7 @@ def insert_line_in_log(text):
     match_object_of_message = re.match(regex_message_find, text)
     main_window.log_frame_text.config(state=tk.NORMAL)
     if match_object_of_message is not None or "error" in text_low  or "warning" in text_low:
-        if main_window.language=="VHDL" and "report note" in text_low:
+        if main_window.language.get()=="VHDL" and "report note" in text_low:
             main_window.log_frame_text.insert(tk.END, text, ("message_green"))
         else:
             main_window.log_frame_text.insert(tk.END, text, ("message_red"))

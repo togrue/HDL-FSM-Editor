@@ -325,7 +325,7 @@ def merge_trace_array(trace_array):
             if (trace!=[] and trace[0]["command"]!="if" and
                 trace_index!=0):  # Check is only done, when more than 1 trace exists.
                 messagebox.showerror("Warning",
-                'There is a transition starting at ' + trace[0]["state_name"] +
+                'There is a transition starting at state ' + trace[0]["state_name"] +
                 ' which has no condition but does not have the lowest priority,\ntherefore the generated HDL may be corrupted.')
         else:
             if trace: # An empty trace may happen, when the transition with lowest priority has no condition and action (and has a connector?!).
@@ -355,7 +355,7 @@ def merge_trace_array(trace_array):
                             target_at_error = trace[search_index]["target"]
                         if search_index==len(trace)-1 or search_index==len(traces_of_a_state_reversed[trace_index+1])-1:
                             messagebox.showerror("Error",
-                            'There is a transition starting at ' + trace[0]["state_name"] + ' to state ' + target_at_error +
+                            'There is a transition starting at state ' + trace[0]["state_name"] + ' to state ' + target_at_error +
                             ' which will never fire,\ntherefore the generated HDL may be corrupted.')
                             break
                         search_index += 1
@@ -570,6 +570,7 @@ def convert_hdl_lines_into_a_searchable_string(text):
     separated  = surround_character_by_blanks(">" , separated)
     separated  = surround_character_by_blanks("<" , separated)
     separated  = surround_character_by_blanks("," , separated)
+    separated  = surround_character_by_blanks("'" , separated)
     separated = re.sub("<  =", "<=", separated) # restore this operator (assignment or comparison)
     separated = re.sub(">  =", ">=", separated) # restore this operator (comparison)
     separated = re.sub("=  >", "=>", separated) # restore this operator (when selector in VHDL)

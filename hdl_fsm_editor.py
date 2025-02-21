@@ -9,7 +9,6 @@ print(main_window.header_string)
 
 # The top window:
 main_window.create_root()
-main_window.root.protocol("WM_DELETE_WINDOW", main_window.close_tool)
 
 style = ttk.Style(main_window.root)
 style.theme_use("default")
@@ -38,6 +37,7 @@ style.configure("Redo.TButton"                      )
 style.configure("Find.TButton"                      )
 style.configure("Path.TButton"                      )
 
+main_window.set_word_boundaries()
 main_window.create_notebook()
 main_window.create_control_notebook_tab()
 main_window.create_interface_notebook_tab()
@@ -50,6 +50,7 @@ main_window.create_menu_bar()
 undo_handling.design_has_changed() # Init the undo/redo-stack with an empty design.
 
 main_window.evaluate_commandline_parameters()
+main_window.show_window()
 main_window.root.mainloop()
 
 # During editing in the diagram notebook tab, several tags are used to identify the canvas items.

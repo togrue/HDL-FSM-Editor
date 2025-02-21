@@ -3,6 +3,7 @@ This module contains all method to support "undo" and "redo".
 """
 import tkinter as tk
 import re
+import os
 import state_handling
 import transition_handling
 import canvas_editing
@@ -17,6 +18,7 @@ import global_actions_handling
 import main_window
 import state_comment
 import constants
+import file_handling
 #import inspect
 
 stack = []
@@ -32,9 +34,11 @@ def modify_window_title():
         main_window.root.title(title)
 
 def design_has_changed():
-    #print("design_has_changed: caller =", inspect.stack()[1][3])
     add_changes_to_design_stack()
     modify_window_title()
+    if file_handling.filename!="" and not main_window.root.title().startswith('unnamed'):
+        #print("design_has_changed: tmp is created by =", inspect.stack()[1][3])
+        file_handling.save_in_file_new(file_handling.filename + ".tmp")
 
 def undo():
     global stack_write_pointer
@@ -55,6 +59,8 @@ def undo():
                 main_window.root.title(title[:-1])
         if stack_write_pointer==1: # 1 is the next free place in the stack, 0 is the empty design, so nothing to undo is left
             main_window.undo_button.config(state="disabled")
+            if os.path.isfile(file_handling.filename + ".tmp"):
+                os.remove(file_handling.filename + ".tmp")
         main_window.redo_button.config(state="enabled")
 
 def redo():
@@ -74,7 +80,6 @@ def add_changes_to_design_stack():
     global stack_write_pointer
     remove_stack_entries_from_write_pointer_to_the_end_of_the_stack()
     new_design = get_complete_design_as_text_object()
-    #print("append stack entry at stack-pointer =", stack_write_pointer)
     stack.append(new_design)
     stack_write_pointer += 1
     if stack_write_pointer>1:
@@ -227,6 +232,7 @@ def get_tags(canvas_id):
 def get_fill_color(canvas_id):
     color = main_window.canvas.itemcget(canvas_id, "fill")
     return "fill=" + color + ' '
+
 line_index = 0
 def set_diagram_to_version_selected_by_stack_pointer():
     global line_index

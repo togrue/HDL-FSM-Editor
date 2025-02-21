@@ -12,11 +12,13 @@ def recreate_keyword_list_of_unused_signals():
     read_variables = []
     for _, read_variables_of_window in custom_text.CustomText.read_variables_of_all_windows.items():
         read_variables += read_variables_of_window
-    #print('read_variables =', read_variables)
+    #print("read_variables =", read_variables)
     written_variables = []
     for _, written_variables_of_window in custom_text.CustomText.written_variables_of_all_windows.items():
         written_variables += written_variables_of_window
     #print("written_variables =", written_variables)
+    # Remove entry if "true" or "false" is read:
+    read_variables = [value for value in read_variables if value not in ("true", "false")]
     # Check if each input_port is read (remove read input_ports from list, if a declaration exists):
     for input_port in main_window.interface_ports_text.readable_ports_list:
         if input_port in read_variables:
@@ -56,7 +58,7 @@ def recreate_keyword_list_of_unused_signals():
     #print('read_variables =', read_variables)
     for port_type in main_window.interface_ports_text.port_types_list:
         if port_type in read_variables:
-            read_variables    = [value for value in read_variables if value!=port_type] # remove signal from list
+            read_variables = [value for value in read_variables if value!=port_type] # remove signal from list
     for generic in main_window.interface_generics_text.generics_list:
         written_variables = [value for value in written_variables if value!=generic] # remove generic from list
         if generic in read_variables:
@@ -64,7 +66,7 @@ def recreate_keyword_list_of_unused_signals():
     main_window.keywords["not_written"] += read_variables
     main_window.keywords["not_read"]    += written_variables
     #print('written_variables =', written_variables)
-    #print('main_window.keywords["not_read"] 3 =', main_window.keywords["not_read"])
+    #print('main_window.keywords["not_read"   ] 3 =', main_window.keywords["not_read"])
     #print('main_window.keywords["not_written"] 3 =', main_window.keywords["not_written"])
 
 def update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment():
