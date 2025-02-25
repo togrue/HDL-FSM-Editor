@@ -229,7 +229,6 @@ class CustomText(tk.Text):
             text = self.__add_read_variables_from_case_constructs_to_read_variables_of_all_windows   (text)
             text = self.__add_read_variables_from_assignments_to_read_variables_of_all_windows       (text)
             text = self.__add_read_variables_from_always_statements_to_read_variables_of_all_windows (text)
-            #print("read_variables_of_all_windows[self] =", CustomText.read_variables_of_all_windows[self])
             text = re.sub(" when | when$|^when |^when$", "", text, flags=re.I) # remove remaining "when" of a "case"-statement (left hand side).
             text = re.sub(" else | else$|^else |^else$", "", text, flags=re.I) # remove remaining "else" of an if-clause (left hand side).
             CustomText.written_variables_of_all_windows[self] = text.split()

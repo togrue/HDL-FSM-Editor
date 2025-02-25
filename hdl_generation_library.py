@@ -571,6 +571,8 @@ def convert_hdl_lines_into_a_searchable_string(text):
     separated  = surround_character_by_blanks("<" , separated)
     separated  = surround_character_by_blanks("," , separated)
     separated  = surround_character_by_blanks("'" , separated)
+    separated  = surround_character_by_blanks("\+" , separated)
+    separated  = surround_character_by_blanks("-" , separated)
     separated = re.sub("<  =", "<=", separated) # restore this operator (assignment or comparison)
     separated = re.sub(">  =", ">=", separated) # restore this operator (comparison)
     separated = re.sub("=  >", "=>", separated) # restore this operator (when selector in VHDL)
@@ -590,10 +592,11 @@ def surround_character_by_blanks(character, all_port_declarations_without_commen
     return re.sub(character, " " + original_character + " ", all_port_declarations_without_comments)
 
 def get_all_declared_signal_names(all_signal_declarations):
-    all_signal_declarations_without_comments = remove_comments_and_returns(all_signal_declarations)
-    all_signal_declarations_separated        = surround_character_by_blanks(":", all_signal_declarations_without_comments) # only needed for VHDL
-    split_char = ";"
-    signal_declaration_list = all_signal_declarations_separated.split(split_char)
+    all_signal_declarations = remove_comments_and_returns(all_signal_declarations)
+    all_signal_declarations = remove_functions           (all_signal_declarations)
+    all_signal_declarations = remove_type_declarations   (all_signal_declarations)
+    all_signal_declarations_separated = surround_character_by_blanks(":", all_signal_declarations) # only needed for VHDL
+    signal_declaration_list = all_signal_declarations_separated.split(";")
     signal_list = []
     for declaration in signal_declaration_list:
         if declaration!="" and not declaration.isspace():

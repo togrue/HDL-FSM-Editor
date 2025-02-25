@@ -129,8 +129,14 @@ def create_type_definition_for_the_state_signal():
     if list_of_all_state_names!=[]:
         type_definition = "type t_state is ("
         list_of_all_state_names_reduced_by_last_entry = list_of_all_state_names[:-1]
+        state_counter = 0
         for state_name in list_of_all_state_names_reduced_by_last_entry:
-            type_definition += state_name +","
+            type_definition += state_name +", "
+            state_counter += 1
+            if state_counter==10:
+                state_counter = 0
+                type_definition = type_definition[:-1]
+                type_definition += "\n"
         type_definition += list_of_all_state_names[-1] + ");\n"
         return type_definition
     return None

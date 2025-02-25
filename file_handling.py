@@ -592,7 +592,7 @@ def save_in_file_new(save_filename):
         fileobject = open(save_filename,'w', encoding="utf-8")
         fileobject.write(json.dumps(design_dictionary, indent=4, default=str))
         fileobject.close()
-        if os.path.isfile(filename_old + ".tmp"):
+        if not save_filename.endswith(".tmp") and os.path.isfile(filename_old + ".tmp"):
             os.remove(filename_old + ".tmp")
     except Exception as _:
         messagebox.showerror("Error in HDL-FSM-Editor", "Writing to file " + save_filename + " caused exception ")
@@ -648,21 +648,25 @@ def open_file_with_name_new(read_filename):
             diagram_background_color = "white"
         if "sash_positions" in design_dictionary:
             main_window.show_tab("Interface") # The tab must be shown at least once, so that the sash_positions do not have the default-value 0.
-            for key, value in design_dictionary["sash_positions"]["interface_tab"].items():
-                #main_window.paned_window_interface.sashpos(key, value) # Works only if new position does not outrange actual position.
-                if (main_window.paned_window_interface.sashpos(0)!=0 and
-                    main_window.paned_window_interface.sashpos(0)!=1 and
-                    value<0.9*main_window.paned_window_interface.winfo_height()
-                    ):
-                    main_window.paned_window_interface.sashpos(key, value)
+            if ('1' in design_dictionary["sash_positions"]["interface_tab"] and
+                design_dictionary["sash_positions"]["interface_tab"]['1']<0.9*main_window.paned_window_interface.winfo_height()):
+                for key, value in design_dictionary["sash_positions"]["interface_tab"].items():
+                    #main_window.paned_window_interface.sashpos(key, value) # Works only if new position does not outrange actual position.
+                    if (main_window.paned_window_interface.sashpos(0)!=0 and
+                        main_window.paned_window_interface.sashpos(0)!=1
+                        ):
+                        main_window.paned_window_interface.sashpos(int(key), value)
+                        main_window.sash_positions["interface_tab"][int(key)] = value
             main_window.show_tab("Internals") # The tab must be shown at least once, so that the sash_positions do not have the default-value 0.
-            for key, value in design_dictionary["sash_positions"]["internals_tab"].items():
-                #main_window.paned_window_internals.sashpos(key, value) # Works only if new position does not outrange actual position.
-                if (main_window.paned_window_internals.sashpos(0)!=0 and
-                    main_window.paned_window_internals.sashpos(0)!=1 and
-                    value<0.9*main_window.paned_window_internals.winfo_height()
-                    ):
-                    main_window.paned_window_internals.sashpos(key, value)
+            if ('2' in design_dictionary["sash_positions"]["internals_tab"] and
+                design_dictionary["sash_positions"]["internals_tab"]['2']<0.9*main_window.paned_window_internals.winfo_height()):
+                for key, value in design_dictionary["sash_positions"]["internals_tab"].items():
+                    #main_window.paned_window_internals.sashpos(key, value) # Works only if new position does not outrange actual position.
+                    if (main_window.paned_window_internals.sashpos(0)!=0 and
+                        main_window.paned_window_internals.sashpos(0)!=1
+                        ):
+                        main_window.paned_window_internals.sashpos(int(key), value)
+                        main_window.sash_positions["internals_tab"][int(key)] = value
         main_window.canvas.configure(bg=diagram_background_color)
         main_window.interface_package_text.insert              ("1.0", design_dictionary["interface_package"])
         main_window.interface_generics_text.insert             ("1.0", design_dictionary["interface_generics"])

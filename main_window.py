@@ -26,7 +26,7 @@ import link_dictionary
 import color_changer
 import grid_drawing
 
-VERSION = "4.9"
+VERSION = "4.10"
 header_string ="HDL-FSM-Editor\nVersion " + VERSION + "\nCreated by Matthias Schweikart\nContact: matthias.schweikart@gmx.de"
 
 state_action_default_button        = None
