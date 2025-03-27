@@ -16,10 +16,7 @@ import state_comment
 import constants
 
 def move_do(event, move_list, first):
-    if event.type=="5": # ButtonRelease
-        last = True
-    else: # Motion
-        last = False
+    last = bool(event.type=="5")
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
     if state_is_moved_to_near_to_state_or_connector(move_list, event_x, event_y):
         return

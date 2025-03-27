@@ -46,7 +46,7 @@ def calculate_middle_point(coords):
 def determine_the_tag_of_the_state_name(state_id):
     tags = main_window.canvas.gettags(state_id)
     for tag in tags:
-        if tag.startswith("state"):
+        if tag.startswith("state") and not tag.endswith("_comment_line_end"):
             return tag + "_name"
 def determine_the_radius_of_the_state(state_id):
     state_coords = main_window.canvas.coords(state_id)
@@ -103,17 +103,16 @@ def evaluate_menu(event, window, listbox, menu_x, menu_y, state_id):
             undo_handling.design_has_changed()
     elif selected_entry=="add comment":
         tags = main_window.canvas.gettags(state_id)
-        comment_exists = False
         for tag in tags:
             if tag.endswith("comment_line_end"):
-                comment_exists = True
-            elif tag.startswith("state"):
+                return # There is already a comment attached to this state.
+        for tag in tags:
+            if tag.startswith("state"):
                 state_identifier = tag
-        if not comment_exists:
-            comment_ref = state_comment.StateComment(menu_x, menu_y, height=1, width=8, padding=3)
-            comment_ref.add_line(menu_x, menu_y, state_identifier)
-            comment_ref.tag(state_identifier)
-            undo_handling.design_has_changed()
+                comment_ref = state_comment.StateComment(menu_x, menu_y, height=1, width=8, padding=3)
+                comment_ref.add_line(menu_x, menu_y, state_identifier)
+                comment_ref.tag(state_identifier)
+                undo_handling.design_has_changed()
     elif selected_entry=="change color":
         new_color = color_changer.ColorChanger(constants.STATE_COLOR).get_new_color()
         main_window.canvas.itemconfigure(state_id, fill=new_color)
@@ -154,7 +153,7 @@ def update_state_name(text_id, text_box):
         if t.endswith("_start"):
             transition_handling.extend_transition_to_state_middle_points(t[:-6])
             transition_handling.shorten_to_state_border(t[:-6])
-        elif t.endswith("_end"):
+        elif t.endswith("_end") and not t.endswith("_comment_line_end"):
             transition_handling.extend_transition_to_state_middle_points(t[:-4])
             transition_handling.shorten_to_state_border(t[:-4])
 
@@ -165,7 +164,7 @@ def __get_list_of_state_names(text_id):
         if main_window.canvas.type(canvas_id)=="oval":
             state_tags = main_window.canvas.gettags(canvas_id)
             for tag in state_tags:
-                if tag.startswith("state") and main_window.canvas.find_withtag(tag+"_name")[0]!=text_id:
+                if tag.startswith("state") and not tag.endswith("_comment_line_end") and main_window.canvas.find_withtag(tag+"_name")[0]!=text_id:
                     state_name_list.append(main_window.canvas.itemcget(tag + "_name", "text"))
     return state_name_list
 
@@ -199,7 +198,7 @@ def resize_state(state_tag, text_id):
     overlapping_list = main_window.canvas.find_overlapping(*state_coords)
     state_is_too_big = False
     for canvas_item in overlapping_list:
-        if main_window.canvas.type(canvas_item) not in ["text", "line"] and canvas_item!=main_window.canvas.find_withtag(state_tag)[0]:
+        if main_window.canvas.type(canvas_item) not in ["text", "line", "rectangle"] and canvas_item!=main_window.canvas.find_withtag(state_tag)[0]:
             state_is_too_big = True
     if not state_is_too_big:
         main_window.canvas.coords(state_tag, state_coords)

@@ -8,7 +8,6 @@ import main_window
 import undo_handling
 import canvas_editing
 import custom_text
-import move_handling
 
 class StateComment:
     dictionary = {}
@@ -33,18 +32,15 @@ class StateComment:
         self.text_id. bind("<<TextModified>>", lambda event : undo_handling.modify_window_title())
         self.text_id. bind("<FocusIn>"       , lambda event : main_window.canvas.unbind_all("<Delete>"))
         self.text_id. bind("<FocusOut>"      , lambda event : main_window.canvas.bind_all  ('<Delete>', lambda event: canvas_editing.delete()))
-        # Create bindings for moving:
-        self.frame_id.bind("<B1-Motion>"     , self.move_item) # Touching inside the window.
-        self.label_id.bind("<B1-Motion>"     , self.move_item) # Touching inside the window.
-        self.text_id .bind("<B1-Motion>"     , self.move_item) # Touching inside the window.
         # Create canvas window for frame and text:
         self.window_id = main_window.canvas.create_window(menu_x+100,menu_y,window=self.frame_id, anchor=tk.W)
+        main_window.canvas.tag_bind(self.window_id, "<Enter>", lambda event : self.__draw_polygon_around_window()) # See description in condition_action_handling.py.
         StateComment.dictionary[self.window_id] = self # Store the object-reference with the Canvas-id as key.
         self.label_id.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E))
         self.text_id.grid (column=0, row=1, sticky=(tk.S, tk.W, tk.E))
         self.difference_x = 0
         self.difference_y = 0
-        self.first_call_of_move_item = True
+        self.move_rectangle = None
         self.line_id = None
         self.line_coords = []
 
@@ -58,34 +54,23 @@ class StateComment:
         if self.text_id.get("1.0", tk.END)!= self.text:
             undo_handling.design_has_changed()
 
-    def move_item(self, event):
-        bbox_canvas_x1, bbox_canvas_y1, _, _, = main_window.canvas.bbox(self.window_id)
-        canvas_x0 = main_window.canvas.canvasx(0)
-        canvas_y0 = main_window.canvas.canvasy(0)
-        bbox_window_x1 = bbox_canvas_x1 - canvas_x0
-        bbox_window_y1 = bbox_canvas_y1 - canvas_y0
-        event.x = bbox_window_x1 + event.x
-        event.y = bbox_window_y1 + event.y
-        if self.first_call_of_move_item:
-            self.first_call_of_move_item = False
-            self.frame_id.bind("<ButtonRelease-1>", self.move_item_end)
-            self.label_id.bind("<ButtonRelease-1>", self.move_item_end)
-            self.text_id .bind("<ButtonRelease-1>", self.move_item_end)
-            canvas_event_x = main_window.canvas.canvasx(event.x)
-            canvas_event_y = main_window.canvas.canvasy(event.y)
-            coords = main_window.canvas.coords(self.window_id)
-            self.difference_x, self.difference_y = - canvas_event_x + coords[0], - canvas_event_y + coords[1]
-        move_list = [[self.window_id, ""]]
-        move_handling.move_do(event, move_list, first=False)
-
-    def move_item_end(self, _):
-        self.first_call_of_move_item = True
-        self.frame_id.unbind("<ButtonRelease-1>")
-        self.label_id.unbind("<ButtonRelease-1>")
-        self.text_id .unbind("<ButtonRelease-1>")
-        undo_handling.design_has_changed()
+    def __draw_polygon_around_window(self):
+        bbox_coords = main_window.canvas.bbox(self.window_id)
+        polygon_coords = []
+        polygon_coords.append(bbox_coords[0] - 3)
+        polygon_coords.append(bbox_coords[1] - 3)
+        polygon_coords.append(bbox_coords[2] + 3)
+        polygon_coords.append(bbox_coords[1] - 3)
+        polygon_coords.append(bbox_coords[2] + 3)
+        polygon_coords.append(bbox_coords[3] + 3)
+        polygon_coords.append(bbox_coords[0] - 3)
+        polygon_coords.append(bbox_coords[3] + 3)
+        # It is "fill=<color> used instead of "width=3, outline=<color> as then the 4 edges are sharp and not round:
+        self.move_rectangle = main_window.canvas.create_polygon(polygon_coords, width=1, fill="blue", tag="polygon_for_move")
+        main_window.canvas.tag_bind(self.move_rectangle, "<Leave>", lambda event: main_window.canvas.delete(self.move_rectangle))
 
     def move_to(self, event_x, event_y, first, _):
+        main_window.canvas.delete(self.move_rectangle)
         self.frame_id.configure(padding=1) # decrease the width of the line around the box
         if first:
             self.frame_id.configure(padding=4) # increase the width of the line around the box
@@ -100,10 +85,10 @@ class StateComment:
         for t in window_tags:
             if t.endswith("_comment"):
                 line_tag = t + "_line"
-        self.line_coords = main_window.canvas.coords(line_tag)
-        self.line_coords[0] = event_x
-        self.line_coords[1] = event_y
-        main_window.canvas.coords(line_tag, self.line_coords)
+                self.line_coords = main_window.canvas.coords(line_tag)
+                self.line_coords[0] = event_x
+                self.line_coords[1] = event_y
+                main_window.canvas.coords(line_tag, self.line_coords)
 
     def add_line(self, menu_x, menu_y, state_identifier): # Called by state_handling.evaluate_menu().
         # Draw a line from the state to the comment block which is added to the state:

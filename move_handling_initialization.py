@@ -43,18 +43,21 @@ def move_initialization_overlapping(event, event_x, event_y):
     # There the point of the line which has to bemoved is stored as a string: 'start', 'next_to_start', 'next_to_end', 'end'.
     # The third value is the tag of the transition to which the moved condition_action belongs.
 
-    # Give the user a feedback, that an object was picked up for moving, by moving the objects of the moving list immediately to the actual position of the mouse:
-    move_handling.move_do(event, move_list, first=True)
+    if move_list: # If no bug exists, then movelist is never empty. So this check is only an "insurance".
+                  # It is needed, because move_finish accesses always move_list[0].
 
-    # Create a binding for the now following movements of the mouse and for finishing the moving:
-    move_do_funcid = main_window.canvas.bind('<Motion>', lambda event, move_list=move_list:
-                                  move_handling.move_do(event, move_list, first=False), add='+') # Must be "added", as store_mouse_position is already bound to "Motion".
-    main_window.canvas.bind('<ButtonRelease-1>', lambda event, move_list=move_list, move_do_funcid=move_do_funcid:
-                 move_handling_finish.move_finish(event, move_list, move_do_funcid)) # move_finish must unbind move_do from "Motion", so it needs the function id.
+        # Give the user a feedback, that an object was picked up for moving, by moving the objects of the moving list immediately to the actual position of the mouse:
+        move_handling.move_do(event, move_list, first=True)
 
-    # From Button-1 the callback "move_initialization()" must be removed, because the user will use Button-1 a second time,
-    # when move_finish() did not accept the location of the ButtonRelease-1 and this second time shall not start a new moving:
-    main_window.canvas.unbind('<Button-1>')
+        # Create a binding for the now following movements of the mouse and for finishing the moving:
+        move_do_funcid = main_window.canvas.bind('<Motion>', lambda event, move_list=move_list:
+                                    move_handling.move_do(event, move_list, first=False), add='+') # Must be "added", as store_mouse_position is already bound to "Motion".
+        main_window.canvas.bind('<ButtonRelease-1>', lambda event, move_list=move_list, move_do_funcid=move_do_funcid:
+                    move_handling_finish.move_finish(event, move_list, move_do_funcid)) # move_finish must unbind move_do from "Motion", so it needs the function id.
+
+        # From Button-1 the callback "move_initialization()" must be removed, because the user will use Button-1 a second time,
+        # when move_finish() did not accept the location of the ButtonRelease-1 and this second time shall not start a new moving:
+        main_window.canvas.unbind('<Button-1>')
 
 def create_a_list_of_overlapping_items_near_the_mouse_click_location(event_x, event_y):
     # As soon as a mouse click happens inside a canvas-window item, this click does not call move_initialization,
@@ -66,7 +69,8 @@ def create_a_list_of_overlapping_items_near_the_mouse_click_location(event_x, ev
     overlapping_items = main_window.canvas.find_overlapping(event_x-canvas_editing.state_radius/4, event_y-canvas_editing.state_radius/4,
                                                             event_x+canvas_editing.state_radius/4, event_y+canvas_editing.state_radius/4)
     for overlapping_item in overlapping_items:
-        if "grid_line" not in main_window.canvas.gettags(overlapping_item):
+        if("grid_line"        not in main_window.canvas.gettags(overlapping_item) and
+           "polygon_for_move" not in main_window.canvas.gettags(overlapping_item)):
             list_of_overlapping_items.append(overlapping_item)
     return list_of_overlapping_items
 
@@ -122,7 +126,7 @@ def create_move_list_entry_if_a_diagram_object_is_moved(items_near_mouse_click_l
         tags_of_item_id = main_window.canvas.gettags(item_id)
         if tags_of_item_id!=(): # If left mouse button is pressed during view-area with the right mouse-button, the list is empty.
             for tag in tags_of_item_id:
-                if (tag.startswith("state")                        or
+                if ((tag.startswith("state") and not tag.endswith("_comment_line_end")) or
                     tag.startswith("state_action")                 or
                     tag.startswith("condition_action")             or
                     tag.startswith("reset_entry")                  or
@@ -136,19 +140,20 @@ def create_move_list_entry_if_a_diagram_object_is_moved(items_near_mouse_click_l
     return move_list_entry
 def add_lines_connected_to_the_diagram_object_to_the_list(move_list):
     tag_list_of_object_to_move = main_window.canvas.gettags(move_list[0][0])
+    tag_of_connected_line = None
     for tag in tag_list_of_object_to_move: # Check which Canvas lines are "connected" and must be moved together with the diagram object.
         to_be_moved_point_of_connected_line = ""
         if tag.endswith("_start"):
-            tag_of_connected_line = tag[:-6]
+            tag_of_connected_line = tag[:-6] # transition<n>, state<n>_comment_line, connection<n>
             to_be_moved_point_of_connected_line = "start"
         elif tag.endswith("_end"):
-            tag_of_connected_line = tag[:-4]
+            tag_of_connected_line = tag[:-4] # transition<n>, state<n>_comment_line, connection<n>, ca_connection<n>
             to_be_moved_point_of_connected_line = "end"
         if to_be_moved_point_of_connected_line!="":
+            # tag_of_connected_line identifies a single object. So the method find_withtag() returns always a list of length 1:
             id_of_connected_line = main_window.canvas.find_withtag(tag_of_connected_line)[0]
             move_list.append([id_of_connected_line, to_be_moved_point_of_connected_line])
             transition_handling.extend_transition_to_state_middle_points(tag_of_connected_line)
-    return
 def get_move_list_entry_for_line_of_condition_action_block(transition_tag):
     transition_tags = main_window.canvas.gettags(transition_tag)
     for t in transition_tags:
@@ -169,15 +174,12 @@ def add_items_for_moving_a_single_line_point_to_the_list( move_list, items_near_
                 id_of_transition = main_window.canvas.find_withtag(tag)[0]
                 move_list.append([id_of_transition, moving_point]) # moving point is one of: "start", "next_to_start", "next_to_end", "end" as at maximum 4 points are supported
                 transition_handling.extend_transition_to_state_middle_points(tag)
-                transition_tag = tag
-        remove_tags_and_hide_priority(line_id, transition_tag, transition_tags, moving_point)
-        return
-    else:
-        return # move_list is emtpy in this case.
+                remove_tags_and_hide_priority(line_id, tag, transition_tags, moving_point)
 def find_the_item_id_of_the_line(items_near_mouse_click_location):
     for item_id in items_near_mouse_click_location:
         if main_window.canvas.type(item_id)=='line' and "grid_line" not in main_window.canvas.gettags(item_id):
             return item_id
+    return None
 def search_for_the_tags_of_a_transition(line_id):
     line_tags = main_window.canvas.gettags(line_id)
     for tag in line_tags:

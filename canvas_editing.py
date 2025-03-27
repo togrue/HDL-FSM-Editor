@@ -158,7 +158,7 @@ def delete():
             undo_handling.design_has_changed()
         elif main_window.canvas.type(i)=='oval':
             for tag in tags_of_item_i:
-                if tag.startswith("state"):
+                if tag.startswith("state") and not tag.endswith("_comment_line_end"):
                     main_window.canvas.delete(tag) # delete state
                     main_window.canvas.delete(tag + "_name") # delete state
                 elif tag.startswith("connection") and tag.endswith("_end"): # connection<n>_end
@@ -194,6 +194,11 @@ def delete():
                     main_window.canvas.delete(transition)
                     main_window.canvas.delete(transition + "rectangle") # delete priority rectangle
                     main_window.canvas.delete(transition + "priority")  # delete priority
+                elif tag.endswith("comment_line_end"):
+                    canvas_id_of_comment_line = tag[:-4]
+                    canvas_id_of_comment      = tag[:-9]
+                    main_window.canvas.delete(canvas_id_of_comment_line)
+                    main_window.canvas.delete(canvas_id_of_comment)
             undo_handling.design_has_changed()
         elif main_window.canvas.type(i)=='rectangle':
             for tag in tags_of_item_i:
@@ -234,7 +239,6 @@ def delete():
                     main_window.canvas.delete(tag) # delete transition
                     main_window.canvas.delete(tag + "rectangle") # delete priority rectangle
                     main_window.canvas.delete(tag + "priority") # delete priority
-                    undo_handling.design_has_changed()
                     transition = tag   # carries "transition<n>"
                 elif tag.startswith("ca_connection"): # Line to condition-action block
                     condition_action_tag = tag[:-4]
@@ -248,6 +252,7 @@ def delete():
                     end_state = tag[9:]
                     main_window.canvas.dtag(end_state, transition + "_end")
             adapt_visibility_of_priority_rectangles_at_state(start_state)
+            undo_handling.design_has_changed()
         elif main_window.canvas.type(i)=='line' and "grid_line" in main_window.canvas.gettags(i): # grid line cannot be deleted.
             pass
         else:
@@ -547,7 +552,13 @@ def shift_visible_center_to_window_center(new_visible_center_string):
     move_canvas_point_from_to(new_visible_center, actual_visible_center)
 
 def find(search_string, replace_string, replace):
-    search_pattern     = search_string .get()
+    # search_in_canvas_text() uses <string>.find() and re.findall() and re.sub().
+    # All other search-methods use text_widget.search() for find and replace.
+    # In order to have identical behaviour, in search_in_canvas_text() the search_string and replace_string are "escaped".
+    search_pattern = search_string.get()
+    if search_pattern=="":
+        messagebox.showinfo("HDL-FSM-Editor", "Search is aborted as you search for an empty string.")
+        return
     replace_pattern    = replace_string.get()
     number_of_hits_all = 0
     all_canvas_items   = main_window.canvas.find_all()
@@ -665,6 +676,9 @@ def search_in_text_widget(text_id, search_pattern, count, canvas_window, replace
                 number_of_hits = -1
                 break
             start = index + " + " + str(count.get()) + " chars"
+        if start==index:
+            messagebox.showinfo("HDL-FSM-Editor", "Search in text widgets is aborted as for unknown reason no progress happens.")
+            break
     return number_of_hits
 
 def search_in_canvas_text(item, search_pattern, replace, replace_pattern):
@@ -676,6 +690,8 @@ def search_in_canvas_text(item, search_pattern, replace, replace_pattern):
         if hit_begin==-1:
             break
         if replace:
+            search_pattern  = re.escape(search_pattern)
+            replace_pattern = re.escape(replace_pattern)
             number_of_hits = len(re.findall(search_pattern, text, flags=re.IGNORECASE))
             text = re.sub(search_pattern, replace_pattern, text, flags=re.IGNORECASE)
             main_window.canvas.itemconfigure(item, text=text)
@@ -694,6 +710,9 @@ def search_in_canvas_text(item, search_pattern, replace, replace_pattern):
                 number_of_hits = -1
                 break
             start = hit_begin + len(search_pattern)
+        if start==hit_begin:
+            messagebox.showinfo("HDL-FSM-Editor", "Search in canvas text is aborted as for unknown reason no progress happens.")
+            break
     return number_of_hits
 
 def search_in_text_fields_of_a_tab(tab, kind, search_pattern, interface_text_fields, replace, replace_pattern):
@@ -732,6 +751,9 @@ def search_in_text_fields_of_a_tab(tab, kind, search_pattern, interface_text_fie
                 if answer is False:
                     return -1
                 start = index + " + " + str(count.get()) + " chars"
+            if start==index:
+                messagebox.showinfo("HDL-FSM-Editor", "Search in tab text fields is aborted as for unknown reason no progress happens.")
+                break
     return number_of_hits
 
 def move_in_foreground(tab):

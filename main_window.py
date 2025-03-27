@@ -25,8 +25,9 @@ import constants
 import link_dictionary
 import color_changer
 import grid_drawing
+import update_hdl_tab
 
-VERSION = "4.10"
+VERSION = "4.11"
 header_string ="HDL-FSM-Editor\nVersion " + VERSION + "\nCreated by Matthias Schweikart\nContact: matthias.schweikart@gmx.de"
 
 state_action_default_button        = None
@@ -102,6 +103,7 @@ undo_button = None
 redo_button = None
 trace_id_generate_path_value     = None
 trace_id_working_directory_value = None
+date_of_hdl_file_shown_in_hdl_tab = 0.0
 
 keyword_color = {"not_read": "red", "not_written": "red", "control": "green4", "datatype": "brown", "function": "violet", "comment": "blue"}
 keywords = constants.vhdl_keywords
@@ -146,11 +148,12 @@ def evaluate_commandline_parameters():
         read_message()
     if args.filename is not None:
         if not exists(args.filename):
-            messagebox.showerror("Error in HDL-SCHEM-Editor", "File " + args.filename + " was not found.")
+            messagebox.showerror("Error in HDL-FSM-Editor", "File " + args.filename + " was not found.")
         elif not args.filename.endswith(".hfe"):
-            messagebox.showerror("Error in HDL-SCHEM-Editor", "File " + args.filename + " cannot be read. Must have extension '.hfe'.")
+            messagebox.showerror("Error in HDL-FSM-Editor", "File " + args.filename + " cannot be read. Must have extension '.hfe'.")
         else:
             file_handling.filename = args.filename
+            root.title("new") # Needed under Linux for remove_old_design(), because there the default window name is "tk #<number>*" which is interpreted as a changed design.
             file_handling.remove_old_design() # Needed, because at starting HDL-FSM-Editor "library ieee; ..." was inserted.
             file_handling.open_file_with_name_new(args.filename)
             if args.generate_hdl:
@@ -169,7 +172,9 @@ def view_all_after_window_is_built():
 def close_tool():
     title = root.title()
     if title.endswith("*"):
-        discard = messagebox.askokcancel("Exit", "There are unsaved changes, do you want to discard them?", default="cancel")
+        discard = messagebox.askokcancel("HDL-FSM-Editor", "There are unsaved changes in design:\n"+
+                                         title[:-1] +
+                                         "\nDo you want to discard them?", default="cancel")
         if discard is True:
             if os.path.isfile(file_handling.filename + ".tmp"):
                 os.remove(file_handling.filename + ".tmp")
@@ -237,7 +242,7 @@ def create_menu_bar():
     info_menu_button.configure(menu=info_menu)
     info_menu.add_command(label="About", command=lambda : messagebox.showinfo("About:", header_string), font=("Arial", 10))
 
-    notebook.bind("<<NotebookTabChanged>>", lambda event : enable_undo_redo_if_diagram_tab_is_active_else_disable())
+    notebook.bind("<<NotebookTabChanged>>", lambda event : handle_notebook_tab_changed_event())
 
     file_menu_button.grid    (row=0, column=0)
     hdl_menu_button.grid     (row=0, column=1)
@@ -663,15 +668,15 @@ def __check_for_window_resize(_):
     grid_drawer.remove_grid()
     grid_drawer.draw_grid()
 
+def handle_notebook_tab_changed_event():
+    enable_undo_redo_if_diagram_tab_is_active_else_disable()
+    update_hdl_tab_if_necessary()
+
 def enable_undo_redo_if_diagram_tab_is_active_else_disable():
     if notebook.index(notebook.select())==3:
-        # undo_button.config(state=NORMAL)
-        # redo_button.config(state=NORMAL)
         canvas.bind_all("<Control-z>", lambda event : undo_handling.undo())
         canvas.bind_all("<Control-Z>", lambda event : undo_handling.redo())
     else:
-        # undo_button.config(state=DISABLED)
-        # redo_button.config(state=DISABLED)
         canvas.unbind_all("<Control-z>") # necessary, because if you type Control-z when another tab is active,
         canvas.unbind_all("<Control-Z>") # then in the diagram tab an undo would take place.
 
@@ -885,7 +890,7 @@ def cursor_move_log_tab(*_):
             #except re.error:
             except Exception as e:
                 regex_error_happened = True
-                messagebox.showerror("Error in HDL-SCHEM-Editor by regular expression", repr(e))
+                messagebox.showerror("Error in HDL-FSM-Editor by regular expression", repr(e))
         else:
             if debug:
                 print("Regex did not match line           : ", content_of_line)
@@ -969,6 +974,23 @@ def show_tab(tab):
     for tab_id in notebook_ids:
         if notebook.tab(tab_id, option="text")==tab:
             notebook.select(tab_id)
+            update_hdl_tab_if_necessary()
+
+def update_hdl_tab_if_necessary():
+    global date_of_hdl_file_shown_in_hdl_tab
+    if notebook.index(notebook.select())==4:
+        if language.get()=="VHDL":
+            if select_file_number_text.get()==1:
+                hdlfilename = generate_path_value.get() + "/" + module_name.get() + ".vhd"
+            else:
+                hdlfilename = generate_path_value.get() + "/" + module_name.get() + "_e.vhd"
+        else: # verilog
+            hdlfilename = generate_path_value.get() + "/" + module_name.get() + ".v"
+        if os.path.isfile(hdlfilename) and date_of_hdl_file_shown_in_hdl_tab<os.path.getmtime(hdlfilename):
+            answer = messagebox.askquestion("Warning in HDL-FSM-Editor", "The HDL was modified by another tool. Shall it be reloaded?", default="yes")
+            if answer=="yes":
+                update_ref = update_hdl_tab.UpdateHdlTab(language.get(), select_file_number_text.get(), file_handling.filename, generate_path_value.get(), module_name.get())
+                date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
 
 def highlight_item(hdl_item_type, *_):
     # This method must have the same name as the method custom_text.CustomText.highlight_item.

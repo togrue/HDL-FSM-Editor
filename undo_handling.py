@@ -226,7 +226,8 @@ def get_tags(canvas_id):
     tags = main_window.canvas.gettags(canvas_id)
     tags_string = ""
     for t in tags:
-        tags_string += str(t) + " "
+        if t!="current":
+            tags_string += str(t) + " "
     #print("get_tags: tags_string =", tags_string)
     return tags_string
 def get_fill_color(canvas_id):
@@ -354,7 +355,7 @@ def set_diagram_to_version_selected_by_stack_pointer():
             polygon_id = main_window.canvas.create_polygon(coords, fill='red', outline='orange', tags=tags)
             main_window.canvas.tag_bind(polygon_id,"<Enter>", lambda event, id=polygon_id : main_window.canvas.itemconfig(id, width=2))
             main_window.canvas.tag_bind(polygon_id,"<Leave>", lambda event, id=polygon_id : main_window.canvas.itemconfig(id, width=1))
-        elif lines[line_index].startswith("text|"):
+        elif lines[line_index].startswith("text|"): # This is a state-name or a priority-number.
             rest_of_line   = remove_keyword_from_line(lines[line_index],"text|")
             tags = ()
             entries = rest_of_line.split()
@@ -366,8 +367,8 @@ def set_diagram_to_version_selected_by_stack_pointer():
                 tags = tags + (e,)
             text_id  = main_window.canvas.create_text(coords, text=text, tags=tags, font=canvas_editing.state_name_font)
             for t in tags:
-                if t.startswith("transition"):
-                    main_window.canvas.tag_bind(text_id, "<Double-Button-1>", lambda event, priority_tag=t  : transition_handling.edit_priority(event, priority_tag))
+                if t.startswith("transition"): # then it ends with "priority"
+                    main_window.canvas.tag_bind(text_id, "<Double-Button-1>", lambda event, transition_tag=t[:-8] : transition_handling.edit_priority(event, transition_tag))
                 else:
                     main_window.canvas.tag_bind(text_id, "<Double-Button-1>", lambda event, text_id=text_id : state_handling.edit_state_name(event, text_id))
         elif lines[line_index].startswith("line|"):

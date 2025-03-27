@@ -159,8 +159,8 @@ def extract_transition_specifications_from_the_graph():
                                                                      )
         transition_specifications.append({"state_name": state_name, "command" : "when",
                                           "state_comments": state_comments, "state_comments_canvas_id": canvas_id_of_comment_text_widget})
-        # The separated paths of trace_array are merged together into transition_specifications by adding "else" commands,
-        # so if the first path cannot be choosen, then the else path of the first path contains the second path and so on:
+        # The separated paths of trace_array are merged together by adding "else" commands,
+        # so if the first trace depends on an "if", then the inserted "else" path of the first trace contains the second trace and so on:
         transition_specifications += merge_trace_array(trace_array)
     optimize_transition_specifications(transition_specifications)
     return transition_specifications
@@ -315,9 +315,42 @@ def target_is_present_in_each_branch(target, state_name, if_identifier, action_t
             return False
     return True
 
+def check_for_wrong_priorities(trace_array):
+    condition_array = []
+    for trace in trace_array:
+        # Each trace starts like this:
+        # [{'state_name': 'filled', 'command': 'if'    , 'condition': "read_fifo_i='1'"           , ...
+        #  {'state_name': 'filled', 'command': 'if'    , 'condition': 'read_address=write_address', ...
+        #  {'state_name': 'filled', 'command': 'action', 'condition': ''                          , ...]
+        # All the conditions of a trace together determine, if the action is executed.
+        # If a next trace starts with the same conditions, then this next trace is obsolete, as it will never be reached.
+        # This is checked here:
+        condition_sequence = []
+        for trace_dict in trace:
+            if trace_dict["command"]=="if":
+                condition_sequence.append(trace_dict["condition"])
+        condition_array.append(condition_sequence)
+    for index, condition_sequence in enumerate(condition_array):
+        if index<len(condition_array)-1:
+            if condition_sequence==condition_array[index+1][0:len(condition_sequence)]: # Check if the next trace starts with the same conditions.
+                condition_sequence_string = ""
+                for single_condition in condition_sequence:
+                    condition_sequence_string += single_condition + ','
+                if condition_sequence_string!="":
+                    condition_sequence_string = condition_sequence_string[:-1]
+                    messagebox.showerror("Error in HDL-FSM-Editor",
+                                        "A transition starting at state " + trace_array[index][0]["state_name"] + "\n" +
+                                        "with the condition sequence "    + condition_sequence_string           + "\n" +
+                                        "hides a transition with lower priority."                               + "\n" +
+                                        "This is not allowed and will corrupt the HDL.")
+                else:
+                    messagebox.showerror("Error in HDL-FSM-Editor",
+                                        "A transition starting at state " + trace_array[index][0]["state_name"] + "\n" +
+                                        "with no condition hides a transition with lower priority."             + "\n" +
+                                        "This is not allowed and will corrupt the HDL.")
+
 def merge_trace_array(trace_array):
-    transition_specifications = []
-    # Structure trace_array: trace_array[trace-index][transition-index][key]
+    check_for_wrong_priorities(trace_array)
     traces_of_a_state_reversed = list(reversed(trace_array)) # Start with the trace, which has lowest priority.
     for trace_index, trace in enumerate(traces_of_a_state_reversed):
         #print("traces_of_a_state_reversed =", traces_of_a_state_reversed)
@@ -331,14 +364,15 @@ def merge_trace_array(trace_array):
             if trace: # An empty trace may happen, when the transition with lowest priority has no condition and action (and has a connector?!).
                 first_command_of_trace      = trace[0]["command"]+trace[0]["condition"]
                 first_command_of_next_trace = traces_of_a_state_reversed[trace_index+1][0]["command"]+traces_of_a_state_reversed[trace_index+1][0]["condition"]
-                if (trace[0]["command"]!="if" and
-                    trace_index!=0):  # All traces except the trace with the lowest priority must start with an "if".
+                if (trace_index!=0 and           # This trace is not the trace with the lowest priority
+                    trace[0]["command"]!="if"):  # The first command of this trace has no condition.
+                    # All traces except the trace with the lowest priority must start with an "if":
                     messagebox.showerror("Warning",
-                    'There is a transition starting at ' + trace[0]["state_name"] +
+                    'There is a transition starting at state ' + trace[0]["state_name"] +
                     ' which has no condition but does not have the lowest priority,\ntherefore the generated HDL may be corrupted.')
                 if trace[0]["command"]=="action":
                     # insert before the endif, which's existence was tested here.
-                    traces_of_a_state_reversed[trace_index+1][-1:-1] = [{"state_name": trace[0]["state_name"], "command": "else", "condition": ""}]
+                    traces_of_a_state_reversed[trace_index+1][-1:-1] = [{"state_name": trace[0]["state_name"],"command": "else","condition": "","condition_action_reference": None}]
                     traces_of_a_state_reversed[trace_index+1][-1:-1] = trace # insert before the endif, which's existence was tested here.
                 elif first_command_of_trace!=first_command_of_next_trace:
                     trace[0]["command"] = "elsif"
@@ -370,11 +404,12 @@ def merge_trace_array(trace_array):
                         traces_of_a_state_reversed[trace_index+1] = traces_of_a_state_reversed[trace_index+1][:-(search_index+1)]
                     else: # The command is an "action" without any condition, so it must be converted into an "else".
                         traces_of_a_state_reversed[trace_index+1][-(search_index+1):-(search_index+1)] = [{"state_name": trace[search_index]["state_name"],
-                                                                                                           "command": "else", "condition": ""}]
+                                                                                                           "command": "else", "condition": "", "condition_action_reference": None}]
                         traces_of_a_state_reversed[trace_index+1][-(search_index+1):-(search_index+1)] = trace[search_index:search_index+1]#copy action to new "else" before "endif"
                         traces_of_a_state_reversed[trace_index+1][-(search_index  ):-(search_index  )] = trace[search_index+1:] # copy rest of trace after the endif
                         traces_of_a_state_reversed[trace_index+1] = traces_of_a_state_reversed[trace_index+1][:-search_index] # remove superfluous "endifs"
                 #print("traces_of_a_state_reversed[trace_index+1] =", traces_of_a_state_reversed[trace_index+1])
+    transition_specifications = []
     if traces_of_a_state_reversed:
         for entry in traces_of_a_state_reversed[-1]:
             transition_specifications.append(entry)
@@ -455,14 +490,13 @@ def extract_conditions_for_all_outgoing_transitions_of_the_state(state_name, sta
                 condition_level_new = condition_level
             if state_name!=transition_target:
                 trace_new.append({"state_name" : state_name, "command": "action", "condition": "", "actions": transition_action_new,
-                                  "target": transition_target, "condition_level": condition_level})
+                                  "target": transition_target, "condition_level": condition_level, "condition_action_reference": None})
             elif transition_action_new!=[]: # Create at jumps to itself only an entry, if actions are available.
                 trace_new.append({"state_name" : state_name, "command": "action", "condition": "", "actions": transition_action_new,
-                                  "target": "", "condition_level": condition_level})
+                                  "target": "", "condition_level": condition_level, "condition_action_reference": None})
             for _ in range(condition_level_new):
                 trace_new.append({"state_name" : state_name, "command": "endif", "condition": "", "actions": "",
-                                  "target": "", "condition_level": condition_level})
-            #print("trace_new =", trace_new)
+                                  "target": "", "condition_level": condition_level, "condition_action_reference": None})
             trace_array.append(trace_new)
 
 def check_if_condition_is_a_comment(transition_condition):
@@ -516,24 +550,23 @@ def create_global_actions_before():
         canvas_item_id = main_window.canvas.find_withtag("global_actions1")
         ref = global_actions.GlobalActions.dictionary[canvas_item_id[0]]
         return ref.text_before_id, ref.text_before_id.get("1.0", tk.END)
-    else:
-        return "", ""
+    return "", ""
 def create_global_actions_after():
     if global_actions_handling.global_actions_clocked_number==1:
         canvas_item_id = main_window.canvas.find_withtag("global_actions1")
         ref = global_actions.GlobalActions.dictionary[canvas_item_id[0]]
         return ref.text_after_id, ref.text_after_id.get("1.0", tk.END)
-    else:
-        return "", ""
+    return "", ""
 def create_concurrent_actions():
     if global_actions_handling.global_actions_combinatorial_number==1:
         canvas_item_id = main_window.canvas.find_withtag("global_actions_combinatorial1")
         ref = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[canvas_item_id[0]]
         return ref.text_id, ref.text_id.get("1.0", tk.END)
-    else:
-        return "", ""
+    return "", ""
 def remove_comments_and_returns(hdl_text):
-    if main_window.language.get()!="VHDL":
+    if main_window.language.get()=="VHDL":
+        hdl_text = remove_vhdl_block_comments(hdl_text)
+    else:
         hdl_text = remove_verilog_block_comments(hdl_text)
     lines_without_return = hdl_text.split("\n")
     text = ""
@@ -553,6 +586,17 @@ def remove_functions(hdl_text):
 def remove_type_declarations(hdl_text):
     text = re.sub(r"(^|\s+)type\s+\w+\s+is\s+.*;", "", hdl_text) # Regular expression for VHDL and Verilog function declaration
     return text
+
+def remove_vhdl_block_comments(list_string):
+    # block comments are replaced by blanks, so all remaining text holds its position.
+    while True:
+        match_object = re.search(r"/\*.*?\*/", list_string, flags=re.DOTALL)
+        if match_object is None:
+            break
+        if match_object.start()==match_object.end():
+            break
+        list_string = list_string[:match_object.start()] + ' '*(match_object.end()-match_object.start()) + list_string[match_object.end():]
+    return list_string
 
 def remove_verilog_block_comments(hdl_text):
     return re.sub("/\\*.*\\*/", "", hdl_text, flags=re.DOTALL)

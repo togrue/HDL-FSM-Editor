@@ -16,8 +16,7 @@ def move_finish(event, move_list, move_do_funcid):
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
 
     item_ids_at_moving_end_location = get_item_ids_at_moving_end_location(event_x, event_y, move_list)
-    if move_list==[]:
-        return
+
     transition_start_or_end_point_is_moved = check_if_only_transition_start_or_end_point_is_moved(move_list)
     if transition_start_or_end_point_is_moved and moving_of_transition_start_or_end_point_ends_at_illegal_place(item_ids_at_moving_end_location, move_list):
         return
@@ -84,7 +83,9 @@ def move_the_line_to_the_center_of_the_target(item_ids_at_moving_end_location, t
 #def move_to(event_x, event_y, transition_id, point, first, move_list, last):
 def update_the_tags_of_the_transition(item_ids_at_moving_end_location, transition_id, transition_point):
     transition_tags = main_window.canvas.gettags(transition_id)
+    transition_tag       = ""
     condition_action_tag = ""
+    ref = None
     for tag in transition_tags:
         if tag.startswith("transition"):
             transition_tag = tag
@@ -186,10 +187,9 @@ def a_point_of_a_line_is_moved_illegally_to_a_reset_entry(item_ids_at_moving_end
                             moved_transition_tags = main_window.canvas.gettags(move_list_entry[0])
                             for tag in moved_transition_tags:
                                 if tag.startswith("transition"):
-                                    moved_transition_tag = tag
-                            if connected_transition_tag!=moved_transition_tag:
-                                #print("a_point_of_a_line_is_moved_illegally_to_a_reset: user tried to connect start point of a transition to a already connected reset entry.")
-                                return True
+                                    if connected_transition_tag!=tag:
+                                        #print("user tried to connect start point of a transition to a already connected reset entry.")
+                                        return True
     return False
 def start_or_end_of_a_line_was_moved_to_free_space(item_ids_at_moving_end_location):
     if item_ids_at_moving_end_location==[]:

@@ -80,9 +80,10 @@ def create_hdl(header, write_to_file):
     # write_hdl_file must be called even if hdl is not needed, as write_hdl_file sets last_line_number_of_file1, which is read by Linking.
     hdl = write_hdl_file(write_to_file, header, entity, architecture, file_name, file_name_architecture)
     if write_to_file is True:
-        copy_hdl_into_generated_hdl_tab(hdl)
+        copy_hdl_into_generated_hdl_tab(hdl, file_name)
 
-def copy_hdl_into_generated_hdl_tab(hdl):
+def copy_hdl_into_generated_hdl_tab(hdl, file_name):
+    main_window.date_of_hdl_file_shown_in_hdl_tab = os.path.getmtime(file_name)
     main_window.hdl_frame_text.config(state=tk.NORMAL)
     main_window.hdl_frame_text.delete("1.0", tk.END)
     main_window.hdl_frame_text.insert("1.0", hdl)

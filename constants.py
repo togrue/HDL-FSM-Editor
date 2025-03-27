@@ -257,7 +257,7 @@ vhdl_keywords = {
                             "to_stdulogicvector", "abs", "rem", "mod", "shift_left", "shift_right", "rotate_left", "rotate_right", "resize",
                             "to_integer", "to_unsigned", "to_signed", "std_match"],
             # It is important to have "comment" at the end, as all other highlighting-tags are removed in the comment area.
-            "comment"  : ["--.*$"]
+            "comment"  : [r"--.*?$", r"/\*.*?\*/"]
             }
 
 verilog_keywords = {

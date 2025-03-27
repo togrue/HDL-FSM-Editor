@@ -1,3 +1,6 @@
+"""
+All methods needed for the state action process in VHDL or Verilog
+"""
 import tkinter as tk
 from tkinter import messagebox
 import re
@@ -133,13 +136,8 @@ def create_state_action_list():
         all_tags_of_this_item_id = main_window.canvas.gettags(item_id)
         state_action = "null;\n"
         state_action_reference = None
-        state_found = False
         reg_ex_for_state_tag = re.compile("^state[0-9]+$")
         for item_tag in all_tags_of_this_item_id:
-            if reg_ex_for_state_tag.match(item_tag):
-                state_found = True
-                state_tag = item_tag
-                state_name = main_window.canvas.itemcget(state_tag + "_name", "text")
             if item_tag.startswith("connection") and item_tag.endswith("_end"): # This is a tag which exists only at states.
                 connection_name = item_tag[:-4]
                 state_action_id = main_window.canvas.find_withtag(connection_name + "_start")
@@ -147,8 +145,11 @@ def create_state_action_list():
                     ref = state_action_handling.MyText.mytext_dict[state_action_id[0]]
                     state_action = ref.text_id.get("1.0", tk.END)
                     state_action_reference = ref.text_id
-        if state_found:
-            state_action_list.append([state_name, state_action, state_action_reference])
+        for item_tag in all_tags_of_this_item_id:
+            if reg_ex_for_state_tag.match(item_tag):
+                state_tag   = item_tag
+                state_name  = main_window.canvas.itemcget(state_tag + "_name", "text")
+                state_action_list.append([state_name, state_action, state_action_reference])
     return sorted(state_action_list)
 
 def create_sensitivity_list(state_action_list, default_state_actions, all_possible_sensitivity_entries):
@@ -170,10 +171,11 @@ def create_sensitivity_list(state_action_list, default_state_actions, all_possib
 def remove_left_hand_sides(state_action):
     # Insert ";" for the search pattern later:
     state_action = ";" + state_action
-    state_action = re.sub(" begin ", ";", state_action, flags=re.I)
-    state_action = re.sub(" then " , ";", state_action, flags=re.I)
+    state_action = re.sub(" begin ", " ; ", state_action, flags=re.I)
+    state_action = re.sub(" then " , " ; ", state_action, flags=re.I)
+    state_action = re.sub(" else " , " ; ", state_action, flags=re.I)
     # Replace the left sides:
-    state_action = re.sub(";\\s*[^\\s]+\\s*<=", "; <=", state_action)
+    state_action = re.sub(r";\s*[^\s]+\s*<=", "; <=", state_action)
     return state_action
 
 def get_default_state_actions():
@@ -207,7 +209,7 @@ def get_all_readable_ports(all_port_declarations, check):
     readable_port_list = []
     for declaration in port_declaration_list:
         if declaration!="" and not declaration.isspace():
-            inputs = get_all_readable_port_names(declaration, check) # One declaration can contain several names!
+            inputs = get_all_readable_port_names(declaration, check) # One declaration can contain a comma separated list of names!
             if inputs!="":
                 readable_port_list.extend(inputs.split(","))
     return readable_port_list
@@ -260,6 +262,7 @@ def get_all_generic_names(all_generic_declarations):
     return generic_name_list
 
 def get_all_readable_port_names(declaration, check):
+    port_names = ""
     if " in " in declaration and main_window.language.get()=="VHDL":
         if ":" not in declaration:
             if check is True:

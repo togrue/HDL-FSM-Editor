@@ -99,6 +99,11 @@ class CustomText(tk.Text):
 
     def format(self):
         text = self.get("1.0",tk.END)
+        self.__update_size_of_text_box(text)
+        self.__update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows()
+        self.update_highlighting()
+
+    def __update_size_of_text_box(self, text):
         nr_of_lines=0
         nr_of_characters_in_line=0
         max_line_length=0
@@ -114,8 +119,6 @@ class CustomText(tk.Text):
                     nr_of_characters_in_line = 0
             self.config(width=max_line_length)
             self.config(height=nr_of_lines)
-        self.__update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows()
-        self.update_highlighting()
 
     def update_highlighting(self):
         self.update_highlight_tags(canvas_editing.fontsize, ["control" , "datatype" , "function"])
@@ -144,20 +147,34 @@ class CustomText(tk.Text):
         copy_of_text = self.replace_strings_and_attributes_by_blanks(copy_of_text)
         while True:
             if keyword_type=="comment":
-                match_object = re.search(keyword, copy_of_text, flags=re.IGNORECASE|re.MULTILINE)
+                match_object = re.search(keyword, copy_of_text, flags=re.IGNORECASE|re.MULTILINE|re.DOTALL)
                 if not match_object:
+                    break
+                if match_object.start()==match_object.end():
                     break
                 replace_string = ' '*(match_object.end()-match_object.start())
                 copy_of_text   = copy_of_text[:match_object.start()] + replace_string + copy_of_text[match_object.end():]
                 self.tag_add("comment", "1.0 + " + str(match_object.start()) + " chars",
                                         "1.0 + " + str(match_object.end  ()) + " chars")
             else:
+                # The keyword might be some strange character, when the user stumbles of the keyboard.
+                # Normally this does not cause any problems, because no match_object will be created.
+                # If a match object is created, it is important that the match is removed from the text.
+                # For example for the keyword '.' the match is not removed.
+                # So a check was inserted which checks if the text has been modified here.
                 search_string = "([^a-zA-Z0-9_]|^)" + keyword + "([^a-zA-Z0-9_]|$)" # Prevent a hit, when the keyword is part of another word.
-                match_object = re.search(search_string, copy_of_text, flags=re.IGNORECASE)
+                try:
+                    match_object = re.search(search_string, copy_of_text, flags=re.IGNORECASE)
+                except re.error:
+                    # Happens i.e. if search_string contains "**".
+                    match_object = None
                 if not match_object:
                     break
                 match_start, match_end = self.remove_surrounding_characters_from_the_match(match_object, keyword)
-                copy_of_text   = copy_of_text[:match_start] + ' '*len(keyword) + copy_of_text[match_end:]
+                old_text     = copy_of_text
+                copy_of_text = copy_of_text[:match_start] + ' '*len(keyword) + copy_of_text[match_end:]
+                if copy_of_text==old_text:
+                    break
                 self.tag_add(keyword_type, "1.0 + " + str(match_start) + " chars",
                                            "1.0 + " + str(match_end  ) + " chars")
 
@@ -166,6 +183,8 @@ class CustomText(tk.Text):
             while True:
                 match_object = re.search(search_string, copy_of_text, flags=re.IGNORECASE)
                 if match_object:
+                    if match_object.start()==match_object.end():
+                        break
                     replace_string = ' '*(match_object.end()-match_object.start())
                     copy_of_text = copy_of_text[:match_object.start()] + replace_string + copy_of_text[match_object.end():]
                 else:
@@ -232,7 +251,6 @@ class CustomText(tk.Text):
             text = re.sub(" when | when$|^when |^when$", "", text, flags=re.I) # remove remaining "when" of a "case"-statement (left hand side).
             text = re.sub(" else | else$|^else |^else$", "", text, flags=re.I) # remove remaining "else" of an if-clause (left hand side).
             CustomText.written_variables_of_all_windows[self] = text.split()
-            #print("text =\n", text)
             # When the ";" is missing, then the right hand side with "<=" could not be found and erased.
             # So remove "<=" and ":=" from these lists:
             if "<=" in CustomText.read_variables_of_all_windows[self]:
@@ -325,6 +343,8 @@ class CustomText(tk.Text):
             while True: # Collect all with_selects and remove them from text.
                 match = re.search(with_select_search_pattern, text, flags=re.IGNORECASE)
                 if match:
+                    if match.start()==match.end():
+                        break
                     all_with_selects.append(match.group(0))
                     text = text[:match.start()] + text[match.end():] # remove match from text
                 else:
@@ -345,6 +365,8 @@ class CustomText(tk.Text):
             #print("text for search =", text)
             match = re.search(condition_search_pattern, text, flags=re.IGNORECASE)
             if match:
+                if match.start()==match.end():
+                    break
                 #print("match.group(0)", match.group(0))
                 all_conditions.append(match.group(0))
                 text = text[:match.start()] + text[match.end():] # remove match from text
@@ -392,6 +414,8 @@ class CustomText(tk.Text):
         while True: # Collect all case-statements and remove them from text.
             match = re.search(case_search_pattern, text, flags=re.IGNORECASE)
             if match:
+                if match.start()==match.end():
+                    break
                 all_cases.append(match.group(0))
                 text = text[:match.start()] + text[match.end():] # remove match from text
             else:
@@ -412,6 +436,8 @@ class CustomText(tk.Text):
         while True: # Collect all right hand sides and remove them from text.
             match = re.search(right_hand_side_search_pattern, text, flags=re.IGNORECASE)
             if match:
+                if match.start()-1==match.end():
+                    break
                 text = text[:match.start()-1] + text[match.end():] # remove not only the match but also complete ":=" or "<=".
                 hit = match.group(0)[+1:-1]
                 hit = re.sub(","     , "", hit) # Remove "," of a "with .. select" statement.
@@ -427,6 +453,8 @@ class CustomText(tk.Text):
         while True:
             match = re.search(r"always\s*@.*?begin", text, flags=re.IGNORECASE)
             if match:
+                if match.start()==match.end():
+                    break
                 text = text[:match.start()] + text[match.end():]
                 hit = match.group(0)
                 hit = re.sub(r"always\s*@", "", hit, flags=re.IGNORECASE)

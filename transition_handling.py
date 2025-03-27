@@ -241,6 +241,8 @@ def shorten_to_state_border(transition_tag):
     transition_coords = main_window.canvas.coords(transition_tag)
     tag_list = main_window.canvas.gettags(transition_tag)
     connection = False
+    start_state_tag = None
+    end_state_tag   = None
     for tag in tag_list:
         if   tag.startswith("coming_from_"):
             start_state_tag = tag[12:]
@@ -312,9 +314,11 @@ def transition_start(event):
                 (element_type=='rectangle' and main_window.canvas.gettags(canvas_id)[0].startswith("connector"))
                ):
                 for tag in main_window.canvas.gettags(canvas_id):
-                    if tag.startswith("state") or tag.startswith("connector") or tag.startswith("reset_entry"):
+                    if ((tag.startswith("state") and not tag.endswith("_comment_line_end")) or
+                        tag.startswith("connector") or
+                        tag.startswith("reset_entry")):
                         tag_of_object_where_transition_starts = tag
-                main_window.canvas.addtag_withtag("transition"+str(transition_number)+'_start', tag_of_object_where_transition_starts)
+                        main_window.canvas.addtag_withtag("transition"+str(transition_number)+'_start', tag_of_object_where_transition_starts)
                 start_object_coords = main_window.canvas.coords(tag_of_object_where_transition_starts)
                 if element_type in ["oval", "rectangle"]:
                     line_start_x = start_object_coords[0]/2 + start_object_coords[2]/2
@@ -400,7 +404,8 @@ def add_tags_to_end_state_and_transition(end_state_canvas_id):
     main_window.canvas.addtag_withtag("transition"+str(transition_number)+'_end', end_state_canvas_id)
     state_tags = main_window.canvas.gettags(end_state_canvas_id)
     for tag in state_tags:
-        if tag.startswith("state") or tag.startswith("connector"):
+        if ((tag.startswith("state") and not tag.endswith("_comment_line_end")) or
+            tag.startswith("connector")):
             end_state_tag = tag
             break
     main_window.canvas.addtag_withtag("going_to_" + end_state_tag , "transition"+str(transition_number))
@@ -560,9 +565,12 @@ def evaluate_menu(event, window, listbox, menu_x, menu_y, transition_id):
             design_was_changed = True
     elif selected_entry=="straighten shape":
         transition_tags = main_window.canvas.gettags(transition_id)
+        start_state_radius = 0
+        end_state_radius   = 0
         for tag in transition_tags:
             if tag.startswith("transition"):
                 transition_tag = tag
+                extend_transition_to_state_middle_points(transition_tag)
             elif tag.startswith("coming_from_"):
                 start_state = tag.replace("coming_from_", "")
                 if start_state=="reset_entry":
@@ -574,14 +582,13 @@ def evaluate_menu(event, window, listbox, menu_x, menu_y, transition_id):
                 end_state = tag.replace("going_to_", "")
                 end_state_coords = main_window.canvas.coords(end_state)
                 end_state_radius = abs(end_state_coords[2] - end_state_coords[0])/2
-        extend_transition_to_state_middle_points(transition_tag)
         old_coords = main_window.canvas.coords(transition_id)
         new_coords = []
         new_coords.append(old_coords[0])
         new_coords.append(old_coords[1])
         new_coords.append(old_coords[-2])
         new_coords.append(old_coords[-1])
-        new_coords = vector_handling.shorten_vector(start_state_radius,new_coords[0],new_coords[1],end_state_radius,new_coords[2],new_coords[3],1,1)
+        new_coords = vector_handling.shorten_vector(start_state_radius, new_coords[0], new_coords[1], end_state_radius, new_coords[2], new_coords[3], 1, 1)
         main_window.canvas.coords(transition_id, new_coords)
         # Calculates the position of the priority rectangle by shortening the distance between the first point of transition and the second point of the transition.
         [priority_middle_x,priority_middle_y,_,_] = vector_handling.shorten_vector(

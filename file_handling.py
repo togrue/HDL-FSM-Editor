@@ -413,11 +413,12 @@ def remove_old_design():
     global filename
     title = main_window.root.title()
     if title.endswith("*"):
-        discard = messagebox.askokcancel("Exit", "There are unsaved changes, do you want to discard them?", default="cancel")
+        discard = messagebox.askokcancel("HDL-FSM-Editor", "There are unsaved changes in design:\n"+
+                                         title[:-1] +
+                                         "\nDo you want to discard them?", default="cancel")
         if discard is False:
             return False
     filename =""
-    main_window.root.title("unnamed")
     main_window.module_name.set("")
     main_window.reset_signal_name.set("")
     main_window.clock_signal_name.set("")
@@ -461,6 +462,7 @@ def remove_old_design():
     canvas_editing.fontsize = 10
     canvas_editing.label_fontsize = 8
     canvas_editing.state_name_font.configure(size=int(canvas_editing.fontsize))
+    main_window.root.title("unnamed")
     return True
 
 def remove_keyword_from_line(line, keyword):
@@ -492,7 +494,7 @@ def print_canvas():
 
 #########################################################################################################################################
 
-def save_in_file_new(save_filename):
+def save_in_file_new(save_filename): # Called at saving and at every design change (writing to .tmp-file)
     design_dictionary = {}
     design_dictionary["modulename"]                          = main_window.module_name.get()
     design_dictionary["language"]                            = main_window.language.get()
@@ -891,8 +893,9 @@ def open_file_with_name_new(read_filename):
         dir_name, file_name = os.path.split(read_filename)
         main_window.root.title(file_name + " (" + dir_name + ")")
         #canvas_editing.priority_distance = 1.5*canvas_editing.state_radius
-        update_hdl_tab.UpdateHdlTab(design_dictionary["language"     ], design_dictionary["number_of_files"], read_filename,
+        update_ref = update_hdl_tab.UpdateHdlTab(design_dictionary["language"     ], design_dictionary["number_of_files"], read_filename,
                                     design_dictionary["generate_path"], design_dictionary["modulename"     ])
+        main_window.date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
         main_window.show_tab("Diagram")
         main_window.root.after_idle(canvas_editing.view_all)
         if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
