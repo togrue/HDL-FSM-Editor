@@ -1,10 +1,11 @@
 """
 This class draws a grid into the canvas.
 """
-import main_window
 import canvas_editing
+import main_window
 
-class GridDraw():
+
+class GridDraw:
     def __init__(self, canvas):
         self.canvas = canvas
 

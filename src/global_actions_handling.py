@@ -1,10 +1,11 @@
 from tkinter import *
+
 import canvas_editing
 import global_actions
 import global_actions_combinatorial
+import main_window
 import state_actions_default
 import undo_handling
-import main_window
 
 global_actions_clocked_number = 0
 global_actions_combinatorial_number = 0

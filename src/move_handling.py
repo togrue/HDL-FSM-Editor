@@ -1,19 +1,20 @@
 """
 This module contains a method to decide which graphical object must be moved.
 """
-import state_handling
-import state_actions_default
-import state_action_handling
-import transition_handling
+import canvas_editing
 import condition_action_handling
 import connector_handling
-import reset_entry_handling
+import constants
 import global_actions
 import global_actions_combinatorial
-import canvas_editing
 import main_window
+import reset_entry_handling
+import state_action_handling
+import state_actions_default
 import state_comment
-import constants
+import state_handling
+import transition_handling
+
 
 def move_do(event, move_list, first):
     last = bool(event.type=="5")

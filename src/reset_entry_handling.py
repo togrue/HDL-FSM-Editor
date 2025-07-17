@@ -2,10 +2,11 @@
 This module contains all methods needed for the reset-entry object.
 """
 import tkinter as tk
+
 import canvas_editing
-import undo_handling
-import main_window
 import canvas_modify_bindings
+import main_window
+import undo_handling
 
 reset_entry_number = 0
 difference_x = 0

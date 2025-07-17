@@ -2,9 +2,11 @@
 This class checks the tags of all graphical elements if they fit together.
 """
 import re
+
 import main_window
 
-class TagPlausibility():
+
+class TagPlausibility:
     def __init__(self):
         state_dict_list              = []
         state_action_dict_list       = []
@@ -119,11 +121,7 @@ class TagPlausibility():
                 window_was_identified = False
                 window_tags = main_window.canvas.gettags(canvas_item)
                 for window_tag in window_tags:
-                    if window_tag=="global_actions1":
-                        window_was_identified = True
-                    elif window_tag=="global_actions_combinatorial1":
-                        window_was_identified = True
-                    elif window_tag=="state_actions_default":
+                    if window_tag=="global_actions1" or window_tag=="global_actions_combinatorial1" or window_tag=="state_actions_default":
                         window_was_identified = True
                     elif window_tag.startswith("state_action"):
                         window_was_identified = True

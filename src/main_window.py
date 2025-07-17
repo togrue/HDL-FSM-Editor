@@ -1,30 +1,28 @@
 """
 This module contains all methods to create the main-window of the HDL-FSM-Editor.
 """
-import tkinter as tk
-from tkinter import ttk
-from tkinter import messagebox
-from tkinter.filedialog import askdirectory
-import sys
 import argparse
 import os
-from os.path import exists
-import urllib.request
 import re
+import sys
+import tkinter as tk
+import urllib.request
+from os.path import exists
+from tkinter import messagebox, ttk
+from tkinter.filedialog import askdirectory
 
-
-import canvas_modify_bindings
 import canvas_editing
-import file_handling
-import move_handling_initialization
-import hdl_generation
-import undo_handling
-import custom_text
+import canvas_modify_bindings
+import color_changer
 import compile_handling
 import constants
-import link_dictionary
-import color_changer
+import custom_text
+import file_handling
 import grid_drawing
+import hdl_generation
+import link_dictionary
+import move_handling_initialization
+import undo_handling
 import update_hdl_tab
 
 VERSION = "4.11"

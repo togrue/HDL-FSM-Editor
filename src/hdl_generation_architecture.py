@@ -1,11 +1,12 @@
 """
 This module provides a method for creating the architecture part of a VHDL file.
 """
-import hdl_generation_library
-import hdl_generation_architecture_state_sequence
 import hdl_generation_architecture_state_actions
-import main_window
+import hdl_generation_architecture_state_sequence
+import hdl_generation_library
 import link_dictionary
+import main_window
+
 
 def create_architecture(file_name, file_line_number):
     architecture = ""

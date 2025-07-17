@@ -1,25 +1,25 @@
 """
 This module contains method used when the user edits the diagram.
 """
-import tkinter as tk
-from tkinter import messagebox
-from tkinter import font
 import re
+import tkinter as tk
+from tkinter import font, messagebox
 
-import move_handling_initialization
-import state_action_handling
+import canvas_modify_bindings
 import condition_action_handling
-import reset_entry_handling
-import global_actions_handling
+import custom_text
 import global_actions
 import global_actions_combinatorial
-import undo_handling
-import state_actions_default
+import global_actions_handling
 import main_window
-import canvas_modify_bindings
-import custom_text
-import state_comment
+import move_handling_initialization
 import OptionMenu
+import reset_entry_handling
+import state_action_handling
+import state_actions_default
+import state_comment
+import undo_handling
+
 #import inspect
 
 # Global variables:

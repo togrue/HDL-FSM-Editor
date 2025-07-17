@@ -3,16 +3,17 @@ This module contains all methods for inserting states.
 """
 import tkinter as tk
 from tkinter import messagebox
-import OptionMenu
-import state_action_handling
-import move_handling_initialization
+
 import canvas_editing
-import transition_handling
-import undo_handling
-import main_window
-import state_comment
 import color_changer
 import constants
+import main_window
+import move_handling_initialization
+import OptionMenu
+import state_action_handling
+import state_comment
+import transition_handling
+import undo_handling
 
 state_number = 0 # Defaultvalue, will be increased with every new state.
 difference_x = 0

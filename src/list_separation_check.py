@@ -12,9 +12,11 @@ But if the character is the separator its index is used to replace it by blank i
 afterwards the search is ended.
 """
 import re
+
 import hdl_generation_library
 
-class ListSeparationCheck():
+
+class ListSeparationCheck:
     def __init__(self, list_string, language):
         self.list_string = list_string
         if language=="VHDL":

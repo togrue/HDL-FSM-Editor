@@ -4,10 +4,12 @@ Copies the generated HDL into the HDL-tab if the HDL is younger than the hfe-fil
 import os
 import tkinter as tk
 from tkinter import messagebox
-import main_window
-import hdl_generation
 
-class UpdateHdlTab():
+import hdl_generation
+import main_window
+
+
+class UpdateHdlTab:
     def __init__(self, language, number_of_files, readfile, generate_path, module_name):
         self.date_of_hdl_file = 0.0 # Default-Value, used when hdl-file not exists.
         if language=="VHDL":
@@ -28,7 +30,7 @@ class UpdateHdlTab():
         if self.__hdl_is_up_to_date(readfile, hdlfilename, hdlfilename_architecture, show_message=False):
             #print("HDL-file exists and is 'newer' than the design-file =", self.date_of_hdl_file)
             try:
-                fileobject = open(hdlfilename, 'r', encoding="utf-8")
+                fileobject = open(hdlfilename, encoding="utf-8")
                 entity = fileobject.read()
                 fileobject.close()
                 #print("entity = \n" + entity)
@@ -38,7 +40,7 @@ class UpdateHdlTab():
             if number_of_files==2:
                 # HDL-file exists and was generated after the design-file was saved.
                 try:
-                    fileobject = open(hdlfilename_architecture, 'r', encoding="utf-8")
+                    fileobject = open(hdlfilename_architecture, encoding="utf-8")
                     arch = fileobject.read()
                     fileobject.close()
                     hdl += self.__add_line_numbers(arch)

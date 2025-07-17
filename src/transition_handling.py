@@ -1,17 +1,18 @@
 """
 This module handles the transitions in the diagram.
 """
-import tkinter as tk
 import math
-import vector_handling
+import tkinter as tk
+
 import canvas_editing
 import canvas_modify_bindings
-import OptionMenu
 import condition_action_handling
-import undo_handling
-import move_handling_initialization
-import main_window
 import constants
+import main_window
+import move_handling_initialization
+import OptionMenu
+import undo_handling
+import vector_handling
 
 transition_number = 0
 difference_x      = 0

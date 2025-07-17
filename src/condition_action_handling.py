@@ -5,11 +5,12 @@ import tkinter as tk
 from tkinter import ttk
 
 import canvas_editing
-import undo_handling
 import custom_text
 import main_window
+import undo_handling
 
-class ConditionAction():
+
+class ConditionAction:
     conditionaction_id = 0
     dictionary = {}
     def __init__(self, menu_x, menu_y, connected_to_reset_entry, height, width, padding, increment):

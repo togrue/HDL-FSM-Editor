@@ -5,11 +5,12 @@ import tkinter as tk
 from tkinter import ttk
 
 import canvas_editing
-import undo_handling
 import custom_text
 import main_window
+import undo_handling
 
-class MyText():
+
+class MyText:
     mytext_id = 0
     mytext_dict = {}
     def __init__(self, menu_x, menu_y, height, width, padding, increment):
