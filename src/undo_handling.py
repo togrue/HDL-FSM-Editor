@@ -1,24 +1,26 @@
 """
 This module contains all method to support "undo" and "redo".
 """
-import tkinter as tk
-import re
 import os
-import state_handling
-import transition_handling
+import re
+import tkinter as tk
+
 import canvas_editing
-import state_action_handling
-import state_actions_default
 import condition_action_handling
 import connector_handling
-import reset_entry_handling
+import constants
+import file_handling
 import global_actions
 import global_actions_combinatorial
 import global_actions_handling
 import main_window
+import reset_entry_handling
+import state_action_handling
+import state_actions_default
 import state_comment
-import constants
-import file_handling
+import state_handling
+import transition_handling
+
 #import inspect
 
 stack = []

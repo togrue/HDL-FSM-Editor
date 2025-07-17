@@ -4,11 +4,13 @@ When the mouse hovers over one of the text boxes, this binding is not active,
 as the text boxes are Canvas-Windows, for which the Canvas binding is not valid.
 """
 import tkinter as tk
+
+import canvas_editing
+import main_window
 import move_handling
 import move_handling_finish
 import transition_handling
-import canvas_editing
-import main_window
+
 
 def move_initialization(event):
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)

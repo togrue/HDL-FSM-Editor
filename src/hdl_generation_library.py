@@ -1,17 +1,18 @@
 """
 This module contains methods used at HDL generation.
 """
+import re
 import tkinter as tk
 from tkinter import messagebox
-import re
 
-import main_window
+import canvas_editing
 import condition_action_handling
-import global_actions_handling
 import global_actions
 import global_actions_combinatorial
-import canvas_editing
+import global_actions_handling
+import main_window
 import state_comment
+
 
 def indent_text_by_the_given_number_of_tabs(number_of_tabs, text):
     keep_newline_at_each_line_end = True
@@ -229,10 +230,7 @@ def expand_transition_specifications_by_if_identifier(transition_specifications)
             transition_specification["branch_number"] = stack_of_branch_number[-1] # This entry counts how many branches an "if" has, starting with 1.
             stack_of_if_identifier.pop()
             stack_of_branch_number.pop()
-        elif transition_specification["command"]=="elsif":
-            transition_specification["if_identifier"] = stack_of_if_identifier[-1]
-            stack_of_branch_number[-1] += 1
-        elif transition_specification["command"]=="else":
+        elif transition_specification["command"]=="elsif" or transition_specification["command"]=="else":
             transition_specification["if_identifier"] = stack_of_if_identifier[-1]
             stack_of_branch_number[-1] += 1
         else: # "action"

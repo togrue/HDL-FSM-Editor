@@ -1,15 +1,16 @@
 """
 All methods needed for the state action process in VHDL or Verilog
 """
+import re
 import tkinter as tk
 from tkinter import messagebox
-import re
 
 import hdl_generation_library
+import link_dictionary
+import main_window
 import state_action_handling
 import state_actions_default
-import main_window
-import link_dictionary
+
 
 def create_state_action_process(file_name, file_line_number):
     default_state_actions = get_default_state_actions()

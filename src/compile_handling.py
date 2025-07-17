@@ -1,15 +1,16 @@
 """
 """
-import subprocess
-import tkinter as tk
-from tkinter import messagebox
-from os.path import exists
-from datetime import datetime
 import os
 import re
 import shlex
+import subprocess
+import tkinter as tk
+from datetime import datetime
+from os.path import exists
+from tkinter import messagebox
 
 import main_window
+
 
 def compile_hdl():
     show_compile_messages_tab()

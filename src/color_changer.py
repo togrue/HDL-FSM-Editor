@@ -3,7 +3,8 @@ This class lets the user configure a color.
 """
 from tkinter import colorchooser
 
-class ColorChanger():
+
+class ColorChanger:
     def __init__(self, default_color):
         self.new_color = colorchooser.askcolor(default_color)[1]
     def get_new_color(self):

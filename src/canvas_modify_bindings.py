@@ -2,13 +2,14 @@
 This module contains all methods to change the binding of the left mouse-button for inserting the different graphical objects.
 """
 import canvas_editing
-import transition_handling
-import move_handling_initialization
 import connector_handling
-import reset_entry_handling
 import global_actions_handling
-import state_handling
 import main_window
+import move_handling_initialization
+import reset_entry_handling
+import state_handling
+import transition_handling
+
 
 def switch_to_state_insertion():
 #    print("switch_to_state_insertion")

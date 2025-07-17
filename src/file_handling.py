@@ -1,31 +1,31 @@
 """
 This module contains all methods needed for reading and writing from or to a file.
 """
-import tkinter as tk
-from tkinter.filedialog import askopenfilename, asksaveasfilename
-from tkinter import messagebox
+import json
 import os
 import re
-import json
+import tkinter as tk
+from tkinter import messagebox
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 
-import state_handling
-import transition_handling
 import canvas_editing
-import state_action_handling
-import state_actions_default
 import condition_action_handling
 import connector_handling
-import reset_entry_handling
-import global_actions
-import global_actions_handling
-import undo_handling
-import global_actions_combinatorial
-import main_window
-import custom_text
-import state_comment
-import update_hdl_tab
 import constants
+import custom_text
+import global_actions
+import global_actions_combinatorial
+import global_actions_handling
+import main_window
+import reset_entry_handling
+import state_action_handling
+import state_actions_default
+import state_comment
+import state_handling
 import tag_plausibility
+import transition_handling
+import undo_handling
+import update_hdl_tab
 
 filename     = ""
 filename_old = ""
@@ -86,7 +86,7 @@ def open_file_with_name(read_filename):
         if main_window.notebook.tab(notebook_id, option="text")=="Diagram":
             main_window.notebook.select(notebook_id)
     # Read the design from the file:
-    fileobject = open(read_filename, 'r', encoding="utf-8")
+    fileobject = open(read_filename, encoding="utf-8")
     for line in fileobject:
         if   line.startswith("modulename|"):
             main_window.module_name.set(line[11:-1])
@@ -612,7 +612,7 @@ def open_file_with_name_new(read_filename):
         if answer is True:
             replaced_read_filename = read_filename + ".tmp"
     try:
-        fileobject = open(replaced_read_filename, 'r', encoding="utf-8")
+        fileobject = open(replaced_read_filename, encoding="utf-8")
         data = fileobject.read()
         fileobject.close()
         filename = read_filename

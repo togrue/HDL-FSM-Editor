@@ -1,13 +1,14 @@
 """
     This class handles "state-comments".
 """
-from tkinter import ttk
 import tkinter as tk
+from tkinter import ttk
 
-import main_window
-import undo_handling
 import canvas_editing
 import custom_text
+import main_window
+import undo_handling
+
 
 class StateComment:
     dictionary = {}

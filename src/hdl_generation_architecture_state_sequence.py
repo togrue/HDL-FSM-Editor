@@ -3,7 +3,9 @@ This module contains methods, which are used at HDL generation.
 The methods create only the HDL for the state sequence.
 """
 import re
+
 import link_dictionary
+
 
 def create_vhdl_for_the_state_sequence(transition_specifications, file_name, file_line_number):
     vhdl = []

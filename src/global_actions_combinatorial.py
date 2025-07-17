@@ -6,11 +6,12 @@ from tkinter import ttk
 
 import canvas_editing
 import canvas_modify_bindings
-import undo_handling
 import custom_text
 import main_window
+import undo_handling
 
-class GlobalActionsCombinatorial():
+
+class GlobalActionsCombinatorial:
     dictionary = {}
     def __init__(self, menu_x, menu_y, height, width, padding):
         self.frame_id = ttk.Frame(main_window.canvas, relief=tk.FLAT, padding=padding, style='GlobalActionsWindow.TFrame')

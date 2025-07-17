@@ -13,10 +13,11 @@
     These 2 parameters are the keys of the LinkDictionary, so when the user clicks on a line in a HDL file in the HDL-tab,
     line-number and file-name are determined and the corresponding entry of the LinkDictionary can be read.
 """
-import main_window
 import hdl_generation
+import main_window
 
-class LinkDictionary():
+
+class LinkDictionary:
     link_dict_reference = None
     def __init__(self, root):
         self.root = root

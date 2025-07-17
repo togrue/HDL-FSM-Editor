@@ -2,8 +2,10 @@
 HDL-FSM-Editor: A tool for modellings FSMs
 """
 from tkinter import ttk
+
 import main_window
 import undo_handling
+
 
 def main():
     print(main_window.header_string)

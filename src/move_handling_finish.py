@@ -2,15 +2,17 @@
 Includes all methods needed, when the moving objects ends.
 """
 import tkinter as tk
+
 import canvas_editing
-import transition_handling
-import vector_handling
-import state_handling
 import condition_action_handling
-import move_handling_initialization
-import undo_handling
 import main_window
 import move_handling
+import move_handling_initialization
+import state_handling
+import transition_handling
+import undo_handling
+import vector_handling
+
 
 def move_finish(event, move_list, move_do_funcid):
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)

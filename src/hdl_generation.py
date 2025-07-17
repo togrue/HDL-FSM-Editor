@@ -1,20 +1,20 @@
 """
 Methods needed for HDL generation
 """
-import tkinter as tk
-from tkinter import messagebox
-from pathlib import Path
-from datetime import datetime
 import os
+import tkinter as tk
+from datetime import datetime
+from pathlib import Path
+from tkinter import messagebox
 
-import hdl_generation_library
-import hdl_generation_architecture
-import hdl_generation_module
-import main_window
-import link_dictionary
-import tag_plausibility
-import list_separation_check
 import file_handling
+import hdl_generation_architecture
+import hdl_generation_library
+import hdl_generation_module
+import link_dictionary
+import list_separation_check
+import main_window
+import tag_plausibility
 
 last_line_number_of_file1 = 0
 

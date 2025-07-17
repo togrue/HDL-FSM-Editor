@@ -1,18 +1,20 @@
 """
 This code was copied (and extended) from https://stackoverflow.com/questions/40617515/python-tkinter-text-modified-callback
 """
-import tkinter as tk
-from tkinter import messagebox
-import subprocess
 import os
 import re
-import main_window
-import linting
-import hdl_generation_library
-import hdl_generation_architecture_state_actions
+import subprocess
+import tkinter as tk
+from tkinter import messagebox
+
 import canvas_editing
 import constants
 import file_handling
+import hdl_generation_architecture_state_actions
+import hdl_generation_library
+import linting
+import main_window
+
 
 class CustomText(tk.Text):
     read_variables_of_all_windows    = {}
@@ -57,7 +59,7 @@ class CustomText(tk.Text):
             if command in ("insert", "delete", "replace"):
                 self.event_generate("<<TextModified>>")
             return result
-        except Exception as e:
+        except Exception:
             return None
 
     def replace_tabs_by_blanks(self):
@@ -86,7 +88,7 @@ class CustomText(tk.Text):
             poll = process.poll()
             if poll is not None:
                 break
-        fileobject = open(file_name, 'r')
+        fileobject = open(file_name)
         new_text = fileobject.read()
         fileobject.close()
         os.remove(file_name)

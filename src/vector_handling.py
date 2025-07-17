@@ -1,4 +1,6 @@
 import math
+
+
 def shorten_vector(delta0,x0,y0,delta1,x1,y1,modify0,modify1):
     if ((x1-x0)==0):
         phi = math.pi/2

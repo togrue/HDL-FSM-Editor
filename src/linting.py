@@ -1,9 +1,10 @@
 """
 Methods needed for highlighting signals, which are not read, not written, not defined
 """
-import main_window
 import canvas_editing
 import custom_text
+import main_window
+
 
 def recreate_keyword_list_of_unused_signals():
     main_window.keywords["not_read"   ].clear()

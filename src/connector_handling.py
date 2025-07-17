@@ -1,10 +1,10 @@
 """
 Methods for the handling of the connectors
 """
-import undo_handling
 import canvas_editing
-import main_window
 import constants
+import main_window
+import undo_handling
 
 connector_number = 0
 difference_x = 0
