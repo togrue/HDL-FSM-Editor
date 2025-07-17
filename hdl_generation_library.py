@@ -604,8 +604,8 @@ def remove_verilog_block_comments(hdl_text):
 def convert_hdl_lines_into_a_searchable_string(text):
     without_comments = remove_comments_and_returns(text)
     separated  = surround_character_by_blanks(";" , without_comments)
-    separated  = surround_character_by_blanks("\(", separated) # "\" is needed to be able to search for "("
-    separated  = surround_character_by_blanks("\)", separated) # "\" is needed to be able to search for ")"
+    separated  = surround_character_by_blanks(r"\(", separated) # "\" is needed to be able to search for "("
+    separated  = surround_character_by_blanks(r"\)", separated) # "\" is needed to be able to search for ")"
     separated  = surround_character_by_blanks(":" , separated)
     separated  = surround_character_by_blanks("!=", separated)
     separated  = surround_character_by_blanks("!" , separated)
@@ -615,7 +615,7 @@ def convert_hdl_lines_into_a_searchable_string(text):
     separated  = surround_character_by_blanks("<" , separated)
     separated  = surround_character_by_blanks("," , separated)
     separated  = surround_character_by_blanks("'" , separated)
-    separated  = surround_character_by_blanks("\+" , separated)
+    separated  = surround_character_by_blanks(r"\+" , separated)
     separated  = surround_character_by_blanks("-" , separated)
     separated = re.sub("<  =", "<=", separated) # restore this operator (assignment or comparison)
     separated = re.sub(">  =", ">=", separated) # restore this operator (comparison)

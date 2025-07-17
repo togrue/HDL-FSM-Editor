@@ -475,10 +475,10 @@ def get_data(rest_of_line, fileobject):
     return data
 
 def get_length_info_from_line(rest_of_line):
-    return int(re.sub("\|.*","",rest_of_line))
+    return int(re.sub(r"\|.*","",rest_of_line))
 
 def remove_length_info(rest_of_line):
-    return re.sub(".*\|","", rest_of_line)
+    return re.sub(r".*\|","", rest_of_line)
 
 def get_remaining_data(fileobject, length_of_data, first_data):
     data = first_data
