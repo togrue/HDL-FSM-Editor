@@ -9,6 +9,6 @@ Please visit [HDL-FSM-Editor](http://www.hdl-fsm-editor.de) for more information
 Clone the repository and run the following command:
 
 ```
-python hdl_fsm_editor.py
+python src/hdl_fsm_editor.py
 ```
 
