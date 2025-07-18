@@ -21,6 +21,7 @@ import state_actions_default
 import state_comment
 import state_handling
 import transition_handling
+from state_manager import state_manager
 
 
 stack = []
@@ -39,8 +40,9 @@ def modify_window_title():
 def design_has_changed():
     add_changes_to_design_stack()
     modify_window_title()
-    if file_handling.filename != "" and not main_window.root.title().startswith("unnamed"):
-        file_handling.save_in_file_new(file_handling.filename + ".tmp")
+    if state_manager.project.current_file != "" and not main_window.root.title().startswith("unnamed"):
+        # print("design_has_changed: tmp is created by =", inspect.stack()[1][3])
+        file_handling.save_in_file_new(state_manager.project.current_file + ".tmp")
 
 
 def undo():
@@ -63,8 +65,8 @@ def undo():
             stack_write_pointer == 1
         ):  # 1 is the next free place in the stack, 0 is the empty design, so nothing to undo is left
             main_window.undo_button.config(state="disabled")
-            if os.path.isfile(file_handling.filename + ".tmp"):
-                os.remove(file_handling.filename + ".tmp")
+            if os.path.isfile(state_manager.project.current_file + ".tmp"):
+                os.remove(state_manager.project.current_file + ".tmp")
         main_window.redo_button.config(state="enabled")
 
 
