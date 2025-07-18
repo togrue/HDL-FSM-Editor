@@ -26,6 +26,7 @@ import move_handling_initialization
 import undo_handling
 import update_hdl_tab
 import config
+from state_manager import state_manager
 
 VERSION = "4.11"
 header_string = (
@@ -166,7 +167,7 @@ def evaluate_commandline_parameters():
                 "Error in HDL-FSM-Editor", "File " + args.filename + " cannot be read. Must have extension '.hfe'."
             )
         else:
-            file_handling.filename = args.filename
+            state_manager.project.current_file = args.filename
             root.title(
                 "new"
             )  # Needed under Linux for remove_old_design(), because there the default window name is "tk #<number>*" which is interpreted as a changed design.
@@ -197,12 +198,12 @@ def close_tool():
             default="cancel",
         )
         if discard is True:
-            if os.path.isfile(file_handling.filename + ".tmp"):
-                os.remove(file_handling.filename + ".tmp")
+            if os.path.isfile(state_manager.project.current_file + ".tmp"):
+                os.remove(state_manager.project.current_file + ".tmp")
             sys.exit()
     else:
-        if os.path.isfile(file_handling.filename + ".tmp"):
-            os.remove(file_handling.filename + ".tmp")
+        if os.path.isfile(state_manager.project.current_file + ".tmp"):
+            os.remove(state_manager.project.current_file + ".tmp")
         sys.exit()
 
 
@@ -1244,7 +1245,7 @@ def update_hdl_tab_if_necessary():
                 update_ref = update_hdl_tab.UpdateHdlTab(
                     language.get(),
                     select_file_number_text.get(),
-                    file_handling.filename,
+                    state_manager.project.current_file,
                     generate_path_value.get(),
                     module_name.get(),
                 )
