@@ -15,6 +15,7 @@ import hdl_generation_architecture_state_actions
 import hdl_generation_library
 import linting
 import main_window
+import config
 
 
 class CustomText(tk.Text):
@@ -152,13 +153,11 @@ class CustomText(tk.Text):
             if self.text_type in ("condition", "action", "comment"):
                 self.tag_configure(
                     keyword_type,
-                    foreground=main_window.keyword_color[keyword_type],
+                    foreground=config.KEYWORD_COLORS[keyword_type],
                     font=("Courier", int(fontsize), "normal"),
                 )  # int() is necessary, because fontsize can be a "real" number.
             else:
-                self.tag_configure(
-                    keyword_type, foreground=main_window.keyword_color[keyword_type], font=("Courier", 10)
-                )
+                self.tag_configure(keyword_type, foreground=config.KEYWORD_COLORS[keyword_type], font=("Courier", 10))
 
     def add_highlight_tag_for_single_keyword(self, keyword_type, keyword):
         copy_of_text = self.get("1.0", tk.END + "- 1 chars")
