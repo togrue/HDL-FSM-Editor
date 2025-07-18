@@ -23,6 +23,4 @@ class Project:
     compile_command: str = ""
     edit_command: str = ""
 
-    # File management
-    current_file: str = ""
-    previous_file: str = ""
+    # File management moved to StateManager
