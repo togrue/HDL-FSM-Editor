@@ -11,11 +11,34 @@ class StateManager:
 
     def __init__(self):
         self._project = Project()
+        # File management
+        self._current_file: str = ""
+        self._previous_file: str = ""
 
     @property
     def project(self) -> Project:
         """Direct access to the project state."""
         return self._project
+
+    @property
+    def current_file(self) -> str:
+        """Get the current file path."""
+        return self._current_file
+
+    @current_file.setter
+    def current_file(self, value: str):
+        """Set the current file path."""
+        self._current_file = value
+
+    @property
+    def previous_file(self) -> str:
+        """Get the previous file path."""
+        return self._previous_file
+
+    @previous_file.setter
+    def previous_file(self, value: str):
+        """Set the previous file path."""
+        self._previous_file = value
 
     def get(self, attr_name: str, default=None):
         """Get a state attribute."""
@@ -33,6 +56,8 @@ class StateManager:
     def reset(self):
         """Reset state to initial values."""
         self._project = Project()
+        self._current_file = ""
+        self._previous_file = ""
 
 
 # Global instance (only global variable we keep)
