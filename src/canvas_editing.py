@@ -20,6 +20,7 @@ import state_action_handling
 import state_actions_default
 import state_comment
 import undo_handling
+import config
 
 # import inspect
 
@@ -46,7 +47,6 @@ def store_mouse_position(event):  # used by delete().
     windows_y_coordinate_old = windows_y_coordinate
     windows_x_coordinate = event.x
     windows_y_coordinate = event.y
-
     [canvas_x_coordinate, canvas_y_coordinate] = translate_window_event_coordinates_in_exact_canvas_coordinates(event)
 
 
@@ -571,18 +571,14 @@ def modify_font_sizes_of_all_canvas_items(factor):
                 state_action_handling.MyText.mytext_dict[i].text_id.configure(font=("Courier", int(fontsize)))
                 for keyword in main_window.keywords:
                     state_action_handling.MyText.mytext_dict[i].text_id.tag_configure(
-                        keyword,
-                        foreground=main_window.keyword_color[keyword],
-                        font=("Courier", int(fontsize), "normal"),
+                        keyword, foreground=config.KEYWORD_COLORS[keyword], font=("Courier", int(fontsize), "normal")
                     )
             elif i in state_comment.StateComment.dictionary:
                 state_comment.StateComment.dictionary[i].label_id.configure(font=("Arial", int(used_label_fontsize)))
                 state_comment.StateComment.dictionary[i].text_id.configure(font=("Courier", int(fontsize)))
                 for keyword in main_window.keywords:
                     state_comment.StateComment.dictionary[i].text_id.tag_configure(
-                        keyword,
-                        foreground=main_window.keyword_color[keyword],
-                        font=("Courier", int(fontsize), "normal"),
+                        keyword, foreground=config.KEYWORD_COLORS[keyword], font=("Courier", int(fontsize), "normal")
                     )
             elif i in condition_action_handling.ConditionAction.dictionary:
                 condition_action_handling.ConditionAction.dictionary[i].condition_label.configure(
@@ -599,14 +595,10 @@ def modify_font_sizes_of_all_canvas_items(factor):
                 )
                 for keyword in main_window.keywords:
                     condition_action_handling.ConditionAction.dictionary[i].condition_id.tag_configure(
-                        keyword,
-                        foreground=main_window.keyword_color[keyword],
-                        font=("Courier", int(fontsize), "normal"),
+                        keyword, foreground=config.KEYWORD_COLORS[keyword], font=("Courier", int(fontsize), "normal")
                     )
                     condition_action_handling.ConditionAction.dictionary[i].action_id.tag_configure(
-                        keyword,
-                        foreground=main_window.keyword_color[keyword],
-                        font=("Courier", int(fontsize), "normal"),
+                        keyword, foreground=config.KEYWORD_COLORS[keyword], font=("Courier", int(fontsize), "normal")
                     )
             elif i in global_actions.GlobalActions.dictionary:
                 global_actions.GlobalActions.dictionary[i].label_before.configure(
@@ -619,14 +611,10 @@ def modify_font_sizes_of_all_canvas_items(factor):
                 global_actions.GlobalActions.dictionary[i].text_after_id.configure(font=("Courier", int(fontsize)))
                 for keyword in main_window.keywords:
                     global_actions.GlobalActions.dictionary[i].text_before_id.tag_configure(
-                        keyword,
-                        foreground=main_window.keyword_color[keyword],
-                        font=("Courier", int(fontsize), "normal"),
+                        keyword, foreground=config.KEYWORD_COLORS[keyword], font=("Courier", int(fontsize), "normal")
                     )
                     global_actions.GlobalActions.dictionary[i].text_after_id.tag_configure(
-                        keyword,
-                        foreground=main_window.keyword_color[keyword],
-                        font=("Courier", int(fontsize), "normal"),
+                        keyword, foreground=config.KEYWORD_COLORS[keyword], font=("Courier", int(fontsize), "normal")
                     )
             elif i in global_actions_combinatorial.GlobalActionsCombinatorial.dictionary:
                 global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[i].label.configure(
@@ -637,9 +625,7 @@ def modify_font_sizes_of_all_canvas_items(factor):
                 )
                 for keyword in main_window.keywords:
                     global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[i].text_id.tag_configure(
-                        keyword,
-                        foreground=main_window.keyword_color[keyword],
-                        font=("Courier", int(fontsize), "normal"),
+                        keyword, foreground=config.KEYWORD_COLORS[keyword], font=("Courier", int(fontsize), "normal")
                     )
             elif i in state_actions_default.StateActionsDefault.dictionary:
                 state_actions_default.StateActionsDefault.dictionary[i].label.configure(
@@ -650,9 +636,7 @@ def modify_font_sizes_of_all_canvas_items(factor):
                 )
                 for keyword in main_window.keywords:
                     state_actions_default.StateActionsDefault.dictionary[i].text_id.tag_configure(
-                        keyword,
-                        foreground=main_window.keyword_color[keyword],
-                        font=("Courier", int(fontsize), "normal"),
+                        keyword, foreground=config.KEYWORD_COLORS[keyword], font=("Courier", int(fontsize), "normal")
                     )
             else:
                 print("canvas_editing: Fatal, unknown dictionary key ", i)
