@@ -167,7 +167,7 @@ def evaluate_commandline_parameters():
                 "Error in HDL-FSM-Editor", "File " + args.filename + " cannot be read. Must have extension '.hfe'."
             )
         else:
-            state_manager.project.current_file = args.filename
+            state_manager.current_file = args.filename
             root.title(
                 "new"
             )  # Needed under Linux for remove_old_design(), because there the default window name is "tk #<number>*" which is interpreted as a changed design.
@@ -198,12 +198,12 @@ def close_tool():
             default="cancel",
         )
         if discard is True:
-            if os.path.isfile(state_manager.project.current_file + ".tmp"):
-                os.remove(state_manager.project.current_file + ".tmp")
+            if os.path.isfile(state_manager.current_file + ".tmp"):
+                os.remove(state_manager.current_file + ".tmp")
             sys.exit()
     else:
-        if os.path.isfile(state_manager.project.current_file + ".tmp"):
-            os.remove(state_manager.project.current_file + ".tmp")
+        if os.path.isfile(state_manager.current_file + ".tmp"):
+            os.remove(state_manager.current_file + ".tmp")
         sys.exit()
 
 
@@ -1245,7 +1245,7 @@ def update_hdl_tab_if_necessary():
                 update_ref = update_hdl_tab.UpdateHdlTab(
                     language.get(),
                     select_file_number_text.get(),
-                    state_manager.project.current_file,
+                    state_manager.current_file,
                     generate_path_value.get(),
                     module_name.get(),
                 )
