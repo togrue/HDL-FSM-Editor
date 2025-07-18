@@ -23,13 +23,11 @@ import state_handling
 import transition_handling
 
 
-
 stack = []
 stack_write_pointer = 0
 
 
 def modify_window_title():
-
     title = main_window.root.title()
     if title == "tk":
         main_window.root.title("unnamed")
@@ -42,7 +40,6 @@ def design_has_changed():
     add_changes_to_design_stack()
     modify_window_title()
     if file_handling.filename != "" and not main_window.root.title().startswith("unnamed"):
-
         file_handling.save_in_file_new(file_handling.filename + ".tmp")
 
 
@@ -58,7 +55,6 @@ def undo():
         stack_write_pointer -= 2
         set_diagram_to_version_selected_by_stack_pointer()
         stack_write_pointer += 1
-
         if stack_write_pointer == 1:
             title = main_window.root.title()
             if title.endswith("*"):
@@ -81,7 +77,6 @@ def redo():
         set_diagram_to_version_selected_by_stack_pointer()
         stack_write_pointer += 1
         main_window.undo_button.config(state="enabled")
-
     if stack_write_pointer == len(stack):
         main_window.redo_button.config(state="disabled")
 
@@ -269,7 +264,6 @@ def get_tags(canvas_id):
     for t in tags:
         if t != "current":
             tags_string += str(t) + " "
-
     return tags_string
 
 

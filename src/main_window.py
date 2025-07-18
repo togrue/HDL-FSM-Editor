@@ -25,6 +25,7 @@ import link_dictionary
 import move_handling_initialization
 import undo_handling
 import update_hdl_tab
+import config
 
 VERSION = "4.11"
 header_string = (
@@ -108,14 +109,6 @@ trace_id_generate_path_value = None
 trace_id_working_directory_value = None
 date_of_hdl_file_shown_in_hdl_tab = 0.0
 
-keyword_color = {
-    "not_read": "red",
-    "not_written": "red",
-    "control": "green4",
-    "datatype": "brown",
-    "function": "violet",
-    "comment": "blue",
-}
 keywords = constants.vhdl_keywords
 
 
@@ -240,7 +233,6 @@ def create_menu_bar():
     file_menu.add_command(label="Open Version 1 file ...", command=file_handling.open_file_old, font=("Arial", 10))
     file_menu.add_command(label="Save", accelerator="Ctrl+s", command=file_handling.save, font=("Arial", 10))
     file_menu.add_command(label="Save as ...", command=file_handling.save_as, font=("Arial", 10))
-
     file_menu.add_command(label="Exit", command=sys.exit, font=("Arial", 10))
 
     hdl_menu_button = ttk.Menubutton(menue_frame, text="HDL", style="Window.TMenubutton")
@@ -1022,7 +1014,6 @@ def cursor_move_hdl_tab(*_):
     # Determine current line number:
     line_number = int(re.sub(r"\..*", "", index_string))  # Remove everything after '.'
     if line_number != line_number_under_pointer_hdl_tab:
-
         hdl_frame_text.tag_delete("underline")
         file_name, file_name_architecture = hdl_generation.get_file_names()
         if line_number > hdl_generation.last_line_number_of_file1:
