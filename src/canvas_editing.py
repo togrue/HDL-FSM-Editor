@@ -46,7 +46,7 @@ def store_mouse_position(event):  # used by delete().
     windows_y_coordinate_old = windows_y_coordinate
     windows_x_coordinate = event.x
     windows_y_coordinate = event.y
-    # print("delta x =", windows_x_coordinate - windows_x_coordinate_old)
+
     [canvas_x_coordinate, canvas_y_coordinate] = translate_window_event_coordinates_in_exact_canvas_coordinates(event)
 
 

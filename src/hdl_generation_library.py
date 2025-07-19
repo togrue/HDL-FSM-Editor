@@ -231,7 +231,7 @@ def optimize_transition_specifications(transition_specifications):
                         target = action_target_dict["target"]
                         if target != "":
                             if target_is_present_in_each_branch(target, state_name, if_identifier, action_target_array):
-                                # print("target can be removed:", state_name, if_identifier, target, action_target_dict)
+
                                 index_of_if_in_transition_specifications = remove_target_from_branches(
                                     transition_specifications, state_name, if_identifier, target, moved_target
                                 )
@@ -436,7 +436,7 @@ def merge_trace_array(trace_array):
     check_for_wrong_priorities(trace_array)
     traces_of_a_state_reversed = list(reversed(trace_array))  # Start with the trace, which has lowest priority.
     for trace_index, trace in enumerate(traces_of_a_state_reversed):
-        # print("traces_of_a_state_reversed =", traces_of_a_state_reversed)
+
         if (
             trace_index == len(traces_of_a_state_reversed) - 1
         ):  # The last trace is the result of this for-loop and will only be checked for a condition:
@@ -488,8 +488,7 @@ def merge_trace_array(trace_array):
                     traces_of_a_state_reversed[trace_index + 1] += trace
                 else:  # Both traces start with the same command.
                     search_index = 1  # Look into the next command of the two traces.
-                    # print("traces_of_a_state_reversed = ", traces_of_a_state_reversed)
-                    # print("trace[search_index] = ", trace[search_index])
+
                     target_at_error = ""
                     while (trace[search_index]["command"] + trace[search_index]["condition"]) == (
                         traces_of_a_state_reversed[trace_index + 1][search_index]["command"]
@@ -511,8 +510,7 @@ def merge_trace_array(trace_array):
                             )
                             break
                         search_index += 1
-                    # print(search_index, traces_of_a_state_reversed[trace_index+1][search_index]["command"] + traces_of_a_state_reversed[trace_index+1][search_index]["condition"])
-                    # print(search_index, trace[search_index]["command"] + trace[search_index]["condition"])
+
                     # search_index selects a different command in trace[]:
                     if trace[search_index]["command"] == "if":
                         trace[search_index]["command"] = "elsif"
@@ -542,7 +540,7 @@ def merge_trace_array(trace_array):
                         traces_of_a_state_reversed[trace_index + 1] = traces_of_a_state_reversed[trace_index + 1][
                             :-search_index
                         ]  # remove superfluous "endifs"
-                # print("traces_of_a_state_reversed[trace_index+1] =", traces_of_a_state_reversed[trace_index+1])
+
     transition_specifications = []
     if traces_of_a_state_reversed:
         for entry in traces_of_a_state_reversed[-1]:
@@ -571,7 +569,7 @@ def extract_conditions_for_all_outgoing_transitions_of_the_state(
     trace_array,  # initialized by trace_array = []
 ):
     outgoing_transition_tags = get_all_outgoing_transitions_in_priority_order(start_point)
-    # print("outgoing_transition_tags", outgoing_transition_tags)
+
     if not outgoing_transition_tags and start_point.startswith("connector"):
         if trace:
             messagebox.showerror(
