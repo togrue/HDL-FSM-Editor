@@ -5,7 +5,7 @@ Creates a menu.
 import tkinter as tk
 
 
-class MyListbox(tk.Listbox):
+class OptionMenu(tk.Listbox):
     def __init__(self, master, items, *args, **kwargs):
         tk.Listbox.__init__(self, master, exportselection=False, background="grey", *args, **kwargs)
 

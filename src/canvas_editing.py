@@ -14,7 +14,7 @@ import global_actions_combinatorial
 import global_actions_handling
 import main_window
 import move_handling_initialization
-import OptionMenu
+from widgets.OptionMenu import OptionMenu
 import reset_entry_handling
 import state_action_handling
 import state_actions_default
@@ -925,7 +925,7 @@ def __show_menu(zoom_coords):
         canvas_menue_entries_list = canvas_menue_entries_list_with_hide
     else:
         canvas_menue_entries_list = canvas_menue_entries_list_with_show
-    menu = OptionMenu.MyListbox(
+    menu = OptionMenu(
         main_window.canvas,
         canvas_menue_entries_list,
         height=2,
