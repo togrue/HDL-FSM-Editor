@@ -762,7 +762,11 @@ def open_file_with_name_new(read_filename):
             main_window.working_directory_value.set(design_dictionary["working_directory"])
         else:
             main_window.working_directory_value.set("")
-        main_window.select_file_number_text.set(design_dictionary["number_of_files"])
+        # For Verilog and SystemVerilog, always use single file mode regardless of what's in the file
+        if design_dictionary["language"] in ["Verilog", "SystemVerilog"]:
+            main_window.select_file_number_text.set(1)
+        else:
+            main_window.select_file_number_text.set(design_dictionary["number_of_files"])
         main_window.reset_signal_name.set(design_dictionary["reset_signal_name"])
         main_window.clock_signal_name.set(design_dictionary["clock_signal_name"])
         main_window.compile_cmd.set(design_dictionary["compile_cmd"])
