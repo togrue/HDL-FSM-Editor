@@ -39,7 +39,7 @@ class UpdateHdlTab:
                 messagebox.showerror(
                     "Error in HDL-FSM-Editor", "File " + hdlfilename + " could not be opened for copying into HDL-Tab."
                 )
-            if number_of_files == 2:
+            if hdlfilename_architecture is not None:
                 # HDL-file exists and was generated after the design-file was saved.
                 try:
                     fileobject = open(hdlfilename_architecture, encoding="utf-8")
@@ -49,7 +49,9 @@ class UpdateHdlTab:
                 except FileNotFoundError:
                     messagebox.showerror(
                         "Error in HDL-FSM-Editor",
-                        "File " + hdlfilename + " (architecture-file) could not be opened for copying into HDL-Tab.",
+                        "File "
+                        + hdlfilename_architecture
+                        + " (architecture-file) could not be opened for copying into HDL-Tab.",
                     )
             # Create hdl without writing to file for Link-Generation:
             hdl_generation.run_hdl_generation(write_to_file=False)
