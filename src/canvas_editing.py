@@ -8,19 +8,19 @@ from tkinter import font, messagebox
 
 import canvas_modify_bindings
 import condition_action_handling
+import config
 import custom_text
 import global_actions
 import global_actions_combinatorial
 import global_actions_handling
 import main_window
 import move_handling_initialization
-from widgets.OptionMenu import OptionMenu
 import reset_entry_handling
 import state_action_handling
 import state_actions_default
 import state_comment
 import undo_handling
-import config
+from widgets.OptionMenu import OptionMenu
 
 # import inspect
 
