@@ -1,19 +1,25 @@
 """
-HDL-FSM-Editor: A tool for modellings FSMs
+HDL-FSM-Editor: A tool for modeling FSMs
 """
 
-from tkinter import ttk
+import argparse
+import sys
+from os.path import exists
+from tkinter import messagebox, ttk
 
+import file_handling
+import hdl_generation
 import main_window
 import undo_handling
+from state_manager import state_manager
 
 
-def main():
-    print(main_window.header_string)
+def setup_application_ui():
+    """Set up the main application UI components."""
 
-    # The top window:
     main_window.create_root()
 
+    # Configure application styling
     style = ttk.Style(main_window.root)
     style.theme_use("default")
     # style.theme_use('clam')
@@ -41,6 +47,7 @@ def main():
     style.configure("Find.TButton")
     style.configure("Path.TButton")
 
+    # Create UI components
     main_window.set_word_boundaries()
     main_window.create_notebook()
     main_window.create_control_notebook_tab()
@@ -51,9 +58,54 @@ def main():
     main_window.create_log_notebook_tab()
     main_window.create_menu_bar()
 
-    undo_handling.design_has_changed()  # Init the undo/redo-stack with an empty design.
+    # Initialize undo/redo system
+    undo_handling.design_has_changed()
 
-    main_window.evaluate_commandline_parameters()
+
+def parse_and_process_arguments():
+    """Parse command-line arguments and process them."""
+    parser = argparse.ArgumentParser(description="HDL-FSM-Editor: A tool for modeling FSMs")
+    parser.add_argument("filename", nargs="?", help="HDL-FSM-Editor file (.hfe) to open")
+    parser.add_argument("-no_version_check", action="store_true", help="Skip version check at startup")
+    parser.add_argument("-no_message", action="store_true", help="Skip message check at startup")
+    parser.add_argument("-generate_hdl", action="store_true", help="Generate HDL and exit")
+
+    args = parser.parse_args()
+
+    # Handle version and message checks
+    if not args.no_version_check:
+        main_window.check_version()
+    if not args.no_message:
+        main_window.read_message()
+
+    # Handle filename
+    if args.filename:
+        if not exists(args.filename):
+            messagebox.showerror("Error", f"File {args.filename} was not found.")
+        elif not args.filename.endswith(".hfe"):
+            messagebox.showerror("Error", f"File {args.filename} must have extension '.hfe'.")
+        else:
+            # Load the file
+            state_manager.current_file = args.filename
+            main_window.root.title("new")
+            file_handling.remove_old_design()
+            file_handling.open_file_with_name_new(args.filename)
+            main_window.canvas.bind("<Visibility>", lambda event: main_window.view_all_after_window_is_built())
+
+    # Handle batch generation
+    if args.generate_hdl:
+        hdl_generation.run_hdl_generation(write_to_file=True)
+        sys.exit()
+
+
+def main():
+    """Main entry point for HDL-FSM-Editor."""
+    print(main_window.header_string)
+
+    setup_application_ui()
+
+    parse_and_process_arguments()
+
     main_window.show_window()
     main_window.root.mainloop()
 
