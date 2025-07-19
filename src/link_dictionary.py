@@ -16,6 +16,7 @@ line-number and file-name are determined and the corresponding entry of the Link
 
 import hdl_generation
 import main_window
+from hdl_generation_config import GenerationConfig
 
 
 class LinkDictionary:
@@ -89,7 +90,8 @@ class LinkDictionary:
 
     def jump_to_hdl(self, selected_file, file_line_number):
         if main_window.select_file_number_text.get() == 2:
-            _, file_name_architecture = hdl_generation.get_file_names()
+            gen_config = GenerationConfig.from_main_window()
+            file_name_architecture = gen_config.get_architecture_file()
             if selected_file == file_name_architecture:
                 file_line_number += hdl_generation.last_line_number_of_file1
         main_window.show_tab("generated HDL")
