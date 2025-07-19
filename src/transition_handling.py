@@ -22,34 +22,62 @@ difference_y = 0
 
 def move_to(event_x, event_y, transition_id, point, first, move_list, last):
     global difference_x, difference_y
+
+    # Calculate movement offset
+    difference_x, difference_y = calculate_movement_offset(event_x, event_y, transition_id, point, first, move_list)
+
+    # Apply offset and snap to grid
+    event_x, event_y = event_x + difference_x, event_y + difference_y
+    event_x, event_y = snap_to_grid(event_x, event_y, last)
+
+    # Get transition tag and manage layering
+    transition_tag = get_transition_tag_and_lower(transition_id)
+    if not transition_tag:
+        return
+
+    # Update transition coordinates
+    transition_coords = main_window.canvas.coords(transition_tag)
+    update_transition_coordinates(transition_tag, event_x, event_y, point)
+
+    manage_grid_layering(transition_tag)
+
+    update_priority_rectangle(transition_tag, event_x, event_y, point, transition_coords)
+
+
+def calculate_movement_offset(event_x, event_y, transition_id, point, first, move_list):
+    """Calculate the offset for moving transition points."""
     if main_window.canvas.type(move_list[0][0]) == "line" and (move_list[0][1] in ("start", "end")):
         middle_of_line_is_moved = False
     else:
         middle_of_line_is_moved = True
-    if middle_of_line_is_moved is True:
-        if first is True:
-            # Calculate the difference between the "anchor" point and the event:
-            coords = main_window.canvas.coords(transition_id)
-            if point == "start":
-                point_to_move = [coords[0], coords[1]]
-            elif point == "next_to_start":
-                point_to_move = [coords[2], coords[3]]
-            elif point == "next_to_end":
-                point_to_move = [coords[-4], coords[-3]]
-            elif point == "end":
-                point_to_move = [coords[-2], coords[-1]]
-            else:
-                print("transition_handling: Fatal, unknown point =", point)
-                return
-            difference_x, difference_y = -event_x + point_to_move[0], -event_y + point_to_move[1]
-    else:
-        difference_x = 0
-        difference_y = 0
-    # Keep the distance between event and anchor point constant:
-    event_x, event_y = event_x + difference_x, event_y + difference_y
+
+    if middle_of_line_is_moved is True and first is True:
+        coords = main_window.canvas.coords(transition_id)
+        if point == "start":
+            point_to_move = [coords[0], coords[1]]
+        elif point == "next_to_start":
+            point_to_move = [coords[2], coords[3]]
+        elif point == "next_to_end":
+            point_to_move = [coords[-4], coords[-3]]
+        elif point == "end":
+            point_to_move = [coords[-2], coords[-1]]
+        else:
+            print("transition_handling: Fatal, unknown point =", point)
+            return 0, 0
+        return -event_x + point_to_move[0], -event_y + point_to_move[1]
+    return 0, 0
+
+
+def snap_to_grid(event_x, event_y, last):
+    """Snap coordinates to grid if this is the final move."""
     if last is True:
         event_x = canvas_editing.state_radius * round(event_x / canvas_editing.state_radius)
         event_y = canvas_editing.state_radius * round(event_y / canvas_editing.state_radius)
+    return event_x, event_y
+
+
+def get_transition_tag_and_lower(transition_id):
+    """Get the transition tag and lower it in the canvas stack."""
     all_transition_tags = main_window.canvas.gettags(transition_id)
     for single_transition_tag in all_transition_tags:
         if (
@@ -59,7 +87,12 @@ def move_to(event_x, event_y, transition_id, point, first, move_list, last):
         ):
             transition_tag = single_transition_tag
             main_window.canvas.tag_lower(transition_tag)
-    # Move transition:
+            return transition_tag
+    return None
+
+
+def update_transition_coordinates(transition_tag, event_x, event_y, point):
+    """Update the transition coordinates based on which point is being moved."""
     transition_coords = main_window.canvas.coords(transition_tag)
     if point == "start":
         main_window.canvas.coords(transition_tag, event_x, event_y, *transition_coords[2:])
@@ -71,60 +104,63 @@ def move_to(event_x, event_y, transition_id, point, first, move_list, last):
         main_window.canvas.coords(transition_tag, *transition_coords[-8:-2], event_x, event_y)
     else:
         print("transition_handling: Fatal, unknown point =", point)
+
+
+def manage_grid_layering(transition_tag):
+    """Ensure transition appears above grid lines if grid is shown."""
     if main_window.show_grid:
         list_of_grid_line_canvas_ids = main_window.canvas.find_withtag("grid_line")
         if list_of_grid_line_canvas_ids:
             main_window.canvas.tag_raise(transition_tag, "grid_line")
-    # Move priority rectangle:
-    if transition_tag.startswith("transition"):  # There is no priority rectangle at a "connection".
-        # The tag "transition_tag + '_start'" is already removed from the old start state when the transition start-point is moved.
-        # In all other cases the tag exists.
-        # So try to get the coordinates of the start state (there the priority rectangle is positioned):
-        start_state_coords = main_window.canvas.coords(transition_tag + "_start")
-        if point == "start":
-            if (
-                start_state_coords == [] or main_window.canvas.type(transition_tag + "_start") == "polygon"
-            ):  # Transition start point is disconnected from its start state and moved alone.
-                start_state_radius = 0
-            else:  #  State with connected transition is moved.
-                start_state_radius = abs(start_state_coords[2] - start_state_coords[0]) / 2
-            # Calculates the position of the priority rectangle by shortening the vector from the event (= first point of transition) to the second point of the transition.
-            [priority_middle_x, priority_middle_y, _, _] = vector_handling.shorten_vector(
-                start_state_radius + canvas_editing.priority_distance,
-                event_x,
-                event_y,
-                0,
-                transition_coords[2],
-                transition_coords[3],
-                1,
-                0,
-            )
+
+
+def update_priority_rectangle(transition_tag, event_x, event_y, point, transition_coords):
+    """Update the position of the priority rectangle for transitions."""
+    if not transition_tag.startswith("transition"):  # No priority rectangle for connections
+        return
+
+    start_state_coords = main_window.canvas.coords(transition_tag + "_start")
+
+    if point == "start":
+        if start_state_coords == [] or main_window.canvas.type(transition_tag + "_start") == "polygon":
+            start_state_radius = 0
         else:
-            # Calculates the position of the priority rectangle by shortening the first point of transition to the second point of the transition.
             start_state_radius = abs(start_state_coords[2] - start_state_coords[0]) / 2
-            # Because the transition is already extended to the start-state middle, the length of the vector must be shortened additionally by the start state radius,
-            # to keep the priority outside of the start-state.
-            [priority_middle_x, priority_middle_y, _, _] = vector_handling.shorten_vector(
-                start_state_radius + canvas_editing.priority_distance,
-                transition_coords[0],
-                transition_coords[1],
-                0,
-                transition_coords[2],
-                transition_coords[3],
-                1,
-                0,
-            )
-        [rectangle_width_half, rectangle_height_half] = get_rectangle_dimensions(transition_tag + "rectangle")
-        main_window.canvas.coords(
-            transition_tag + "rectangle",
-            priority_middle_x - rectangle_width_half,
-            priority_middle_y - rectangle_height_half,
-            priority_middle_x + rectangle_width_half,
-            priority_middle_y + rectangle_height_half,
+
+        priority_middle_x, priority_middle_y, _, _ = vector_handling.shorten_vector(
+            start_state_radius + canvas_editing.priority_distance,
+            event_x,
+            event_y,
+            0,
+            transition_coords[2],
+            transition_coords[3],
+            1,
+            0,
         )
-        main_window.canvas.coords(transition_tag + "priority", priority_middle_x, priority_middle_y)
-        main_window.canvas.tag_raise(transition_tag + "rectangle", transition_tag)
-        main_window.canvas.tag_raise(transition_tag + "priority", transition_tag + "rectangle")
+    else:
+        start_state_radius = abs(start_state_coords[2] - start_state_coords[0]) / 2
+        priority_middle_x, priority_middle_y, _, _ = vector_handling.shorten_vector(
+            start_state_radius + canvas_editing.priority_distance,
+            transition_coords[0],
+            transition_coords[1],
+            0,
+            transition_coords[2],
+            transition_coords[3],
+            1,
+            0,
+        )
+
+    rectangle_width_half, rectangle_height_half = get_rectangle_dimensions(transition_tag + "rectangle")
+    main_window.canvas.coords(
+        transition_tag + "rectangle",
+        priority_middle_x - rectangle_width_half,
+        priority_middle_y - rectangle_height_half,
+        priority_middle_x + rectangle_width_half,
+        priority_middle_y + rectangle_height_half,
+    )
+    main_window.canvas.coords(transition_tag + "priority", priority_middle_x, priority_middle_y)
+    main_window.canvas.tag_raise(transition_tag + "rectangle", transition_tag)
+    main_window.canvas.tag_raise(transition_tag + "priority", transition_tag + "rectangle")
 
 
 def get_rectangle_dimensions(canvas_id):
