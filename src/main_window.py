@@ -6,6 +6,7 @@ import os
 import re
 import sys
 import tkinter as tk
+import urllib.error
 import urllib.request
 from tkinter import messagebox, ttk
 from tkinter.filedialog import askdirectory
@@ -182,7 +183,7 @@ def create_root() -> None:
 
 def create_menu_bar() -> None:
     menue_frame = ttk.Frame(root, borderwidth=2, relief=tk.RAISED)
-    menue_frame.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E, tk.S))
+    menue_frame.grid(column=0, row=0, sticky="nsew")
 
     file_menu_button = ttk.Menubutton(menue_frame, text="File", style="Window.TMenubutton")
     file_menu = tk.Menu(file_menu_button)
@@ -273,7 +274,7 @@ def create_menu_bar() -> None:
 def create_notebook() -> None:
     global notebook
     notebook = ttk.Notebook(root, padding=5)
-    notebook.grid(column=0, row=1, sticky=(tk.N, tk.W, tk.E, tk.S))
+    notebook.grid(column=0, row=1, sticky="nsew")
 
 
 def create_control_notebook_tab() -> None:
@@ -321,8 +322,8 @@ def create_control_notebook_tab() -> None:
     generate_path_entry = ttk.Entry(control_frame, textvariable=generate_path_value, width=80)
     generate_path_button = ttk.Button(control_frame, text="Select...", command=_set_path, style="Path.TButton")
     generate_path_label.grid(row=2, column=0, sticky=tk.W)
-    generate_path_entry.grid(row=2, column=1, sticky=(tk.W, tk.E))
-    generate_path_button.grid(row=2, column=2, sticky=(tk.W, tk.E))
+    generate_path_entry.grid(row=2, column=1, sticky="ew")
+    generate_path_button.grid(row=2, column=2, sticky="ew")
     control_frame.columnconfigure((2, 0), weight=0)
     control_frame.columnconfigure((2, 1), weight=1)
     control_frame.columnconfigure((2, 2), weight=0)
@@ -363,7 +364,7 @@ def create_control_notebook_tab() -> None:
     compile_cmd_label = ttk.Label(control_frame, text="Compile command:", padding=5)
     compile_cmd_entry = ttk.Entry(control_frame, width=23, textvariable=compile_cmd)
     compile_cmd_label.grid(row=6, column=0, sticky=tk.W)
-    compile_cmd_entry.grid(row=6, column=1, sticky=(tk.W, tk.E))
+    compile_cmd_entry.grid(row=6, column=1, sticky="ew")
     control_frame.columnconfigure((6, 0), weight=0)
     control_frame.columnconfigure((6, 1), weight=1)
 
@@ -381,7 +382,7 @@ def create_control_notebook_tab() -> None:
     edit_cmd_label = ttk.Label(control_frame, text="Edit command (executed by Ctrl+e):", padding=5)
     edit_cmd_entry = ttk.Entry(control_frame, width=23, textvariable=edit_cmd)
     edit_cmd_label.grid(row=8, column=0, sticky=tk.W)
-    edit_cmd_entry.grid(row=8, column=1, sticky=(tk.W, tk.E))
+    edit_cmd_entry.grid(row=8, column=1, sticky="ew")
     control_frame.columnconfigure((8, 0), weight=0)
     control_frame.columnconfigure((8, 1), weight=1)
 
@@ -393,8 +394,8 @@ def create_control_notebook_tab() -> None:
         control_frame, text="Select...", command=_set_working_directory, style="Path.TButton"
     )
     working_directory_label.grid(row=9, column=0, sticky=tk.W)
-    working_directory_entry.grid(row=9, column=1, sticky=(tk.W, tk.E))
-    working_directory_button.grid(row=9, column=2, sticky=(tk.W, tk.E))
+    working_directory_entry.grid(row=9, column=1, sticky="ew")
+    working_directory_button.grid(row=9, column=2, sticky="ew")
     control_frame.columnconfigure((9, 0), weight=0)
     control_frame.columnconfigure((9, 1), weight=1)
     control_frame.columnconfigure((9, 2), weight=0)
@@ -407,8 +408,8 @@ def create_control_notebook_tab() -> None:
         control_frame, text="Choose color...", command=choose_bg_color, style="Path.TButton"
     )
     diagram_background_color_label.grid(row=10, column=0, sticky=tk.W)
-    diagram_background_color_entry.grid(row=10, column=1, sticky=(tk.W, tk.E))
-    diagram_background_color_button.grid(row=10, column=2, sticky=(tk.W, tk.E))
+    diagram_background_color_entry.grid(row=10, column=1, sticky="ew")
+    diagram_background_color_button.grid(row=10, column=2, sticky="ew")
     control_frame.columnconfigure((10, 0), weight=0)
     control_frame.columnconfigure((10, 1), weight=1)
     control_frame.columnconfigure((10, 2), weight=0)
@@ -428,7 +429,7 @@ def create_control_notebook_tab() -> None:
     control_frame.columnconfigure((12, 1), weight=1)
     control_frame.columnconfigure((12, 2), weight=0)
 
-    notebook.add(control_frame, sticky=tk.N + tk.E + tk.W + tk.S, text="Control")
+    notebook.add(control_frame, sticky="nsew", text="Control")
 
 
 def _set_path() -> None:
@@ -472,14 +473,10 @@ def create_interface_notebook_tab() -> None:
         _interface_package_frame, orient=tk.VERTICAL, cursor="arrow", command=interface_package_text.yview
     )
     interface_package_text.config(yscrollcommand=_interface_package_scroll.set)
-    _interface_package_label.grid(row=0, column=0, sticky=(tk.W, tk.N, tk.S))  # "W" nötig, damit Text links bleibt
+    _interface_package_label.grid(row=0, column=0, sticky="wns")  # "W" nötig, damit Text links bleibt
     interface_package_info.grid(row=0, column=0, sticky=tk.E)
-    interface_package_text.grid(
-        row=1, column=0, sticky=(tk.W, tk.E, tk.S, tk.N)
-    )  # "W,E" nötig, damit Text tatsächlich breiter wird
-    _interface_package_scroll.grid(
-        row=1, column=1, sticky=(tk.W, tk.E, tk.S, tk.N)
-    )  # "W,E" nötig, damit Text tatsächlich breiter wird
+    interface_package_text.grid(row=1, column=0, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
+    _interface_package_scroll.grid(row=1, column=1, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_interface.add(_interface_package_frame, weight=1)
 
     interface_generics_frame = ttk.Frame(paned_window_interface)
@@ -499,12 +496,10 @@ def create_interface_notebook_tab() -> None:
         interface_generics_frame, orient=tk.VERTICAL, cursor="arrow", command=interface_generics_text.yview
     )
     interface_generics_text.config(yscrollcommand=interface_generics_scroll.set)
-    _interface_generics_label.grid(row=0, column=0, sticky=(tk.W, tk.N, tk.S))
+    _interface_generics_label.grid(row=0, column=0, sticky="wns")
     interface_generics_info.grid(row=0, column=0, sticky=tk.E)
-    interface_generics_text.grid(row=1, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
-    interface_generics_scroll.grid(
-        row=1, column=1, sticky=(tk.W, tk.E, tk.S, tk.N)
-    )  # "W,E" nötig, damit Text tatsächlich breiter wird
+    interface_generics_text.grid(row=1, column=0, sticky="nsew")
+    interface_generics_scroll.grid(row=1, column=1, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_interface.add(interface_generics_frame, weight=1)
     interface_generics_frame.bind("<Configure>", __resize_event_interface_tab_frames)
 
@@ -528,13 +523,11 @@ def create_interface_notebook_tab() -> None:
     interface_ports_text.config(yscrollcommand=interface_ports_scroll.set)
     _interface_ports_label.grid(row=0, column=0, sticky=tk.W)
     interface_ports_info.grid(row=0, column=0, sticky=tk.E)
-    interface_ports_text.grid(row=1, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
-    interface_ports_scroll.grid(
-        row=1, column=1, sticky=(tk.W, tk.E, tk.S, tk.N)
-    )  # "W,E" nötig, damit Text tatsächlich breiter wird
+    interface_ports_text.grid(row=1, column=0, sticky="nsew")
+    interface_ports_scroll.grid(row=1, column=1, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_interface.add(interface_ports_frame, weight=1)
 
-    notebook.add(paned_window_interface, sticky=tk.N + tk.E + tk.W + tk.S, text="Interface")
+    notebook.add(paned_window_interface, sticky="nsew", text="Interface")
 
 
 def create_internals_notebook_tab() -> None:
@@ -568,12 +561,8 @@ def create_internals_notebook_tab() -> None:
     internals_package_text.config(yscrollcommand=_internals_package_scroll.set)
     _internals_package_label.grid(row=0, column=0, sticky=tk.W)  # "W" nötig, damit Text links bleibt
     interface_package_info.grid(row=0, column=0, sticky=tk.E)
-    internals_package_text.grid(
-        row=1, column=0, sticky=(tk.W, tk.E, tk.S, tk.N)
-    )  # "W,E" nötig, damit Text tatsächlich breiter wird
-    _internals_package_scroll.grid(
-        row=1, column=1, sticky=(tk.W, tk.E, tk.S, tk.N)
-    )  # "W,E" nötig, damit Text tatsächlich breiter wird
+    internals_package_text.grid(row=1, column=0, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
+    _internals_package_scroll.grid(row=1, column=1, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_internals.add(_internals_package_frame, weight=1)
 
     internals_architecture_frame = ttk.Frame(paned_window_internals)
@@ -602,9 +591,9 @@ def create_internals_notebook_tab() -> None:
     internals_architecture_text.config(yscrollcommand=internals_architecture_scroll.set)
     _internals_architecture_label.grid(row=0, column=0, sticky=tk.W)
     interface_architecture_info.grid(row=0, column=0, sticky=tk.E)
-    internals_architecture_text.grid(row=1, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
+    internals_architecture_text.grid(row=1, column=0, sticky="nsew")
     internals_architecture_scroll.grid(
-        row=1, column=1, sticky=(tk.W, tk.E, tk.S, tk.N)
+        row=1, column=1, sticky="nsew"
     )  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_internals.add(internals_architecture_frame, weight=1)
     internals_architecture_frame.bind("<Configure>", __resize_event_internals_tab_frames)
@@ -638,9 +627,9 @@ def create_internals_notebook_tab() -> None:
     internals_process_clocked_text.config(yscrollcommand=internals_process_clocked_scroll.set)
     _internals_process_clocked_label.grid(row=0, column=0, sticky=tk.W)
     interface_process_clocked_info.grid(row=0, column=0, sticky=tk.E)
-    internals_process_clocked_text.grid(row=1, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
+    internals_process_clocked_text.grid(row=1, column=0, sticky="nsew")
     internals_process_clocked_scroll.grid(
-        row=1, column=1, sticky=(tk.W, tk.E, tk.S, tk.N)
+        row=1, column=1, sticky="nsew"
     )  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_internals.add(internals_process_clocked_frame, weight=1)
 
@@ -673,13 +662,13 @@ def create_internals_notebook_tab() -> None:
     internals_process_combinatorial_text.config(yscrollcommand=internals_process_combinatorial_scroll.set)
     _internals_process_combinatorial_label.grid(row=0, column=0, sticky=tk.W)
     interface_process_combinatorial_info.grid(row=0, column=0, sticky=tk.E)
-    internals_process_combinatorial_text.grid(row=1, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
+    internals_process_combinatorial_text.grid(row=1, column=0, sticky="nsew")
     internals_process_combinatorial_scroll.grid(
-        row=1, column=1, sticky=(tk.W, tk.E, tk.S, tk.N)
+        row=1, column=1, sticky="nsew"
     )  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_internals.add(internals_process_combinatorial_frame, weight=1)
 
-    notebook.add(paned_window_internals, sticky=tk.N + tk.E + tk.W + tk.S, text="Internals")
+    notebook.add(paned_window_internals, sticky="nsew", text="Internals")
 
 
 def create_diagram_notebook_tab() -> None:
@@ -695,7 +684,7 @@ def create_diagram_notebook_tab() -> None:
     diagram_frame.grid()
     diagram_frame.columnconfigure(0, weight=1)  # tkinter method (grid_columnconfigure is tcl method)
     diagram_frame.rowconfigure(0, weight=1)
-    notebook.add(diagram_frame, sticky=tk.N + tk.E + tk.W + tk.S, text="Diagram")
+    notebook.add(diagram_frame, sticky="nsew", text="Diagram")
 
     # Create the elements of the drawing area:
     h = ttk.Scrollbar(diagram_frame, orient=tk.HORIZONTAL, cursor="arrow", style="Horizontal.TScrollbar")
@@ -715,14 +704,10 @@ def create_diagram_notebook_tab() -> None:
     button_frame = ttk.Frame(diagram_frame, padding="3 3 3 3", borderwidth=1)
 
     # Layout of the drawing area:
-    canvas.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E, tk.S))
-    h.grid(
-        column=0, row=1, sticky=(tk.W, tk.E)
-    )  # The sticky argument extends the scrollbar, so that a "shift" is possible.
-    v.grid(
-        column=1, row=0, sticky=(tk.N, tk.S)
-    )  # The sticky argument extends the scrollbar, so that a "shift" is possible.
-    button_frame.grid(column=0, row=2, sticky=(tk.S, tk.W, tk.E))
+    canvas.grid(column=0, row=0, sticky="nsew")
+    h.grid(column=0, row=1, sticky="ew")  # The sticky argument extends the scrollbar, so that a "shift" is possible.
+    v.grid(column=1, row=0, sticky="ns")  # The sticky argument extends the scrollbar, so that a "shift" is possible.
+    button_frame.grid(column=0, row=2, sticky="swe")
 
     # Implement the buttons of the drawing area:
     undo_redo_frame = ttk.Frame(button_frame, borderwidth=2)
@@ -848,17 +833,17 @@ def create_hdl_notebook_tab() -> None:
     hdl_frame.rowconfigure(0, weight=1)
 
     hdl_frame_text = custom_text.CustomText(hdl_frame, text_type="generated", undo=False, font=("Courier", 10))
-    hdl_frame_text.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
+    hdl_frame_text.grid(row=0, column=0, sticky="nsew")
     hdl_frame_text.columnconfigure((0, 0), weight=1)
     hdl_frame_text.config(state=tk.DISABLED)
 
     hdl_frame_text_scroll = ttk.Scrollbar(hdl_frame, orient=tk.VERTICAL, cursor="arrow", command=hdl_frame_text.yview)
     hdl_frame_text.config(yscrollcommand=hdl_frame_text_scroll.set)
-    hdl_frame_text_scroll.grid(row=0, column=1, sticky=(tk.W, tk.E, tk.S, tk.N))
+    hdl_frame_text_scroll.grid(row=0, column=1, sticky="nsew")
 
     hdl_frame_text.bind("<Motion>", _cursor_move_hdl_tab)
 
-    notebook.add(hdl_frame, sticky=tk.N + tk.E + tk.W + tk.S, text="generated HDL")
+    notebook.add(hdl_frame, sticky="nsew", text="generated HDL")
 
 
 def create_log_notebook_tab() -> None:
@@ -870,8 +855,8 @@ def create_log_notebook_tab() -> None:
 
     log_frame_button_frame = ttk.Frame(log_frame)
     log_frame_text = custom_text.CustomText(log_frame, text_type="log", undo=False)
-    log_frame_button_frame.grid(row=0, column=0, sticky=(tk.W, tk.E))
-    log_frame_text.grid(row=1, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
+    log_frame_button_frame.grid(row=0, column=0, sticky="ew")
+    log_frame_text.grid(row=1, column=0, sticky="nsew")
     log_frame_text.columnconfigure((0, 0), weight=1)
     log_frame_text.config(state=tk.DISABLED)
 
@@ -887,11 +872,11 @@ def create_log_notebook_tab() -> None:
 
     log_frame_text_scroll = ttk.Scrollbar(log_frame, orient=tk.VERTICAL, cursor="arrow", command=log_frame_text.yview)
     log_frame_text.config(yscrollcommand=log_frame_text_scroll.set)
-    log_frame_text_scroll.grid(row=1, column=1, sticky=(tk.W, tk.E, tk.S, tk.N))
+    log_frame_text_scroll.grid(row=1, column=1, sticky="nsew")
 
     log_frame_text.bind("<Motion>", _cursor_move_log_tab)
 
-    notebook.add(log_frame, sticky=tk.N + tk.E + tk.W + tk.S, text="Compile Messages")
+    notebook.add(log_frame, sticky="nsew", text="Compile Messages")
     _debug_active = tk.IntVar()
     _debug_active.set(1)  # 1: inactive, 2: active
 
@@ -914,10 +899,10 @@ def _edit_regex(*_) -> None:
     _regex_dialog_entry = ttk.Entry(_regex_dialog)
     regex_dialog_identifier_frame = ttk.Frame(_regex_dialog)
     regex_button_frame = ttk.Frame(_regex_dialog)
-    regex_dialog_header.grid(row=0, sticky=(tk.W, tk.E))
-    _regex_dialog_entry.grid(row=1, sticky=(tk.W, tk.E))
+    regex_dialog_header.grid(row=0, sticky="ew")
+    _regex_dialog_entry.grid(row=1, sticky="ew")
     regex_dialog_identifier_frame.grid(row=2)
-    regex_button_frame.grid(row=3, sticky=(tk.W, tk.E))
+    regex_button_frame.grid(row=3, sticky="ew")
     regex_dialog_filename_label = ttk.Label(
         regex_dialog_identifier_frame, text="Group identifier for file-name:", justify="left"
     )
