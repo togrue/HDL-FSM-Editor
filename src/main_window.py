@@ -14,7 +14,7 @@ from tkinter.filedialog import askdirectory
 
 import canvas_editing
 import canvas_modify_bindings
-import color_changer
+from dialogs.color_changer import ColorChanger
 import compile_handling
 import constants
 import custom_text
@@ -1275,7 +1275,7 @@ def change_color_of_diagram_background():
 
 
 def run_color_changer():
-    new_color = color_changer.ColorChanger(canvas.cget("bg")).get_new_color()
+    new_color = ColorChanger(canvas.cget("bg")).ask_color()
     if new_color is not None:
         canvas.configure(bg=new_color)
         diagram_background_color.set(new_color)
