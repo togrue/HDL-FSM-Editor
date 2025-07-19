@@ -9,11 +9,11 @@ import tkinter as tk
 from tkinter import messagebox
 
 import canvas_editing
+import codegen.hdl_generation_architecture_state_actions as hdl_generation_architecture_state_actions
+import codegen.hdl_generation_library as hdl_generation_library
 import config
 import constants
 import file_handling
-import codegen.hdl_generation_architecture_state_actions as hdl_generation_architecture_state_actions
-import codegen.hdl_generation_library as hdl_generation_library
 import linting
 import main_window
 

@@ -13,7 +13,7 @@ import pytest
 
 def read_hfe_metadata(hfe_file):
     """Read language and module name from HFE file."""
-    with open(hfe_file, "r", encoding="utf-8") as f:
+    with open(hfe_file, encoding="utf-8") as f:
         data = json.load(f)
     return {
         "language": data.get("language", "VHDL"),

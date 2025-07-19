@@ -7,8 +7,8 @@ import sys
 from os.path import exists
 from tkinter import messagebox, ttk
 
-import file_handling
 import codegen.hdl_generation as hdl_generation
+import file_handling
 import main_window
 import undo_handling
 from project_manager import project_manager
