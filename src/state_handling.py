@@ -6,7 +6,7 @@ import tkinter as tk
 from tkinter import messagebox
 
 import canvas_editing
-import color_changer
+from dialogs.color_changer import ColorChanger
 import constants
 import main_window
 import move_handling_initialization
@@ -161,7 +161,7 @@ def evaluate_menu(event, window, listbox, menu_x, menu_y, state_id):
                 comment_ref.tag(state_identifier)
                 undo_handling.design_has_changed()
     elif selected_entry == "change color":
-        new_color = color_changer.ColorChanger(constants.STATE_COLOR).get_new_color()
+        new_color = ColorChanger(constants.STATE_COLOR).ask_color()
         main_window.canvas.itemconfigure(state_id, fill=new_color)
         undo_handling.design_has_changed()
 
