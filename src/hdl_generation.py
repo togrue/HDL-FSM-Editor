@@ -291,16 +291,20 @@ def write_hdl_file(write_to_file, header, entity, architecture, path_name, path_
 
 
 def get_file_names():
-    if main_window.select_file_number_text.get() == 1:
-        if main_window.language.get() == "VHDL":
-            file_type = ".vhd"
-        elif main_window.language.get() == "Verilog":
+    # For Verilog and SystemVerilog, always generate single files regardless of number_of_files setting
+    if main_window.language.get() in ["Verilog", "SystemVerilog"]:
+        if main_window.language.get() == "Verilog":
             file_type = ".v"
-        else:
+        else:  # SystemVerilog
             file_type = ".sv"
         file_name = main_window.generate_path_value.get() + "/" + main_window.module_name.get() + file_type
         file_name_architecture = ""
+    elif main_window.select_file_number_text.get() == 1:
+        # VHDL single file
+        file_name = main_window.generate_path_value.get() + "/" + main_window.module_name.get() + ".vhd"
+        file_name_architecture = ""
     else:
+        # VHDL two files
         file_name = main_window.generate_path_value.get() + "/" + main_window.module_name.get() + "_e.vhd"
         file_name_architecture = (
             main_window.generate_path_value.get() + "/" + main_window.module_name.get() + "_fsm.vhd"
