@@ -11,7 +11,7 @@ import condition_action_handling
 import constants
 import main_window
 import move_handling_initialization
-import OptionMenu
+from widgets.OptionMenu import OptionMenu
 import undo_handling
 import vector_handling
 
@@ -763,7 +763,7 @@ def abort_edit_text(transition_tag, text_box, old_text):
 
 
 def show_menu(event, transition_id):
-    listbox = OptionMenu.MyListbox(
+    listbox = OptionMenu(
         main_window.canvas,
         ["add condition&action", "straighten shape"],
         height=2,
