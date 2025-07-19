@@ -11,7 +11,7 @@ import file_handling
 import hdl_generation
 import main_window
 import undo_handling
-from state_manager import project_manager
+from project_manager import project_manager
 
 
 def _setup_application_ui() -> None:

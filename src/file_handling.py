@@ -27,7 +27,7 @@ import tag_plausibility
 import transition_handling
 import undo_handling
 import update_hdl_tab
-from state_manager import project_manager
+from project_manager import project_manager
 
 
 def ask_save_unsaved_changes(title) -> str:

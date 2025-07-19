@@ -25,7 +25,7 @@ import undo_handling
 import update_hdl_tab
 from dialogs.color_changer import ColorChanger
 from hdl_generation_config import GenerationConfig
-from state_manager import project_manager
+from project_manager import project_manager
 
 _VERSION = "4.11"
 header_string = (
