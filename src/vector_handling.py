@@ -2,10 +2,7 @@ import math
 
 
 def shorten_vector(delta0, x0, y0, delta1, x1, y1, modify0, modify1):
-    if (x1 - x0) == 0:
-        phi = math.pi / 2
-    else:
-        phi = math.atan((y1 - y0) / (x1 - x0))
+    phi = math.pi / 2 if x1 - x0 == 0 else math.atan((y1 - y0) / (x1 - x0))
     phi = abs(phi)
     delta0_x = delta0 * math.cos(phi)
     delta0_y = delta0 * math.sin(phi)
@@ -31,7 +28,7 @@ def try_to_convert_into_straight_line(coords):
     for i in range(len(cos_phi_list)):
         if cos_phi_list[i] < 0.97:
             eliminate_points = False
-    if eliminate_points == True:
+    if eliminate_points:
         return [coords[0], coords[1], coords[-2], coords[-1]]
     else:
         return coords

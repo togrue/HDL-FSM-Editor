@@ -231,10 +231,7 @@ def get_point_to_move(item_id, event_x, event_y):
         ):
             return_value = "end"
         if return_value == "":
-            if distance_event_to_point[1] < distance_event_to_point[2]:
-                return_value = "next_to_start"
-            else:
-                return_value = "next_to_end"
+            return_value = "next_to_start" if distance_event_to_point[1] < distance_event_to_point[2] else "next_to_end"
         return return_value
     elif number_of_points == 3:
         # if   distance_event_to_point[0]<distance_to_neighbour[0]/4:
@@ -473,10 +470,7 @@ def transition_start(event):
 
 def reset_entry_has_no_transition(canvas_id):
     tags_of_reset_entry = main_window.canvas.gettags(canvas_id)
-    for tag in tags_of_reset_entry:
-        if tag.startswith("transition"):
-            return False
-    return True
+    return all(not tag.startswith("transition") for tag in tags_of_reset_entry)
 
 
 def transition_draw(event, canvas_id):

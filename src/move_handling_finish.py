@@ -66,9 +66,7 @@ def get_item_ids_at_moving_end_location(event_x, event_y, move_list):
 
 
 def check_if_only_transition_start_or_end_point_is_moved(move_list):
-    if main_window.canvas.type(move_list[0][0]) == "line" and move_list[0][1] in ["start", "end"]:
-        return True
-    return False
+    return main_window.canvas.type(move_list[0][0]) == "line" and move_list[0][1] in ["start", "end"]
 
 
 def moving_of_transition_start_or_end_point_ends_at_illegal_place(item_ids_at_moving_end_location, move_list):
@@ -138,10 +136,7 @@ def update_the_tags_of_the_transition(item_ids_at_moving_end_location, transitio
                     else:
                         ref.change_descriptor_to("Transition actions (clocked):")
                 priority_dict = transition_handling.determine_priorities_of_outgoing_transitions(target_id)
-                if len(priority_dict) == 1:
-                    transition_priority_visibility = tk.HIDDEN
-                else:
-                    transition_priority_visibility = tk.NORMAL
+                transition_priority_visibility = tk.HIDDEN if len(priority_dict) == 1 else tk.NORMAL
                 for outgoing_transition in priority_dict:
                     main_window.canvas.itemconfigure(
                         outgoing_transition + "priority", state=transition_priority_visibility
@@ -206,10 +201,7 @@ def hide_the_connection_line_of_moved_condition_action_window(move_list):
 
 
 def a_line_is_moved_to_a_window(item_ids_at_moving_end_location):
-    for target in item_ids_at_moving_end_location:
-        if main_window.canvas.type(target) == "window":
-            return True
-    return False
+    return any(main_window.canvas.type(target) == "window" for target in item_ids_at_moving_end_location)
 
 
 def a_line_is_moved_to_a_priority_rectangle(item_ids_at_moving_end_location):
@@ -258,9 +250,7 @@ def a_point_of_a_line_is_moved_illegally_to_a_reset_entry(item_ids_at_moving_end
 
 
 def start_or_end_of_a_line_was_moved_to_free_space(item_ids_at_moving_end_location):
-    if item_ids_at_moving_end_location == []:
-        return True
-    return False
+    return item_ids_at_moving_end_location == []
 
 
 def transition_connects_reset_entry_and_connector(item_ids_at_moving_end_location, move_list):

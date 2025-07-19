@@ -48,10 +48,7 @@ def create_state_action_process(file_name, file_line_number):
 
 
 def state_actions_contain_only_null_for_each_state(state_action_list):
-    for entry in state_action_list:
-        if entry[1] != "null;\n":
-            return False
-    return True
+    return all(entry[1] == "null;\n" for entry in state_action_list)
 
 
 def create_state_action_process_for_vhdl(
@@ -268,10 +265,7 @@ def get_default_state_actions():
         return ""
     else:
         ref = state_actions_default.StateActionsDefault.dictionary[item_ids[0]]
-        if main_window.language.get() == "VHDL":
-            comment = "--"
-        else:
-            comment = "//"
+        comment = "--" if main_window.language.get() == "VHDL" else "//"
         return comment + " Default State Actions:\n" + ref.text_id.get("1.0", tk.END)
 
 
@@ -319,10 +313,7 @@ def create_list_of_declarations(all_declarations):
     all_declarations_separated = hdl_generation_library.surround_character_by_blanks(
         ":", all_declarations_without_comments
     )  # only needed for VHDL
-    if main_window.language.get() == "VHDL":
-        split_char = ";"
-    else:
-        split_char = ","
+    split_char = ";" if main_window.language.get() == "VHDL" else ","
     return all_declarations_separated.split(split_char)
 
 
