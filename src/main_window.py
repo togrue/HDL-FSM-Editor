@@ -106,6 +106,7 @@ redo_button = None
 trace_id_generate_path_value = None
 trace_id_working_directory_value = None
 date_of_hdl_file_shown_in_hdl_tab = 0.0
+include_timestamp_in_output = None
 
 keywords = constants.vhdl_keywords
 
@@ -292,7 +293,7 @@ def create_control_notebook_tab():
         edit_cmd, \
         module_name_entry, \
         clock_signal_name_entry
-    global diagram_background_color, diagram_background_color_error
+    global diagram_background_color, diagram_background_color_error, include_timestamp_in_output
     control_frame = ttk.Frame(notebook, takefocus=False)
     control_frame.grid()
 
@@ -416,6 +417,16 @@ def create_control_notebook_tab():
     control_frame.columnconfigure((11, 0), weight=0)
     control_frame.columnconfigure((11, 1), weight=1)
     control_frame.columnconfigure((11, 2), weight=0)
+
+    include_timestamp_label = ttk.Label(control_frame, text="Include timestamp in generated HDL files:", padding=5)
+    include_timestamp_in_output = tk.BooleanVar(value=True)
+    include_timestamp_in_output.trace_add("write", lambda *args: undo_handling.update_window_title())
+    include_timestamp_checkbox = ttk.Checkbutton(control_frame, variable=include_timestamp_in_output, padding=5)
+    include_timestamp_label.grid(row=12, column=0, sticky=tk.W)
+    include_timestamp_checkbox.grid(row=12, column=1, sticky=tk.W)
+    control_frame.columnconfigure((12, 0), weight=0)
+    control_frame.columnconfigure((12, 1), weight=1)
+    control_frame.columnconfigure((12, 2), weight=0)
 
     notebook.add(control_frame, sticky=tk.N + tk.E + tk.W + tk.S, text="Control")
 
