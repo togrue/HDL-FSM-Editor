@@ -24,11 +24,11 @@ import state_actions_default
 import state_comment
 import state_handling
 import state_manager
-from state_manager import state_manager
 import tag_plausibility
 import transition_handling
 import undo_handling
 import update_hdl_tab
+from state_manager import state_manager
 
 # Global variables replaced with state manager
 # filename     = ""

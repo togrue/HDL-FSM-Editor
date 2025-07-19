@@ -11,9 +11,9 @@ import condition_action_handling
 import constants
 import main_window
 import move_handling_initialization
-from widgets.OptionMenu import OptionMenu
 import undo_handling
 import vector_handling
+from widgets.OptionMenu import OptionMenu
 
 transition_number = 0
 difference_x = 0

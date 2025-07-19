@@ -9,13 +9,13 @@ import tkinter as tk
 from tkinter import messagebox
 
 import canvas_editing
+import config
 import constants
 import file_handling
 import hdl_generation_architecture_state_actions
 import hdl_generation_library
 import linting
 import main_window
-import config
 
 
 class CustomText(tk.Text):
@@ -78,10 +78,7 @@ class CustomText(tk.Text):
         return "break"  # This prevents the "Tab" to be inserted in the text.
 
     def edit_in_external_editor(self):
-        if main_window.language.get() == "VHDL":
-            file_name = "hdl-fsm-editor.tmp.vhd"
-        else:
-            file_name = "hdl-fsm-editor.tmp.v"
+        file_name = "hdl-fsm-editor.tmp.vhd" if main_window.language.get() == "VHDL" else "hdl-fsm-editor.tmp.v"
         fileobject = open(file_name, "w")
         fileobject.write(self.get("1.0", tk.END + "- 1 chars"))
         fileobject.close()
