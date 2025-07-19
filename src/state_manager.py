@@ -6,8 +6,8 @@ This module provides a simple way to access application state throughout the app
 from project import Project
 
 
-class StateManager:
-    """Simple state manager - just holds the state and provides access."""
+class ProjectManager:
+    """Simple project manager - just holds the state and provides access."""
 
     def __init__(self):
         self._project = Project()
@@ -61,4 +61,4 @@ class StateManager:
 
 
 # Global instance (only global variable we keep)
-state_manager = StateManager()
+project_manager = ProjectManager()

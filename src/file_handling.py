@@ -23,45 +23,39 @@ import state_action_handling
 import state_actions_default
 import state_comment
 import state_handling
-import state_manager
 import tag_plausibility
 import transition_handling
 import undo_handling
 import update_hdl_tab
-from state_manager import state_manager
-
-# Global variables replaced with state manager
-# filename     = ""
-# filename_old = ""
+from state_manager import project_manager
 
 
 def save_as():
-    # Use state manager instead of global variables
-    state_manager.previous_file = state_manager.current_file
-    state_manager.current_file = asksaveasfilename(
+    project_manager.previous_file = project_manager.current_file
+    project_manager.current_file = asksaveasfilename(
         defaultextension=".hfe",
         initialfile=main_window.module_name.get(),
         filetypes=(("HDL-FSM-Editor files", "*.hfe"), ("all files", "*.*")),
     )
-    if state_manager.current_file != "":
-        dir_name, file_name = os.path.split(state_manager.current_file)
+    if project_manager.current_file != "":
+        dir_name, file_name = os.path.split(project_manager.current_file)
         main_window.root.title(file_name + " (" + dir_name + ")")
-        save_in_file_new(state_manager.current_file)
+        save_in_file_new(project_manager.current_file)
 
 
 def save():
     # Use state manager instead of global variables
-    state_manager.previous_file = state_manager.current_file
-    if state_manager.current_file == "":
-        state_manager.current_file = asksaveasfilename(
+    project_manager.previous_file = project_manager.current_file
+    if project_manager.current_file == "":
+        project_manager.current_file = asksaveasfilename(
             defaultextension=".hfe",
             initialfile=main_window.module_name.get(),
             filetypes=(("HDL-FSM-Editor files", "*.hfe"), ("all files", "*.*")),
         )
-    if state_manager.current_file != "":
-        dir_name, file_name = os.path.split(state_manager.current_file)
+    if project_manager.current_file != "":
+        dir_name, file_name = os.path.split(project_manager.current_file)
         main_window.root.title(file_name + " (" + dir_name + ")")
-        save_in_file_new(state_manager.current_file)
+        save_in_file_new(project_manager.current_file)
 
 
 def write_coords(fileobject, canvas_id):
@@ -492,7 +486,7 @@ def remove_old_design():
         )
         if discard is False:
             return False
-    state_manager.current_file = ""
+    project_manager.current_file = ""
     main_window.module_name.set("")
     main_window.reset_signal_name.set("")
     main_window.clock_signal_name.set("")
@@ -714,8 +708,8 @@ def save_in_file_new(save_filename):  # Called at saving and at every design cha
         fileobject = open(save_filename, "w", encoding="utf-8")
         fileobject.write(json.dumps(design_dictionary, indent=4, default=str))
         fileobject.close()
-        if not save_filename.endswith(".tmp") and os.path.isfile(state_manager.previous_file + ".tmp"):
-            os.remove(state_manager.previous_file + ".tmp")
+        if not save_filename.endswith(".tmp") and os.path.isfile(project_manager.previous_file + ".tmp"):
+            os.remove(project_manager.previous_file + ".tmp")
     except Exception as _:
         messagebox.showerror("Error in HDL-FSM-Editor", "Writing to file " + save_filename + " caused exception ")
     if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
@@ -740,7 +734,7 @@ def open_file_with_name_new(read_filename):
         fileobject = open(replaced_read_filename, encoding="utf-8")
         data = fileobject.read()
         fileobject.close()
-        state_manager.current_file = read_filename
+        project_manager.current_file = read_filename
         design_dictionary = json.loads(data)
         custom_text.CustomText.read_variables_of_all_windows.clear()
         custom_text.CustomText.written_variables_of_all_windows.clear()

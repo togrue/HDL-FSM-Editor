@@ -23,7 +23,7 @@ import move_handling_initialization
 import undo_handling
 import update_hdl_tab
 from dialogs.color_changer import ColorChanger
-from state_manager import state_manager
+from state_manager import project_manager
 
 VERSION = "4.11"
 header_string = (
@@ -157,12 +157,12 @@ def close_tool():
             default="cancel",
         )
         if discard is True:
-            if os.path.isfile(state_manager.current_file + ".tmp"):
-                os.remove(state_manager.current_file + ".tmp")
+            if os.path.isfile(project_manager.current_file + ".tmp"):
+                os.remove(project_manager.current_file + ".tmp")
             sys.exit()
     else:
-        if os.path.isfile(state_manager.current_file + ".tmp"):
-            os.remove(state_manager.current_file + ".tmp")
+        if os.path.isfile(project_manager.current_file + ".tmp"):
+            os.remove(project_manager.current_file + ".tmp")
         sys.exit()
 
 
@@ -1198,7 +1198,7 @@ def update_hdl_tab_if_necessary():
                 update_ref = update_hdl_tab.UpdateHdlTab(
                     language.get(),
                     select_file_number_text.get(),
-                    state_manager.current_file,
+                    project_manager.current_file,
                     generate_path_value.get(),
                     module_name.get(),
                 )
