@@ -150,7 +150,7 @@ def view_all_after_window_is_built():
     canvas.unbind("<Visibility>")
 
 
-def close_tool():
+def _close_tool():
     title = root.title()
     if title.endswith("*"):
         action = file_handling.ask_save_unsaved_changes(title)
@@ -177,7 +177,7 @@ def create_root():
     root.columnconfigure(0, weight=1)
     root.rowconfigure(1, weight=1)
     root.grid()
-    root.protocol("WM_DELETE_WINDOW", close_tool)
+    root.protocol("WM_DELETE_WINDOW", _close_tool)
     link_dictionary.LinkDictionary(root)
 
 
@@ -251,7 +251,7 @@ def create_menu_bar():
         label="About", command=lambda: messagebox.showinfo("About:", header_string), font=("Arial", 10)
     )
 
-    notebook.bind("<<NotebookTabChanged>>", lambda event: handle_notebook_tab_changed_event())
+    notebook.bind("<<NotebookTabChanged>>", lambda event: _handle_notebook_tab_changed_event())
 
     file_menu_button.grid(row=0, column=0)
     hdl_menu_button.grid(row=0, column=1)
@@ -317,10 +317,10 @@ def create_control_notebook_tab():
     language_combobox.grid(row=1, column=1, sticky=tk.W)
 
     generate_path_value = tk.StringVar(value="")
-    generate_path_value.trace_add("write", show_path_has_changed)
+    generate_path_value.trace_add("write", _show_path_has_changed)
     generate_path_label = ttk.Label(control_frame, text="Path for generated HDL:", padding=5)
     generate_path_entry = ttk.Entry(control_frame, textvariable=generate_path_value, width=80)
-    generate_path_button = ttk.Button(control_frame, text="Select...", command=set_path, style="Path.TButton")
+    generate_path_button = ttk.Button(control_frame, text="Select...", command=_set_path, style="Path.TButton")
     generate_path_label.grid(row=2, column=0, sticky=tk.W)
     generate_path_entry.grid(row=2, column=1, sticky=(tk.W, tk.E))
     generate_path_button.grid(row=2, column=2, sticky=(tk.W, tk.E))
@@ -387,11 +387,11 @@ def create_control_notebook_tab():
     control_frame.columnconfigure((8, 1), weight=1)
 
     working_directory_value = tk.StringVar(value="")
-    working_directory_value.trace_add("write", show_path_has_changed)
+    working_directory_value.trace_add("write", _show_path_has_changed)
     working_directory_label = ttk.Label(control_frame, text="Working directory:", padding=5)
     working_directory_entry = ttk.Entry(control_frame, textvariable=working_directory_value, width=80)
     working_directory_button = ttk.Button(
-        control_frame, text="Select...", command=set_working_directory, style="Path.TButton"
+        control_frame, text="Select...", command=_set_working_directory, style="Path.TButton"
     )
     working_directory_label.grid(row=9, column=0, sticky=tk.W)
     working_directory_entry.grid(row=9, column=1, sticky=(tk.W, tk.E))
@@ -401,7 +401,7 @@ def create_control_notebook_tab():
     control_frame.columnconfigure((9, 2), weight=0)
 
     diagram_background_color = tk.StringVar(value="white")
-    diagram_background_color.trace_add("write", lambda *args: change_color_of_diagram_background())
+    diagram_background_color.trace_add("write", lambda *args: _change_color_of_diagram_background())
     diagram_background_color_label = ttk.Label(control_frame, text="Diagram background color:", padding=5)
     diagram_background_color_entry = ttk.Entry(control_frame, textvariable=diagram_background_color, width=80)
     diagram_background_color_button = ttk.Button(
@@ -432,13 +432,13 @@ def create_control_notebook_tab():
     notebook.add(control_frame, sticky=tk.N + tk.E + tk.W + tk.S, text="Control")
 
 
-def set_path():
+def _set_path():
     path = askdirectory()
     if path != "" and not path.isspace():
         generate_path_value.set(path)
 
 
-def set_working_directory():
+def _set_working_directory():
     path = askdirectory()
     if path != "" and not path.isspace():
         working_directory_value.set(path)
@@ -468,7 +468,7 @@ def create_interface_notebook_tab():
     )
     interface_package_text.bind("<Control-Z>", lambda event: interface_package_text.edit_redo())
     interface_package_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-    interface_package_text.bind("<Key>", lambda event, id=interface_package_text: handle_key(event, id))
+    interface_package_text.bind("<Key>", lambda event, id=interface_package_text: _handle_key(event, id))
     interface_package_scroll = ttk.Scrollbar(
         interface_package_frame, orient=tk.VERTICAL, cursor="arrow", command=interface_package_text.yview
     )
@@ -495,7 +495,7 @@ def create_interface_notebook_tab():
     )
     interface_generics_text.bind("<Control-Z>", lambda event: interface_generics_text.edit_redo())
     interface_generics_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-    interface_generics_text.bind("<Key>", lambda event, id=interface_generics_text: handle_key_at_generics(id))
+    interface_generics_text.bind("<Key>", lambda event, id=interface_generics_text: _handle_key_at_generics(id))
     interface_generics_scroll = ttk.Scrollbar(
         interface_generics_frame, orient=tk.VERTICAL, cursor="arrow", command=interface_generics_text.yview
     )
@@ -522,7 +522,7 @@ def create_interface_notebook_tab():
     interface_ports_text.bind("<Control-z>", lambda event: interface_ports_text.undo())
     interface_ports_text.bind("<Control-Z>", lambda event: interface_ports_text.redo())
     interface_ports_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-    interface_ports_text.bind("<Key>", lambda event, id=interface_ports_text: handle_key_at_ports(id))
+    interface_ports_text.bind("<Key>", lambda event, id=interface_ports_text: _handle_key_at_ports(id))
     interface_ports_scroll = ttk.Scrollbar(
         interface_ports_frame, orient=tk.VERTICAL, cursor="arrow", command=interface_ports_text.yview
     )
@@ -562,7 +562,7 @@ def create_internals_notebook_tab():
     )
     internals_package_text.bind("<Control-Z>", lambda event: internals_package_text.edit_redo())
     internals_package_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-    internals_package_text.bind("<Key>", lambda event, id=internals_package_text: handle_key(event, id))
+    internals_package_text.bind("<Key>", lambda event, id=internals_package_text: _handle_key(event, id))
     internals_package_scroll = ttk.Scrollbar(
         internals_package_frame, orient=tk.VERTICAL, cursor="arrow", command=internals_package_text.yview
     )
@@ -593,7 +593,7 @@ def create_internals_notebook_tab():
     internals_architecture_text.bind("<Control-Z>", lambda event: internals_architecture_text.redo())
     internals_architecture_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
     internals_architecture_text.bind(
-        "<Key>", lambda event, id=internals_architecture_text: handle_key_at_declarations(id)
+        "<Key>", lambda event, id=internals_architecture_text: _handle_key_at_declarations(id)
     )
     internals_architecture_scroll = ttk.Scrollbar(
         internals_architecture_frame, orient=tk.VERTICAL, cursor="arrow", command=internals_architecture_text.yview
@@ -626,7 +626,7 @@ def create_internals_notebook_tab():
     internals_process_clocked_text.bind("<Control-Z>", lambda event: internals_process_clocked_text.redo())
     internals_process_clocked_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
     internals_process_clocked_text.bind(
-        "<Key>", lambda event, id=internals_process_clocked_text: handle_key_at_declarations(id)
+        "<Key>", lambda event, id=internals_process_clocked_text: _handle_key_at_declarations(id)
     )
     internals_process_clocked_scroll = ttk.Scrollbar(
         internals_process_clocked_frame,
@@ -661,7 +661,7 @@ def create_internals_notebook_tab():
     internals_process_combinatorial_text.bind("<Control-Z>", lambda event: internals_process_combinatorial_text.redo())
     internals_process_combinatorial_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
     internals_process_combinatorial_text.bind(
-        "<Key>", lambda event, id=internals_process_combinatorial_text: handle_key_at_declarations(id)
+        "<Key>", lambda event, id=internals_process_combinatorial_text: _handle_key_at_declarations(id)
     )
     internals_process_combinatorial_scroll = ttk.Scrollbar(
         internals_process_combinatorial_frame,
@@ -825,12 +825,12 @@ def __check_for_window_resize(_):
     grid_drawer.draw_grid()
 
 
-def handle_notebook_tab_changed_event():
-    enable_undo_redo_if_diagram_tab_is_active_else_disable()
-    update_hdl_tab_if_necessary()
+def _handle_notebook_tab_changed_event():
+    _enable_undo_redo_if_diagram_tab_is_active_else_disable()
+    _update_hdl_tab_if_necessary()
 
 
-def enable_undo_redo_if_diagram_tab_is_active_else_disable():
+def _enable_undo_redo_if_diagram_tab_is_active_else_disable():
     if notebook.index(notebook.select()) == 3:
         canvas.bind_all("<Control-z>", lambda event: undo_handling.undo())
         canvas.bind_all("<Control-Z>", lambda event: undo_handling.redo())
@@ -855,7 +855,7 @@ def create_hdl_notebook_tab():
     hdl_frame_text.config(yscrollcommand=hdl_frame_text_scroll.set)
     hdl_frame_text_scroll.grid(row=0, column=1, sticky=(tk.W, tk.E, tk.S, tk.N))
 
-    hdl_frame_text.bind("<Motion>", cursor_move_hdl_tab)
+    hdl_frame_text.bind("<Motion>", _cursor_move_hdl_tab)
 
     notebook.add(hdl_frame, sticky=tk.N + tk.E + tk.W + tk.S, text="generated HDL")
 
@@ -876,32 +876,32 @@ def create_log_notebook_tab():
 
     log_frame_clear_button = ttk.Button(log_frame_button_frame, takefocus=False, text="Clear", style="Find.TButton")
     log_frame_clear_button.grid(row=0, column=0, sticky=tk.W)
-    log_frame_clear_button.bind("<Button-1>", clear_log_tab)
+    log_frame_clear_button.bind("<Button-1>", _clear_log_tab)
 
     log_frame_regex_button = ttk.Button(
         log_frame_button_frame, takefocus=False, text="Define Regex for Hyperlinks", style="Find.TButton"
     )
     log_frame_regex_button.grid(row=0, column=1, sticky=tk.W)
-    log_frame_regex_button.bind("<Button-1>", edit_regex)
+    log_frame_regex_button.bind("<Button-1>", _edit_regex)
 
     log_frame_text_scroll = ttk.Scrollbar(log_frame, orient=tk.VERTICAL, cursor="arrow", command=log_frame_text.yview)
     log_frame_text.config(yscrollcommand=log_frame_text_scroll.set)
     log_frame_text_scroll.grid(row=1, column=1, sticky=(tk.W, tk.E, tk.S, tk.N))
 
-    log_frame_text.bind("<Motion>", cursor_move_log_tab)
+    log_frame_text.bind("<Motion>", _cursor_move_log_tab)
 
     notebook.add(log_frame, sticky=tk.N + tk.E + tk.W + tk.S, text="Compile Messages")
     debug_active = tk.IntVar()
     debug_active.set(1)  # 1: inactive, 2: active
 
 
-def clear_log_tab(_):
+def _clear_log_tab(_):
     log_frame_text.config(state=tk.NORMAL)
     log_frame_text.delete("1.0", tk.END)
     log_frame_text.config(state=tk.DISABLED)
 
 
-def edit_regex(*_):
+def _edit_regex(*_):
     global regex_dialog, regex_dialog_entry, regex_dialog_filename_entry, regex_dialog_linenumber_entry
     regex_dialog = tk.Toplevel()
     regex_dialog.title("Enter Regex for Python:")
@@ -929,8 +929,8 @@ def edit_regex(*_):
     regex_dialog_filename_entry.grid(row=0, column=1)
     regex_dialog_linenumber_label.grid(row=1, column=0, sticky=tk.W)
     regex_dialog_linenumber_entry.grid(row=1, column=1)
-    regex_dialog_store_button = ttk.Button(regex_button_frame, text="Store", command=regex_store)
-    regex_dialog_cancel_button = ttk.Button(regex_button_frame, text="Cancel", command=regex_cancel)
+    regex_dialog_store_button = ttk.Button(regex_button_frame, text="Store", command=_regex_store)
+    regex_dialog_cancel_button = ttk.Button(regex_button_frame, text="Cancel", command=_regex_cancel)
     debug_stdout_label = ttk.Label(regex_button_frame, text="Debug Regex at STDOUT:", padding=5)
     debug_stdout_frame = ttk.Frame(regex_button_frame)
     regex_dialog_store_button.grid(row=0, column=0)
@@ -953,7 +953,7 @@ def edit_regex(*_):
     regex_dialog_linenumber_entry.insert(0, regex_file_line_number_quote)
 
 
-def regex_store():
+def _regex_store():
     global \
         regex_message_find_for_vhdl, \
         regex_message_find_for_verilog, \
@@ -971,11 +971,11 @@ def regex_store():
     regex_dialog.destroy()
 
 
-def regex_cancel():
+def _regex_cancel():
     regex_dialog.destroy()
 
 
-def cursor_move_hdl_tab(*_):
+def _cursor_move_hdl_tab(*_):
     global line_number_under_pointer_hdl_tab, func_id_jump
     if hdl_frame_text.get("1.0", tk.END + "- 1 char") == "":
         return
@@ -1016,7 +1016,7 @@ def cursor_move_hdl_tab(*_):
         line_number_under_pointer_hdl_tab = line_number
 
 
-def cursor_move_log_tab(*_):
+def _cursor_move_log_tab(*_):
     global func_id_jump1, func_id_jump2, regex_error_happened, line_number_under_pointer_log_tab
     if log_frame_text.get("1.0", tk.END + "- 1 char") == "":
         return
@@ -1155,28 +1155,28 @@ def switch_language_mode():
         compile_cmd_docu.config(text="Variables for compile command:\n$file\t= Module-File\n$name\t= Module Name")
 
 
-def handle_key(event, custom_text_ref):
+def _handle_key(event, custom_text_ref):
     custom_text_ref.after_idle(
         custom_text_ref.update_highlight_tags, canvas_editing.fontsize, ["control", "datatype", "function", "comment"]
     )
 
 
-def handle_key_at_ports(custom_text_ref):
+def _handle_key_at_ports(custom_text_ref):
     custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_ports_list)
     custom_text_ref.after_idle(custom_text_ref.update_highlighting)
 
 
-def handle_key_at_generics(custom_text_ref):
+def _handle_key_at_generics(custom_text_ref):
     custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_generics_list)
     custom_text_ref.after_idle(custom_text_ref.update_highlighting)
 
 
-def handle_key_at_declarations(custom_text_ref):
+def _handle_key_at_declarations(custom_text_ref):
     custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_signals_list)
     custom_text_ref.after_idle(custom_text_ref.update_highlighting)
 
 
-def show_path_has_changed(*_):
+def _show_path_has_changed(*_):
     undo_handling.design_has_changed()
 
 
@@ -1185,10 +1185,10 @@ def show_tab(tab):
     for tab_id in notebook_ids:
         if notebook.tab(tab_id, option="text") == tab:
             notebook.select(tab_id)
-            update_hdl_tab_if_necessary()
+            _update_hdl_tab_if_necessary()
 
 
-def update_hdl_tab_if_necessary():
+def _update_hdl_tab_if_necessary():
     global date_of_hdl_file_shown_in_hdl_tab
     if notebook.index(notebook.select()) == 4:
         if language.get() == "VHDL":
@@ -1215,7 +1215,7 @@ def update_hdl_tab_if_necessary():
                 date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
 
 
-def highlight_item(hdl_item_type, *_):
+def _highlight_item(hdl_item_type, *_):
     # This method must have the same name as the method custom_text.CustomText.highlight_item.
     # It is called, when in the "generated HDL"-tab module-name, reset-name or clock-name are clicked per mouse to jump to its declaration.
     if hdl_item_type == "module_name":
@@ -1224,7 +1224,7 @@ def highlight_item(hdl_item_type, *_):
         clock_signal_name_entry.select_range(0, tk.END)
 
 
-def change_color_of_diagram_background():
+def _change_color_of_diagram_background():
     try:
         canvas.configure(bg=diagram_background_color.get())
         diagram_background_color_error.configure(text="")

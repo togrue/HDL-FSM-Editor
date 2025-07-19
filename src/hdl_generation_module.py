@@ -12,7 +12,7 @@ import main_window
 
 def create_module_logic(file_name, file_line_number):
     architecture = ""
-    state_signal_type_definition = create_signal_declaration_for_the_state_variable()
+    state_signal_type_definition = _create_signal_declaration_for_the_state_variable()
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_signal_type_definition)
     file_line_number += state_signal_type_definition.count("\n")
 
@@ -39,7 +39,7 @@ def create_module_logic(file_name, file_line_number):
         "    always @(posedge "
         + main_window.clock_signal_name.get()
         + " or "
-        + get_reset_edge(reset_condition)
+        + _get_reset_edge(reset_condition)
         + " "
         + main_window.reset_signal_name.get()
         + ") begin: p_states\n"
@@ -176,7 +176,7 @@ def create_module_logic(file_name, file_line_number):
     return architecture
 
 
-def create_signal_declaration_for_the_state_variable():
+def _create_signal_declaration_for_the_state_variable():
     list_of_all_state_names = hdl_generation_library.get_a_list_of_all_state_names()
     number_of_states = len(list_of_all_state_names)
     if main_window.language.get() == "Verilog":
@@ -197,7 +197,7 @@ def create_signal_declaration_for_the_state_variable():
     return signal_declaration
 
 
-def get_reset_edge(reset_condition):
+def _get_reset_edge(reset_condition):
     reset_condition_mod = hdl_generation_library.remove_comments_and_returns(reset_condition)
     reset_condition_mod = re.sub("\\s", "", reset_condition_mod)  # remove blanks
     if reset_condition_mod.endswith("1'b0"):
@@ -211,7 +211,7 @@ def get_reset_edge(reset_condition):
         return "unknown_edge"
 
 
-def indent_identically(character, actual_list):
+def _indent_identically(character, actual_list):
     actual_list = [
         re.sub("[ ]*" + character, character, decl, count=1) for decl in actual_list
     ]  # Blanks for the character will be adapted und must first be removed here.

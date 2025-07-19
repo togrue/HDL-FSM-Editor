@@ -14,7 +14,7 @@ import undo_handling
 from state_manager import project_manager
 
 
-def setup_application_ui():
+def _setup_application_ui():
     """Set up the main application UI components."""
 
     main_window.create_root()
@@ -62,7 +62,7 @@ def setup_application_ui():
     undo_handling.design_has_changed()
 
 
-def parse_and_process_arguments():
+def _parse_and_process_arguments():
     """Parse command-line arguments and process them."""
     parser = argparse.ArgumentParser(description="HDL-FSM-Editor: A tool for modeling FSMs")
     parser.add_argument("filename", nargs="?", help="HDL-FSM-Editor file (.hfe) to open")
@@ -98,20 +98,20 @@ def parse_and_process_arguments():
         sys.exit()
 
 
-def main():
+def _main():
     """Main entry point for HDL-FSM-Editor."""
     print(main_window.header_string)
 
-    setup_application_ui()
+    _setup_application_ui()
 
-    parse_and_process_arguments()
+    _parse_and_process_arguments()
 
     main_window.show_window()
     main_window.root.mainloop()
 
 
 if __name__ == "__main__":
-    main()
+    _main()
 
 # During editing in the diagram notebook tab, several tags are used to identify the canvas items.
 # This is a list of all these tags:

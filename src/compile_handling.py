@@ -13,7 +13,7 @@ import main_window
 
 
 def compile_hdl():
-    show_compile_messages_tab()
+    _show_compile_messages_tab()
     if main_window.working_directory_value.get() != "" and not main_window.working_directory_value.get().isspace():
         try:
             os.chdir(main_window.working_directory_value.get())
@@ -31,26 +31,26 @@ def compile_hdl():
     )
     main_window.log_frame_text.config(state=tk.DISABLED)
     start_time = datetime.now()
-    commands = get_command_list()
+    commands = _get_command_list()
     # print("compile_handling: commands =", commands)
     for command in commands:
-        success = execute(command)
+        success = _execute(command)
         if not success:
             break
     end_time = datetime.now()
     main_window.log_frame_text.config(state=tk.NORMAL)
-    insert_line_in_log("Finished user commands from Control-Tab after " + str(end_time - start_time) + ".\n")
+    _insert_line_in_log("Finished user commands from Control-Tab after " + str(end_time - start_time) + ".\n")
     main_window.log_frame_text.config(state=tk.DISABLED)
 
 
-def execute(command):
+def _execute(command):
     command_array = shlex.split(command)  # Does not split quoted sub-strings with blanks.
-    command_array_new = replace_variables(command_array)
+    command_array_new = _replace_variables(command_array)
     if command_array_new is None:
         return False
     for command_part in command_array_new:
-        insert_line_in_log(command_part + " ")
-    insert_line_in_log("\n")
+        _insert_line_in_log(command_part + " ")
+    _insert_line_in_log("\n")
     try:
         process = subprocess.Popen(
             command_array_new,
@@ -60,7 +60,7 @@ def execute(command):
         )
         for line in process.stdout:  # Terminates when process.stdout is closed.
             if line != "\n":  # VHDL report-statements cause empty lines which mess up the protocol.
-                insert_line_in_log(line)
+                _insert_line_in_log(line)
     except FileNotFoundError:
         command_string = ""
         for word in command_array_new:
@@ -72,20 +72,20 @@ def execute(command):
     return True
 
 
-def show_compile_messages_tab():
+def _show_compile_messages_tab():
     notebook_ids = main_window.notebook.tabs()
     for notebook_id in notebook_ids:
         if main_window.notebook.tab(notebook_id, option="text") == "Compile Messages":
             main_window.notebook.select(notebook_id)
 
 
-def get_command_list():
+def _get_command_list():
     command_string_tmp = main_window.compile_cmd.get()
     command_string = command_string_tmp.replace(";", " ; ")
     return command_string.split(";")
 
 
-def replace_variables(command_array):
+def _replace_variables(command_array):
     command_array_new = []
     for entry in command_array:
         if entry == "$file":
@@ -138,7 +138,7 @@ def replace_variables(command_array):
     return command_array_new
 
 
-def copy_into_compile_messages_tab(stdout, stderr, command_array_new):
+def _copy_into_compile_messages_tab(stdout, stderr, command_array_new):
     main_window.log_frame_text.config(state=tk.NORMAL)
     for part in command_array_new:
         main_window.log_frame_text.insert(tk.END, part + " ")
@@ -154,7 +154,7 @@ def copy_into_compile_messages_tab(stdout, stderr, command_array_new):
     main_window.log_frame_text.see(tk.END)
 
 
-def insert_line_in_log(text):
+def _insert_line_in_log(text):
     if main_window.language.get() == "VHDL":
         regex_message_find = main_window.regex_message_find_for_vhdl
     else:

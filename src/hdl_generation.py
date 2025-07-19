@@ -46,7 +46,7 @@ def run_hdl_generation(write_to_file):
 
 
 def _create_hdl(config, header, write_to_file):
-    file_name, file_name_architecture = get_file_names(config)
+    file_name, file_name_architecture = _get_file_names(config)
     link_dictionary.LinkDictionary.link_dict_reference.clear_link_dict(file_name)
     if file_name_architecture:
         link_dictionary.LinkDictionary.link_dict_reference.clear_link_dict(file_name_architecture)
@@ -231,7 +231,7 @@ def _write_hdl_file(config, write_to_file, header, entity, architecture, path_na
         last_line_number_of_file1 = content.count("\n") + 1  # For example: 3 lines are separated by 2 returns.
         main_window.size_of_file1_line_number = len(str(last_line_number_of_file1)) + 2  # "+2" because of string ": "
         main_window.size_of_file2_line_number = 0
-        content_with_numbers = add_line_numbers(content)
+        content_with_numbers = _add_line_numbers(content)
     else:
         content1 = "-- Filename: " + name_of_file + "\n"
         content1 += header
@@ -250,8 +250,8 @@ def _write_hdl_file(config, write_to_file, header, entity, architecture, path_na
             fileobject_architecture = open(path_name_architecture, "w", encoding="utf-8")
             fileobject_architecture.write(content2)
             fileobject_architecture.close()
-        content_with_numbers1 = add_line_numbers(content1)
-        content_with_numbers2 = add_line_numbers(content2)
+        content_with_numbers1 = _add_line_numbers(content1)
+        content_with_numbers2 = _add_line_numbers(content2)
         content_with_numbers = content_with_numbers1 + content_with_numbers2
         main_window.size_of_file2_line_number = (
             len(str(content_with_numbers.count("\n"))) + 2
@@ -259,7 +259,7 @@ def _write_hdl_file(config, write_to_file, header, entity, architecture, path_na
     return content_with_numbers
 
 
-def get_file_names(config):
+def _get_file_names(config):
     # For Verilog and SystemVerilog, always generate single files regardless of number_of_files setting
     if config.language in ["Verilog", "SystemVerilog"]:
         file_type = ".v" if config.language == "Verilog" else ".sv"
@@ -276,7 +276,7 @@ def get_file_names(config):
     return file_name, file_name_architecture
 
 
-def add_line_numbers(text):
+def _add_line_numbers(text):
     text_lines = text.split("\n")
     text_length_as_string = str(len(text_lines))
     number_of_needed_digits_as_string = str(len(text_length_as_string))

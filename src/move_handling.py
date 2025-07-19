@@ -20,9 +20,9 @@ import transition_handling
 def move_do(event, move_list, first):
     last = bool(event.type == "5")
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
-    if state_is_moved_to_near_to_state_or_connector(move_list, event_x, event_y):
+    if _state_is_moved_to_near_to_state_or_connector(move_list, event_x, event_y):
         return
-    if connector_moved_too_close_to_other_object(move_list, event_x, event_y):
+    if _connector_moved_too_close_to_other_object(move_list, event_x, event_y):
         return
     for entry in move_list:
         item_id = entry[0]
@@ -54,14 +54,14 @@ def move_do(event, move_list, first):
             print("move: Fatal, unknown canvas type", "|" + item_type + "|")
 
 
-def get_exact_or_rounded_canvas_coordinates(event):
+def _get_exact_or_rounded_canvas_coordinates(event):
     if event.type == "5":  # ButtonRelease
         return canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(event)
     else:  # Motion
         return canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
 
 
-def state_is_moved_to_near_to_state_or_connector(move_list, event_x, event_y):
+def _state_is_moved_to_near_to_state_or_connector(move_list, event_x, event_y):
     for entry in move_list:
         moved_item_id = entry[0]
         if main_window.canvas.type(moved_item_id) == "oval":
@@ -96,7 +96,7 @@ def state_is_moved_to_near_to_state_or_connector(move_list, event_x, event_y):
     return False
 
 
-def connector_moved_too_close_to_other_object(move_list, event_x, event_y):
+def _connector_moved_too_close_to_other_object(move_list, event_x, event_y):
     for entry in move_list:
         moved_item_id = entry[0]
         if (
