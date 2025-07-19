@@ -10,6 +10,7 @@ dev = [
     "pre-commit>=4.2.0",
     "pytest>=8.4.1",
     "ruff>=0.12.4",
+    "mypy>=1.17.0",
 ]
 
 [tool.ruff]
