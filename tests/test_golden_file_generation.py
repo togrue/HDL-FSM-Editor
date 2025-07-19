@@ -64,7 +64,7 @@ def run_hdl_generation(hfe_file, output_dir):
     try:
         cmd = [
             sys.executable,
-            str(Path(__file__).parent.parent / "src" / "hdl_fsm_editor.py"),
+            str(Path(__file__).parent.parent / "src" / "main.py"),
             str(hfe_file),
             "--generate-hdl",
             "--no-version-check",
