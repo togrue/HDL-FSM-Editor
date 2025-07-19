@@ -54,7 +54,7 @@ vhdl_keywords_for_signal_handling = (
     " xor ",
 )
 
-vhdl_keywords_all_unused = vhdl_keywords_for_signal_handling + (
+_vhdl_keywords_all_unused = vhdl_keywords_for_signal_handling + (
     " access ",
     " assert ",
     " alias ",
@@ -124,7 +124,7 @@ vhdl_keywords_all_unused = vhdl_keywords_for_signal_handling + (
 )
 
 verilog_keywords_for_signal_handling = (" or ", " and ", " assign ", " nand ", " nor ", " not ", " xnor ", " xor ")
-verilog_keywords_all = (
+_verilog_keywords_all = (
     " always ",
     " end ",
     " ifnone ",
@@ -222,7 +222,7 @@ verilog_keywords_all = (
 )
 
 
-keywords = {
+_keywords = {
     "not_read": ["dummy_entry_so_that_this_list_is_no_empty"],
     "not_written": ["dummy_entry_so_that_this_list_is_no_empty"],
     "control": [

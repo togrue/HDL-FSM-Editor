@@ -16,18 +16,18 @@ import vector_handling
 from widgets.OptionMenu import OptionMenu
 
 transition_number = 0
-difference_x = 0
-difference_y = 0
+_difference_x = 0
+_difference_y = 0
 
 
 def move_to(event_x, event_y, transition_id, point, first, move_list, last):
-    global difference_x, difference_y
+    global _difference_x, _difference_y
 
     # Calculate movement offset
-    difference_x, difference_y = _calculate_movement_offset(event_x, event_y, transition_id, point, first, move_list)
+    _difference_x, _difference_y = _calculate_movement_offset(event_x, event_y, transition_id, point, first, move_list)
 
     # Apply offset and snap to grid
-    event_x, event_y = event_x + difference_x, event_y + difference_y
+    event_x, event_y = event_x + _difference_x, event_y + _difference_y
     event_x, event_y = _snap_to_grid(event_x, event_y, last)
 
     # Get transition tag and manage layering
