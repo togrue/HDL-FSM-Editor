@@ -33,3 +33,17 @@ select = [
     # isort
     "I",
 ]
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+    "--disable-warnings",
+]
+markers = [
+    "golden_file: marks tests as golden file tests",
+    "batch_mode: marks tests as batch mode tests",
+]

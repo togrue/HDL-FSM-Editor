@@ -1,5 +1,5 @@
 -- Filename: multiply_wt_booth_control.vhd
--- Created by HDL-FSM-Editor at Sat Jul 19 05:29:18 2025
+-- Created by HDL-FSM-Editor
 library ieee;
 use ieee.std_logic_1164.all;
 
