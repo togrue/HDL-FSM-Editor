@@ -94,19 +94,14 @@ def mouse_click_happened_in_state_name(items_near_mouse_click_location):
     list_item_types = []
     for item_id in items_near_mouse_click_location:
         list_item_types.append(main_window.canvas.type(item_id))
-    if "oval" in list_item_types and "text" in list_item_types:
-        return True
-    return False
+    return "oval" in list_item_types and "text" in list_item_types
 
 
 def mouse_click_happened_in_priority_number(items_near_mouse_click_location):
     list_item_types = []
     for item_id in items_near_mouse_click_location:
         list_item_types.append(main_window.canvas.type(item_id))
-    if "rectangle" in list_item_types and "text" in list_item_types:
-        return True
-    else:
-        return False
+    return "rectangle" in list_item_types and "text" in list_item_types
 
 
 def mouse_click_happened_in_connection_line(items_near_mouse_click_location):
@@ -130,10 +125,7 @@ def mouse_click_happened_in_state_comment_line(items_near_mouse_click_location):
 
 
 def mouse_click_happened_in_grid_line(items_near_mouse_click_location):
-    for item_id in items_near_mouse_click_location:
-        if "grid_line" not in main_window.canvas.gettags(item_id):
-            return False
-    return True
+    return all("grid_line" in main_window.canvas.gettags(item_id) for item_id in items_near_mouse_click_location)
 
 
 def create_move_list(items_near_mouse_click_location, event_x, event_y):
