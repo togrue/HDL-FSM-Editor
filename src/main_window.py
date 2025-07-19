@@ -13,18 +13,18 @@ from tkinter.filedialog import askdirectory
 
 import canvas_editing
 import canvas_modify_bindings
+import codegen.hdl_generation as hdl_generation
 import compile_handling
 import constants
 import custom_text
 import file_handling
 import grid_drawing
-import codegen.hdl_generation as hdl_generation
 import link_dictionary
 import move_handling_initialization
 import undo_handling
 import update_hdl_tab
-from dialogs.color_changer import ColorChanger
 from codegen.hdl_generation_config import GenerationConfig
+from dialogs.color_changer import ColorChanger
 from project_manager import project_manager
 
 _VERSION = "4.11"

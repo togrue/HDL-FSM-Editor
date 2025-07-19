@@ -5,13 +5,12 @@ Methods needed for HDL generation
 import os
 import tkinter as tk
 from datetime import datetime
-from pathlib import Path
 from tkinter import messagebox
 
-import file_handling
 import codegen.hdl_generation_architecture as hdl_generation_architecture
 import codegen.hdl_generation_library as hdl_generation_library
 import codegen.hdl_generation_module as hdl_generation_module
+import file_handling
 import link_dictionary
 import list_separation_check
 import main_window

@@ -80,9 +80,7 @@ def _moving_of_transition_start_or_end_point_ends_at_illegal_place(item_ids_at_m
         return True
     if _start_or_end_of_a_line_was_moved_to_free_space(item_ids_at_moving_end_location):
         return True
-    if _transition_connects_reset_entry_and_connector(item_ids_at_moving_end_location, move_list):
-        return True
-    return False
+    return bool(_transition_connects_reset_entry_and_connector(item_ids_at_moving_end_location, move_list))
 
 
 def _move_the_line_to_the_center_of_the_target(
