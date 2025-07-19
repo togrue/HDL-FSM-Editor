@@ -60,5 +60,4 @@ class ProjectManager:
         self._previous_file = ""
 
 
-# Global instance (only global variable we keep)
 project_manager = ProjectManager()

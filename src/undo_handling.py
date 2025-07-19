@@ -21,7 +21,7 @@ import state_actions_default
 import state_comment
 import state_handling
 import transition_handling
-from state_manager import project_manager
+from project_manager import project_manager
 
 stack = []
 stack_write_pointer = 0
