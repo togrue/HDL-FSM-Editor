@@ -11,7 +11,7 @@ import file_handling
 import hdl_generation
 import main_window
 import undo_handling
-from state_manager import state_manager
+from state_manager import project_manager
 
 
 def setup_application_ui():
@@ -86,7 +86,7 @@ def parse_and_process_arguments():
             messagebox.showerror("Error", f"File {args.filename} must have extension '.hfe'.")
         else:
             # Load the file
-            state_manager.current_file = args.filename
+            project_manager.current_file = args.filename
             main_window.root.title("new")
             file_handling.remove_old_design()
             file_handling.open_file_with_name_new(args.filename)
