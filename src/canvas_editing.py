@@ -942,7 +942,7 @@ def __show_menu(zoom_coords):
 def __evaluate_menu(menue_window, menu):
     selected_entry = menu.get(menu.curselection()[0])
     if "Change background color" in selected_entry:
-        main_window.run_color_changer()
+        main_window.choose_bg_color()
     elif "Hide grid" in selected_entry:
         main_window.show_grid = False
         main_window.grid_drawer.remove_grid()

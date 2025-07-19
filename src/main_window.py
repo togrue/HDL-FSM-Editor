@@ -444,7 +444,7 @@ def create_control_notebook_tab():
     diagram_background_color_label = ttk.Label(control_frame, text="Diagram background color:", padding=5)
     diagram_background_color_entry = ttk.Entry(control_frame, textvariable=diagram_background_color, width=80)
     diagram_background_color_button = ttk.Button(
-        control_frame, text="Choose color...", command=run_color_changer, style="Path.TButton"
+        control_frame, text="Choose color...", command=choose_bg_color, style="Path.TButton"
     )
     diagram_background_color_label.grid(row=10, column=0, sticky=tk.W)
     diagram_background_color_entry.grid(row=10, column=1, sticky=(tk.W, tk.E))
@@ -1274,7 +1274,7 @@ def change_color_of_diagram_background():
         )
 
 
-def run_color_changer():
+def choose_bg_color():
     new_color = ColorChanger(canvas.cget("bg")).ask_color()
     if new_color is not None:
         canvas.configure(bg=new_color)
