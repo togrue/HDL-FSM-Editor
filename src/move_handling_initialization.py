@@ -19,7 +19,9 @@ def move_initialization(event) -> None:
 
 
 def _move_initialization_overlapping(event, event_x, event_y) -> None:
-    items_near_mouse_click_location = _create_a_list_of_overlapping_items_near_the_mouse_click_location(event_x, event_y)
+    items_near_mouse_click_location = _create_a_list_of_overlapping_items_near_the_mouse_click_location(
+        event_x, event_y
+    )
     if not items_near_mouse_click_location:
         return
     if _mouse_click_happened_in_state_name(items_near_mouse_click_location):
@@ -199,7 +201,9 @@ def _get_move_list_entry_for_line_of_condition_action_block(transition_tag) -> l
     return []
 
 
-def _add_items_for_moving_a_single_line_point_to_the_list(move_list, items_near_mouse_click_location, event_x, event_y) -> None:
+def _add_items_for_moving_a_single_line_point_to_the_list(
+    move_list, items_near_mouse_click_location, event_x, event_y
+) -> None:
     line_id = _find_the_item_id_of_the_line(items_near_mouse_click_location)
     if line_id is None:
         return  # move_list is emtpy in this case.
