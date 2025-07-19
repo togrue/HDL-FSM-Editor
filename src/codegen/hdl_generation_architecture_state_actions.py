@@ -6,7 +6,7 @@ import re
 import tkinter as tk
 from tkinter import messagebox
 
-import hdl_generation_library
+import codegen.hdl_generation_library as hdl_generation_library
 import link_dictionary
 import main_window
 import state_action_handling

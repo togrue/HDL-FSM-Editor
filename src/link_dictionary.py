@@ -14,9 +14,9 @@ These 2 parameters are the keys of the LinkDictionary, so when the user clicks o
 line-number and file-name are determined and the corresponding entry of the LinkDictionary can be read.
 """
 
-import hdl_generation
+import codegen.hdl_generation as hdl_generation
 import main_window
-from hdl_generation_config import GenerationConfig
+from codegen.hdl_generation_config import GenerationConfig
 
 
 class LinkDictionary:

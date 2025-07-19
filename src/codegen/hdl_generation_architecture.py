@@ -2,9 +2,9 @@
 This module provides a method for creating the architecture part of a VHDL file.
 """
 
-import hdl_generation_architecture_state_actions
-import hdl_generation_architecture_state_sequence
-import hdl_generation_library
+import codegen.hdl_generation_architecture_state_actions as hdl_generation_architecture_state_actions
+import codegen.hdl_generation_architecture_state_sequence as hdl_generation_architecture_state_sequence
+import codegen.hdl_generation_library as hdl_generation_library
 import link_dictionary
 import main_window
 

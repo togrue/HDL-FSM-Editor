@@ -89,12 +89,12 @@ def _write_tags(fileobject, canvas_id) -> None:
         fileobject.write(str(t) + " ")
 
 
-def open_file_old() -> None:
+def open_v1_file() -> None:
     filename_new = askopenfilename(filetypes=(("HDL-FSM-Editor files", "*.hfe"), ("all files", "*.*")))
     if filename_new != "":
         removed = remove_old_design()
         if removed:
-            _open_file_with_name(filename_new)
+            _open_v1_file_with_name(filename_new)
 
 
 def open_file() -> None:
@@ -105,7 +105,7 @@ def open_file() -> None:
             open_file_with_name_new(filename_new)
 
 
-def _open_file_with_name(read_filename) -> None:
+def _open_v1_file_with_name(read_filename) -> None:
     custom_text.CustomText.read_variables_of_all_windows.clear()
     custom_text.CustomText.written_variables_of_all_windows.clear()
     # Bring the notebook tab with the graphic into the foreground:
