@@ -6,8 +6,8 @@ from tkinter import messagebox
 import codegen.hdl_generation_architecture_state_actions as hdl_generation_architecture_state_actions
 import codegen.hdl_generation_architecture_state_sequence as hdl_generation_architecture_state_sequence
 import codegen.hdl_generation_library as hdl_generation_library
-import link_dictionary
 import main_window
+from link_dictionary import link_dict
 
 
 def create_module_logic(file_name, file_line_number) -> None:
@@ -19,7 +19,7 @@ def create_module_logic(file_name, file_line_number) -> None:
     signal_declarations = hdl_generation_library.get_text_from_text_widget(main_window.internals_architecture_text)
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, signal_declarations)
     number_of_new_lines = signal_declarations.count("\n")
-    link_dictionary.LinkDictionary.link_dict_reference.add(
+    link_dict().add(
         file_name,
         file_line_number,
         "custom_text_in_internals_tab",
@@ -44,16 +44,14 @@ def create_module_logic(file_name, file_line_number) -> None:
         + main_window.reset_signal_name.get()
         + ") begin: p_states\n"
     )
-    link_dictionary.LinkDictionary.link_dict_reference.add(
-        file_name, file_line_number, "Control-Tab", "", "reset_and_clock_signal_name", ""
-    )
+    link_dict().add(file_name, file_line_number, "Control-Tab", "", "reset_and_clock_signal_name", "")
     file_line_number += 1
 
     variable_declarations = hdl_generation_library.get_text_from_text_widget(main_window.internals_process_clocked_text)
     if variable_declarations != "":
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, variable_declarations)
         number_of_new_lines = variable_declarations.count("\n")
-        link_dictionary.LinkDictionary.link_dict_reference.add(
+        link_dict().add(
             file_name,
             file_line_number,
             "custom_text_in_internals_tab",
@@ -74,7 +72,7 @@ def create_module_logic(file_name, file_line_number) -> None:
                 architecture += "            " + line + "\n"
         architecture += "        ) begin\n"
     number_of_new_lines = reset_condition.count("\n") + 1  # No return after the last line of the condition
-    link_dictionary.LinkDictionary.link_dict_reference.add(
+    link_dict().add(
         file_name,
         file_line_number,
         "custom_text_in_diagram_tab",
@@ -87,7 +85,7 @@ def create_module_logic(file_name, file_line_number) -> None:
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, reset_action)
     file_line_number += 1  # There is always a "state <=  ..." assignment which must be skipped
     number_of_new_lines = reset_action.count("\n") - 1
-    link_dictionary.LinkDictionary.link_dict_reference.add(
+    link_dict().add(
         file_name,
         file_line_number,
         "custom_text_in_diagram_tab",
@@ -107,7 +105,7 @@ def create_module_logic(file_name, file_line_number) -> None:
         file_line_number += 1
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, global_actions_before)
         number_of_new_lines = global_actions_before.count("\n") - 1
-        link_dictionary.LinkDictionary.link_dict_reference.add(
+        link_dict().add(
             file_name,
             file_line_number,
             "custom_text_in_diagram_tab",
@@ -137,7 +135,7 @@ def create_module_logic(file_name, file_line_number) -> None:
         file_line_number += 1
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, global_actions_after)
         number_of_new_lines = global_actions_after.count("\n") - 1
-        link_dictionary.LinkDictionary.link_dict_reference.add(
+        link_dict().add(
             file_name,
             file_line_number,
             "custom_text_in_diagram_tab",
@@ -162,7 +160,7 @@ def create_module_logic(file_name, file_line_number) -> None:
         file_line_number += 1
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, concurrent_actions)
         number_of_new_lines = concurrent_actions.count("\n") - 1
-        link_dictionary.LinkDictionary.link_dict_reference.add(
+        link_dict().add(
             file_name,
             file_line_number,
             "custom_text_in_diagram_tab",

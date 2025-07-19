@@ -11,11 +11,11 @@ import codegen.hdl_generation_architecture as hdl_generation_architecture
 import codegen.hdl_generation_library as hdl_generation_library
 import codegen.hdl_generation_module as hdl_generation_module
 import file_handling
-import link_dictionary
 import list_separation_check
 import main_window
 import tag_plausibility
 from codegen.hdl_generation_config import GenerationConfig
+from link_dictionary import link_dict
 
 last_line_number_of_file1 = 0
 
@@ -46,10 +46,12 @@ def run_hdl_generation(write_to_file) -> None:
 
 def _create_hdl(config, header, write_to_file) -> None:
     file_name, file_name_architecture = _get_file_names(config)
-    link_dictionary.LinkDictionary.link_dict_reference.clear_link_dict(file_name)
+
+    link_dict().clear_link_dict(file_name)
     if file_name_architecture:
-        link_dictionary.LinkDictionary.link_dict_reference.clear_link_dict(file_name_architecture)
+        link_dict().clear_link_dict(file_name_architecture)
     file_line_number = 3  # Line 1 = Filename, Line 2 = Header
+
     if config.language == "VHDL":
         entity, file_line_number = _create_entity(config, file_name, file_line_number)
         if file_name_architecture == "":  # All VHDL is written in 1 file.
@@ -94,7 +96,7 @@ def _create_entity(config, file_name, file_line_number) -> tuple:
     package_statements = hdl_generation_library.get_text_from_text_widget(main_window.interface_package_text)
     entity += package_statements
     number_of_new_lines = package_statements.count("\n")
-    link_dictionary.LinkDictionary.link_dict_reference.add(
+    link_dict().add(
         file_name,
         file_line_number,
         "custom_text_in_interface_tab",
@@ -108,9 +110,7 @@ def _create_entity(config, file_name, file_line_number) -> tuple:
     file_line_number += 1
 
     entity += "entity " + config.module_name + " is\n"
-    link_dictionary.LinkDictionary.link_dict_reference.add(
-        file_name, file_line_number, "Control-Tab", 1, "module_name", ""
-    )
+    link_dict().add(file_name, file_line_number, "Control-Tab", 1, "module_name", "")
     file_line_number += 1
 
     generic_declarations = hdl_generation_library.get_text_from_text_widget(main_window.interface_generics_text)
@@ -123,7 +123,7 @@ def _create_entity(config, file_name, file_line_number) -> tuple:
         )
         file_line_number += 1  # switch to first line with generic value.
         number_of_new_lines = generic_declarations.count("\n") - 2  # Subtract first and last line
-        link_dictionary.LinkDictionary.link_dict_reference.add(
+        link_dict().add(
             file_name,
             file_line_number,
             "custom_text_in_interface_tab",
@@ -144,7 +144,7 @@ def _create_entity(config, file_name, file_line_number) -> tuple:
         )
         file_line_number += 1  # switch to first line with port.
         number_of_new_lines = port_declarations.count("\n") - 2  # Subtract first and last line
-        link_dictionary.LinkDictionary.link_dict_reference.add(
+        link_dict().add(
             file_name,
             file_line_number,
             "custom_text_in_interface_tab",
@@ -164,9 +164,7 @@ def _create_module_ports(config, file_name, file_line_number) -> tuple:
     module = ""
     file_line_number = 3  # Line 1 = Filename, Line 2 = Header
     module += "module " + config.module_name + "\n"
-    link_dictionary.LinkDictionary.link_dict_reference.add(
-        file_name, file_line_number, "Control-Tab", 1, "module_name", ""
-    )
+    link_dict().add(file_name, file_line_number, "Control-Tab", 1, "module_name", "")
     file_line_number += 1
 
     parameters = hdl_generation_library.get_text_from_text_widget(main_window.interface_generics_text)
@@ -179,7 +177,7 @@ def _create_module_ports(config, file_name, file_line_number) -> tuple:
         )
         file_line_number += 1  # switch to first line with parameters.
         number_of_new_lines = parameters.count("\n") - 2  # Subtract first and last line
-        link_dictionary.LinkDictionary.link_dict_reference.add(
+        link_dict().add(
             file_name,
             file_line_number,
             "custom_text_in_interface_tab",
@@ -196,7 +194,7 @@ def _create_module_ports(config, file_name, file_line_number) -> tuple:
         ports = "    (\n" + hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, ports) + "    );\n"
         number_of_new_lines = ports.count("\n") - 2  # Subtract first and last line
         file_line_number += 1  # switch to first line with port.
-        link_dictionary.LinkDictionary.link_dict_reference.add(
+        link_dict().add(
             file_name,
             file_line_number,
             "custom_text_in_interface_tab",

@@ -5,7 +5,7 @@ The methods create only the HDL for the state sequence.
 
 import re
 
-import link_dictionary
+from link_dictionary import link_dict
 
 
 def create_vhdl_for_the_state_sequence(transition_specifications, file_name, file_line_number) -> tuple:
@@ -22,7 +22,7 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                 vhdl.append(state_comments)
                 ignore_control_for_vhdl_indent.append(False)
                 number_of_comment_lines = state_comments.count("\n")
-                link_dictionary.LinkDictionary.link_dict_reference.add(
+                link_dict().add(
                     file_name,
                     file_line_number,
                     "custom_text_in_diagram_tab",
@@ -43,7 +43,7 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                 else:
                     vhdl.append("if " + transition_condition + " then\n")
                 ignore_control_for_vhdl_indent.append(False)
-                link_dictionary.LinkDictionary.link_dict_reference.add(
+                link_dict().add(
                     file_name,
                     file_line_number,
                     "custom_text_in_diagram_tab",
@@ -61,7 +61,7 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                     else:
                         vhdl.append("   " + line + "\n")
                     ignore_control_for_vhdl_indent.append(False)
-                link_dictionary.LinkDictionary.link_dict_reference.add(
+                link_dict().add(
                     file_name,
                     file_line_number,
                     "custom_text_in_diagram_tab",
@@ -80,7 +80,7 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
             if transition_condition.count("\n") == 0:
                 vhdl.append("elsif " + transition_condition + " then\n")
                 ignore_control_for_vhdl_indent.append(False)
-                link_dictionary.LinkDictionary.link_dict_reference.add(
+                link_dict().add(
                     file_name,
                     file_line_number,
                     "custom_text_in_diagram_tab",
@@ -97,7 +97,7 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                     else:
                         vhdl.append("      " + line + "\n")
                     ignore_control_for_vhdl_indent.append(False)
-                link_dictionary.LinkDictionary.link_dict_reference.add(
+                link_dict().add(
                     file_name,
                     file_line_number,
                     "custom_text_in_diagram_tab",
@@ -121,7 +121,7 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                     for index, single_comment in enumerate(comment_list):
                         vhdl.append(" " * 4 + single_comment + "\n")
                         ignore_control_for_vhdl_indent.append(False)
-                    link_dictionary.LinkDictionary.link_dict_reference.add(
+                    link_dict().add(
                         file_name,
                         file_line_number,
                         "custom_text_in_diagram_tab",
@@ -140,7 +140,7 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                         ignore_control_for_vhdl_indent.append(True)
                     else:
                         ignore_control_for_vhdl_indent.append(False)
-                link_dictionary.LinkDictionary.link_dict_reference.add(
+                link_dict().add(
                     file_name,
                     file_line_number,
                     "custom_text_in_diagram_tab",
@@ -190,7 +190,7 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                 verilog.append(state_comments)
                 ignore_control_for_verilog_indent.append(False)
                 number_of_comment_lines = state_comments.count("\n")
-                link_dictionary.LinkDictionary.link_dict_reference.add(
+                link_dict().add(
                     file_name,
                     file_line_number,
                     "custom_text_in_diagram_tab",
@@ -211,7 +211,7 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                 else:
                     verilog.append("if (" + transition_specification["condition"] + ") begin\n")
                 ignore_control_for_verilog_indent.append(False)
-                link_dictionary.LinkDictionary.link_dict_reference.add(
+                link_dict().add(
                     file_name,
                     file_line_number,
                     "custom_text_in_diagram_tab",
@@ -229,7 +229,7 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                     else:
                         verilog.append("    " + line + "\n")
                     ignore_control_for_verilog_indent.append(False)
-                link_dictionary.LinkDictionary.link_dict_reference.add(
+                link_dict().add(
                     file_name,
                     file_line_number,
                     "custom_text_in_diagram_tab",
@@ -248,7 +248,7 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
             if transition_condition.count("\n") == 0:
                 verilog.append("end else if (" + transition_specification["condition"] + ") begin\n")
                 ignore_control_for_verilog_indent.append(False)
-                link_dictionary.LinkDictionary.link_dict_reference.add(
+                link_dict().add(
                     file_name,
                     file_line_number,
                     "custom_text_in_diagram_tab",
@@ -265,7 +265,7 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                     else:
                         verilog.append("             " + line + "\n")
                     ignore_control_for_verilog_indent.append(False)
-                link_dictionary.LinkDictionary.link_dict_reference.add(
+                link_dict().add(
                     file_name,
                     file_line_number,
                     "custom_text_in_diagram_tab",
@@ -289,7 +289,7 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                     for index, single_comment in enumerate(comment_list):
                         verilog.append(" " * 4 + single_comment + "\n")
                         ignore_control_for_verilog_indent.append(False)
-                    link_dictionary.LinkDictionary.link_dict_reference.add(
+                    link_dict().add(
                         file_name,
                         file_line_number,
                         "custom_text_in_diagram_tab",
@@ -308,7 +308,7 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                         ignore_control_for_verilog_indent.append(True)
                     else:
                         ignore_control_for_verilog_indent.append(False)
-                link_dictionary.LinkDictionary.link_dict_reference.add(
+                link_dict().add(
                     file_name,
                     file_line_number,
                     "custom_text_in_diagram_tab",
