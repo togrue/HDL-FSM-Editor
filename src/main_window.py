@@ -2,13 +2,11 @@
 This module contains all methods to create the main-window of the HDL-FSM-Editor.
 """
 
-import argparse
 import os
 import re
 import sys
 import tkinter as tk
 import urllib.request
-from os.path import exists
 from tkinter import messagebox, ttk
 from tkinter.filedialog import askdirectory
 
@@ -140,44 +138,6 @@ def check_version():
             print("Your version of HDL-FSM-Editor is up to date.")
     except urllib.error.URLError:
         print("HDL-FSM-Editor version could not be checked, as you are offline.")
-
-
-def evaluate_commandline_parameters():
-    argument_parser = argparse.ArgumentParser()
-    argument_parser.add_argument("filename", nargs="?")
-    argument_parser.add_argument(
-        "-no_version_check", action="store_true", help="HDL-FSM-Editor will not check for a newer version at start."
-    )
-    argument_parser.add_argument(
-        "-no_message", action="store_true", help="HDL-FSM-Editor will not check for a message at start."
-    )
-    argument_parser.add_argument(
-        "-generate_hdl", action="store_true", help="HDL-FSM-Editor will generate HDL and exit."
-    )
-    args = argument_parser.parse_args()
-    if not args.no_version_check:
-        check_version()
-    if not args.no_message:
-        read_message()
-    if args.filename is not None:
-        if not exists(args.filename):
-            messagebox.showerror("Error in HDL-FSM-Editor", "File " + args.filename + " was not found.")
-        elif not args.filename.endswith(".hfe"):
-            messagebox.showerror(
-                "Error in HDL-FSM-Editor", "File " + args.filename + " cannot be read. Must have extension '.hfe'."
-            )
-        else:
-            state_manager.current_file = args.filename
-            root.title(
-                "new"
-            )  # Needed under Linux for remove_old_design(), because there the default window name is "tk #<number>*" which is interpreted as a changed design.
-            file_handling.remove_old_design()  # Needed, because at starting HDL-FSM-Editor "library ieee; ..." was inserted.
-            file_handling.open_file_with_name_new(args.filename)
-            if args.generate_hdl:
-                hdl_generation.run_hdl_generation(write_to_file=True)
-                sys.exit()
-            canvas.bind("<Visibility>", lambda event: view_all_after_window_is_built())
-    return
 
 
 def show_window():
