@@ -236,6 +236,9 @@ def open_file_with_name(read_filename):
         elif line.startswith("label_fontsize|"):
             rest_of_line = remove_keyword_from_line(line, "label_fontsize|")
             canvas_editing.label_fontsize = float(rest_of_line)
+        elif line.startswith("include_timestamp_in_output|"):
+            rest_of_line = remove_keyword_from_line(line, "include_timestamp_in_output|")
+            main_window.include_timestamp_in_output.set(rest_of_line.lower() == "true")
         elif line.startswith("visible_center|"):
             rest_of_line = remove_keyword_from_line(line, "visible_center|")
             canvas_editing.shift_visible_center_to_window_center(rest_of_line)
@@ -530,6 +533,7 @@ def remove_old_design():
     canvas_editing.fontsize = 10
     canvas_editing.label_fontsize = 8
     canvas_editing.state_name_font.configure(size=int(canvas_editing.fontsize))
+    main_window.include_timestamp_in_output.set(True)
     main_window.root.title("unnamed")
     return True
 
@@ -582,6 +586,7 @@ def save_in_file_new(save_filename):  # Called at saving and at every design cha
     design_dictionary["compile_cmd"] = main_window.compile_cmd.get()
     design_dictionary["edit_cmd"] = main_window.edit_cmd.get()
     design_dictionary["diagram_background_color"] = main_window.diagram_background_color.get()
+    design_dictionary["include_timestamp_in_output"] = main_window.include_timestamp_in_output.get()
     design_dictionary["state_number"] = state_handling.state_number
     design_dictionary["transition_number"] = transition_handling.transition_number
     design_dictionary["reset_entry_number"] = reset_entry_handling.reset_entry_number
@@ -767,6 +772,10 @@ def open_file_with_name_new(read_filename):
             main_window.diagram_background_color.set(diagram_background_color)
         else:
             diagram_background_color = "white"
+        if "include_timestamp_in_output" in design_dictionary:
+            main_window.include_timestamp_in_output.set(design_dictionary["include_timestamp_in_output"])
+        else:
+            main_window.include_timestamp_in_output.set(True)  # Default to True for backward compatibility
         if "sash_positions" in design_dictionary:
             main_window.show_tab(
                 "Interface"

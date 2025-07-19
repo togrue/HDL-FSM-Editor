@@ -124,6 +124,7 @@ def get_complete_design_as_text_object():
     design += "fontsize|" + str(canvas_editing.fontsize) + "\n"
     design += "label_fontsize|" + str(canvas_editing.label_fontsize) + "\n"
     design += "visible_center|" + canvas_editing.get_visible_center_as_string() + "\n"
+    design += "include_timestamp_in_output|" + str(main_window.include_timestamp_in_output.get()) + "\n"
     design += (
         "interface_package|"
         + str(len(main_window.interface_package_text.get("1.0", tk.END)) - 1)

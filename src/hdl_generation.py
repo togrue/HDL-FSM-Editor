@@ -28,10 +28,12 @@ def run_hdl_generation(write_to_file):
         return
     if main_window.root.title().endswith("*"):
         file_handling.save()
-    if main_window.language.get() == "VHDL":
-        header = "-- Created by HDL-FSM-Editor at " + datetime.today().ctime() + "\n"
+    lang = main_window.language.get()
+    at_timestamp = f" at {datetime.today().ctime()}" if main_window.include_timestamp_in_output.get() else ""
+    if lang == "VHDL":
+        header = f"-- Created by HDL-FSM-Editor{at_timestamp}\n"
     else:
-        header = "// Created by HDL-FSM-Editor at " + datetime.today().ctime() + "\n"
+        header = f"// Created by HDL-FSM-Editor{at_timestamp}\n"
     create_hdl(header, write_to_file)
 
 
