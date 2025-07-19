@@ -10,7 +10,7 @@ from dialogs.color_changer import ColorChanger
 import constants
 import main_window
 import move_handling_initialization
-import OptionMenu
+from widgets.OptionMenu import OptionMenu
 import state_action_handling
 import state_comment
 import transition_handling
@@ -113,7 +113,7 @@ def insert_state(event):
 
 
 def show_menu(event, state_id):
-    listbox = OptionMenu.MyListbox(
+    listbox = OptionMenu(
         main_window.canvas,
         ["add action", "add comment", "change color"],
         height=3,
