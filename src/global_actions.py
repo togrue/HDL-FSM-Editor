@@ -57,8 +57,8 @@ class GlobalActions:
         self.text_before_id.bind("<Control-Z>", lambda event: self.text_before_id.redo())
         self.text_after_id.bind("<Control-z>", lambda event: self.text_after_id.undo())
         self.text_after_id.bind("<Control-Z>", lambda event: self.text_after_id.redo())
-        self.text_before_id.bind("<<TextModified>>", lambda event: undo_handling.modify_window_title())
-        self.text_after_id.bind("<<TextModified>>", lambda event: undo_handling.modify_window_title())
+        self.text_before_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
+        self.text_after_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
         self.text_before_id.bind("<FocusIn>", lambda event: main_window.canvas.unbind_all("<Delete>"))
         self.text_before_id.bind(
             "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())

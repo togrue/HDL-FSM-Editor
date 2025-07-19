@@ -345,7 +345,7 @@ def create_control_notebook_tab():
     reset_signal_name.set("")
     reset_signal_name_label = ttk.Label(control_frame, text="Name of asynchronous reset input port:", padding=5)
     reset_signal_name_entry = ttk.Entry(control_frame, width=23, textvariable=reset_signal_name)
-    reset_signal_name_entry.bind("<Key>", lambda event: undo_handling.modify_window_title())
+    reset_signal_name_entry.bind("<Key>", lambda event: undo_handling.update_window_title())
     reset_signal_name_label.grid(row=4, column=0, sticky=tk.W)
     reset_signal_name_entry.grid(row=4, column=1, sticky=tk.W)
 
@@ -353,7 +353,7 @@ def create_control_notebook_tab():
     clock_signal_name.set("")
     clock_signal_name_label = ttk.Label(control_frame, text="Name of clock input port:", padding=5)
     clock_signal_name_entry = ttk.Entry(control_frame, width=23, textvariable=clock_signal_name)
-    clock_signal_name_entry.bind("<Key>", lambda event: undo_handling.modify_window_title())
+    clock_signal_name_entry.bind("<Key>", lambda event: undo_handling.update_window_title())
     clock_signal_name_label.grid(row=5, column=0, sticky=tk.W)
     clock_signal_name_entry.grid(row=5, column=1, sticky=tk.W)
 
@@ -455,7 +455,7 @@ def create_interface_notebook_tab():
         10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
     )
     interface_package_text.bind("<Control-Z>", lambda event: interface_package_text.edit_redo())
-    interface_package_text.bind("<<TextModified>>", lambda event: undo_handling.modify_window_title())
+    interface_package_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
     interface_package_text.bind("<Key>", lambda event, id=interface_package_text: handle_key(event, id))
     interface_package_scroll = ttk.Scrollbar(
         interface_package_frame, orient=tk.VERTICAL, cursor="arrow", command=interface_package_text.yview
@@ -482,7 +482,7 @@ def create_interface_notebook_tab():
         interface_generics_frame, text_type="generics", height=3, width=10, undo=True, font=("Courier", 10)
     )
     interface_generics_text.bind("<Control-Z>", lambda event: interface_generics_text.edit_redo())
-    interface_generics_text.bind("<<TextModified>>", lambda event: undo_handling.modify_window_title())
+    interface_generics_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
     interface_generics_text.bind("<Key>", lambda event, id=interface_generics_text: handle_key_at_generics(id))
     interface_generics_scroll = ttk.Scrollbar(
         interface_generics_frame, orient=tk.VERTICAL, cursor="arrow", command=interface_generics_text.yview
@@ -509,7 +509,7 @@ def create_interface_notebook_tab():
     )
     interface_ports_text.bind("<Control-z>", lambda event: interface_ports_text.undo())
     interface_ports_text.bind("<Control-Z>", lambda event: interface_ports_text.redo())
-    interface_ports_text.bind("<<TextModified>>", lambda event: undo_handling.modify_window_title())
+    interface_ports_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
     interface_ports_text.bind("<Key>", lambda event, id=interface_ports_text: handle_key_at_ports(id))
     interface_ports_scroll = ttk.Scrollbar(
         interface_ports_frame, orient=tk.VERTICAL, cursor="arrow", command=interface_ports_text.yview
@@ -549,7 +549,7 @@ def create_internals_notebook_tab():
         internals_package_frame, text_type="package", height=3, width=10, undo=True, font=("Courier", 10)
     )
     internals_package_text.bind("<Control-Z>", lambda event: internals_package_text.edit_redo())
-    internals_package_text.bind("<<TextModified>>", lambda event: undo_handling.modify_window_title())
+    internals_package_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
     internals_package_text.bind("<Key>", lambda event, id=internals_package_text: handle_key(event, id))
     internals_package_scroll = ttk.Scrollbar(
         internals_package_frame, orient=tk.VERTICAL, cursor="arrow", command=internals_package_text.yview
@@ -579,7 +579,7 @@ def create_internals_notebook_tab():
     )
     internals_architecture_text.bind("<Control-z>", lambda event: internals_architecture_text.undo())
     internals_architecture_text.bind("<Control-Z>", lambda event: internals_architecture_text.redo())
-    internals_architecture_text.bind("<<TextModified>>", lambda event: undo_handling.modify_window_title())
+    internals_architecture_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
     internals_architecture_text.bind(
         "<Key>", lambda event, id=internals_architecture_text: handle_key_at_declarations(id)
     )
@@ -612,7 +612,7 @@ def create_internals_notebook_tab():
     )
     internals_process_clocked_text.bind("<Control-z>", lambda event: internals_process_clocked_text.undo())
     internals_process_clocked_text.bind("<Control-Z>", lambda event: internals_process_clocked_text.redo())
-    internals_process_clocked_text.bind("<<TextModified>>", lambda event: undo_handling.modify_window_title())
+    internals_process_clocked_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
     internals_process_clocked_text.bind(
         "<Key>", lambda event, id=internals_process_clocked_text: handle_key_at_declarations(id)
     )
@@ -647,7 +647,7 @@ def create_internals_notebook_tab():
     )
     internals_process_combinatorial_text.bind("<Control-z>", lambda event: internals_process_combinatorial_text.undo())
     internals_process_combinatorial_text.bind("<Control-Z>", lambda event: internals_process_combinatorial_text.redo())
-    internals_process_combinatorial_text.bind("<<TextModified>>", lambda event: undo_handling.modify_window_title())
+    internals_process_combinatorial_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
     internals_process_combinatorial_text.bind(
         "<Key>", lambda event, id=internals_process_combinatorial_text: handle_key_at_declarations(id)
     )

@@ -40,7 +40,7 @@ class StateActionsDefault:
         )
         self.text_id.bind("<Control-z>", lambda event: self.text_id.undo())
         self.text_id.bind("<Control-Z>", lambda event: self.text_id.redo())
-        self.text_id.bind("<<TextModified>>", lambda event: undo_handling.modify_window_title())
+        self.text_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
         self.text_id.bind("<FocusIn>", lambda event: main_window.canvas.unbind_all("<Delete>"))
         self.text_id.bind(
             "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
