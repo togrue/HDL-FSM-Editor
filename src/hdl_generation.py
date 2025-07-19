@@ -293,10 +293,7 @@ def write_hdl_file(write_to_file, header, entity, architecture, path_name, path_
 def get_file_names():
     # For Verilog and SystemVerilog, always generate single files regardless of number_of_files setting
     if main_window.language.get() in ["Verilog", "SystemVerilog"]:
-        if main_window.language.get() == "Verilog":
-            file_type = ".v"
-        else:  # SystemVerilog
-            file_type = ".sv"
+        file_type = ".v" if main_window.language.get() == "Verilog" else ".sv"
         file_name = main_window.generate_path_value.get() + "/" + main_window.module_name.get() + file_type
         file_name_architecture = ""
     elif main_window.select_file_number_text.get() == 1:
