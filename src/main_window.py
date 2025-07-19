@@ -18,13 +18,13 @@ import constants
 import custom_text
 import file_handling
 import grid_drawing
-import hdl_generation
+import codegen.hdl_generation as hdl_generation
 import link_dictionary
 import move_handling_initialization
 import undo_handling
 import update_hdl_tab
 from dialogs.color_changer import ColorChanger
-from hdl_generation_config import GenerationConfig
+from codegen.hdl_generation_config import GenerationConfig
 from project_manager import project_manager
 
 _VERSION = "4.11"
@@ -192,7 +192,7 @@ def create_menu_bar() -> None:
         label="New", accelerator="Ctrl+n", command=file_handling.remove_old_design, font=("Arial", 10)
     )
     file_menu.add_command(label="Open ...", accelerator="Ctrl+o", command=file_handling.open_file, font=("Arial", 10))
-    file_menu.add_command(label="Open Version 1 file ...", command=file_handling.open_file_old, font=("Arial", 10))
+    file_menu.add_command(label="Open Version 1 file ...", command=file_handling.open_v1_file, font=("Arial", 10))
     file_menu.add_command(label="Save", accelerator="Ctrl+s", command=file_handling.save, font=("Arial", 10))
     file_menu.add_command(label="Save as ...", command=file_handling.save_as, font=("Arial", 10))
     file_menu.add_command(label="Exit", command=sys.exit, font=("Arial", 10))

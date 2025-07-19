@@ -9,14 +9,14 @@ from pathlib import Path
 from tkinter import messagebox
 
 import file_handling
-import hdl_generation_architecture
-import hdl_generation_library
-import hdl_generation_module
+import codegen.hdl_generation_architecture as hdl_generation_architecture
+import codegen.hdl_generation_library as hdl_generation_library
+import codegen.hdl_generation_module as hdl_generation_module
 import link_dictionary
 import list_separation_check
 import main_window
 import tag_plausibility
-from hdl_generation_config import GenerationConfig
+from codegen.hdl_generation_config import GenerationConfig
 
 last_line_number_of_file1 = 0
 

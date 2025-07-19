@@ -6,7 +6,7 @@ import os
 import tkinter as tk
 from tkinter import messagebox
 
-import hdl_generation
+import codegen.hdl_generation as hdl_generation
 import main_window
 
 
