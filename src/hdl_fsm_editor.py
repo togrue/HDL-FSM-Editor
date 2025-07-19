@@ -66,9 +66,9 @@ def parse_and_process_arguments():
     """Parse command-line arguments and process them."""
     parser = argparse.ArgumentParser(description="HDL-FSM-Editor: A tool for modeling FSMs")
     parser.add_argument("filename", nargs="?", help="HDL-FSM-Editor file (.hfe) to open")
-    parser.add_argument("-no_version_check", action="store_true", help="Skip version check at startup")
-    parser.add_argument("-no_message", action="store_true", help="Skip message check at startup")
-    parser.add_argument("-generate_hdl", action="store_true", help="Generate HDL and exit")
+    parser.add_argument("--no-version-check", action="store_true", help="Skip version check at startup")
+    parser.add_argument("--no-message", action="store_true", help="Skip message check at startup")
+    parser.add_argument("--generate-hdl", action="store_true", help="Generate HDL and exit")
 
     args = parser.parse_args()
 
