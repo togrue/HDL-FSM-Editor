@@ -9,7 +9,7 @@ import link_dictionary
 import main_window
 
 
-def create_architecture(file_name, file_line_number):
+def create_architecture(file_name, file_line_number) -> None:
     architecture = ""
 
     package_statements = hdl_generation_library.get_text_from_text_widget(main_window.internals_package_text)
@@ -197,7 +197,7 @@ def create_architecture(file_name, file_line_number):
     return architecture
 
 
-def _create_type_definition_for_the_state_signal():
+def _create_type_definition_for_the_state_signal() -> None:
     list_of_all_state_names = hdl_generation_library.get_a_list_of_all_state_names()
     if list_of_all_state_names != []:
         type_definition = "type t_state is ("

@@ -9,7 +9,7 @@ from project import Project
 class ProjectManager:
     """Simple project manager - just holds the state and provides access."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._project = Project()
         # File management
         self._current_file: str = ""
@@ -26,7 +26,7 @@ class ProjectManager:
         return self._current_file
 
     @current_file.setter
-    def current_file(self, value: str):
+    def current_file(self, value: str) -> str:
         """Set the current file path."""
         self._current_file = value
 
@@ -36,7 +36,7 @@ class ProjectManager:
         return self._previous_file
 
     @previous_file.setter
-    def previous_file(self, value: str):
+    def previous_file(self, value: str) -> str:
         """Set the previous file path."""
         self._previous_file = value
 
@@ -44,16 +44,16 @@ class ProjectManager:
         """Get a state attribute."""
         return getattr(self._project, attr_name, default)
 
-    def set(self, attr_name: str, value):
+    def set(self, attr_name: str, value) -> None:
         """Set a state attribute."""
         setattr(self._project, attr_name, value)
 
-    def update(self, **kwargs):
+    def update(self, **kwargs) -> None:
         """Update multiple state attributes."""
         for key, value in kwargs.items():
             self.set(key, value)
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset state to initial values."""
         self._project = Project()
         self._current_file = ""

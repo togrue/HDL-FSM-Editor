@@ -8,7 +8,7 @@ import re
 import link_dictionary
 
 
-def create_vhdl_for_the_state_sequence(transition_specifications, file_name, file_line_number):
+def create_vhdl_for_the_state_sequence(transition_specifications, file_name, file_line_number) -> tuple:
     vhdl = []
     ignore_control_for_vhdl_indent = []
     for index, transition_specification in enumerate(transition_specifications):
@@ -172,7 +172,7 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
     return vhdl_indented, file_line_number
 
 
-def create_verilog_for_the_state_sequence(transition_specifications, file_name, file_line_number):
+def create_verilog_for_the_state_sequence(transition_specifications, file_name, file_line_number) -> tuple:
     verilog = []
     ignore_control_for_verilog_indent = []
     for index, transition_specification in enumerate(transition_specifications):

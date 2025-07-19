@@ -21,7 +21,7 @@ class StateComment:
         height,
         width,
         padding,
-    ):
+    ) -> None:
         # Create frame:
         self.frame_id = ttk.Frame(
             main_window.canvas, relief=tk.FLAT, style="StateActionsWindow.TFrame", padding=padding
@@ -68,17 +68,17 @@ class StateComment:
         self.line_id = None
         self.line_coords = []
 
-    def activate(self):
+    def activate(self) -> None:
         self.frame_id.configure(style="Window.TFrame", padding=3)  # increase the width of the line around the box
         self.text = self.text_id.get("1.0", tk.END)
 
-    def deactivate(self):
+    def deactivate(self) -> None:
         self.frame_id.configure(style="Window.TFrame", padding=1)  # decrease the width of the line around the box
         self.frame_id.focus()  # "unfocus" the Text, when the mouse leaves the text.
         if self.text_id.get("1.0", tk.END) != self.text:
             undo_handling.design_has_changed()
 
-    def __draw_polygon_around_window(self):
+    def __draw_polygon_around_window(self) -> None:
         bbox_coords = main_window.canvas.bbox(self.window_id)
         polygon_coords = []
         polygon_coords.append(bbox_coords[0] - 3)
@@ -97,7 +97,7 @@ class StateComment:
             self.move_rectangle, "<Leave>", lambda event: main_window.canvas.delete(self.move_rectangle)
         )
 
-    def move_to(self, event_x, event_y, first, _):
+    def move_to(self, event_x, event_y, first, _) -> None:
         main_window.canvas.delete(self.move_rectangle)
         self.frame_id.configure(padding=1)  # decrease the width of the line around the box
         if first:
@@ -118,7 +118,7 @@ class StateComment:
                 self.line_coords[1] = event_y
                 main_window.canvas.coords(line_tag, self.line_coords)
 
-    def add_line(self, menu_x, menu_y, state_identifier):  # Called by state_handling.evaluate_menu().
+    def add_line(self, menu_x, menu_y, state_identifier) -> None:  # Called by state_handling.evaluate_menu().
         # Draw a line from the state to the comment block which is added to the state:
         state_coords = main_window.canvas.coords(state_identifier)
         self.line_id = main_window.canvas.create_line(
@@ -133,14 +133,14 @@ class StateComment:
         main_window.canvas.tag_bind(self.line_id, "<Leave>", lambda event, self=self: self.deactivate_line())
         main_window.canvas.tag_lower(self.line_id, state_identifier)
 
-    def tag(self, state_identifier):  # Called by state_handling.evaluate_menu().
+    def tag(self, state_identifier) -> None:  # Called by state_handling.evaluate_menu().
         main_window.canvas.addtag_withtag(state_identifier + "_comment_line_end", state_identifier)
         main_window.canvas.itemconfigure(
             self.window_id, tag=(state_identifier + "_comment", state_identifier + "_comment_line_start")
         )
 
-    def activate_line(self):
+    def activate_line(self) -> None:
         main_window.canvas.itemconfigure(self.line_id, width=3)  # increase the width of the line around the box
 
-    def deactivate_line(self):
+    def deactivate_line(self) -> None:
         main_window.canvas.itemconfigure(self.line_id, width=1)  # decrease the width of the line around the box

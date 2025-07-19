@@ -12,7 +12,7 @@ from tkinter import messagebox
 import main_window
 
 
-def compile_hdl():
+def compile_hdl() -> None:
     _show_compile_messages_tab()
     if main_window.working_directory_value.get() != "" and not main_window.working_directory_value.get().isspace():
         try:
@@ -43,7 +43,7 @@ def compile_hdl():
     main_window.log_frame_text.config(state=tk.DISABLED)
 
 
-def _execute(command):
+def _execute(command) -> bool:
     command_array = shlex.split(command)  # Does not split quoted sub-strings with blanks.
     command_array_new = _replace_variables(command_array)
     if command_array_new is None:
@@ -72,7 +72,7 @@ def _execute(command):
     return True
 
 
-def _show_compile_messages_tab():
+def _show_compile_messages_tab() -> None:
     notebook_ids = main_window.notebook.tabs()
     for notebook_id in notebook_ids:
         if main_window.notebook.tab(notebook_id, option="text") == "Compile Messages":
@@ -85,7 +85,7 @@ def _get_command_list():
     return command_string.split(";")
 
 
-def _replace_variables(command_array):
+def _replace_variables(command_array) -> list | None:
     command_array_new = []
     for entry in command_array:
         if entry == "$file":
@@ -138,7 +138,7 @@ def _replace_variables(command_array):
     return command_array_new
 
 
-def _copy_into_compile_messages_tab(stdout, stderr, command_array_new):
+def _copy_into_compile_messages_tab(stdout, stderr, command_array_new) -> None:
     main_window.log_frame_text.config(state=tk.NORMAL)
     for part in command_array_new:
         main_window.log_frame_text.insert(tk.END, part + " ")
@@ -154,7 +154,7 @@ def _copy_into_compile_messages_tab(stdout, stderr, command_array_new):
     main_window.log_frame_text.see(tk.END)
 
 
-def _insert_line_in_log(text):
+def _insert_line_in_log(text) -> None:
     if main_window.language.get() == "VHDL":
         regex_message_find = main_window.regex_message_find_for_vhdl
     else:

@@ -11,7 +11,7 @@ import main_window
 
 
 class UpdateHdlTab:
-    def __init__(self, language, number_of_files, readfile, generate_path, module_name):
+    def __init__(self, language, number_of_files, readfile, generate_path, module_name) -> None:
         self.date_of_hdl_file = 0.0  # Default-Value, used when hdl-file not exists.
         if language == "VHDL":
             if number_of_files == 1:
@@ -62,7 +62,7 @@ class UpdateHdlTab:
             10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
         )
 
-    def __hdl_is_up_to_date(self, path_name, hdlfilename, hdlfilename_architecture, show_message):
+    def __hdl_is_up_to_date(self, path_name, hdlfilename, hdlfilename_architecture, show_message) -> bool:
         if not os.path.isfile(path_name):
             messagebox.showerror(
                 "Error in HDL-FSM-Editor", "The HDL-FSM-Editor project file " + path_name + " is missing."
@@ -100,7 +100,7 @@ class UpdateHdlTab:
                 return False
         return True
 
-    def __add_line_numbers(self, text):
+    def __add_line_numbers(self, text) -> str:
         text_lines = text.split("\n")
         text_length_as_string = str(len(text_lines))
         number_of_needed_digits_as_string = str(len(text_length_as_string))
@@ -111,5 +111,5 @@ class UpdateHdlTab:
             )
         return content_with_numbers
 
-    def get_date_of_hdl_file(self):
+    def get_date_of_hdl_file(self) -> float:
         return self.date_of_hdl_file

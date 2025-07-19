@@ -22,7 +22,7 @@ class CustomText(tk.Text):
     read_variables_of_all_windows = {}
     written_variables_of_all_windows = {}
 
-    def __init__(self, *args, text_type, **kwargs):
+    def __init__(self, *args, text_type, **kwargs) -> None:
         """A text widget that report on internal widget commands"""
         tk.Text.__init__(
             self, *args, **kwargs
@@ -58,11 +58,11 @@ class CustomText(tk.Text):
         self.tag_config("message_red", foreground="red")
         self.tag_config("message_green", foreground="green")
 
-    def _open(self):
+    def _open(self) -> str:
         file_handling.open_file()
         return "break"  # Prevent a second call of open_file() by bind_all binding (which is located in entry 4 of the bind-list).
 
-    def _proxy(self, command, *args):
+    def _proxy(self, command, *args) -> None:
         cmd = (self._orig, command) + args
         try:
             result = self.tk.call(cmd)
@@ -72,12 +72,12 @@ class CustomText(tk.Text):
         except Exception:
             return None
 
-    def replace_tabs_by_blanks(self):
+    def replace_tabs_by_blanks(self) -> str:
         self.insert(tk.INSERT, "    ")  # replace the Tab by 4 blanks.
         self.format_after_idle()
         return "break"  # This prevents the "Tab" to be inserted in the text.
 
-    def edit_in_external_editor(self):
+    def edit_in_external_editor(self) -> None:
         file_name = "hdl-fsm-editor.tmp.vhd" if main_window.language.get() == "VHDL" else "hdl-fsm-editor.tmp.v"
         fileobject = open(file_name, "w")
         fileobject.write(self.get("1.0", tk.END + "- 1 chars"))
@@ -101,16 +101,16 @@ class CustomText(tk.Text):
         self.insert("1.0", new_text)
         self.format()
 
-    def format_after_idle(self):
+    def format_after_idle(self) -> None:
         self.after_idle(self.format)
 
-    def format(self):
+    def format(self) -> None:
         text = self.get("1.0", tk.END)
         self.__update_size_of_text_box(text)
         self.__update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows()
         self.update_highlighting()
 
-    def __update_size_of_text_box(self, text):
+    def __update_size_of_text_box(self, text) -> None:
         nr_of_lines = 0
         nr_of_characters_in_line = 0
         max_line_length = 0
@@ -133,12 +133,12 @@ class CustomText(tk.Text):
             self.config(width=max_line_length)
             self.config(height=nr_of_lines)
 
-    def update_highlighting(self):
+    def update_highlighting(self) -> None:
         self.update_highlight_tags(canvas_editing.fontsize, ["control", "datatype", "function"])
         linting.recreate_keyword_list_of_unused_signals()
         linting.update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment()
 
-    def update_highlight_tags(self, fontsize, keyword_type_list):
+    def update_highlight_tags(self, fontsize, keyword_type_list) -> None:
         for keyword_type in keyword_type_list:
             self.tag_delete(keyword_type)
             for keyword in main_window.keywords[keyword_type]:
@@ -156,7 +156,7 @@ class CustomText(tk.Text):
             else:
                 self.tag_configure(keyword_type, foreground=config.KEYWORD_COLORS[keyword_type], font=("Courier", 10))
 
-    def add_highlight_tag_for_single_keyword(self, keyword_type, keyword):
+    def add_highlight_tag_for_single_keyword(self, keyword_type, keyword) -> None:
         copy_of_text = self.get("1.0", tk.END + "- 1 chars")
         if copy_of_text == "":
             return
@@ -215,7 +215,7 @@ class CustomText(tk.Text):
                     break
         return copy_of_text
 
-    def remove_surrounding_characters_from_the_match(self, match_object, keyword):
+    def remove_surrounding_characters_from_the_match(self, match_object, keyword) -> tuple:
         if match_object.end() - match_object.start() == len(keyword) + 2:
             return match_object.start() + 1, match_object.end() - 1
         if match_object.end() - match_object.start() == len(keyword) + 1:
@@ -224,30 +224,30 @@ class CustomText(tk.Text):
             return match_object.start(), match_object.end() - 1
         return match_object.start(), match_object.end()
 
-    def undo(self):
+    def undo(self) -> None:
         # self.edit_undo() # causes a second "undo", as Ctrl-z automatically starts edit_undo()
         self.after_idle(self.update_declaration_lists)
         self.format_after_idle()
 
-    def redo(self):
+    def redo(self) -> None:
         self.edit_redo()
         self.after_idle(self.update_declaration_lists)
         self.format_after_idle()
 
-    def update_declaration_lists(self):
+    def update_declaration_lists(self) -> None:
         if self == main_window.internals_architecture_text:
             self.update_custom_text_class_signals_list()
         elif self == main_window.interface_ports_text:
             self.update_custom_text_class_ports_list()
 
-    def update_custom_text_class_signals_list(self):
+    def update_custom_text_class_signals_list(self) -> None:
         all_signal_declarations = self.get("1.0", tk.END).lower()
         self.signals_list = hdl_generation_library.get_all_declared_signal_names(all_signal_declarations)
         self.constants_list = hdl_generation_library.get_all_declared_constant_names(all_signal_declarations)
         self.__update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows()
         self.update_highlighting()
 
-    def update_custom_text_class_ports_list(self):
+    def update_custom_text_class_ports_list(self) -> None:
         all_port_declarations = main_window.interface_ports_text.get("1.0", tk.END).lower()
         self.readable_ports_list = hdl_generation_architecture_state_actions.get_all_readable_ports(
             all_port_declarations, check=False
@@ -257,11 +257,11 @@ class CustomText(tk.Text):
         )
         self.port_types_list = hdl_generation_architecture_state_actions.get_all_port_types(all_port_declarations)
 
-    def update_custom_text_class_generics_list(self):
+    def update_custom_text_class_generics_list(self) -> None:
         all_generic_declarations = main_window.interface_generics_text.get("1.0", tk.END).lower()
         self.generics_list = hdl_generation_architecture_state_actions.get_all_generic_names(all_generic_declarations)
 
-    def __update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows(self):
+    def __update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows(self) -> None:
         CustomText.read_variables_of_all_windows[self] = []
         CustomText.written_variables_of_all_windows[self] = []
         text = self.get("1.0", tk.END + "- 1 chars")
@@ -501,7 +501,7 @@ class CustomText(tk.Text):
                 break
         return text
 
-    def highlight_item(self, hdl_item_type, object_identifier, number_of_line):
+    def highlight_item(self, hdl_item_type, object_identifier, number_of_line) -> None:
         self.tag_add("highlight", str(number_of_line) + ".0", str(number_of_line + 1) + ".0")
         # self.tag_config("highlight", background="#e9e9e9")
         self.tag_config("highlight", background="orange")

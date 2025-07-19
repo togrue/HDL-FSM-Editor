@@ -21,7 +21,7 @@ difference_x = 0
 difference_y = 0
 
 
-def move_to(event_x, event_y, state_id, first, last):
+def move_to(event_x, event_y, state_id, first, last) -> None:
     global difference_x, difference_y
     if first is True:
         # Calculate the difference between the "anchor" point and the event:
@@ -43,7 +43,7 @@ def move_to(event_x, event_y, state_id, first, last):
     main_window.canvas.tag_raise(text_tag, state_id)
 
 
-def _calculate_middle_point(coords):
+def _calculate_middle_point(coords) -> list:
     middle_x = (coords[0] + coords[2]) / 2
     middle_y = (coords[1] + coords[3]) / 2
     return [middle_x, middle_y]
@@ -66,7 +66,7 @@ def get_canvas_id_of_state_name(state_id):
     return main_window.canvas.find_withtag(tags[0] + "_name")[0]
 
 
-def insert_state(event):
+def insert_state(event) -> None:
     global state_number
     state_number += 1
     event_x, event_y = canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(event)
@@ -112,7 +112,7 @@ def insert_state(event):
     # print ("New Statename", text_id , main_window.canvas.coords(text_id))
 
 
-def show_menu(event, state_id):
+def show_menu(event, state_id) -> None:
     listbox = OptionMenu(
         main_window.canvas,
         ["add action", "add comment", "change color"],
@@ -133,7 +133,7 @@ def show_menu(event, state_id):
     listbox.bind("<Leave>", lambda event, window=window, listbox=listbox: _close_menu(window, listbox))
 
 
-def _evaluate_menu(event, window, listbox, menu_x, menu_y, state_id):
+def _evaluate_menu(event, window, listbox, menu_x, menu_y, state_id) -> None:
     selected_entry = listbox.get(listbox.curselection())
     listbox.destroy()
     main_window.canvas.delete(window)
@@ -166,12 +166,12 @@ def _evaluate_menu(event, window, listbox, menu_x, menu_y, state_id):
         undo_handling.design_has_changed()
 
 
-def _close_menu(window, listbox):
+def _close_menu(window, listbox) -> None:
     listbox.destroy()
     main_window.canvas.delete(window)
 
 
-def edit_state_name(event, text_id):
+def edit_state_name(event, text_id) -> None:
     main_window.canvas.unbind("<Button-1>")
     main_window.canvas.unbind_all("<Delete>")
     old_text = main_window.canvas.itemcget(text_id, "text")
@@ -191,7 +191,7 @@ def edit_state_name(event, text_id):
     text_box.focus_set()
 
 
-def _update_state_name(text_id, text_box):
+def _update_state_name(text_id, text_box) -> None:
     main_window.canvas.delete("entry-window")
     new_text = text_box.get()
     text_box.destroy()
@@ -214,7 +214,7 @@ def _update_state_name(text_id, text_box):
             transition_handling.shorten_to_state_border(t[:-4])
 
 
-def __get_list_of_state_names(text_id):
+def __get_list_of_state_names(text_id) -> list:
     state_name_list = []
     all_canvas_ids = main_window.canvas.find_withtag("all")
     for canvas_id in all_canvas_ids:
@@ -230,7 +230,7 @@ def __get_list_of_state_names(text_id):
     return state_name_list
 
 
-def _abort_edit_text(text_id, text_box, old_text):
+def _abort_edit_text(text_id, text_box, old_text) -> None:
     main_window.canvas.delete("entry-window")
     main_window.canvas.itemconfig(text_id, text=old_text)
     text_box.destroy()
@@ -238,7 +238,7 @@ def _abort_edit_text(text_id, text_box, old_text):
     main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
 
 
-def _show_new_state_name(new_text, text_id):
+def _show_new_state_name(new_text, text_id) -> None:
     state_name_list = __get_list_of_state_names(text_id)
     if new_text != "":
         if new_text not in state_name_list:
@@ -247,7 +247,7 @@ def _show_new_state_name(new_text, text_id):
             messagebox.showerror("Error", "The state name\n" + new_text + "\nis already used at another state.")
 
 
-def _resize_state(state_tag, text_id):
+def _resize_state(state_tag, text_id) -> None:
     state_coords = main_window.canvas.coords(state_tag)
     state_width = state_coords[2] - state_coords[0]
     size = main_window.canvas.bbox(text_id)

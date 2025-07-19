@@ -7,7 +7,7 @@ import custom_text
 import main_window
 
 
-def recreate_keyword_list_of_unused_signals():
+def recreate_keyword_list_of_unused_signals() -> None:
     main_window.keywords["not_read"].clear()
     main_window.keywords["not_written"].clear()
 
@@ -76,7 +76,7 @@ def recreate_keyword_list_of_unused_signals():
     # print('main_window.keywords["not_written"] 3 =', main_window.keywords["not_written"])
 
 
-def update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment():
+def update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment() -> None:
     # Comment must be the last, because in the range of a comment all other tags are deleted:
     for text_id in custom_text.CustomText.read_variables_of_all_windows:
         text_id.update_highlight_tags(canvas_editing.fontsize, ["not_read", "not_written", "comment"])

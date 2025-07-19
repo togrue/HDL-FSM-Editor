@@ -12,7 +12,7 @@ difference_x = 0
 difference_y = 0
 
 
-def insert_connector(event):
+def insert_connector(event) -> None:
     global connector_number
     connector_number += 1
     # Translate the window coordinate into the canvas coordinate (the Canvas is bigger than the window):
@@ -43,7 +43,7 @@ def insert_connector(event):
     undo_handling.design_has_changed()
 
 
-def move_to(event_x, event_y, rectangle_id, first, last):
+def move_to(event_x, event_y, rectangle_id, first, last) -> None:
     global difference_x, difference_y
     if first is True:
         # Calculate the difference between the "anchor" point and the event:
@@ -61,7 +61,7 @@ def move_to(event_x, event_y, rectangle_id, first, last):
     _move_rectangle_in_canvas(rectangle_id, new_upper_left_corner, new_lower_right_corner)
 
 
-def _calculate_middle_point(coords):
+def _calculate_middle_point(coords) -> list:
     middle_x = (coords[0] + coords[2]) / 2
     middle_y = (coords[1] + coords[3]) / 2
     return [middle_x, middle_y]
@@ -73,13 +73,13 @@ def _determine_edge_length_of_the_rectangle(rectangle_id):
     return edge_length
 
 
-def _calculate_new_upper_left_corner_of_the_rectangle(event_x, event_y, edge_length):
+def _calculate_new_upper_left_corner_of_the_rectangle(event_x, event_y, edge_length) -> list:
     return [event_x - edge_length / 2, event_y - edge_length / 2]
 
 
-def _calculate_new_lower_right_corner_of_the_rectangle(event_x, event_y, edge_length):
+def _calculate_new_lower_right_corner_of_the_rectangle(event_x, event_y, edge_length) -> list:
     return [event_x + edge_length / 2, event_y + edge_length / 2]
 
 
-def _move_rectangle_in_canvas(rectangle_id, new_upper_left_corner, new_lower_right_corner):
+def _move_rectangle_in_canvas(rectangle_id, new_upper_left_corner, new_lower_right_corner) -> None:
     main_window.canvas.coords(rectangle_id, *new_upper_left_corner, *new_lower_right_corner)

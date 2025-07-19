@@ -15,7 +15,7 @@ class ConditionAction:
     conditionaction_id = 0
     dictionary = {}
 
-    def __init__(self, menu_x, menu_y, connected_to_reset_entry, height, width, padding, increment):
+    def __init__(self, menu_x, menu_y, connected_to_reset_entry, height, width, padding, increment) -> None:
         if increment is True:
             ConditionAction.conditionaction_id += 1
         self.difference_x = 0
@@ -94,13 +94,13 @@ class ConditionAction:
         # Create dictionary for translating the canvas-id of the canvas-window into a reference to this object:
         ConditionAction.dictionary[self.window_id] = self
 
-    def register_all_widgets_at_grid(self):
+    def register_all_widgets_at_grid(self) -> None:
         self.condition_label.grid(row=0, column=0, sticky=(tk.W, tk.E))
         self.condition_id.grid(row=1, column=0, sticky=(tk.W, tk.E))
         self.action_label.grid(row=2, column=0, sticky=(tk.W, tk.E))
         self.action_id.grid(row=3, column=0, sticky=(tk.W, tk.E))
 
-    def tag(self, connected_to_reset_entry):
+    def tag(self, connected_to_reset_entry) -> None:
         if connected_to_reset_entry is True:
             tag = (
                 "condition_action" + str(ConditionAction.conditionaction_id),
@@ -114,12 +114,12 @@ class ConditionAction:
             )
         main_window.canvas.itemconfigure(self.window_id, tag=tag)
 
-    def change_descriptor_to(self, text):
+    def change_descriptor_to(self, text) -> None:
         self.action_label.config(
             text=text
         )  # Used for switching between "asynchronous" and "synchron" (clocked) transition.
 
-    def draw_line(self, transition_id, menu_x, menu_y):
+    def draw_line(self, transition_id, menu_x, menu_y) -> None:
         # Draw a line from the transition start point to the condition_action block which is added to the transition:
         transition_coords = main_window.canvas.coords(transition_id)
         transition_tags = main_window.canvas.gettags(transition_id)
@@ -137,7 +137,7 @@ class ConditionAction:
         )
         main_window.canvas.tag_lower(self.line_id, transition_id)
 
-    def __draw_polygon_around_window(self):
+    def __draw_polygon_around_window(self) -> None:
         # When the window is entered from "outside" and is extended,
         # then no window-leaving-event is detected and the polygon is removed by extend_box().
         # When the window is entered from "inside" of an extended box (after a editing action),
@@ -148,7 +148,7 @@ class ConditionAction:
         if not self.last_action_was_shrinking:
             main_window.canvas.after_idle(self.__draw_polygon_around_window_delayed)
 
-    def __draw_polygon_around_window_delayed(self):
+    def __draw_polygon_around_window_delayed(self) -> None:
         bbox_coords = main_window.canvas.bbox(self.window_id)
         polygon_coords = []
         polygon_coords.append(bbox_coords[0] - 3)
@@ -167,7 +167,7 @@ class ConditionAction:
             self.move_rectangle, "<Leave>", lambda event: main_window.canvas.delete(self.move_rectangle)
         )
 
-    def extend_box(self):
+    def extend_box(self) -> None:
         # When a small box is extendend the self-destroying mechanism of the move_rectangle does not work,
         # as the extended box is bigger than the move_polygon and no polygon-leave-event happens.
         # So in this case the polygon must be removed explicetly:
@@ -176,7 +176,7 @@ class ConditionAction:
         self.condition = self.condition_id.get("1.0", tk.END)
         self.register_all_widgets_at_grid()
 
-    def shrink_box(self):
+    def shrink_box(self) -> None:
         self.frame_id.focus()  # "unfocus" the Text, when the mouse leaves the text.
         if self.condition_id.get("1.0", tk.END) != self.condition or self.action_id.get("1.0", tk.END) != self.action:
             undo_handling.design_has_changed()
@@ -203,10 +203,10 @@ class ConditionAction:
             self.last_action_was_shrinking = True
             main_window.canvas.after(500, self.__clear_last_action_was_shrinking)
 
-    def __clear_last_action_was_shrinking(self):
+    def __clear_last_action_was_shrinking(self) -> None:
         self.last_action_was_shrinking = False
 
-    def move_to(self, event_x, event_y, first, last):
+    def move_to(self, event_x, event_y, first, last) -> None:
         main_window.canvas.delete(
             self.move_rectangle
         )  # During moving there might be no move-polygon-leave-event, so for delete it hear for clean graphics.
@@ -233,7 +233,7 @@ class ConditionAction:
                 main_window.canvas.coords(line_tag, self.line_coords)
                 main_window.canvas.itemconfig(line_tag, state=tk.NORMAL)
 
-    def hide_line(self):
+    def hide_line(self) -> None:
         window_tags = main_window.canvas.gettags(self.window_id)
         for t in window_tags:
             if t.startswith("ca_connection"):

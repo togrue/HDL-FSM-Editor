@@ -15,7 +15,7 @@ class MyText:
     mytext_id = 0
     mytext_dict = {}
 
-    def __init__(self, menu_x, menu_y, height, width, padding, increment):
+    def __init__(self, menu_x, menu_y, height, width, padding, increment) -> None:
         if increment is True:
             MyText.mytext_id += 1
         self.difference_x = 0
@@ -62,7 +62,7 @@ class MyText:
         self.text_id.grid(column=0, row=1, sticky=(tk.S, tk.W, tk.E))
         self.line_id = None
 
-    def __draw_polygon_around_window(self):
+    def __draw_polygon_around_window(self) -> None:
         bbox_coords = main_window.canvas.bbox(self.window_id)
         polygon_coords = []
         polygon_coords.append(bbox_coords[0] - 3)
@@ -81,13 +81,13 @@ class MyText:
             self.move_rectangle, "<Leave>", lambda event: main_window.canvas.delete(self.move_rectangle)
         )
 
-    def tag(self):
+    def tag(self) -> None:
         main_window.canvas.itemconfigure(
             self.window_id,
             tag=("state_action" + str(MyText.mytext_id), "connection" + str(MyText.mytext_id) + "_start"),
         )
 
-    def connect_to_state(self, menu_x, menu_y, state_id):
+    def connect_to_state(self, menu_x, menu_y, state_id) -> None:
         # Draw a line from the state to the action block which is added to the state:
         state_coords = main_window.canvas.coords(state_id)
         main_window.canvas.addtag_withtag("connection" + str(MyText.mytext_id) + "_end", state_id)
@@ -104,23 +104,23 @@ class MyText:
         main_window.canvas.tag_bind(self.line_id, "<Leave>", lambda event, self=self: self.deactivate_line())
         main_window.canvas.tag_lower(self.line_id, state_id)
 
-    def activate(self):
+    def activate(self) -> None:
         self.frame_id.configure(style="Window.TFrame", padding=3)  # increase the width of the line around the box
         self.text = self.text_id.get("1.0", tk.END)
 
-    def deactivate(self):
+    def deactivate(self) -> None:
         self.frame_id.configure(style="Window.TFrame", padding=1)  # decrease the width of the line around the box
         self.frame_id.focus()  # "unfocus" the Text, when the mouse leaves the text.
         if self.text_id.get("1.0", tk.END) != self.text:
             undo_handling.design_has_changed()
 
-    def activate_line(self):
+    def activate_line(self) -> None:
         main_window.canvas.itemconfigure(self.line_id, width=3)  # increase the width of the line around the box
 
-    def deactivate_line(self):
+    def deactivate_line(self) -> None:
         main_window.canvas.itemconfigure(self.line_id, width=1)  # decrease the width of the line around the box
 
-    def move_to(self, event_x, event_y, first, last):
+    def move_to(self, event_x, event_y, first, last) -> None:
         main_window.canvas.delete(self.move_rectangle)
         self.frame_id.configure(padding=1)  # decrease the width of the line around the box
         if first:

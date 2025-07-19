@@ -20,7 +20,7 @@ _difference_x = 0
 _difference_y = 0
 
 
-def move_to(event_x, event_y, transition_id, point, first, move_list, last):
+def move_to(event_x, event_y, transition_id, point, first, move_list, last) -> None:
     global _difference_x, _difference_y
     if main_window.canvas.type(move_list[0][0]) == "line" and (move_list[0][1] in ("start", "end")):
         middle_of_line_is_moved = False
@@ -127,14 +127,14 @@ def move_to(event_x, event_y, transition_id, point, first, move_list, last):
         main_window.canvas.tag_raise(transition_tag + "priority", transition_tag + "rectangle")
 
 
-def _get_rectangle_dimensions(canvas_id):
+def _get_rectangle_dimensions(canvas_id) -> list:
     rectangle_coords = main_window.canvas.coords(canvas_id)
     rectangle_width_half = (rectangle_coords[2] - rectangle_coords[0]) / 2
     rectangle_height_half = (rectangle_coords[3] - rectangle_coords[1]) / 2
     return [rectangle_width_half, rectangle_height_half]
 
 
-def extend_transition_to_state_middle_points(transition_tag):
+def extend_transition_to_state_middle_points(transition_tag) -> None:
     transition_coords = main_window.canvas.coords(transition_tag)
     end_state_coords = main_window.canvas.coords(transition_tag + "_end")
     if transition_tag.startswith(
@@ -186,7 +186,7 @@ def extend_transition_to_state_middle_points(transition_tag):
 #     return length_of_triangle_side1
 
 
-def get_point_to_move(item_id, event_x, event_y):
+def get_point_to_move(item_id, event_x, event_y) -> str:
     # Determine which point of the transition is nearest to the event:
     transition_coords = main_window.canvas.coords(item_id)
     number_of_points = len(transition_coords) // 2
@@ -279,7 +279,7 @@ def get_point_to_move(item_id, event_x, event_y):
         return "end"
 
 
-def shorten_to_state_border(transition_tag):
+def shorten_to_state_border(transition_tag) -> None:
     transition_coords = main_window.canvas.coords(transition_tag)
     tag_list = main_window.canvas.gettags(transition_tag)
     connection = False
@@ -372,7 +372,7 @@ def shorten_to_state_border(transition_tag):
         main_window.canvas.tag_lower(transition_tag)
 
 
-def _remove_duplicate_points(transition_coords):
+def _remove_duplicate_points(transition_coords) -> list:
     new_transition_coords = []
     new_transition_coords.append(transition_coords[0])
     new_transition_coords.append(transition_coords[1])
@@ -386,7 +386,7 @@ def _remove_duplicate_points(transition_coords):
     return new_transition_coords
 
 
-def transition_start(event):
+def transition_start(event) -> None:
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
     ids = main_window.canvas.find_overlapping(event_x, event_y, event_x, event_y)
     if ids != ():
@@ -468,12 +468,12 @@ def transition_start(event):
                 )
 
 
-def _reset_entry_has_no_transition(canvas_id):
+def _reset_entry_has_no_transition(canvas_id) -> bool:
     tags_of_reset_entry = main_window.canvas.gettags(canvas_id)
     return all(not tag.startswith("transition") for tag in tags_of_reset_entry)
 
 
-def _transition_draw(event, canvas_id):
+def _transition_draw(event, canvas_id) -> None:
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
     coords_new = main_window.canvas.coords(canvas_id)
     coords_new[-2] = event_x
@@ -481,7 +481,7 @@ def _transition_draw(event, canvas_id):
     main_window.canvas.coords(canvas_id, coords_new)
 
 
-def _handle_next_added_transition_point(event, transition_id, start_state_canvas_id, transition_draw_funcid):
+def _handle_next_added_transition_point(event, transition_id, start_state_canvas_id, transition_draw_funcid) -> None:
     global transition_number
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
     transition_coords = main_window.canvas.coords(transition_id)
@@ -512,7 +512,7 @@ def _handle_next_added_transition_point(event, transition_id, start_state_canvas
         undo_handling.design_has_changed()
 
 
-def _check_if_transition_ends_at_connector(end_state_canvas_id):
+def _check_if_transition_ends_at_connector(end_state_canvas_id) -> bool:
     if end_state_canvas_id is not None:
         end_state_tags = main_window.canvas.gettags(end_state_canvas_id)
         for tag in end_state_tags:
@@ -521,7 +521,7 @@ def _check_if_transition_ends_at_connector(end_state_canvas_id):
     return False
 
 
-def _get_canvas_id_of_state_or_connector_under_new_transition_point(event_x, event_y):
+def _get_canvas_id_of_state_or_connector_under_new_transition_point(event_x, event_y) -> None:
     for canvas_id in main_window.canvas.find_overlapping(event_x, event_y, event_x, event_y):
         element_type = main_window.canvas.type(canvas_id)
         if (element_type == "oval") or (
@@ -533,13 +533,13 @@ def _get_canvas_id_of_state_or_connector_under_new_transition_point(event_x, eve
 
 def _duplicate_last_transition_point_for_continuing_the_drawing_of_the_transition(
     transition_id, coords, event_x, event_y
-):
+) -> None:
     coords.append(event_x)
     coords.append(event_y)
     main_window.canvas.coords(transition_id, coords)
 
 
-def _add_tags_to_end_state_and_transition(end_state_canvas_id):
+def _add_tags_to_end_state_and_transition(end_state_canvas_id) -> None:
     main_window.canvas.addtag_withtag("transition" + str(transition_number) + "_end", end_state_canvas_id)
     state_tags = main_window.canvas.gettags(end_state_canvas_id)
     for tag in state_tags:
@@ -560,12 +560,12 @@ def _move_transition_end_point_to_the_middle_of_the_end_state(end_state_canvas_i
     return transition_coords
 
 
-def _abort_inserting_transition(transition_id, transition_draw_funcid):
+def _abort_inserting_transition(transition_id, transition_draw_funcid) -> None:
     main_window.canvas.delete(transition_id)
     _end_transition_insertion_by_modifying_bindings(transition_draw_funcid)
 
 
-def _end_transition_insertion_by_modifying_bindings(transition_draw_funcid):
+def _end_transition_insertion_by_modifying_bindings(transition_draw_funcid) -> None:
     # Restore bindings:
     main_window.root.unbind_all("<Escape>")
     main_window.canvas.unbind("<Motion>", transition_draw_funcid)
@@ -645,7 +645,7 @@ def _move_transition_start_and_end_point_to_the_edge_of_the_state_circle(
     return transition_coords
 
 
-def _add_priority_rectangle_to_the_new_transition(transition_coords, start_state_canvas_id):
+def _add_priority_rectangle_to_the_new_transition(transition_coords, start_state_canvas_id) -> None:
     priority_dict = determine_priorities_of_outgoing_transitions(start_state_canvas_id)
     if len(priority_dict) == 1:
         transition_priority_visibility = tk.HIDDEN
@@ -690,7 +690,7 @@ def _add_priority_rectangle_to_the_new_transition(transition_coords, start_state
     )
 
 
-def determine_priorities_of_outgoing_transitions(start_state_canvas_id):
+def determine_priorities_of_outgoing_transitions(start_state_canvas_id) -> dict:
     priority_dict = {}
     all_tags = main_window.canvas.gettags(start_state_canvas_id)
     for tag in all_tags:
@@ -700,7 +700,7 @@ def determine_priorities_of_outgoing_transitions(start_state_canvas_id):
     return priority_dict
 
 
-def _get_unused_priority(priority_dict):
+def _get_unused_priority(priority_dict) -> str:
     priority_of_new_transition = "1"
     used_priorities = []
     for key in priority_dict:
@@ -712,7 +712,7 @@ def _get_unused_priority(priority_dict):
             return priority_of_new_transition
 
 
-def edit_priority(event, transition_tag):
+def edit_priority(event, transition_tag) -> None:
     main_window.canvas.unbind("<Button-1>")
     main_window.canvas.unbind_all("<Delete>")
     priority_tag = transition_tag + "priority"
@@ -735,7 +735,7 @@ def edit_priority(event, transition_tag):
     text_box.focus_set()
 
 
-def _update_priority(transition_tag, text_box):
+def _update_priority(transition_tag, text_box) -> None:
     main_window.canvas.delete("entry-window")
     main_window.canvas.itemconfig(transition_tag + "priority", text=text_box.get())
     text_rectangle = main_window.canvas.bbox(transition_tag + "priority")
@@ -748,7 +748,7 @@ def _update_priority(transition_tag, text_box):
     main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
 
 
-def _abort_edit_text(transition_tag, text_box, old_text):
+def _abort_edit_text(transition_tag, text_box, old_text) -> None:
     main_window.canvas.delete("entry-window")
     main_window.canvas.itemconfig(transition_tag + "priority", text=old_text)
     text_box.destroy()
@@ -758,7 +758,7 @@ def _abort_edit_text(transition_tag, text_box, old_text):
     main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
 
 
-def show_menu(event, transition_id):
+def show_menu(event, transition_id) -> None:
     listbox = OptionMenu(
         main_window.canvas,
         ["add condition&action", "straighten shape"],
@@ -782,7 +782,7 @@ def show_menu(event, transition_id):
     listbox.bind("<Leave>", lambda event, window=window, listbox=listbox: _close_menu(event, window, listbox))
 
 
-def _evaluate_menu(event, window, listbox, menu_x, menu_y, transition_id):
+def _evaluate_menu(event, window, listbox, menu_x, menu_y, transition_id) -> None:
     design_was_changed = False
     selected_entry = listbox.get(listbox.curselection())
     if selected_entry == "add condition&action":
@@ -853,6 +853,6 @@ def _evaluate_menu(event, window, listbox, menu_x, menu_y, transition_id):
         undo_handling.design_has_changed()  # It must be waited until the window for the menu is deleted.
 
 
-def _close_menu(event, window, listbox):
+def _close_menu(event, window, listbox) -> None:
     listbox.destroy()
     main_window.canvas.delete(window)

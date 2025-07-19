@@ -14,7 +14,7 @@ import undo_handling
 from state_manager import project_manager
 
 
-def _setup_application_ui():
+def _setup_application_ui() -> None:
     """Set up the main application UI components."""
 
     main_window.create_root()
@@ -62,7 +62,7 @@ def _setup_application_ui():
     undo_handling.design_has_changed()
 
 
-def _parse_and_process_arguments():
+def _parse_and_process_arguments() -> None:
     """Parse command-line arguments and process them."""
     parser = argparse.ArgumentParser(description="HDL-FSM-Editor: A tool for modeling FSMs")
     parser.add_argument("filename", nargs="?", help="HDL-FSM-Editor file (.hfe) to open")
@@ -98,7 +98,7 @@ def _parse_and_process_arguments():
         sys.exit()
 
 
-def _main():
+def _main() -> None:
     """Main entry point for HDL-FSM-Editor."""
     print(main_window.header_string)
 
