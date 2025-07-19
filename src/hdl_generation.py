@@ -21,7 +21,7 @@ from hdl_generation_config import GenerationConfig
 last_line_number_of_file1 = 0
 
 
-def run_hdl_generation(write_to_file):
+def run_hdl_generation(write_to_file) -> None:
     config = GenerationConfig.from_main_window()
     errors = config.validate()
     if errors:
@@ -45,7 +45,7 @@ def run_hdl_generation(write_to_file):
     _create_hdl(config, header, write_to_file)
 
 
-def _create_hdl(config, header, write_to_file):
+def _create_hdl(config, header, write_to_file) -> None:
     file_name, file_name_architecture = _get_file_names(config)
     link_dictionary.LinkDictionary.link_dict_reference.clear_link_dict(file_name)
     if file_name_architecture:
@@ -72,7 +72,7 @@ def _create_hdl(config, header, write_to_file):
 
 
 # TODO: This should not be here!
-def _copy_hdl_into_generated_hdl_tab(hdl, file_name):
+def _copy_hdl_into_generated_hdl_tab(hdl, file_name) -> None:
     main_window.date_of_hdl_file_shown_in_hdl_tab = os.path.getmtime(file_name)
     main_window.hdl_frame_text.config(state=tk.NORMAL)
     main_window.hdl_frame_text.delete("1.0", tk.END)
@@ -89,7 +89,7 @@ def _copy_hdl_into_generated_hdl_tab(hdl, file_name):
     main_window.show_tab("generated HDL")
 
 
-def _create_entity(config, file_name, file_line_number):
+def _create_entity(config, file_name, file_line_number) -> tuple:
     entity = ""
 
     package_statements = hdl_generation_library.get_text_from_text_widget(main_window.interface_package_text)
@@ -161,7 +161,7 @@ def _create_entity(config, file_name, file_line_number):
     return entity, file_line_number
 
 
-def _create_module_ports(config, file_name, file_line_number):
+def _create_module_ports(config, file_name, file_line_number) -> tuple:
     module = ""
     file_line_number = 3  # Line 1 = Filename, Line 2 = Header
     module += "module " + config.module_name + "\n"
@@ -210,7 +210,7 @@ def _create_module_ports(config, file_name, file_line_number):
     return module, file_line_number
 
 
-def _write_hdl_file(config, write_to_file, header, entity, architecture, path_name, path_name_architecture):
+def _write_hdl_file(config, write_to_file, header, entity, architecture, path_name, path_name_architecture) -> str:
     global last_line_number_of_file1
     _, name_of_file = os.path.split(path_name)
     if config.select_file_number == 1:
@@ -259,7 +259,7 @@ def _write_hdl_file(config, write_to_file, header, entity, architecture, path_na
     return content_with_numbers
 
 
-def _get_file_names(config):
+def _get_file_names(config) -> tuple:
     # For Verilog and SystemVerilog, always generate single files regardless of number_of_files setting
     if config.language in ["Verilog", "SystemVerilog"]:
         file_type = ".v" if config.language == "Verilog" else ".sv"
@@ -276,7 +276,7 @@ def _get_file_names(config):
     return file_name, file_name_architecture
 
 
-def _add_line_numbers(text):
+def _add_line_numbers(text) -> str:
     text_lines = text.split("\n")
     text_length_as_string = str(len(text_lines))
     number_of_needed_digits_as_string = str(len(text_length_as_string))

@@ -1,7 +1,7 @@
 import math
 
 
-def shorten_vector(delta0, x0, y0, delta1, x1, y1, modify0, modify1):
+def shorten_vector(delta0, x0, y0, delta1, x1, y1, modify0, modify1) -> list:
     phi = math.pi / 2 if x1 - x0 == 0 else math.atan((y1 - y0) / (x1 - x0))
     phi = abs(phi)
     delta0_x = delta0 * math.cos(phi)
@@ -18,7 +18,7 @@ def shorten_vector(delta0, x0, y0, delta1, x1, y1, modify0, modify1):
         return [x0 - delta0_x * modify0, y0 - delta0_y * modify0, x1 + delta1_x * modify1, y1 + delta1_y * modify1]
 
 
-def try_to_convert_into_straight_line(coords):
+def try_to_convert_into_straight_line(coords) -> list:
     number_of_points = len(coords) / 2
     if number_of_points == 2:
         return coords
@@ -34,14 +34,14 @@ def try_to_convert_into_straight_line(coords):
         return coords
 
 
-def _calculate_vectors_from_line_point_to_next_line_point(coords):
+def _calculate_vectors_from_line_point_to_next_line_point(coords) -> list:
     vector_list = []
     for i in range(len(coords) // 2 - 1):
         vector_list.append(_sub_vectors(coords[i * 2 + 2], coords[i * 2 + 3], coords[i * 2 + 0], coords[i * 2 + 1]))
     return vector_list
 
 
-def _calculate_cos_phi_values_between_vectors(vector_list):
+def _calculate_cos_phi_values_between_vectors(vector_list) -> list:
     cos_phi_list = []
     for i in range(len(vector_list) - 1):
         product_vector1_vector2 = _calculate_scalar_product(
@@ -60,7 +60,7 @@ def _calculate_cos_phi_values_between_vectors(vector_list):
     return cos_phi_list
 
 
-def _sub_vectors(x1, y1, x2, y2):
+def _sub_vectors(x1, y1, x2, y2) -> list:
     return [x1 - x2, y1 - y2]
 
 

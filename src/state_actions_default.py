@@ -15,7 +15,7 @@ import undo_handling
 class StateActionsDefault:
     dictionary = {}
 
-    def __init__(self, menu_x, menu_y, height, width, padding):
+    def __init__(self, menu_x, menu_y, height, width, padding) -> None:
         self.frame_id = ttk.Frame(
             main_window.canvas, relief=tk.FLAT, padding=padding, style="StateActionsWindow.TFrame"
         )  # , borderwidth=10)
@@ -61,7 +61,7 @@ class StateActionsDefault:
         StateActionsDefault.dictionary[self.window_id] = self
         canvas_modify_bindings.switch_to_move_mode()
 
-    def __draw_polygon_around_window(self):
+    def __draw_polygon_around_window(self) -> None:
         bbox_coords = main_window.canvas.bbox(self.window_id)
         polygon_coords = []
         polygon_coords.append(bbox_coords[0] - 3)
@@ -80,21 +80,21 @@ class StateActionsDefault:
             self.move_rectangle, "<Leave>", lambda event: main_window.canvas.delete(self.move_rectangle)
         )
 
-    def tag(self):
+    def tag(self) -> None:
         main_window.canvas.itemconfigure(self.window_id, tag="state_actions_default")
 
-    def activate(self):
+    def activate(self) -> None:
         self.frame_id.configure(padding=3)  # increase the width of the line around the box
         self.text = self.text_id.get("1.0", tk.END)
 
-    def deactivate(self):
+    def deactivate(self) -> None:
         self.frame_id.configure(padding=1)  # decrease the width of the line around the box
         self.frame_id.focus()  # "unfocus" the Text, when the mouse leaves the text.
         # self.text_id.format() # needed sometimes, when undo or redo happened.
         if self.text_id.get("1.0", tk.END) != self.text:
             undo_handling.design_has_changed()
 
-    def move_to(self, event_x, event_y, first, last):
+    def move_to(self, event_x, event_y, first, last) -> None:
         main_window.canvas.delete(self.move_rectangle)
         self.frame_id.configure(padding=1)  # decrease the width of the line around the box
         if first:

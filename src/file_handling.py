@@ -30,7 +30,7 @@ import update_hdl_tab
 from state_manager import project_manager
 
 
-def ask_save_unsaved_changes(title):
+def ask_save_unsaved_changes(title) -> str:
     """
     Ask user what to do with unsaved changes.
     Returns: 'save', 'discard', or 'cancel'
@@ -49,7 +49,7 @@ def ask_save_unsaved_changes(title):
         return "cancel"
 
 
-def save_as():
+def save_as() -> None:
     project_manager.previous_file = project_manager.current_file
     project_manager.current_file = asksaveasfilename(
         defaultextension=".hfe",
@@ -62,7 +62,7 @@ def save_as():
         save_in_file_new(project_manager.current_file)
 
 
-def save():
+def save() -> None:
     # Use state manager instead of global variables
     project_manager.previous_file = project_manager.current_file
     if project_manager.current_file == "":
@@ -77,19 +77,19 @@ def save():
         save_in_file_new(project_manager.current_file)
 
 
-def _write_coords(fileobject, canvas_id):
+def _write_coords(fileobject, canvas_id) -> None:
     coords = main_window.canvas.coords(canvas_id)
     for c in coords:
         fileobject.write(str(c) + " ")
 
 
-def _write_tags(fileobject, canvas_id):
+def _write_tags(fileobject, canvas_id) -> None:
     tags = main_window.canvas.gettags(canvas_id)
     for t in tags:
         fileobject.write(str(t) + " ")
 
 
-def open_file_old():
+def open_file_old() -> None:
     filename_new = askopenfilename(filetypes=(("HDL-FSM-Editor files", "*.hfe"), ("all files", "*.*")))
     if filename_new != "":
         removed = remove_old_design()
@@ -97,7 +97,7 @@ def open_file_old():
             _open_file_with_name(filename_new)
 
 
-def open_file():
+def open_file() -> None:
     filename_new = askopenfilename(filetypes=(("HDL-FSM-Editor files", "*.hfe"), ("all files", "*.*")))
     if filename_new != "":
         removed = remove_old_design()
@@ -105,7 +105,7 @@ def open_file():
             open_file_with_name_new(filename_new)
 
 
-def _open_file_with_name(read_filename):
+def _open_file_with_name(read_filename) -> None:
     custom_text.CustomText.read_variables_of_all_windows.clear()
     custom_text.CustomText.written_variables_of_all_windows.clear()
     # Bring the notebook tab with the graphic into the foreground:
@@ -497,7 +497,7 @@ def _open_file_with_name(read_filename):
     canvas_editing.view_all()
 
 
-def remove_old_design():
+def remove_old_design() -> bool:
     global filename
     title = main_window.root.title()
     if title.endswith("*"):
@@ -569,7 +569,7 @@ def _get_data(rest_of_line, fileobject):
     return data
 
 
-def _get_length_info_from_line(rest_of_line):
+def _get_length_info_from_line(rest_of_line) -> int:
     return int(re.sub(r"\|.*", "", rest_of_line))
 
 
@@ -584,7 +584,7 @@ def _get_remaining_data(fileobject, length_of_data, first_data):
     return data[:-1]
 
 
-def _print_canvas():
+def _print_canvas() -> None:
     # all = main_window.canvas.bbox("all")
     print_filename = main_window.generate_path_value.get() + "/" + main_window.module_name.get() + ".eps"
     # main_window.canvas.postscript(file=filename, colormode="color", x=all[0], y=all[1], width=all[2]-all[0], height=all[3]-all[1])
@@ -594,7 +594,7 @@ def _print_canvas():
 #########################################################################################################################################
 
 
-def save_in_file_new(save_filename):  # Called at saving and at every design change (writing to .tmp-file)
+def save_in_file_new(save_filename) -> None:  # Called at saving and at every design change (writing to .tmp-file)
     design_dictionary = {}
     design_dictionary["modulename"] = main_window.module_name.get()
     design_dictionary["language"] = main_window.language.get()
@@ -741,7 +741,7 @@ def save_in_file_new(save_filename):  # Called at saving and at every design cha
         messagebox.showerror("Error", "The database is corrupt.\nDo not use the written file.\nSee details at STDOUT.")
 
 
-def open_file_with_name_new(read_filename):
+def open_file_with_name_new(read_filename) -> None:
     global filename
     replaced_read_filename = read_filename
     if os.path.isfile(read_filename + ".tmp"):

@@ -22,7 +22,7 @@ from hdl_generation_config import GenerationConfig
 class LinkDictionary:
     link_dict_reference = None
 
-    def __init__(self, root):
+    def __init__(self, root) -> None:
         self.root = root
         LinkDictionary.link_dict_reference = self
         self.link_dict = {}
@@ -35,7 +35,7 @@ class LinkDictionary:
         number_of_lines,  # How many lines does the HDL-item use in the file
         hdl_item_name,  # String when "Control-Tab", widget-references in all other cases
         number_of_line,  # not used
-    ):
+    ) -> None:
         # print("add =", file_name, file_line_number, hdl_item_type, number_of_lines , hdl_item_name, number_of_line)
         if file_name not in self.link_dict:
             self.link_dict[file_name] = {}
@@ -78,7 +78,7 @@ class LinkDictionary:
                 }
                 file_line_number += 1
 
-    def jump_to_source(self, selected_file, file_line_number):
+    def jump_to_source(self, selected_file, file_line_number) -> None:
         # print("jump_to_source", selected_file, file_line_number)
         tab_to_show = self.link_dict[selected_file][file_line_number]["tab_name"]
         widget = self.link_dict[selected_file][file_line_number]["widget_reference"]
@@ -88,7 +88,7 @@ class LinkDictionary:
         main_window.show_tab(tab_to_show)
         widget.highlight_item(hdl_item_type, object_identifier, number_of_line)
 
-    def jump_to_hdl(self, selected_file, file_line_number):
+    def jump_to_hdl(self, selected_file, file_line_number) -> None:
         if main_window.select_file_number_text.get() == 2:
             gen_config = GenerationConfig.from_main_window()
             file_name_architecture = gen_config.get_architecture_file()
@@ -100,7 +100,7 @@ class LinkDictionary:
         main_window.hdl_frame_text.focus_set()
         main_window.hdl_frame_text.config(state="disabled")
 
-    def clear_link_dict(self, file_name):
+    def clear_link_dict(self, file_name) -> None:
         if file_name in self.link_dict:
             # print("clear_link_dict: file_name =", file_name)
             self.link_dict.pop(file_name)

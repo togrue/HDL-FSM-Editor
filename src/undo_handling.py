@@ -27,7 +27,7 @@ stack = []
 stack_write_pointer = 0
 
 
-def update_window_title():
+def update_window_title() -> None:
     title = main_window.root.title()
     if title == "tk":
         main_window.root.title("unnamed")
@@ -36,7 +36,7 @@ def update_window_title():
         main_window.root.title(title)
 
 
-def design_has_changed():
+def design_has_changed() -> None:
     _add_changes_to_design_stack()
     update_window_title()
     if project_manager.current_file != "" and not main_window.root.title().startswith("unnamed"):
@@ -44,7 +44,7 @@ def design_has_changed():
         file_handling.save_in_file_new(project_manager.current_file + ".tmp")
 
 
-def undo():
+def undo() -> None:
     global stack_write_pointer
     # As <Control-z> is bound with the bind_all-command to the diagram, this binding must be ignored, when
     # the focus is on a customtext-widget: Then a Control-z must change the text and must not change the diagram.
@@ -69,7 +69,7 @@ def undo():
         main_window.redo_button.config(state="enabled")
 
 
-def redo():
+def redo() -> None:
     global stack_write_pointer
     # As <Control-Z> is bound with the bind_all-command to the diagram, this binding must be ignored, when
     # the focus is on the customtext-widget: Then a Control-Z must change the text and must not change the diagram.
@@ -82,7 +82,7 @@ def redo():
         main_window.redo_button.config(state="disabled")
 
 
-def _add_changes_to_design_stack():
+def _add_changes_to_design_stack() -> None:
     global stack_write_pointer
     _remove_stack_entries_from_write_pointer_to_the_end_of_the_stack()
     new_design = _get_complete_design_as_text_object()
@@ -93,7 +93,7 @@ def _add_changes_to_design_stack():
     main_window.redo_button.config(state="disabled")
 
 
-def _remove_stack_entries_from_write_pointer_to_the_end_of_the_stack():
+def _remove_stack_entries_from_write_pointer_to_the_end_of_the_stack() -> None:
     if len(stack) > stack_write_pointer:
         del stack[stack_write_pointer:]
 
@@ -252,7 +252,7 @@ def _get_complete_design_as_text_object():
     return design
 
 
-def _get_coords(canvas_id):
+def _get_coords(canvas_id) -> str:
     coords = main_window.canvas.coords(canvas_id)
     coords_string = ""
     for c in coords:
@@ -260,7 +260,7 @@ def _get_coords(canvas_id):
     return coords_string
 
 
-def _get_tags(canvas_id):
+def _get_tags(canvas_id) -> str:
     tags = main_window.canvas.gettags(canvas_id)
     tags_string = ""
     for t in tags:
@@ -277,7 +277,7 @@ def _get_fill_color(canvas_id):
 _line_index = 0
 
 
-def _set_diagram_to_version_selected_by_stack_pointer():
+def _set_diagram_to_version_selected_by_stack_pointer() -> None:
     global _line_index
     # Remove the old design:
     state_action_handling.MyText.mytext_dict = {}
@@ -696,7 +696,7 @@ def _get_data(rest_of_line, lines):
     return data
 
 
-def _get_length_info_from_line(rest_of_line):
+def _get_length_info_from_line(rest_of_line) -> int:
     return int(re.sub(r"\|.*", "", rest_of_line))
 
 

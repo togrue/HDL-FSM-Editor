@@ -10,7 +10,7 @@ import link_dictionary
 import main_window
 
 
-def create_module_logic(file_name, file_line_number):
+def create_module_logic(file_name, file_line_number) -> None:
     architecture = ""
     state_signal_type_definition = _create_signal_declaration_for_the_state_variable()
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_signal_type_definition)
@@ -176,7 +176,7 @@ def create_module_logic(file_name, file_line_number):
     return architecture
 
 
-def _create_signal_declaration_for_the_state_variable():
+def _create_signal_declaration_for_the_state_variable() -> str:
     list_of_all_state_names = hdl_generation_library.get_a_list_of_all_state_names()
     number_of_states = len(list_of_all_state_names)
     if main_window.language.get() == "Verilog":
@@ -197,7 +197,7 @@ def _create_signal_declaration_for_the_state_variable():
     return signal_declaration
 
 
-def _get_reset_edge(reset_condition):
+def _get_reset_edge(reset_condition) -> str:
     reset_condition_mod = hdl_generation_library.remove_comments_and_returns(reset_condition)
     reset_condition_mod = re.sub("\\s", "", reset_condition_mod)  # remove blanks
     if reset_condition_mod.endswith("1'b0"):
@@ -211,7 +211,7 @@ def _get_reset_edge(reset_condition):
         return "unknown_edge"
 
 
-def _indent_identically(character, actual_list):
+def _indent_identically(character, actual_list) -> list:
     actual_list = [
         re.sub("[ ]*" + character, character, decl, count=1) for decl in actual_list
     ]  # Blanks for the character will be adapted und must first be removed here.

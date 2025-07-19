@@ -18,7 +18,7 @@ import hdl_generation_library
 
 
 class ListSeparationCheck:
-    def __init__(self, list_string, language):
+    def __init__(self, list_string, language) -> None:
         self.list_string = list_string
         if language == "VHDL":
             separator = ";"
@@ -35,7 +35,7 @@ class ListSeparationCheck:
     def get_fixed_list(self):
         return self.list_string
 
-    def __replace_all_comments_at_line_end(self, list_string_without_block_comment, comment_identifier):
+    def __replace_all_comments_at_line_end(self, list_string_without_block_comment, comment_identifier) -> str:
         list_array = list_string_without_block_comment.split("\n")
         list_string_without_comments = ""
         for line in list_array:
@@ -52,14 +52,14 @@ class ListSeparationCheck:
             )
         return line
 
-    def __remove_illegal_separator(self, list_string_without_comments, separator):
+    def __remove_illegal_separator(self, list_string_without_comments, separator) -> None:
         for index, char in enumerate(reversed(list_string_without_comments)):
             if char not in (" ", "\n"):
                 if char == separator:
                     self.__remove_character_by_blank(index)
                 break
 
-    def __remove_character_by_blank(self, index):
+    def __remove_character_by_blank(self, index) -> None:
         if index == 0:
             self.list_string = self.list_string[: -index - 1]
         else:

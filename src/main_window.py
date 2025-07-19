@@ -112,7 +112,7 @@ include_timestamp_in_output = None
 keywords = constants.vhdl_keywords
 
 
-def read_message():
+def read_message() -> None:
     try:
         source = urllib.request.urlopen("http://www.hdl-fsm-editor.de/message.txt")
         message = source.read()
@@ -123,7 +123,7 @@ def read_message():
         pass
 
 
-def check_version():
+def check_version() -> None:
     try:
         print("Checking for a newer version ...")
         source = urllib.request.urlopen("http://www.hdl-fsm-editor.de/index.php")
@@ -141,16 +141,16 @@ def check_version():
         print("HDL-FSM-Editor version could not be checked, as you are offline.")
 
 
-def show_window():
+def show_window() -> None:
     root.wm_deiconify()
 
 
-def view_all_after_window_is_built():
+def view_all_after_window_is_built() -> None:
     canvas_editing.view_all()
     canvas.unbind("<Visibility>")
 
 
-def _close_tool():
+def _close_tool() -> None:
     title = root.title()
     if title.endswith("*"):
         action = file_handling.ask_save_unsaved_changes(title)
@@ -168,7 +168,7 @@ def _close_tool():
     sys.exit()
 
 
-def create_root():
+def create_root() -> None:
     global root
     # The top window:
     root = tk.Tk()
@@ -181,7 +181,7 @@ def create_root():
     link_dictionary.LinkDictionary(root)
 
 
-def create_menu_bar():
+def create_menu_bar() -> None:
     menue_frame = ttk.Frame(root, borderwidth=2, relief=tk.RAISED)
     menue_frame.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E, tk.S))
 
@@ -271,13 +271,13 @@ def create_menu_bar():
     root.bind_all("<Control-f>", lambda event: search_string_entry.focus_set())
 
 
-def create_notebook():
+def create_notebook() -> None:
     global notebook
     notebook = ttk.Notebook(root, padding=5)
     notebook.grid(column=0, row=1, sticky=(tk.N, tk.W, tk.E, tk.S))
 
 
-def create_control_notebook_tab():
+def create_control_notebook_tab() -> None:
     global \
         module_name, \
         language, \
@@ -432,19 +432,19 @@ def create_control_notebook_tab():
     notebook.add(control_frame, sticky=tk.N + tk.E + tk.W + tk.S, text="Control")
 
 
-def _set_path():
+def _set_path() -> None:
     path = askdirectory()
     if path != "" and not path.isspace():
         generate_path_value.set(path)
 
 
-def _set_working_directory():
+def _set_working_directory() -> None:
     path = askdirectory()
     if path != "" and not path.isspace():
         working_directory_value.set(path)
 
 
-def create_interface_notebook_tab():
+def create_interface_notebook_tab() -> None:
     global interface_package_text, interface_generics_text, interface_ports_text
     global _interface_package_label, _interface_package_scroll
     global _interface_generics_label, _interface_ports_label
@@ -538,7 +538,7 @@ def create_interface_notebook_tab():
     notebook.add(paned_window_interface, sticky=tk.N + tk.E + tk.W + tk.S, text="Interface")
 
 
-def create_internals_notebook_tab():
+def create_internals_notebook_tab() -> None:
     global \
         internals_package_text, \
         internals_architecture_text, \
@@ -681,7 +681,7 @@ def create_internals_notebook_tab():
     notebook.add(paned_window_internals, sticky=tk.N + tk.E + tk.W + tk.S, text="Internals")
 
 
-def create_diagram_notebook_tab():
+def create_diagram_notebook_tab() -> None:
     global canvas
     global state_action_default_button
     global global_action_clocked_button
@@ -808,29 +808,29 @@ def create_diagram_notebook_tab():
     grid_drawer = grid_drawing.GridDraw(canvas)
 
 
-def __scroll_xview(*args):
+def __scroll_xview(*args) -> None:
     grid_drawer.remove_grid()
     canvas.xview(*args)
     grid_drawer.draw_grid()
 
 
-def __scroll_yview(*args):
+def __scroll_yview(*args) -> None:
     grid_drawer.remove_grid()
     canvas.yview(*args)
     grid_drawer.draw_grid()
 
 
-def __check_for_window_resize(_):
+def __check_for_window_resize(_) -> None:
     grid_drawer.remove_grid()
     grid_drawer.draw_grid()
 
 
-def _handle_notebook_tab_changed_event():
+def _handle_notebook_tab_changed_event() -> None:
     _enable_undo_redo_if_diagram_tab_is_active_else_disable()
     _update_hdl_tab_if_necessary()
 
 
-def _enable_undo_redo_if_diagram_tab_is_active_else_disable():
+def _enable_undo_redo_if_diagram_tab_is_active_else_disable() -> None:
     if notebook.index(notebook.select()) == 3:
         canvas.bind_all("<Control-z>", lambda event: undo_handling.undo())
         canvas.bind_all("<Control-Z>", lambda event: undo_handling.redo())
@@ -839,7 +839,7 @@ def _enable_undo_redo_if_diagram_tab_is_active_else_disable():
         canvas.unbind_all("<Control-Z>")  # then in the diagram tab an undo would take place.
 
 
-def create_hdl_notebook_tab():
+def create_hdl_notebook_tab() -> None:
     global hdl_frame_text
     hdl_frame = ttk.Frame(notebook)
     hdl_frame.grid()
@@ -860,7 +860,7 @@ def create_hdl_notebook_tab():
     notebook.add(hdl_frame, sticky=tk.N + tk.E + tk.W + tk.S, text="generated HDL")
 
 
-def create_log_notebook_tab():
+def create_log_notebook_tab() -> None:
     global log_frame_text, _debug_active
     log_frame = ttk.Frame(notebook)
     log_frame.grid()
@@ -895,13 +895,13 @@ def create_log_notebook_tab():
     _debug_active.set(1)  # 1: inactive, 2: active
 
 
-def _clear_log_tab(_):
+def _clear_log_tab(_) -> None:
     log_frame_text.config(state=tk.NORMAL)
     log_frame_text.delete("1.0", tk.END)
     log_frame_text.config(state=tk.DISABLED)
 
 
-def _edit_regex(*_):
+def _edit_regex(*_) -> None:
     global _regex_dialog, _regex_dialog_entry, _regex_dialog_filename_entry, _regex_dialog_linenumber_entry
     _regex_dialog = tk.Toplevel()
     _regex_dialog.title("Enter Regex for Python:")
@@ -953,7 +953,7 @@ def _edit_regex(*_):
     _regex_dialog_linenumber_entry.insert(0, regex_file_line_number_quote)
 
 
-def _regex_store():
+def _regex_store() -> None:
     global \
         regex_message_find_for_vhdl, \
         regex_message_find_for_verilog, \
@@ -971,11 +971,11 @@ def _regex_store():
     _regex_dialog.destroy()
 
 
-def _regex_cancel():
+def _regex_cancel() -> None:
     _regex_dialog.destroy()
 
 
-def _cursor_move_hdl_tab(*_):
+def _cursor_move_hdl_tab(*_) -> None:
     global _line_number_under_pointer_hdl_tab, _func_id_jump
     if hdl_frame_text.get("1.0", tk.END + "- 1 char") == "":
         return
@@ -1016,7 +1016,7 @@ def _cursor_move_hdl_tab(*_):
         _line_number_under_pointer_hdl_tab = line_number
 
 
-def _cursor_move_log_tab(*_):
+def _cursor_move_log_tab(*_) -> None:
     global _func_id_jump1, _func_id_jump2, _regex_error_happened, _line_number_under_pointer_log_tab
     if log_frame_text.get("1.0", tk.END + "- 1 char") == "":
         return
@@ -1094,7 +1094,7 @@ def _cursor_move_log_tab(*_):
         _line_number_under_pointer_log_tab = line_number
 
 
-def switch_language_mode():
+def switch_language_mode() -> None:
     global keywords, keyword_color
     keyword_color = {
         "not_read": "orange",
@@ -1155,32 +1155,32 @@ def switch_language_mode():
         _compile_cmd_docu.config(text="Variables for compile command:\n$file\t= Module-File\n$name\t= Module Name")
 
 
-def _handle_key(event, custom_text_ref):
+def _handle_key(event, custom_text_ref) -> None:
     custom_text_ref.after_idle(
         custom_text_ref.update_highlight_tags, canvas_editing.fontsize, ["control", "datatype", "function", "comment"]
     )
 
 
-def _handle_key_at_ports(custom_text_ref):
+def _handle_key_at_ports(custom_text_ref) -> None:
     custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_ports_list)
     custom_text_ref.after_idle(custom_text_ref.update_highlighting)
 
 
-def _handle_key_at_generics(custom_text_ref):
+def _handle_key_at_generics(custom_text_ref) -> None:
     custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_generics_list)
     custom_text_ref.after_idle(custom_text_ref.update_highlighting)
 
 
-def _handle_key_at_declarations(custom_text_ref):
+def _handle_key_at_declarations(custom_text_ref) -> None:
     custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_signals_list)
     custom_text_ref.after_idle(custom_text_ref.update_highlighting)
 
 
-def _show_path_has_changed(*_):
+def _show_path_has_changed(*_) -> None:
     undo_handling.design_has_changed()
 
 
-def show_tab(tab):
+def show_tab(tab) -> None:
     notebook_ids = notebook.tabs()
     for tab_id in notebook_ids:
         if notebook.tab(tab_id, option="text") == tab:
@@ -1188,7 +1188,7 @@ def show_tab(tab):
             _update_hdl_tab_if_necessary()
 
 
-def _update_hdl_tab_if_necessary():
+def _update_hdl_tab_if_necessary() -> None:
     global date_of_hdl_file_shown_in_hdl_tab
     if notebook.index(notebook.select()) == 4:
         if language.get() == "VHDL":
@@ -1215,7 +1215,7 @@ def _update_hdl_tab_if_necessary():
                 date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
 
 
-def _highlight_item(hdl_item_type, *_):
+def _highlight_item(hdl_item_type, *_) -> None:
     # This method must have the same name as the method custom_text.CustomText.highlight_item.
     # It is called, when in the "generated HDL"-tab module-name, reset-name or clock-name are clicked per mouse to jump to its declaration.
     if hdl_item_type == "module_name":
@@ -1224,7 +1224,7 @@ def _highlight_item(hdl_item_type, *_):
         _clock_signal_name_entry.select_range(0, tk.END)
 
 
-def _change_color_of_diagram_background():
+def _change_color_of_diagram_background() -> None:
     try:
         canvas.configure(bg=diagram_background_color.get())
         _diagram_background_color_error.configure(text="")
@@ -1237,21 +1237,21 @@ def _change_color_of_diagram_background():
         )
 
 
-def choose_bg_color():
+def choose_bg_color() -> None:
     new_color = ColorChanger(canvas.cget("bg")).ask_color()
     if new_color is not None:
         canvas.configure(bg=new_color)
         diagram_background_color.set(new_color)
 
 
-def __resize_event_interface_tab_frames(event):
+def __resize_event_interface_tab_frames(event) -> None:
     global sash_positions
     sash_positions["interface_tab"][0] = paned_window_interface.sashpos(0)
     if language.get() == "VHDL":
         sash_positions["interface_tab"][1] = paned_window_interface.sashpos(1)
 
 
-def __resize_event_internals_tab_frames(event):
+def __resize_event_internals_tab_frames(event) -> None:
     global sash_positions
     sash_positions["internals_tab"][0] = paned_window_internals.sashpos(0)
     sash_positions["internals_tab"][1] = paned_window_internals.sashpos(1)
@@ -1259,7 +1259,7 @@ def __resize_event_internals_tab_frames(event):
         sash_positions["internals_tab"][2] = paned_window_internals.sashpos(2)
 
 
-def set_word_boundaries():
+def set_word_boundaries() -> None:
     # this first statement triggers tcl to autoload the library
     # that defines the variables we want to override.
     root.tk.call("tcl_wordBreakAfter", "", 0)

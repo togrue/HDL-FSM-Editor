@@ -9,7 +9,7 @@ from typing import Optional
 class GenerationConfig:
     """Configuration for HDL code generation"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Core generation settings
         self.language: str = "VHDL"  # "VHDL", "Verilog", "SystemVerilog"
         self.module_name: str = ""
