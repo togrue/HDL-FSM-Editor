@@ -31,85 +31,84 @@ header_string = (
     "HDL-FSM-Editor\nVersion " + _VERSION + "\nCreated by Matthias Schweikart\nContact: matthias.schweikart@gmx.de"
 )
 
-state_action_default_button = None
-global_action_clocked_button = None
-global_action_combinatorial_button = None
-reset_entry_button = None
 
-root = None
-notebook = None
-module_name = None
-language = None
-generate_path_value = None
-working_directory_value = None
-select_file_number_text = None
-reset_signal_name = None
-clock_signal_name = None
-compile_cmd = None
-edit_cmd = None
-interface_package_text = None
-interface_generics_text = None
-interface_ports_text = None
-internals_package_text = None
-internals_architecture_text = None
-internals_process_clocked_text = None
-internals_process_combinatorial_text = None
-canvas = None
-hdl_frame_text = None
-log_frame_text = None
+root: tk.Tk
+notebook: ttk.Notebook
+module_name: tk.StringVar
+language: tk.StringVar
+generate_path_value: tk.StringVar
+working_directory_value: tk.StringVar
+select_file_number_text: tk.IntVar
+reset_signal_name: tk.StringVar
+clock_signal_name: tk.StringVar
+compile_cmd: tk.StringVar
+edit_cmd: tk.StringVar
+interface_package_text: custom_text.CustomText
+interface_generics_text: custom_text.CustomText
+interface_ports_text: custom_text.CustomText
+internals_package_text: custom_text.CustomText
+internals_architecture_text: custom_text.CustomText
+internals_process_clocked_text: custom_text.CustomText
+internals_process_combinatorial_text: custom_text.CustomText
+canvas: tk.Canvas
+hdl_frame_text: custom_text.CustomText
+log_frame_text: custom_text.CustomText
 
-_select_file_number_label = None
-_select_file_number_frame = None
-_interface_package_label = None
-_interface_package_scroll = None
-_interface_generics_label = None
-_interface_ports_label = None
-_internals_package_label = None
-_internals_package_scroll = None
-_internals_architecture_label = None
-_internals_process_clocked_label = None
-_internals_process_combinatorial_label = None
-_compile_cmd_docu = None
-_debug_active = None
-_regex_dialog = None
-regex_message_find_for_vhdl = "(.*?):([0-9]+):[0-9]+:.*"
-regex_message_find_for_verilog = (
+state_action_default_button: ttk.Button
+global_action_clocked_button: ttk.Button
+global_action_combinatorial_button: ttk.Button
+reset_entry_button: ttk.Button
+
+_select_file_number_label: ttk.Label
+_select_file_number_frame: ttk.Frame
+_interface_package_label: ttk.Label
+_interface_package_scroll: ttk.Scrollbar
+_interface_generics_label: ttk.Label
+_interface_ports_label: ttk.Label
+_internals_package_label: ttk.Label
+_internals_package_scroll: ttk.Scrollbar
+_internals_architecture_label: ttk.Label
+_internals_process_clocked_label: ttk.Label
+_internals_process_combinatorial_label: ttk.Label
+_compile_cmd_docu: ttk.Label
+_debug_active: tk.IntVar
+_regex_dialog: tk.Toplevel
+regex_message_find_for_vhdl: str = "(.*?):([0-9]+):[0-9]+:.*"
+regex_message_find_for_verilog: str = (
     "(.*?):([0-9]+): .*"  # Added ' ' after the second ':', to get no hit at time stamps (i.e. 16:58:36).
 )
-regex_file_name_quote = "\\1"
-regex_file_line_number_quote = "\\2"
-_regex_dialog_entry = None
-_regex_dialog_filename_entry = None
-_regex_dialog_linenumber_entry = None
-_regex_error_happened = False
-_line_number_under_pointer_log_tab = 0
-_line_number_under_pointer_hdl_tab = 0
-_func_id_jump1 = None
-_func_id_jump2 = None
-size_of_file1_line_number = 0
-size_of_file2_line_number = 0
-_func_id_jump = None
-_module_name_entry = None
-_clock_signal_name_entry = None
-diagram_background_color = "white"
-_diagram_background_color_error = None
-show_grid = True
-grid_drawer = None
-paned_window_interface = None
-_interface_package_frame = None
-paned_window_internals = None
-_internals_package_frame = None
-sash_positions = {}
-sash_positions["interface_tab"] = {}
-sash_positions["internals_tab"] = {}
-undo_button = None
-redo_button = None
-_trace_id_generate_path_value = None
-_trace_id_working_directory_value = None
-date_of_hdl_file_shown_in_hdl_tab = 0.0
-include_timestamp_in_output = None
+regex_file_name_quote: str = "\\1"
+regex_file_line_number_quote: str = "\\2"
+_regex_dialog_entry: ttk.Entry
+_regex_dialog_filename_entry: ttk.Entry
+_regex_dialog_linenumber_entry: ttk.Entry
+_regex_error_happened: bool = False
+_line_number_under_pointer_log_tab: int = 0
+_line_number_under_pointer_hdl_tab: int = 0
+_func_id_jump1: str | None
+_func_id_jump2: str | None
+size_of_file1_line_number: int = 0
+size_of_file2_line_number: int = 0
+_func_id_jump: str | None = None
+_module_name_entry: ttk.Entry
+_clock_signal_name_entry: ttk.Entry
+diagram_background_color: tk.StringVar
+_diagram_background_color_error: ttk.Label
+show_grid: bool = True
+grid_drawer: grid_drawing.GridDraw
+paned_window_interface: ttk.PanedWindow
+_interface_package_frame: ttk.Frame
+paned_window_internals: ttk.PanedWindow
+_internals_package_frame: ttk.Frame
+sash_positions: dict[str, dict[int, int]] = {}
+undo_button: ttk.Button
+redo_button: ttk.Button
+_trace_id_generate_path_value: str
+_trace_id_working_directory_value: str
+date_of_hdl_file_shown_in_hdl_tab: float = 0.0
+include_timestamp_in_output: tk.BooleanVar
 
-keywords = constants.vhdl_keywords
+keywords: dict[str, list[str]] = constants.vhdl_keywords
 
 
 def read_message() -> None:
@@ -582,7 +581,9 @@ def create_internals_notebook_tab() -> None:
     internals_architecture_frame.columnconfigure(1, weight=0)
     internals_architecture_frame.rowconfigure(0, weight=0)
     internals_architecture_frame.rowconfigure(1, weight=1)
-    _internals_architecture_label = ttk.Label(internals_architecture_frame, text="Architecture Declarations:", padding=5)
+    _internals_architecture_label = ttk.Label(
+        internals_architecture_frame, text="Architecture Declarations:", padding=5
+    )
     interface_architecture_info = ttk.Label(
         internals_architecture_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5
     )
