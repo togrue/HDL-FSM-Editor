@@ -20,7 +20,7 @@ from hdl_generation_config import GenerationConfig
 
 
 class LinkDictionary:
-    link_dict_reference = None
+    link_dict_reference: "LinkDictionary"
 
     def __init__(self, root) -> None:
         self.root = root
