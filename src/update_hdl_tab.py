@@ -34,7 +34,6 @@ class UpdateHdlTab:
                 fileobject = open(hdlfilename, encoding="utf-8")
                 entity = fileobject.read()
                 fileobject.close()
-                # print("entity = \n" + entity)
                 hdl += self.__add_line_numbers(entity)
             except FileNotFoundError:
                 messagebox.showerror(

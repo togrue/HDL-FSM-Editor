@@ -190,7 +190,7 @@ def get_point_to_move(item_id, event_x, event_y):
     # Determine which point of the transition is nearest to the event:
     transition_coords = main_window.canvas.coords(item_id)
     number_of_points = len(transition_coords) // 2
-    # print("number_of_points =", number_of_points)
+
     distance_event_to_point = []
     distance_to_neighbour = []
     for i in range(number_of_points):
@@ -224,8 +224,7 @@ def get_point_to_move(item_id, event_x, event_y):
     #     return 'end'
     if number_of_points == 4:
         return_value = ""
-        # print("distance_event_to_point =", distance_event_to_point)
-        # print("canvas_editing.state_radius =", canvas_editing.state_radius)
+
         if distance_event_to_point[0] < 2 * canvas_editing.state_radius:
             return_value = "start"
         if (
@@ -240,8 +239,7 @@ def get_point_to_move(item_id, event_x, event_y):
                 return_value = "next_to_end"
         return return_value
     elif number_of_points == 3:
-        # print("distance_event_to_point =", distance_event_to_point)
-        # print("distance_to_neighbour   =", distance_to_neighbour)
+
         # if   distance_event_to_point[0]<distance_to_neighbour[0]/4:
         #     return "start"
         # if distance_event_to_point[0]<distance_to_neighbour[0]*3/4:
@@ -269,13 +267,11 @@ def get_point_to_move(item_id, event_x, event_y):
         if 0.8 < ratio < 1.2:
             return "next_to_start"  # equal to "next_to_end" because no new point is inserted.
         if distance_event_to_point[2] < distance_event_to_point[0]:
-            # print("neuer Punkt am Ende")
             main_window.canvas.coords(
                 item_id, *transition_coords[0:4], event_x, event_y, *transition_coords[4:6]
             )  # insert new point into transition
             return "next_to_end"
         else:
-            # print("neuer Punkt am Anfang")
             main_window.canvas.coords(
                 item_id, *transition_coords[0:2], event_x, event_y, *transition_coords[2:6]
             )  # insert new point into transition
@@ -304,7 +300,7 @@ def shorten_to_state_border(transition_tag):
             connection = True
             end_state_tag = tag[13:]
     if connection is False:
-        # print ("shorten_to_state_border: start_state_tag, end_state_tag =", start_state_tag, end_state_tag)
+
         start_state_coords = main_window.canvas.coords(start_state_tag)
         end_state_coords = main_window.canvas.coords(end_state_tag)
         if start_state_tag == "reset_entry":
@@ -312,7 +308,7 @@ def shorten_to_state_border(transition_tag):
         else:
             start_state_radius = (start_state_coords[2] - start_state_coords[0]) / 2
         end_state_radius = (end_state_coords[2] - end_state_coords[0]) / 2
-        # print("shorten_to_state_border: start_state_radius, end_state_radius", start_state_radius, end_state_radius)
+
         transition_start_coords = vector_handling.shorten_vector(
             start_state_radius,
             transition_coords[0],
@@ -323,7 +319,7 @@ def shorten_to_state_border(transition_tag):
             1,
             0,
         )
-        # print("shorten_to_state_border: transition_start_coords", transition_start_coords)
+
         transition_end_coords = vector_handling.shorten_vector(
             0,
             transition_coords[-4],
@@ -366,10 +362,9 @@ def shorten_to_state_border(transition_tag):
         if list_of_grid_line_canvas_ids:
             main_window.canvas.tag_raise(transition_tag, "grid_line")
     else:
-        # print ("shorten_to_state_border: end_state_tag =", end_state_tag)
         end_state_coords = main_window.canvas.coords(end_state_tag)
         end_state_radius = (end_state_coords[2] - end_state_coords[0]) / 2
-        # print("shorten_to_state_border: end_state_radius", end_state_radius)
+
         transition_end_coords = vector_handling.shorten_vector(
             0,
             transition_coords[-4],
@@ -539,7 +534,7 @@ def check_if_transition_ends_at_connector(end_state_canvas_id):
 def get_canvas_id_of_state_or_connector_under_new_transition_point(event_x, event_y):
     for canvas_id in main_window.canvas.find_overlapping(event_x, event_y, event_x, event_y):
         element_type = main_window.canvas.type(canvas_id)
-        # print("Transition End: canvas.type(i) =", canvas.type(i), canvas.gettags(i)[0])
+
         if (element_type == "oval") or (
             element_type == "rectangle" and main_window.canvas.gettags(canvas_id)[0].startswith("connector")
         ):
@@ -550,7 +545,7 @@ def get_canvas_id_of_state_or_connector_under_new_transition_point(event_x, even
 def duplicate_last_transition_point_for_continuing_the_drawing_of_the_transition(
     transition_id, coords, event_x, event_y
 ):
-    # print ('Continue transition, because no state is under the mouse')
+
     coords.append(event_x)
     coords.append(event_y)
     main_window.canvas.coords(transition_id, coords)

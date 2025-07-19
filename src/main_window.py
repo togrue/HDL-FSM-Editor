@@ -240,7 +240,7 @@ def create_menu_bar():
     file_menu.add_command(label="Open Version 1 file ...", command=file_handling.open_file_old, font=("Arial", 10))
     file_menu.add_command(label="Save", accelerator="Ctrl+s", command=file_handling.save, font=("Arial", 10))
     file_menu.add_command(label="Save as ...", command=file_handling.save_as, font=("Arial", 10))
-    # ile_menu.add_command(label="Print",                          command=file_handling.print_canvas       , font=("Arial", 10)) # deactivated: Canvas-print cannot handle windows.
+
     file_menu.add_command(label="Exit", command=sys.exit, font=("Arial", 10))
 
     hdl_menu_button = ttk.Menubutton(menue_frame, text="HDL", style="Window.TMenubutton")
@@ -1022,7 +1022,7 @@ def cursor_move_hdl_tab(*_):
     # Determine current line number:
     line_number = int(re.sub(r"\..*", "", index_string))  # Remove everything after '.'
     if line_number != line_number_under_pointer_hdl_tab:
-        # print("cursor_move_hdl_tab: line_number =", line_number, index_string)
+
         hdl_frame_text.tag_delete("underline")
         file_name, file_name_architecture = hdl_generation.get_file_names()
         if line_number > hdl_generation.last_line_number_of_file1:

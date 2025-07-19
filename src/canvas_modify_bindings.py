@@ -13,14 +13,12 @@ import transition_handling
 
 
 def switch_to_state_insertion():
-    #    print("switch_to_state_insertion")
     # From now on states can be inserted by left mouse button (this ends with the escape key):
     main_window.root.config(cursor="circle")
     main_window.canvas.bind("<Button-1>", state_handling.insert_state)
 
 
 def switch_to_transition_insertion():
-    #    print("switch_to_transition_insertion")
     # From now on transitions can be inserted by left mouse button (this ends with the escape key):
     main_window.root.config(cursor="cross")
     main_window.canvas.bind("<Button-1>", transition_handling.transition_start)

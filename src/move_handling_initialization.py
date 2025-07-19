@@ -47,7 +47,7 @@ def move_initialization_overlapping(event, event_x, event_y):
     # There the point of the line which has to bemoved is stored as a string: 'start', 'next_to_start', 'next_to_end', 'end'.
     # The third value is the tag of the transition to which the moved condition_action belongs.
 
-    if move_list:  # If no bug exists, then movelist is never empty. So this check is only an "insurance".
+    if move_list:
         # It is needed, because move_finish accesses always move_list[0].
 
         # Give the user a feedback, that an object was picked up for moving, by moving the objects of the moving list immediately to the actual position of the mouse:

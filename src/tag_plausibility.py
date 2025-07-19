@@ -35,16 +35,7 @@ class TagPlausibility:
             state_comment_dict_list,
             state_comment_line_dict_list,
         )
-        # print("state_dict_list ="             , state_dict_list)
-        # print("state_action_dict_list ="      , state_action_dict_list)
-        # print("state_action_line_dict_list =" , state_action_line_dict_list)
-        # print("transition_dict_list ="        , transition_dict_list)
-        # print("connector_dict_list ="         , connector_dict_list)
-        # print("ca_anchor_line_dict_list ="    , ca_anchor_line_dict_list)
-        # print("ca_window_dict_list ="         , ca_window_dict_list)
-        # print("shown_state_name_dict ="       , shown_state_name_dict)
-        # print("transition_priority_dict ="    , transition_priority_dict)
-        # print("reset_dict ="                  , reset_dict)
+
         self.tag_status_is_okay = True
         self.__check_state_dicts(
             state_dict_list, shown_state_name_dict, state_action_dict_list, state_comment_dict_list
@@ -224,8 +215,7 @@ class TagPlausibility:
         state_action_line_list = []
         state_comment_line_list = []
         state_tags = main_window.canvas.gettags(canvas_item)
-        # print("state_tags are:", state_tags)
-        # state_tags are: ('state1', 'transition0_end', 'transition1_start', 'connection1_end', 'state1_comment_line_end')
+
         for state_tag in state_tags:
             if state_tag == "current":
                 pass
@@ -965,7 +955,7 @@ class TagPlausibility:
                 # But the anchor-line of the condition-action-window stayed in the database.
                 # Such "lost" lines are removed here without any message:
                 main_window.canvas.delete(ca_connection_identifier)
-                # print("Removed:", ca_connection_identifier)
+
             else:
                 if number_of_connected_condition_action_windows == 0:
                     self.tag_status_is_okay = False
