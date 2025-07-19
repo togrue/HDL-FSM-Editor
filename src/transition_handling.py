@@ -537,7 +537,9 @@ def _handle_next_added_transition_point(event, transition_id, start_state_canvas
     else:
         _end_transition_insertion_by_modifying_bindings(transition_draw_funcid)
         _add_tags_to_end_state_and_transition(end_state_canvas_id)
-        transition_coords = _move_transition_end_point_to_the_middle_of_the_end_state(end_state_canvas_id, transition_id)
+        transition_coords = _move_transition_end_point_to_the_middle_of_the_end_state(
+            end_state_canvas_id, transition_id
+        )
         transition_coords = _move_transition_start_and_end_point_to_the_edge_of_the_state_circle(
             start_state_canvas_id, end_state_canvas_id, transition_coords, transition_id
         )

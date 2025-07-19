@@ -4,6 +4,9 @@ version = "0.1.0"
 description = "HDL-FSM-Editor for VHDL and Verilog"
 readme = "README.md"
 requires-python = ">=3.9"
+dependencies = [
+    "pre-commit>=4.2.0",
+]
 
 [dependency-groups]
 dev = [

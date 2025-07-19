@@ -222,18 +222,21 @@ def _optimize_transition_specifications(transition_specifications) -> None:
                     moved_target = []  # will get only 1 entry
                     for action_target_dict in action_target_array[state_name][if_identifier]:
                         for action in action_target_dict["actions"]:
-                            if _action_is_present_in_each_branch(action, state_name, if_identifier, action_target_array):
+                            if _action_is_present_in_each_branch(
+                                action, state_name, if_identifier, action_target_array
+                            ):
                                 index_of_if_in_transition_specifications = _remove_action_from_branches(
                                     transition_specifications, state_name, if_identifier, action, moved_actions
                                 )
                                 changes_were_implemented = True
                         target = action_target_dict["target"]
-                        if target != "":
-                            if _target_is_present_in_each_branch(target, state_name, if_identifier, action_target_array):
-                                index_of_if_in_transition_specifications = _remove_target_from_branches(
-                                    transition_specifications, state_name, if_identifier, target, moved_target
-                                )
-                                changes_were_implemented = True
+                        if target != "" and _target_is_present_in_each_branch(
+                            target, state_name, if_identifier, action_target_array
+                        ):
+                            index_of_if_in_transition_specifications = _remove_target_from_branches(
+                                transition_specifications, state_name, if_identifier, target, moved_target
+                            )
+                            changes_were_implemented = True
                     if moved_actions or moved_target:
                         target = "" if not moved_target else moved_target[0]
                         # Insert a new entry into the list of transition_specifications:
