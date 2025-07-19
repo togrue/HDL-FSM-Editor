@@ -11,6 +11,7 @@ the search is ended and nothing done else, because the user did not insert an il
 But if the character is the separator its index is used to replace it by blank in the original string,
 afterwards the search is ended.
 """
+
 import re
 
 import hdl_generation_library
@@ -19,14 +20,16 @@ import hdl_generation_library
 class ListSeparationCheck:
     def __init__(self, list_string, language):
         self.list_string = list_string
-        if language=="VHDL":
-            separator          = ';'
+        if language == "VHDL":
+            separator = ";"
             comment_identifier = "--"
         else:
-            separator          = ','
+            separator = ","
             comment_identifier = "//"
         list_string_without_block_comment = hdl_generation_library.remove_vhdl_block_comments(list_string)
-        list_string_without_comments      = self.__replace_all_comments_at_line_end(list_string_without_block_comment, comment_identifier)
+        list_string_without_comments = self.__replace_all_comments_at_line_end(
+            list_string_without_block_comment, comment_identifier
+        )
         self.__remove_illegal_separator(list_string_without_comments, separator)
 
     def get_fixed_list(self):
@@ -37,23 +40,27 @@ class ListSeparationCheck:
         list_string_without_comments = ""
         for line in list_array:
             list_string_without_comments += self.__replace_comment_at_line_end_by_blank(comment_identifier, line) + "\n"
-        return list_string_without_comments[:-1] # remove last return
+        return list_string_without_comments[:-1]  # remove last return
 
     def __replace_comment_at_line_end_by_blank(self, comment_identifier, line):
         match_object = re.search(comment_identifier + ".*", line)
         if match_object is not None:
-            line = line[:match_object.span()[0]] + ' '*(match_object.span()[1]-match_object.span()[0]) + line[match_object.span()[1]:]
+            line = (
+                line[: match_object.span()[0]]
+                + " " * (match_object.span()[1] - match_object.span()[0])
+                + line[match_object.span()[1] :]
+            )
         return line
 
     def __remove_illegal_separator(self, list_string_without_comments, separator):
         for index, char in enumerate(reversed(list_string_without_comments)):
-            if char not in (' ', '\n'):
-                if char==separator:
+            if char not in (" ", "\n"):
+                if char == separator:
                     self.__remove_character_by_blank(index)
                 break
 
     def __remove_character_by_blank(self, index):
-        if index==0:
-            self.list_string = self.list_string[:-index-1]
+        if index == 0:
+            self.list_string = self.list_string[: -index - 1]
         else:
-            self.list_string = self.list_string[:-index-1] + ' ' + self.list_string[-index:]
+            self.list_string = self.list_string[: -index - 1] + " " + self.list_string[-index:]
