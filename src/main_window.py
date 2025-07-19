@@ -153,19 +153,19 @@ def view_all_after_window_is_built():
 def close_tool():
     title = root.title()
     if title.endswith("*"):
-        discard = messagebox.askokcancel(
-            "HDL-FSM-Editor",
-            "There are unsaved changes in design:\n" + title[:-1] + "\nDo you want to discard them?",
-            default="cancel",
-        )
-        if discard is True:
-            if os.path.isfile(project_manager.current_file + ".tmp"):
-                os.remove(project_manager.current_file + ".tmp")
-            sys.exit()
-    else:
-        if os.path.isfile(project_manager.current_file + ".tmp"):
-            os.remove(project_manager.current_file + ".tmp")
-        sys.exit()
+        action = file_handling.ask_save_unsaved_changes(title)
+        if action == "cancel":
+            return
+        elif action == "save":
+            file_handling.save()
+            # Check if save was successful (current_file is not empty)
+            if project_manager.current_file == "":
+                return
+
+    # Clean up temp file and exit
+    if os.path.isfile(project_manager.current_file + ".tmp"):
+        os.remove(project_manager.current_file + ".tmp")
+    sys.exit()
 
 
 def create_root():

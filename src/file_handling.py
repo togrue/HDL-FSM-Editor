@@ -30,6 +30,25 @@ import update_hdl_tab
 from state_manager import project_manager
 
 
+def ask_save_unsaved_changes(title):
+    """
+    Ask user what to do with unsaved changes.
+    Returns: 'save', 'discard', or 'cancel'
+    """
+    result = messagebox.askyesnocancel(
+        "HDL-FSM-Editor",
+        "There are unsaved changes in design:\n" + title[:-1] + "\nDo you want to save them?",
+        default="cancel",
+        icon="warning",
+    )
+    if result is True:
+        return "save"
+    elif result is False:
+        return "discard"
+    else:
+        return "cancel"
+
+
 def save_as():
     project_manager.previous_file = project_manager.current_file
     project_manager.current_file = asksaveasfilename(
@@ -482,13 +501,14 @@ def remove_old_design():
     global filename
     title = main_window.root.title()
     if title.endswith("*"):
-        discard = messagebox.askokcancel(
-            "HDL-FSM-Editor",
-            "There are unsaved changes in design:\n" + title[:-1] + "\nDo you want to discard them?",
-            default="cancel",
-        )
-        if discard is False:
+        action = ask_save_unsaved_changes(title)
+        if action == "cancel":
             return False
+        elif action == "save":
+            save()
+            # Check if save was successful (current_file is not empty)
+            if project_manager.current_file == "":
+                return False
     project_manager.current_file = ""
     main_window.module_name.set("")
     main_window.reset_signal_name.set("")
