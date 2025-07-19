@@ -23,7 +23,6 @@ import state_handling
 import transition_handling
 from state_manager import state_manager
 
-
 stack = []
 stack_write_pointer = 0
 

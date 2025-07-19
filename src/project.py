@@ -3,9 +3,7 @@ Application state for HDL-FSM-Editor.
 This module contains the single state class that holds all application data.
 """
 
-from dataclasses import dataclass, field
-from typing import Optional, Dict, List, Any
-from tkinter import Tk, Canvas, ttk
+from dataclasses import dataclass
 
 
 @dataclass

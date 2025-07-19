@@ -12,7 +12,6 @@ from tkinter.filedialog import askdirectory
 
 import canvas_editing
 import canvas_modify_bindings
-from dialogs.color_changer import ColorChanger
 import compile_handling
 import constants
 import custom_text
@@ -23,7 +22,7 @@ import link_dictionary
 import move_handling_initialization
 import undo_handling
 import update_hdl_tab
-import config
+from dialogs.color_changer import ColorChanger
 from state_manager import state_manager
 
 VERSION = "4.11"

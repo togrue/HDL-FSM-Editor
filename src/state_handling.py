@@ -6,15 +6,15 @@ import tkinter as tk
 from tkinter import messagebox
 
 import canvas_editing
-from dialogs.color_changer import ColorChanger
 import constants
 import main_window
 import move_handling_initialization
-from widgets.OptionMenu import OptionMenu
 import state_action_handling
 import state_comment
 import transition_handling
 import undo_handling
+from dialogs.color_changer import ColorChanger
+from widgets.OptionMenu import OptionMenu
 
 state_number = 0  # Defaultvalue, will be increased with every new state.
 difference_x = 0
