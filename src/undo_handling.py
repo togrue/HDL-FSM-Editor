@@ -27,7 +27,7 @@ stack = []
 stack_write_pointer = 0
 
 
-def modify_window_title():
+def update_window_title():
     title = main_window.root.title()
     if title == "tk":
         main_window.root.title("unnamed")
@@ -38,7 +38,7 @@ def modify_window_title():
 
 def design_has_changed():
     add_changes_to_design_stack()
-    modify_window_title()
+    update_window_title()
     if state_manager.current_file != "" and not main_window.root.title().startswith("unnamed"):
         # print("design_has_changed: tmp is created by =", inspect.stack()[1][3])
         file_handling.save_in_file_new(state_manager.current_file + ".tmp")
