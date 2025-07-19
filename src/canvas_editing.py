@@ -558,10 +558,7 @@ def modify_font_sizes_of_all_canvas_items(factor):
     global state_name_font
     fontsize *= factor
     label_fontsize *= factor
-    if label_fontsize >= 1:
-        used_label_fontsize = label_fontsize
-    else:
-        used_label_fontsize = 1
+    used_label_fontsize = max(label_fontsize, 1)
     state_name_font.configure(size=int(fontsize))
     canvas_ids = main_window.canvas.find_all()
     for i in canvas_ids:

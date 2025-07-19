@@ -1010,10 +1010,7 @@ def cursor_move_log_tab(*_):
     global func_id_jump1, func_id_jump2, regex_error_happened, line_number_under_pointer_log_tab
     if log_frame_text.get("1.0", tk.END + "- 1 char") == "":
         return
-    if debug_active.get() == 2:
-        debug = True
-    else:
-        debug = False
+    debug = debug_active.get() == 2
     # Determine current cursor position:
     delta_x = log_frame_text.winfo_pointerx() - log_frame_text.winfo_rootx()
     delta_y = log_frame_text.winfo_pointery() - log_frame_text.winfo_rooty()
@@ -1022,10 +1019,7 @@ def cursor_move_log_tab(*_):
     line_number = int(re.sub(r"\..*", "", index_string))
     if line_number != line_number_under_pointer_log_tab and regex_error_happened is False:
         log_frame_text.tag_delete("underline")
-        if language.get() == "VHDL":
-            regex_message_find = regex_message_find_for_vhdl
-        else:
-            regex_message_find = regex_message_find_for_verilog
+        regex_message_find = regex_message_find_for_vhdl if language.get() == "VHDL" else regex_message_find_for_verilog
         content_of_line = log_frame_text.get(str(line_number) + ".0", str(line_number + 1) + ".0")
         content_of_line = content_of_line[:-1]  # Remove return
         match_object_of_message = re.match(regex_message_find, content_of_line)

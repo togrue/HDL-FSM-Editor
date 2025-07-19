@@ -2,6 +2,7 @@
 This module contains methods used at HDL generation.
 """
 
+import contextlib
 import re
 import tkinter as tk
 from tkinter import messagebox
@@ -49,10 +50,8 @@ def get_a_list_of_all_state_names():
                     if tag.startswith("going_to_state"):
                         first_state_name = main_window.canvas.itemcget(tag[9:] + "_name", "text")
     state_name_list_sorted = sorted(state_name_list)
-    try:
+    with contextlib.suppress(Exception):
         state_name_list_sorted.remove(first_state_name)
-    except Exception as _:
-        pass
     state_name_list_sorted = [first_state_name] + state_name_list_sorted
     return state_name_list_sorted
 
@@ -236,10 +235,7 @@ def optimize_transition_specifications(transition_specifications):
                                 )
                                 changes_were_implemented = True
                     if moved_actions or moved_target:
-                        if not moved_target:
-                            target = ""
-                        else:
-                            target = moved_target[0]
+                        target = "" if not moved_target else moved_target[0]
                         # Insert a new entry into the list of transition_specifications:
                         transition_specifications[
                             index_of_if_in_transition_specifications:index_of_if_in_transition_specifications
@@ -398,37 +394,36 @@ def check_for_wrong_priorities(trace_array):
                 condition_sequence.append(trace_dict["condition"])
         condition_array.append(condition_sequence)
     for index, condition_sequence in enumerate(condition_array):
-        if index < len(condition_array) - 1:
-            if (
-                condition_sequence == condition_array[index + 1][0 : len(condition_sequence)]
-            ):  # Check if the next trace starts with the same conditions.
-                condition_sequence_string = ""
-                for single_condition in condition_sequence:
-                    condition_sequence_string += single_condition + ","
-                if condition_sequence_string != "":
-                    condition_sequence_string = condition_sequence_string[:-1]
-                    messagebox.showerror(
-                        "Error in HDL-FSM-Editor",
-                        "A transition starting at state "
-                        + trace_array[index][0]["state_name"]
-                        + "\n"
-                        + "with the condition sequence "
-                        + condition_sequence_string
-                        + "\n"
-                        + "hides a transition with lower priority."
-                        + "\n"
-                        + "This is not allowed and will corrupt the HDL.",
-                    )
-                else:
-                    messagebox.showerror(
-                        "Error in HDL-FSM-Editor",
-                        "A transition starting at state "
-                        + trace_array[index][0]["state_name"]
-                        + "\n"
-                        + "with no condition hides a transition with lower priority."
-                        + "\n"
-                        + "This is not allowed and will corrupt the HDL.",
-                    )
+        if index < len(condition_array) - 1 and (
+            condition_sequence == condition_array[index + 1][0 : len(condition_sequence)]
+        ):  # Check if the next trace starts with the same conditions.
+            condition_sequence_string = ""
+            for single_condition in condition_sequence:
+                condition_sequence_string += single_condition + ","
+            if condition_sequence_string != "":
+                condition_sequence_string = condition_sequence_string[:-1]
+                messagebox.showerror(
+                    "Error in HDL-FSM-Editor",
+                    "A transition starting at state "
+                    + trace_array[index][0]["state_name"]
+                    + "\n"
+                    + "with the condition sequence "
+                    + condition_sequence_string
+                    + "\n"
+                    + "hides a transition with lower priority."
+                    + "\n"
+                    + "This is not allowed and will corrupt the HDL.",
+                )
+            else:
+                messagebox.showerror(
+                    "Error in HDL-FSM-Editor",
+                    "A transition starting at state "
+                    + trace_array[index][0]["state_name"]
+                    + "\n"
+                    + "with no condition hides a transition with lower priority."
+                    + "\n"
+                    + "This is not allowed and will corrupt the HDL.",
+                )
 
 
 def merge_trace_array(trace_array):
@@ -702,9 +697,7 @@ def check_if_condition_is_a_comment(transition_condition):
     if transition_condition == "" or transition_condition.isspace():
         return False
     transition_condition_without_comments = remove_comments_and_returns(transition_condition)
-    if transition_condition_without_comments == "" or transition_condition_without_comments.isspace():
-        return True
-    return False
+    return bool(transition_condition_without_comments == "" or transition_condition_without_comments.isspace())
 
 
 def get_all_outgoing_transitions_in_priority_order(state_tag):
@@ -935,10 +928,9 @@ def get_all_signal_names(declaration):
 
 def get_all_constant_names(declaration):
     constant_names = ""
-    if " constant " in declaration and main_window.language.get() == "VHDL":
-        if ":" in declaration:
-            constant_names = re.sub(":.*", "", declaration)
-            constant_names = re.sub(" constant ", "", constant_names)
+    if " constant " in declaration and main_window.language.get() == "VHDL" and ":" in declaration:
+        constant_names = re.sub(":.*", "", declaration)
+        constant_names = re.sub(" constant ", "", constant_names)
     if " localparam " in declaration and main_window.language.get() != "VHDL":
         declaration = re.sub(" localparam ", " ", declaration, flags=re.I)
         constant_names = re.sub(" \\[.*?\\] ", " ", declaration)

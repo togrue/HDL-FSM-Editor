@@ -888,10 +888,7 @@ def open_file_with_name_new(read_filename):
         for definition in design_dictionary["state"]:
             coords = definition[0]
             tags = definition[1]
-            if len(definition) == 3:
-                fill_color = definition[2]
-            else:
-                fill_color = constants.STATE_COLOR
+            fill_color = definition[2] if len(definition) == 3 else constants.STATE_COLOR
             number_of_outgoing_transitions = 0
             for tag in tags:
                 if tag.startswith("transition") and tag.endswith("_start"):
