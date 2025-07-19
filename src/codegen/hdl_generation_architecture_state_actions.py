@@ -7,10 +7,10 @@ import tkinter as tk
 from tkinter import messagebox
 
 import codegen.hdl_generation_library as hdl_generation_library
-import link_dictionary
 import main_window
 import state_action_handling
 import state_actions_default
+from link_dictionary import link_dict
 
 
 def create_state_action_process(file_name, file_line_number) -> tuple:
@@ -68,7 +68,7 @@ def _create_state_action_process_for_vhdl(
     state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, variable_declarations)
     number_of_lines = variable_declarations.count("\n")
     if number_of_lines != 0:
-        link_dictionary.LinkDictionary.link_dict_reference.add(
+        link_dict().add(
             file_name,
             file_line_number,
             "custom_text_in_internals_tab",
@@ -88,7 +88,7 @@ def _create_state_action_process_for_vhdl(
             item_ids[0]
         ]
         file_line_number += 1  # default_state_actions starts always with "-- Default State Actions:"
-        link_dictionary.LinkDictionary.link_dict_reference.add(
+        link_dict().add(
             file_name,
             file_line_number,
             "custom_text_in_diagram_tab",
@@ -107,7 +107,7 @@ def _create_state_action_process_for_vhdl(
         state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, when_entry)
         file_line_number += 1  # A when_entry starts always with "when ..."
         number_of_lines = when_entry.count("\n")
-        link_dictionary.LinkDictionary.link_dict_reference.add(
+        link_dict().add(
             file_name, file_line_number, "custom_text_in_diagram_tab", number_of_lines - 1, state_action[2], ""
         )
         file_line_number += number_of_lines - 1
@@ -136,7 +136,7 @@ def _create_state_action_process_for_verilog(
     if variable_declarations != "":
         state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, variable_declarations)
         number_of_new_lines = variable_declarations.count("\n")
-        link_dictionary.LinkDictionary.link_dict_reference.add(
+        link_dict().add(
             file_name,
             file_line_number,
             "custom_text_in_internals_tab",
@@ -154,7 +154,7 @@ def _create_state_action_process_for_verilog(
             item_ids[0]
         ]
         file_line_number += 1  # default_state_actions starts always with "-- Default State Actions:"
-        link_dictionary.LinkDictionary.link_dict_reference.add(
+        link_dict().add(
             file_name,
             file_line_number,
             "custom_text_in_diagram_tab",
@@ -176,7 +176,7 @@ def _create_state_action_process_for_verilog(
             file_line_number += 2
         else:
             file_line_number += 1  # A when_entry starts always with "<State-Name: ..."
-            link_dictionary.LinkDictionary.link_dict_reference.add(
+            link_dict().add(
                 file_name,
                 file_line_number,
                 "custom_text_in_diagram_tab",

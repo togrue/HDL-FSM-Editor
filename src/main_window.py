@@ -19,12 +19,12 @@ import constants
 import custom_text
 import file_handling
 import grid_drawing
-import link_dictionary
 import move_handling_initialization
 import undo_handling
 import update_hdl_tab
 from codegen.hdl_generation_config import GenerationConfig
 from dialogs.color_changer import ColorChanger
+from link_dictionary import init_link_dict, link_dict
 from project_manager import project_manager
 
 _VERSION = "4.11"
@@ -178,7 +178,7 @@ def create_root() -> None:
     root.rowconfigure(1, weight=1)
     root.grid()
     root.protocol("WM_DELETE_WINDOW", _close_tool)
-    link_dictionary.LinkDictionary(root)
+    init_link_dict(root)
 
 
 def create_menu_bar() -> None:
@@ -984,17 +984,13 @@ def _cursor_move_hdl_tab(*_) -> None:
             start_index = size_of_file1_line_number
         while hdl_frame_text.get(f"{line_number}.{start_index - 1}") == " ":
             start_index += 1
-        if (
-            selected_file in link_dictionary.LinkDictionary.link_dict_reference.link_dict
-        ):  # Can for example happen with empty architecture or module content.
-            if line_number_in_file in link_dictionary.LinkDictionary.link_dict_reference.link_dict[selected_file]:
+        if selected_file in link_dict().link_dict:  # Can for example happen with empty architecture or module content.
+            if line_number_in_file in link_dict().link_dict[selected_file]:
                 hdl_frame_text.tag_add("underline", f"{line_number}.{start_index - 1}", f"{line_number + 1}.0")
                 hdl_frame_text.tag_config("underline", underline=1)
                 _func_id_jump = hdl_frame_text.bind(
                     "<Control-Button-1>",
-                    lambda event: link_dictionary.LinkDictionary.link_dict_reference.jump_to_source(
-                        selected_file, line_number_in_file
-                    ),
+                    lambda event: link_dict().jump_to_source(selected_file, line_number_in_file),
                 )
             else:
                 hdl_frame_text.unbind("<Button-1>", _func_id_jump)
@@ -1036,25 +1032,19 @@ def _cursor_move_log_tab(*_) -> None:
                     if debug:
                         print("Regex found no line-number         : Getting line-number by group 2 did not work.")
                     return
-                if (
-                    file_name in link_dictionary.LinkDictionary.link_dict_reference.link_dict
-                ):  # For example ieee source files are not a key in link_dict.
-                    if file_line_number in link_dictionary.LinkDictionary.link_dict_reference.link_dict[file_name]:
+                if file_name in link_dict().link_dict:  # For example ieee source files are not a key in link_dict.
+                    if file_line_number in link_dict().link_dict[file_name]:
                         if debug:
                             print("Filename and line-number are found in Link-Dictionary.")
                         log_frame_text.tag_add("underline", str(line_number) + ".0", str(line_number + 1) + ".0")
                         log_frame_text.tag_config("underline", underline=1, foreground="red")
                         _func_id_jump1 = log_frame_text.bind(
                             "<Control-Button-1>",
-                            lambda event: link_dictionary.LinkDictionary.link_dict_reference.jump_to_source(
-                                file_name, file_line_number
-                            ),
+                            lambda event: link_dict().jump_to_source(file_name, file_line_number),
                         )
                         _func_id_jump2 = log_frame_text.bind(
                             "<Alt-Button-1>",
-                            lambda event: link_dictionary.LinkDictionary.link_dict_reference.jump_to_hdl(
-                                file_name, file_line_number
-                            ),
+                            lambda event: link_dict().jump_to_hdl(file_name, file_line_number),
                         )
                     else:
                         if debug:

@@ -5,8 +5,8 @@ This module provides a method for creating the architecture part of a VHDL file.
 import codegen.hdl_generation_architecture_state_actions as hdl_generation_architecture_state_actions
 import codegen.hdl_generation_architecture_state_sequence as hdl_generation_architecture_state_sequence
 import codegen.hdl_generation_library as hdl_generation_library
-import link_dictionary
 import main_window
+from link_dictionary import link_dict
 
 
 def create_architecture(file_name, file_line_number) -> None:
@@ -15,7 +15,7 @@ def create_architecture(file_name, file_line_number) -> None:
     package_statements = hdl_generation_library.get_text_from_text_widget(main_window.internals_package_text)
     architecture += package_statements
     number_of_new_lines = package_statements.count("\n")
-    link_dictionary.LinkDictionary.link_dict_reference.add(
+    link_dict().add(
         file_name,
         file_line_number,
         "custom_text_in_internals_tab",
@@ -36,7 +36,7 @@ def create_architecture(file_name, file_line_number) -> None:
     signal_declarations = hdl_generation_library.get_text_from_text_widget(main_window.internals_architecture_text)
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, signal_declarations)
     number_of_new_lines = signal_declarations.count("\n")
-    link_dictionary.LinkDictionary.link_dict_reference.add(
+    link_dict().add(
         file_name,
         file_line_number,
         "custom_text_in_internals_tab",
@@ -55,15 +55,13 @@ def create_architecture(file_name, file_line_number) -> None:
         + main_window.clock_signal_name.get()
         + ")\n"
     )
-    link_dictionary.LinkDictionary.link_dict_reference.add(
-        file_name, file_line_number, "Control-Tab", "", "reset_and_clock_signal_name", ""
-    )
+    link_dict().add(file_name, file_line_number, "Control-Tab", "", "reset_and_clock_signal_name", "")
     file_line_number += 1
 
     variable_declarations = hdl_generation_library.get_text_from_text_widget(main_window.internals_process_clocked_text)
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, variable_declarations)
     number_of_new_lines = variable_declarations.count("\n")
-    link_dictionary.LinkDictionary.link_dict_reference.add(
+    link_dict().add(
         file_name,
         file_line_number,
         "custom_text_in_internals_tab",
@@ -92,7 +90,7 @@ def create_architecture(file_name, file_line_number) -> None:
                 architecture += "           " + line + "\n"
         architecture += "        then\n"
     number_of_new_lines = reset_condition.count("\n") + 1  # No return after the last line of the condition
-    link_dictionary.LinkDictionary.link_dict_reference.add(
+    link_dict().add(
         file_name,
         file_line_number,
         "custom_text_in_diagram_tab",
@@ -105,7 +103,7 @@ def create_architecture(file_name, file_line_number) -> None:
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, reset_action)
     file_line_number += 1  # reset_action starts always with "state <=", which is not a line entered by the user, and therefore cannot be linked.
     number_of_new_lines = reset_action.count("\n") - 1
-    link_dictionary.LinkDictionary.link_dict_reference.add(
+    link_dict().add(
         file_name,
         file_line_number,
         "custom_text_in_diagram_tab",
@@ -116,9 +114,7 @@ def create_architecture(file_name, file_line_number) -> None:
     file_line_number += number_of_new_lines
 
     architecture += "        elsif rising_edge(" + main_window.clock_signal_name.get() + ") then\n"
-    link_dictionary.LinkDictionary.link_dict_reference.add(
-        file_name, file_line_number, "Control-Tab", "", "reset_and_clock_signal_name", ""
-    )
+    link_dict().add(file_name, file_line_number, "Control-Tab", "", "reset_and_clock_signal_name", "")
     file_line_number += 1
 
     reference_to_global_actions_before_custom_text, global_actions_before = (
@@ -129,7 +125,7 @@ def create_architecture(file_name, file_line_number) -> None:
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, global_actions_before)
         file_line_number += 1  # global_actions_before starts always with "-- Global Actions before:", which is not a line entered by the user, and therefore cannot be linked.
         number_of_new_lines = global_actions_before.count("\n") - 1
-        link_dictionary.LinkDictionary.link_dict_reference.add(
+        link_dict().add(
             file_name,
             file_line_number,
             "custom_text_in_diagram_tab",
@@ -158,7 +154,7 @@ def create_architecture(file_name, file_line_number) -> None:
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, global_actions_after)
         file_line_number += 1  # global_actions_before starts always with "-- Global Actions after:", which is not a line entered by the user, and therefore cannot be linked.
         number_of_new_lines = global_actions_after.count("\n") - 1
-        link_dictionary.LinkDictionary.link_dict_reference.add(
+        link_dict().add(
             file_name,
             file_line_number,
             "custom_text_in_diagram_tab",
@@ -182,7 +178,7 @@ def create_architecture(file_name, file_line_number) -> None:
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, concurrent_actions)
         file_line_number += 1  # concurrent_actions starts always with "-- Global Actions combinatorial:", which is not a line entered by the user, and therefore cannot be linked.
         number_of_new_lines = concurrent_actions.count("\n") - 1
-        link_dictionary.LinkDictionary.link_dict_reference.add(
+        link_dict().add(
             file_name,
             file_line_number,
             "custom_text_in_diagram_tab",
