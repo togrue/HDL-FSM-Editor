@@ -16,75 +16,44 @@ import link_dictionary
 import list_separation_check
 import main_window
 import tag_plausibility
+from hdl_generation_config import GenerationConfig
 
 last_line_number_of_file1 = 0
 
 
 def run_hdl_generation(write_to_file):
-    if design_is_not_ready_for_hdl_generation():
+    config = GenerationConfig.from_main_window()
+    errors = config.validate()
+    if errors:
+        error_message = "\n".join(errors)
+        messagebox.showerror("Error in HDL-FSM-Editor", error_message)
         return
+
     if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
         messagebox.showerror("Error", "The database is corrupt.\nHDL is not generated.\nSee details at STDOUT.")
         return
     if main_window.root.title().endswith("*"):
         file_handling.save()
-    lang = main_window.language.get()
-    at_timestamp = f" at {datetime.today().ctime()}" if main_window.include_timestamp_in_output.get() else ""
-    if lang == "VHDL":
+
+    # Create header with timestamp if enabled
+    at_timestamp = f" at {datetime.today().ctime()}" if config.include_timestamp else ""
+    if config.language == "VHDL":
         header = f"-- Created by HDL-FSM-Editor{at_timestamp}\n"
     else:
         header = f"// Created by HDL-FSM-Editor{at_timestamp}\n"
-    create_hdl(header, write_to_file)
+
+    _create_hdl(config, header, write_to_file)
 
 
-def design_is_not_ready_for_hdl_generation():
-    name = main_window.module_name.get()
-    if name.isspace() or name == "":
-        messagebox.showerror(
-            "Error in HDL-FSM-Editor", "No module-name is specified,\nso no HDL-generation is possible."
-        )
-        return True
-    path_string = main_window.generate_path_value.get()
-    if path_string.isspace() or path_string == "":
-        messagebox.showerror(
-            "Error in HDL-FSM-Editor",
-            "No path for the generation of the HDL-files is specified,\nso no HDL-generation is possible.",
-        )
-        return True
-    else:
-        path = Path(path_string)
-        if not path.exists():
-            messagebox.showerror(
-                "Error in HDL-FSM-Editor",
-                "HDL-generation for module "
-                + name
-                + " is not possible, because the specified path\n"
-                + path_string
-                + '\nfor the generation of the HDL-files does not exist.\nSee "Path for generated HDL" in the Control-Tab.',
-            )
-            return True
-    reset = main_window.reset_signal_name.get()
-    if reset.isspace() or reset == "":
-        messagebox.showerror(
-            "Error in HDL-FSM-Editor", "No reset signal name is specified,\nso no HDL-generation is possible."
-        )
-        return True
-    clock = main_window.clock_signal_name.get()
-    if clock.isspace() or clock == "":
-        messagebox.showerror(
-            "Error in HDL-FSM-Editor", "No clock signal name is specified,\nso no HDL-generation is possible."
-        )
-        return True
-    return False
-
-
-def create_hdl(header, write_to_file):
-    file_name, file_name_architecture = get_file_names()
-    link_dictionary.LinkDictionary.link_dict_reference.clear_link_dict(file_name)
-    link_dictionary.LinkDictionary.link_dict_reference.clear_link_dict(file_name_architecture)
+def _create_hdl(config, header, write_to_file):
+    file_name, file_name_architecture = get_file_names(config)
+    if link_dictionary.LinkDictionary.link_dict_reference:
+        link_dictionary.LinkDictionary.link_dict_reference.clear_link_dict(file_name)
+        if file_name_architecture:
+            link_dictionary.LinkDictionary.link_dict_reference.clear_link_dict(file_name_architecture)
     file_line_number = 3  # Line 1 = Filename, Line 2 = Header
-    if main_window.language.get() == "VHDL":
-        entity, file_line_number = create_entity(file_name, file_line_number)
+    if config.language == "VHDL":
+        entity, file_line_number = _create_entity(config, file_name, file_line_number)
         if file_name_architecture == "":  # All VHDL is written in 1 file.
             file_to_use = file_name
             file_line_number_to_use = file_line_number
@@ -93,17 +62,18 @@ def create_hdl(header, write_to_file):
             file_line_number_to_use = 3
         architecture = hdl_generation_architecture.create_architecture(file_to_use, file_line_number_to_use)
     else:
-        entity, file_line_number = create_module_ports(file_name, file_line_number)
+        entity, file_line_number = _create_module_ports(config, file_name, file_line_number)
         architecture = hdl_generation_module.create_module_logic(file_name, file_line_number)
     if architecture is None:
         return  # No further actions required, because when writing to a file, always an architecture must exist.
     # write_hdl_file must be called even if hdl is not needed, as write_hdl_file sets last_line_number_of_file1, which is read by Linking.
-    hdl = write_hdl_file(write_to_file, header, entity, architecture, file_name, file_name_architecture)
+    hdl = _write_hdl_file(config, write_to_file, header, entity, architecture, file_name, file_name_architecture)
     if write_to_file is True:
-        copy_hdl_into_generated_hdl_tab(hdl, file_name)
+        _copy_hdl_into_generated_hdl_tab(hdl, file_name)
 
 
-def copy_hdl_into_generated_hdl_tab(hdl, file_name):
+# TODO: This should not be here!
+def _copy_hdl_into_generated_hdl_tab(hdl, file_name):
     main_window.date_of_hdl_file_shown_in_hdl_tab = os.path.getmtime(file_name)
     main_window.hdl_frame_text.config(state=tk.NORMAL)
     main_window.hdl_frame_text.delete("1.0", tk.END)
@@ -120,29 +90,31 @@ def copy_hdl_into_generated_hdl_tab(hdl, file_name):
     main_window.show_tab("generated HDL")
 
 
-def create_entity(file_name, file_line_number):
+def _create_entity(config, file_name, file_line_number):
     entity = ""
 
     package_statements = hdl_generation_library.get_text_from_text_widget(main_window.interface_package_text)
     entity += package_statements
     number_of_new_lines = package_statements.count("\n")
-    link_dictionary.LinkDictionary.link_dict_reference.add(
-        file_name,
-        file_line_number,
-        "custom_text_in_interface_tab",
-        number_of_new_lines,
-        main_window.interface_package_text,
-        "",
-    )
+    if link_dictionary.LinkDictionary.link_dict_reference:
+        link_dictionary.LinkDictionary.link_dict_reference.add(
+            file_name,
+            file_line_number,
+            "custom_text_in_interface_tab",
+            number_of_new_lines,
+            main_window.interface_package_text,
+            "",
+        )
     file_line_number += number_of_new_lines
 
     entity += "\n"
     file_line_number += 1
 
-    entity += "entity " + main_window.module_name.get() + " is\n"
-    link_dictionary.LinkDictionary.link_dict_reference.add(
-        file_name, file_line_number, "Control-Tab", 1, "module_name", ""
-    )
+    entity += "entity " + config.module_name + " is\n"
+    if link_dictionary.LinkDictionary.link_dict_reference:
+        link_dictionary.LinkDictionary.link_dict_reference.add(
+            file_name, file_line_number, "Control-Tab", 1, "module_name", ""
+        )
     file_line_number += 1
 
     generic_declarations = hdl_generation_library.get_text_from_text_widget(main_window.interface_generics_text)
@@ -155,14 +127,15 @@ def create_entity(file_name, file_line_number):
         )
         file_line_number += 1  # switch to first line with generic value.
         number_of_new_lines = generic_declarations.count("\n") - 2  # Subtract first and last line
-        link_dictionary.LinkDictionary.link_dict_reference.add(
-            file_name,
-            file_line_number,
-            "custom_text_in_interface_tab",
-            number_of_new_lines,
-            main_window.interface_generics_text,
-            "",
-        )
+        if link_dictionary.LinkDictionary.link_dict_reference:
+            link_dictionary.LinkDictionary.link_dict_reference.add(
+                file_name,
+                file_line_number,
+                "custom_text_in_interface_tab",
+                number_of_new_lines,
+                main_window.interface_generics_text,
+                "",
+            )
         file_line_number += number_of_new_lines + 1
     entity += generic_declarations
 
@@ -176,14 +149,15 @@ def create_entity(file_name, file_line_number):
         )
         file_line_number += 1  # switch to first line with port.
         number_of_new_lines = port_declarations.count("\n") - 2  # Subtract first and last line
-        link_dictionary.LinkDictionary.link_dict_reference.add(
-            file_name,
-            file_line_number,
-            "custom_text_in_interface_tab",
-            number_of_new_lines,
-            main_window.interface_ports_text,
-            "",
-        )
+        if link_dictionary.LinkDictionary.link_dict_reference:
+            link_dictionary.LinkDictionary.link_dict_reference.add(
+                file_name,
+                file_line_number,
+                "custom_text_in_interface_tab",
+                number_of_new_lines,
+                main_window.interface_ports_text,
+                "",
+            )
         file_line_number += number_of_new_lines + 1
     entity += port_declarations
 
@@ -192,13 +166,14 @@ def create_entity(file_name, file_line_number):
     return entity, file_line_number
 
 
-def create_module_ports(file_name, file_line_number):
+def _create_module_ports(config, file_name, file_line_number):
     module = ""
     file_line_number = 3  # Line 1 = Filename, Line 2 = Header
-    module += "module " + main_window.module_name.get() + "\n"
-    link_dictionary.LinkDictionary.link_dict_reference.add(
-        file_name, file_line_number, "Control-Tab", 1, "module_name", ""
-    )
+    module += "module " + config.module_name + "\n"
+    if link_dictionary.LinkDictionary.link_dict_reference:
+        link_dictionary.LinkDictionary.link_dict_reference.add(
+            file_name, file_line_number, "Control-Tab", 1, "module_name", ""
+        )
     file_line_number += 1
 
     parameters = hdl_generation_library.get_text_from_text_widget(main_window.interface_generics_text)
@@ -211,14 +186,15 @@ def create_module_ports(file_name, file_line_number):
         )
         file_line_number += 1  # switch to first line with parameters.
         number_of_new_lines = parameters.count("\n") - 2  # Subtract first and last line
-        link_dictionary.LinkDictionary.link_dict_reference.add(
-            file_name,
-            file_line_number,
-            "custom_text_in_interface_tab",
-            number_of_new_lines,
-            main_window.interface_generics_text,
-            "",
-        )
+        if link_dictionary.LinkDictionary.link_dict_reference:
+            link_dictionary.LinkDictionary.link_dict_reference.add(
+                file_name,
+                file_line_number,
+                "custom_text_in_interface_tab",
+                number_of_new_lines,
+                main_window.interface_generics_text,
+                "",
+            )
         file_line_number += number_of_new_lines + 1
         module += parameters
 
@@ -228,26 +204,27 @@ def create_module_ports(file_name, file_line_number):
         ports = "    (\n" + hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, ports) + "    );\n"
         number_of_new_lines = ports.count("\n") - 2  # Subtract first and last line
         file_line_number += 1  # switch to first line with port.
-        link_dictionary.LinkDictionary.link_dict_reference.add(
-            file_name,
-            file_line_number,
-            "custom_text_in_interface_tab",
-            number_of_new_lines,
-            main_window.interface_ports_text,
-            "",
-        )
+        if link_dictionary.LinkDictionary.link_dict_reference:
+            link_dictionary.LinkDictionary.link_dict_reference.add(
+                file_name,
+                file_line_number,
+                "custom_text_in_interface_tab",
+                number_of_new_lines,
+                main_window.interface_ports_text,
+                "",
+            )
         file_line_number += number_of_new_lines + 1
         module += ports
     return module, file_line_number
 
 
-def write_hdl_file(write_to_file, header, entity, architecture, path_name, path_name_architecture):
+def _write_hdl_file(config, write_to_file, header, entity, architecture, path_name, path_name_architecture):
     global last_line_number_of_file1
     _, name_of_file = os.path.split(path_name)
-    if main_window.select_file_number_text.get() == 1:
-        if main_window.language.get() == "VHDL":
+    if config.select_file_number == 1:
+        if config.language == "VHDL":
             comment_string = "--"
-        elif main_window.language.get() == "Verilog":
+        elif config.language == "Verilog":
             comment_string = "//"
         else:
             comment_string = "//"
@@ -290,22 +267,20 @@ def write_hdl_file(write_to_file, header, entity, architecture, path_name, path_
     return content_with_numbers
 
 
-def get_file_names():
+def get_file_names(config):
     # For Verilog and SystemVerilog, always generate single files regardless of number_of_files setting
-    if main_window.language.get() in ["Verilog", "SystemVerilog"]:
-        file_type = ".v" if main_window.language.get() == "Verilog" else ".sv"
-        file_name = main_window.generate_path_value.get() + "/" + main_window.module_name.get() + file_type
+    if config.language in ["Verilog", "SystemVerilog"]:
+        file_type = ".v" if config.language == "Verilog" else ".sv"
+        file_name = config.generate_path + "/" + config.module_name + file_type
         file_name_architecture = ""
-    elif main_window.select_file_number_text.get() == 1:
+    elif config.select_file_number == 1:
         # VHDL single file
-        file_name = main_window.generate_path_value.get() + "/" + main_window.module_name.get() + ".vhd"
+        file_name = config.generate_path + "/" + config.module_name + ".vhd"
         file_name_architecture = ""
     else:
         # VHDL two files
-        file_name = main_window.generate_path_value.get() + "/" + main_window.module_name.get() + "_e.vhd"
-        file_name_architecture = (
-            main_window.generate_path_value.get() + "/" + main_window.module_name.get() + "_fsm.vhd"
-        )
+        file_name = config.generate_path + "/" + config.module_name + "_e.vhd"
+        file_name_architecture = config.generate_path + "/" + config.module_name + "_fsm.vhd"
     return file_name, file_name_architecture
 
 

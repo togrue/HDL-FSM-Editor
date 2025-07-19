@@ -23,6 +23,7 @@ import move_handling_initialization
 import undo_handling
 import update_hdl_tab
 from dialogs.color_changer import ColorChanger
+from hdl_generation_config import GenerationConfig
 from state_manager import project_manager
 
 VERSION = "4.11"
@@ -986,24 +987,22 @@ def cursor_move_hdl_tab(*_):
     line_number = int(re.sub(r"\..*", "", index_string))  # Remove everything after '.'
     if line_number != line_number_under_pointer_hdl_tab:
         hdl_frame_text.tag_delete("underline")
-        file_name, file_name_architecture = hdl_generation.get_file_names()
+        config = GenerationConfig.from_main_window()
         if line_number > hdl_generation.last_line_number_of_file1:
             line_number_in_file = line_number - hdl_generation.last_line_number_of_file1
-            selected_file = file_name_architecture
+            selected_file = config.get_architecture_file()
             start_index = size_of_file2_line_number
         else:
             line_number_in_file = line_number
-            selected_file = file_name
+            selected_file = config.get_primary_file()
             start_index = size_of_file1_line_number
-        while hdl_frame_text.get(str(line_number) + "." + str(start_index - 1)) == " ":
+        while hdl_frame_text.get(f"{line_number}.{start_index - 1}") == " ":
             start_index += 1
         if (
             selected_file in link_dictionary.LinkDictionary.link_dict_reference.link_dict
         ):  # Can for example happen with empty architecture or module content.
             if line_number_in_file in link_dictionary.LinkDictionary.link_dict_reference.link_dict[selected_file]:
-                hdl_frame_text.tag_add(
-                    "underline", str(line_number) + "." + str(start_index - 1), str(line_number + 1) + ".0"
-                )
+                hdl_frame_text.tag_add("underline", f"{line_number}.{start_index - 1}", f"{line_number + 1}.0")
                 hdl_frame_text.tag_config("underline", underline=1)
                 func_id_jump = hdl_frame_text.bind(
                     "<Control-Button-1>",
