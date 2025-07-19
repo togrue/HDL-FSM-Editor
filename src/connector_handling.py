@@ -48,38 +48,38 @@ def move_to(event_x, event_y, rectangle_id, first, last):
     if first is True:
         # Calculate the difference between the "anchor" point and the event:
         coords = main_window.canvas.coords(rectangle_id)
-        middle_point = calculate_middle_point(coords)
+        middle_point = _calculate_middle_point(coords)
         difference_x, difference_y = -event_x + middle_point[0], -event_y + middle_point[1]
     # Keep the distance between event and anchor point constant:
     event_x, event_y = event_x + difference_x, event_y + difference_y
     if last is True:
         event_x = canvas_editing.state_radius * round(event_x / canvas_editing.state_radius)
         event_y = canvas_editing.state_radius * round(event_y / canvas_editing.state_radius)
-    edge_length = determine_edge_length_of_the_rectangle(rectangle_id)
-    new_upper_left_corner = calculate_new_upper_left_corner_of_the_rectangle(event_x, event_y, edge_length)
-    new_lower_right_corner = calculate_new_lower_right_corner_of_the_rectangle(event_x, event_y, edge_length)
-    move_rectangle_in_canvas(rectangle_id, new_upper_left_corner, new_lower_right_corner)
+    edge_length = _determine_edge_length_of_the_rectangle(rectangle_id)
+    new_upper_left_corner = _calculate_new_upper_left_corner_of_the_rectangle(event_x, event_y, edge_length)
+    new_lower_right_corner = _calculate_new_lower_right_corner_of_the_rectangle(event_x, event_y, edge_length)
+    _move_rectangle_in_canvas(rectangle_id, new_upper_left_corner, new_lower_right_corner)
 
 
-def calculate_middle_point(coords):
+def _calculate_middle_point(coords):
     middle_x = (coords[0] + coords[2]) / 2
     middle_y = (coords[1] + coords[3]) / 2
     return [middle_x, middle_y]
 
 
-def determine_edge_length_of_the_rectangle(rectangle_id):
+def _determine_edge_length_of_the_rectangle(rectangle_id):
     rectangle_coords = main_window.canvas.coords(rectangle_id)
     edge_length = rectangle_coords[2] - rectangle_coords[0]
     return edge_length
 
 
-def calculate_new_upper_left_corner_of_the_rectangle(event_x, event_y, edge_length):
+def _calculate_new_upper_left_corner_of_the_rectangle(event_x, event_y, edge_length):
     return [event_x - edge_length / 2, event_y - edge_length / 2]
 
 
-def calculate_new_lower_right_corner_of_the_rectangle(event_x, event_y, edge_length):
+def _calculate_new_lower_right_corner_of_the_rectangle(event_x, event_y, edge_length):
     return [event_x + edge_length / 2, event_y + edge_length / 2]
 
 
-def move_rectangle_in_canvas(rectangle_id, new_upper_left_corner, new_lower_right_corner):
+def _move_rectangle_in_canvas(rectangle_id, new_upper_left_corner, new_lower_right_corner):
     main_window.canvas.coords(rectangle_id, *new_upper_left_corner, *new_lower_right_corner)

@@ -28,7 +28,7 @@ def create_architecture(file_name, file_line_number):
     architecture += "\n"
     architecture += "architecture fsm of " + main_window.module_name.get() + " is\n"
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(
-        1, create_type_definition_for_the_state_signal()
+        1, _create_type_definition_for_the_state_signal()
     )
     architecture += "    signal state : t_state;\n"
     file_line_number += 4
@@ -197,7 +197,7 @@ def create_architecture(file_name, file_line_number):
     return architecture
 
 
-def create_type_definition_for_the_state_signal():
+def _create_type_definition_for_the_state_signal():
     list_of_all_state_names = hdl_generation_library.get_a_list_of_all_state_names()
     if list_of_all_state_names != []:
         type_definition = "type t_state is ("
