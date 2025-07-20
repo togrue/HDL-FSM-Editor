@@ -5,7 +5,6 @@ This module contains methods used at HDL generation.
 import contextlib
 import re
 import tkinter as tk
-from tkinter import messagebox
 
 import canvas_editing
 import condition_action_handling
@@ -14,6 +13,8 @@ import global_actions_combinatorial
 import global_actions_handling
 import main_window
 import state_comment
+
+from .exceptions import GenerationError
 
 
 def indent_text_by_the_given_number_of_tabs(number_of_tabs, text) -> str:
@@ -73,7 +74,7 @@ def create_reset_condition_and_reset_action() -> list:
         reference_to_reset_action_custom_text = None
         action = ""
         condition = ""
-        messagebox.showerror(
+        raise GenerationError(
             "Error",
             """No reset condition is specified,
 therefore the generated HDL will be corrupted.
@@ -299,6 +300,7 @@ def _create_action_and_branch_array_for_each_if_construct(transition_specificati
     for transition_specification in transition_specifications:
         if transition_specification["command"] == "when":
             if action_target_array_of_state:  # The analysis of a state is ready.
+                # FIXME: state_name is not defined here.
                 action_target_array[state_name] = action_target_array_of_state
                 branchnumber_array[state_name] = branchnumber_array_of_state
                 action_target_array_of_state = {}
@@ -405,7 +407,7 @@ def _check_for_wrong_priorities(trace_array) -> None:
                 condition_sequence_string += single_condition + ","
             if condition_sequence_string != "":
                 condition_sequence_string = condition_sequence_string[:-1]
-                messagebox.showerror(
+                raise GenerationError(
                     "Error in HDL-FSM-Editor",
                     "A transition starting at state "
                     + trace_array[index][0]["state_name"]
@@ -418,7 +420,7 @@ def _check_for_wrong_priorities(trace_array) -> None:
                     + "This is not allowed and will corrupt the HDL.",
                 )
             else:
-                messagebox.showerror(
+                raise GenerationError(
                     "Error in HDL-FSM-Editor",
                     "A transition starting at state "
                     + trace_array[index][0]["state_name"]
@@ -439,7 +441,7 @@ def _merge_trace_array(trace_array) -> list:
             if (
                 trace != [] and trace[0]["command"] != "if" and trace_index != 0
             ):  # Check is only done, when more than 1 trace exists.
-                messagebox.showerror(
+                raise GenerationError(
                     "Warning",
                     "There is a transition starting at state "
                     + trace[0]["state_name"]
@@ -457,7 +459,7 @@ def _merge_trace_array(trace_array) -> list:
                     and trace[0]["command"] != "if"
                 ):  # The first command of this trace has no condition.
                     # All traces except the trace with the lowest priority must start with an "if":
-                    messagebox.showerror(
+                    raise GenerationError(
                         "Warning",
                         "There is a transition starting at state "
                         + trace[0]["state_name"]
@@ -495,7 +497,7 @@ def _merge_trace_array(trace_array) -> list:
                             search_index == len(trace) - 1
                             or search_index == len(traces_of_a_state_reversed[trace_index + 1]) - 1
                         ):
-                            messagebox.showerror(
+                            raise GenerationError(
                                 "Error",
                                 "There is a transition starting at state "
                                 + trace[0]["state_name"]
@@ -564,14 +566,14 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
     outgoing_transition_tags = _get_all_outgoing_transitions_in_priority_order(start_point)
     if not outgoing_transition_tags and start_point.startswith("connector"):
         if trace:
-            messagebox.showerror(
+            raise GenerationError(
                 "Warning",
                 "There is a connector reached from state "
                 + trace[0]["state_name"]
                 + " which has no outgoing transition,\ntherefore the generated HDL may be corrupted.",
             )
         else:
-            messagebox.showerror(
+            raise GenerationError(
                 "Warning",
                 "There is a connector "
                 + "which has no outgoing transition,\ntherefore the generated HDL may be corrupted.",
@@ -746,7 +748,7 @@ def _check_for_equal_priorities(transition_tags_and_priority_sorted, state_tag) 
             state_name = main_window.canvas.itemcget(state_tag + "_name", "text")
             if state_name == "":
                 state_name = "a connector"
-            messagebox.showerror(
+            raise GenerationError(
                 "Warning",
                 "Two outgoing transition of "
                 + state_name

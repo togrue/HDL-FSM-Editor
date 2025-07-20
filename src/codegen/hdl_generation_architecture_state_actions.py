@@ -4,13 +4,14 @@ All methods needed for the state action process in VHDL or Verilog
 
 import re
 import tkinter as tk
-from tkinter import messagebox
 
 import codegen.hdl_generation_library as hdl_generation_library
 import main_window
 import state_action_handling
 import state_actions_default
 from link_dictionary import link_dict
+
+from .exceptions import GenerationError
 
 
 def create_state_action_process(file_name, file_line_number) -> tuple:
@@ -356,8 +357,7 @@ def _get_all_readable_port_names(declaration, check) -> str:
     if " in " in declaration and main_window.language.get() == "VHDL":
         if ":" not in declaration:
             if check is True:
-                messagebox.showerror(
-                    "Error",
+                raise GenerationError(
                     'There is an illegal port declaration, which will be ignored:\n"'
                     + declaration
                     + '"\nVHDL may be corrupted.',
@@ -415,8 +415,7 @@ def _get_all_signals(all_signal_declarations) -> list:
         for declaration in signal_declaration_list_extended:
             if declaration != "" and not declaration.isspace():
                 if " signal " not in declaration and " constant " not in declaration:
-                    messagebox.showerror(
-                        "Error",
+                    raise GenerationError(
                         'There is an illegal signal declaration, which will be ignored:\n"'
                         + declaration
                         + '"\nVHDL may be corrupted.',
@@ -434,8 +433,7 @@ def _get_all_signals(all_signal_declarations) -> list:
                     and " wire " not in declaration
                     and " logic " not in declaration
                 ):
-                    messagebox.showerror(
-                        "Error",
+                    raise GenerationError(
                         'There is an illegal signal declaration, which will be ignored:\n"'
                         + declaration
                         + '"\nVerilog may be corrupted.',

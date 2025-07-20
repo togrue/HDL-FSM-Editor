@@ -17,20 +17,34 @@ import tag_plausibility
 from codegen.hdl_generation_config import GenerationConfig
 from link_dictionary import link_dict
 
+from .exceptions import GenerationError
+
 last_line_number_of_file1 = 0
 
 
 def run_hdl_generation(write_to_file) -> None:
-    config = GenerationConfig.from_main_window()
+    try:
+        config = GenerationConfig.from_main_window()
+        generate_hdl(config, write_to_file)
+    except GenerationError as e:
+        messagebox.showerror(e.caption, e.message)
+    except Exception:
+        messagebox.showerror("Unexpected Error", "An unexpected error occurred.\nSee details at STDOUT.")
+        # Print stack trace
+        import traceback
+
+        print(traceback.format_exc())
+
+
+def generate_hdl(config: GenerationConfig, write_to_file: bool) -> None:
     errors = config.validate()
     if errors:
-        error_message = "\n".join(errors)
-        messagebox.showerror("Error in HDL-FSM-Editor", error_message)
-        return
+        raise GenerationError("Error in HDL-FSM-Editor", errors)
 
     if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
-        messagebox.showerror("Error", "The database is corrupt.\nHDL is not generated.\nSee details at STDOUT.")
-        return
+        raise GenerationError(
+            "Error", ["The database is corrupt. Therefore, no HDL is generated.", "See details at STDOUT."]
+        )
     if main_window.root.title().endswith("*"):
         file_handling.save()
 
