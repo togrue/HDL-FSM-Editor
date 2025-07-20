@@ -33,9 +33,8 @@ class LinkDictionary:
         hdl_item_type: str,  # One of HdlItemType enum values
         number_of_lines: int,  # How many lines does the HDL-item use in the file
         hdl_item_name: str | tk.Widget,  # String when "Control-Tab", widget-references in all other cases
-        number_of_line,  # not used
     ) -> None:
-        # print("add =", file_name, file_line_number, hdl_item_type, number_of_lines , hdl_item_name, number_of_line)
+        # print("add =", file_name, file_line_number, hdl_item_type, number_of_lines, hdl_item_name)
         if file_name not in self.link_dict:
             self.link_dict[file_name] = {}
         if hdl_item_type == "Control-Tab":

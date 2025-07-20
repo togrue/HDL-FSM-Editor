@@ -116,7 +116,6 @@ def _create_entity(config, file_name, file_line_number) -> tuple:
         "custom_text_in_interface_tab",
         number_of_new_lines,
         main_window.interface_package_text,
-        "",
     )
     file_line_number += number_of_new_lines
 
@@ -124,7 +123,7 @@ def _create_entity(config, file_name, file_line_number) -> tuple:
     file_line_number += 1
 
     entity += "entity " + config.module_name + " is\n"
-    link_dict().add(file_name, file_line_number, "Control-Tab", 1, "module_name", "")
+    link_dict().add(file_name, file_line_number, "Control-Tab", 1, "module_name")
     file_line_number += 1
 
     generic_declarations = hdl_generation_library.get_text_from_text_widget(main_window.interface_generics_text)
@@ -143,7 +142,6 @@ def _create_entity(config, file_name, file_line_number) -> tuple:
             "custom_text_in_interface_tab",
             number_of_new_lines,
             main_window.interface_generics_text,
-            "",
         )
         file_line_number += number_of_new_lines + 1
     entity += generic_declarations
@@ -164,7 +162,6 @@ def _create_entity(config, file_name, file_line_number) -> tuple:
             "custom_text_in_interface_tab",
             number_of_new_lines,
             main_window.interface_ports_text,
-            "",
         )
         file_line_number += number_of_new_lines + 1
     entity += port_declarations
@@ -178,7 +175,7 @@ def _create_module_ports(config, file_name, file_line_number) -> tuple:
     module = ""
     file_line_number = 3  # Line 1 = Filename, Line 2 = Header
     module += "module " + config.module_name + "\n"
-    link_dict().add(file_name, file_line_number, "Control-Tab", 1, "module_name", "")
+    link_dict().add(file_name, file_line_number, "Control-Tab", 1, "module_name")
     file_line_number += 1
 
     parameters = hdl_generation_library.get_text_from_text_widget(main_window.interface_generics_text)
@@ -197,7 +194,6 @@ def _create_module_ports(config, file_name, file_line_number) -> tuple:
             "custom_text_in_interface_tab",
             number_of_new_lines,
             main_window.interface_generics_text,
-            "",
         )
         file_line_number += number_of_new_lines + 1
         module += parameters
@@ -214,7 +210,6 @@ def _create_module_ports(config, file_name, file_line_number) -> tuple:
             "custom_text_in_interface_tab",
             number_of_new_lines,
             main_window.interface_ports_text,
-            "",
         )
         file_line_number += number_of_new_lines + 1
         module += ports
