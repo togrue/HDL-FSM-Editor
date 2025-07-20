@@ -2,6 +2,8 @@
 Constants for all modules of HDL-FSM-Editor
 """
 
+from enum import StrEnum
+
 vhdl_keywords_for_signal_handling = (
     " to_stdulogic ",
     " to_stdlogicvector ",
@@ -436,3 +438,14 @@ verilog_keywords = {
 
 CONNECTOR_COLOR = "violet"
 STATE_COLOR = "cyan"
+
+
+class GuiTab(StrEnum):
+    """Used to identify the tab in the application"""
+
+    CONTROL = "Control"
+    INTERFACE = "Interface"
+    INTERNALS = "Internals"
+    DIAGRAM = "Diagram"
+    HDL = "HDL"
+    LOG = "Log"
