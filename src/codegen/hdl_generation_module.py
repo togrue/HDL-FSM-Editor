@@ -26,7 +26,6 @@ def create_module_logic(file_name, file_line_number) -> None:
         "custom_text_in_internals_tab",
         number_of_new_lines,
         main_window.internals_architecture_text,
-        "",
     )
     file_line_number += number_of_new_lines
 
@@ -45,7 +44,7 @@ def create_module_logic(file_name, file_line_number) -> None:
         + main_window.reset_signal_name.get()
         + ") begin: p_states\n"
     )
-    link_dict().add(file_name, file_line_number, "Control-Tab", "", "reset_and_clock_signal_name", "")
+    link_dict().add(file_name, file_line_number, "Control-Tab", 1, "reset_and_clock_signal_name")
     file_line_number += 1
 
     variable_declarations = hdl_generation_library.get_text_from_text_widget(main_window.internals_process_clocked_text)
@@ -58,7 +57,6 @@ def create_module_logic(file_name, file_line_number) -> None:
             "custom_text_in_internals_tab",
             number_of_new_lines,
             main_window.internals_process_clocked_text,
-            "",
         )
         file_line_number += number_of_new_lines
 
@@ -79,7 +77,6 @@ def create_module_logic(file_name, file_line_number) -> None:
         "custom_text_in_diagram_tab",
         number_of_new_lines,
         reference_to_reset_condition_custom_text,
-        "",
     )
     file_line_number += number_of_new_lines
 
@@ -92,7 +89,6 @@ def create_module_logic(file_name, file_line_number) -> None:
         "custom_text_in_diagram_tab",
         number_of_new_lines,
         reference_to_reset_action_custom_text,
-        "",
     )
     file_line_number += number_of_new_lines
 
@@ -112,7 +108,6 @@ def create_module_logic(file_name, file_line_number) -> None:
             "custom_text_in_diagram_tab",
             number_of_new_lines,
             global_actions_before_reference,
-            "",
         )
         file_line_number += number_of_new_lines
 
@@ -142,7 +137,6 @@ def create_module_logic(file_name, file_line_number) -> None:
             "custom_text_in_diagram_tab",
             number_of_new_lines,
             global_actions_after_reference,
-            "",
         )
         file_line_number += number_of_new_lines
 
@@ -167,7 +161,6 @@ def create_module_logic(file_name, file_line_number) -> None:
             "custom_text_in_diagram_tab",
             number_of_new_lines,
             concurrent_actions_reference,
-            "",
         )
         file_line_number += number_of_new_lines
 

@@ -28,7 +28,6 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                     "custom_text_in_diagram_tab",
                     number_of_comment_lines,
                     transition_specification["state_comments_canvas_id"],
-                    "",
                 )
                 file_line_number += number_of_comment_lines
         elif transition_specification["command"] == "if":
@@ -49,7 +48,6 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                     "custom_text_in_diagram_tab",
                     1,
                     transition_specification["condition_action_reference"],
-                    "",
                 )
                 file_line_number += 1
                 # print("\ntransition_condition =", transition_condition)
@@ -67,7 +65,6 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                     "custom_text_in_diagram_tab",
                     index + 1,
                     transition_specification["condition_action_reference"],
-                    "",
                 )
                 file_line_number += index + 1
                 vhdl.append("then\n")
@@ -86,7 +83,6 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                     "custom_text_in_diagram_tab",
                     1,
                     transition_specification["condition_action_reference"],
-                    "",
                 )
                 file_line_number += 1
             else:
@@ -103,7 +99,6 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                     "custom_text_in_diagram_tab",
                     index + 1,
                     transition_specification["condition_action_reference"],
-                    "",
                 )
                 file_line_number += index + 1
                 vhdl.append("then\n")
@@ -127,7 +122,6 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                         "custom_text_in_diagram_tab",
                         index + 1,
                         reference_to_custom_text_comment,
-                        "",
                     )
                     file_line_number += index + 1
                 else:
@@ -146,7 +140,6 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                     "custom_text_in_diagram_tab",
                     len(action_list),
                     reference_to_custom_text,
-                    "",
                 )
                 file_line_number += len(action_list)
             if transition_specification["target"] != "":
@@ -196,7 +189,6 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                     "custom_text_in_diagram_tab",
                     number_of_comment_lines,
                     transition_specification["state_comments_canvas_id"],
-                    "",
                 )
                 file_line_number += number_of_comment_lines
         elif transition_specification["command"] == "if":
@@ -217,7 +209,6 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                     "custom_text_in_diagram_tab",
                     1,
                     transition_specification["condition_action_reference"],
-                    "",
                 )
                 file_line_number += 1
                 # print("\ntransition_condition =", transition_condition)
@@ -235,7 +226,6 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                     "custom_text_in_diagram_tab",
                     index + 1,
                     transition_specification["condition_action_reference"],
-                    "",
                 )
                 file_line_number += index + 1
                 verilog.append("   ) begin\n")
@@ -254,7 +244,6 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                     "custom_text_in_diagram_tab",
                     1,
                     transition_specification["condition_action_reference"],
-                    "",
                 )
                 file_line_number += 1
             else:
@@ -271,7 +260,6 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                     "custom_text_in_diagram_tab",
                     index + 1,
                     transition_specification["condition_action_reference"],
-                    "",
                 )
                 file_line_number += index + 1
                 verilog.append("            ) begin\n")
@@ -295,7 +283,6 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                         "custom_text_in_diagram_tab",
                         index + 1,
                         reference_to_custom_text_comment,
-                        "",
                     )
                     file_line_number += index + 1
                 else:
@@ -314,7 +301,6 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                     "custom_text_in_diagram_tab",
                     len(action_list),
                     reference_to_custom_text,
-                    "",
                 )
                 file_line_number += len(action_list)
             if transition_specification["target"] != "":
