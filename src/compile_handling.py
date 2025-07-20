@@ -14,7 +14,7 @@ from constants import GuiTab
 
 
 def compile_hdl() -> None:
-    _show_compile_messages_tab()
+    main_window.show_tab(GuiTab.COMPILE_MSG)
     if main_window.working_directory_value.get() != "" and not main_window.working_directory_value.get().isspace():
         try:
             os.chdir(main_window.working_directory_value.get())
@@ -71,13 +71,6 @@ def _execute(command) -> bool:
         )
         return False
     return True
-
-
-def _show_compile_messages_tab() -> None:
-    notebook_ids = main_window.notebook.tabs()
-    for notebook_id in notebook_ids:
-        if main_window.notebook.tab(notebook_id, option="text") == GuiTab.COMPILE_MSG.value:
-            main_window.notebook.select(notebook_id)
 
 
 def _get_command_list():
