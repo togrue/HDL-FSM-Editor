@@ -337,8 +337,10 @@ def transition_start(event):
                                                                                transition_draw (event, transition_id), add='+')
                 main_window.canvas.bind('<Button-1>', lambda event, transition_id=transition_id, start_state=canvas_id, transition_draw_funcid=transition_draw_funcid:
                                                       handle_next_added_transition_point(event, transition_id, start_state, transition_draw_funcid))
-                main_window.root.bind_all("<Escape  >", lambda event, transition_id=transition_id, transition_draw_funcid=transition_draw_funcid:
-                                                      abort_inserting_transition(transition_id, transition_draw_funcid))
+                main_window.root.bind_all("<Escape  >", lambda event, transition_id=transition_id, transition_draw_funcid=transition_draw_funcid,
+                                                               tag_of_object_where_transition_starts=tag_of_object_where_transition_starts,
+                                                               tag_to_delete="transition"+str(transition_number)+'_start':
+                                                      abort_inserting_transition(transition_id, transition_draw_funcid,tag_of_object_where_transition_starts, tag_to_delete))
 
 def reset_entry_has_no_transition(canvas_id):
     tags_of_reset_entry = main_window.canvas.gettags(canvas_id)
@@ -420,7 +422,8 @@ def move_transition_end_point_to_the_middle_of_the_end_state(end_state_canvas_id
     main_window.canvas.coords(transition_id, transition_coords)
     return transition_coords
 
-def abort_inserting_transition(transition_id, transition_draw_funcid):
+def abort_inserting_transition(transition_id, transition_draw_funcid, tag_of_object_where_transition_starts, tag_to_delete):
+    main_window.canvas.dtag(tag_of_object_where_transition_starts, tag_to_delete)
     main_window.canvas.delete(transition_id)
     end_transition_insertion_by_modifying_bindings(transition_draw_funcid)
 

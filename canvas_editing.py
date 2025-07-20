@@ -69,6 +69,7 @@ def delete():
     # But this position may be by 1 pixel outside the window-canvas-item.
     # So the area is increased here:
     ids = main_window.canvas.find_overlapping(canvas_x_coordinate-2, canvas_y_coordinate-2, canvas_x_coordinate+2, canvas_y_coordinate+2)
+    design_was_changed = False
     for i in ids:
         tags_of_item_i = main_window.canvas.gettags(i)
         if main_window.canvas.type(i) is None:
@@ -82,6 +83,7 @@ def delete():
                     main_window.canvas.delete("reset_text") # delete text item
                     reset_entry_handling.reset_entry_number = 0
                     main_window.reset_entry_button.config(state=tk.NORMAL)
+                    design_was_changed = True
                 elif tag.startswith("transition") and tag.endswith("_start"): # transition<n>_start
                     transition = tag[0:-6]
                     transition_tags = main_window.canvas.gettags(transition)
@@ -95,7 +97,8 @@ def delete():
                     main_window.canvas.delete(transition)
                     main_window.canvas.delete(transition + "rectangle") # delete priority rectangle
                     main_window.canvas.delete(transition + "priority")  # delete priority
-            undo_handling.design_has_changed()
+                elif tag=="polygon_for_move":
+                    main_window.canvas.delete(tag) # delete move polygon
         elif main_window.canvas.type(i)=='window':
             # Delete the window and all tags which refer to this window:
             for tag in tags_of_item_i:
@@ -155,7 +158,7 @@ def delete():
                             transition = ca_connection_tag[13:]
                     main_window.canvas.dtag(transition, tag[0:-7] + "_end") # delete tag "ca_connection<n>_end" at state.
                     main_window.canvas.delete(tag[0:-7]) # delete connection
-            undo_handling.design_has_changed()
+            design_was_changed = True
         elif main_window.canvas.type(i)=='oval':
             for tag in tags_of_item_i:
                 if tag.startswith("state") and not tag.endswith("_comment_line_end"):
@@ -199,7 +202,7 @@ def delete():
                     canvas_id_of_comment      = tag[:-9]
                     main_window.canvas.delete(canvas_id_of_comment_line)
                     main_window.canvas.delete(canvas_id_of_comment)
-            undo_handling.design_has_changed()
+            design_was_changed = True
         elif main_window.canvas.type(i)=='rectangle':
             for tag in tags_of_item_i:
                 if tag.startswith("connector"):
@@ -231,7 +234,7 @@ def delete():
                     main_window.canvas.delete(transition)
                     main_window.canvas.delete(transition + "rectangle") # delete priority rectangle
                     main_window.canvas.delete(transition + "priority")  # delete priority
-            undo_handling.design_has_changed()
+            design_was_changed = True
         elif main_window.canvas.type(i)=='line' and "grid_line" not in main_window.canvas.gettags(i): # transition (can be deleted) or connection (cannot be deleted)
             # Remove transition-line, transition-priority, condition-action-block:
             for tag in tags_of_item_i:
@@ -252,12 +255,14 @@ def delete():
                     end_state = tag[9:]
                     main_window.canvas.dtag(end_state, transition + "_end")
             adapt_visibility_of_priority_rectangles_at_state(start_state)
-            undo_handling.design_has_changed()
+            design_was_changed = True
         elif main_window.canvas.type(i)=='line' and "grid_line" in main_window.canvas.gettags(i): # grid line cannot be deleted.
             pass
         else:
             messagebox.showerror("Delete", "Fatal, cannot delete canvas_type " + str(main_window.canvas.type(i))
                                             + " with tags " + str(main_window.canvas.gettags(i)))
+    if design_was_changed:
+        undo_handling.design_has_changed()
 
 def adapt_visibility_of_priority_rectangles_at_state(start_state):
     tags_of_start_state = main_window.canvas.gettags(start_state)

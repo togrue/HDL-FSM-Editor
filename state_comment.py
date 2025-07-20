@@ -24,11 +24,13 @@ class StateComment:
                         font=("Arial",int(canvas_editing.label_fontsize)),
                         style='StateActionsWindow.TLabel')
         # Create text object inside frame:
-        self.text = ""
+        self.text_content = None
         self.text_id = custom_text.CustomText(self.frame_id, text_type="comment", height=height, width=width, undo=True, maxundo=-1,
                                               font=("Courier",int(canvas_editing.fontsize)), foreground="blue")
         self.text_id. bind("<Control-z>"     , lambda event : self.text_id.undo())
         self.text_id. bind("<Control-Z>"     , lambda event : self.text_id.redo())
+        self.text_id. bind("<Control-s>"     , lambda event : self.update_text())
+        self.text_id. bind("<Control-g>"     , lambda event : self.update_text())
         self.text_id. bind("<<TextModified>>", lambda event : undo_handling.modify_window_title())
         self.text_id. bind("<FocusIn>"       , lambda event : main_window.canvas.unbind_all("<Delete>"))
         self.text_id. bind("<FocusOut>"      , lambda event : main_window.canvas.bind_all  ('<Delete>', lambda event: canvas_editing.delete()))
@@ -44,14 +46,20 @@ class StateComment:
         self.line_id = None
         self.line_coords = []
 
+    def update_text(self):
+        # Update self.text_content, so that the <Leave>-check in deactivate() does not signal a design-change and
+        # that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
+        # To ensure this, save_in_file_new() waits for idle.
+        self.text_content = self.text_id.get("1.0", tk.END)
+
     def activate(self):
         self.frame_id.configure(style='Window.TFrame',padding=3) # increase the width of the line around the box
-        self.text = self.text_id.get("1.0", tk.END)
+        self.text_content = self.text_id.get("1.0", tk.END)
 
     def deactivate(self):
         self.frame_id.configure(style='Window.TFrame',padding=1) # decrease the width of the line around the box
         self.frame_id.focus() # "unfocus" the Text, when the mouse leaves the text.
-        if self.text_id.get("1.0", tk.END)!= self.text:
+        if self.text_id.get("1.0", tk.END)!= self.text_content:
             undo_handling.design_has_changed()
 
     def __draw_polygon_around_window(self):

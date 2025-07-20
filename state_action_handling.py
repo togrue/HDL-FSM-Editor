@@ -15,9 +15,11 @@ class MyText():
     def __init__(self, menu_x, menu_y, height, width, padding, increment):
         if increment is True:
             MyText.mytext_id += 1
-        self.difference_x = 0
-        self.difference_y = 0
+        self.difference_x   = 0
+        self.difference_y   = 0
         self.move_rectangle = None
+        self.line_id        = None
+        self.text_content   = None
         # Create frame:
         self.frame_id = ttk.Frame(main_window.canvas, relief=tk.FLAT, padding=padding, style="StateActionsWindow.TFrame")
         self.frame_id.bind("<Enter>", lambda event, self=self : self.activate  ())
@@ -28,9 +30,10 @@ class MyText():
                         style='StateActionsWindow.TLabel')
         # Create text object inside frame:
         self.text_id = custom_text.CustomText(self.frame_id, text_type="action", height=height, width=width, undo=True, maxundo=-1 , font=("Courier",int(canvas_editing.fontsize)))
-        self.text = ""
         self.text_id .bind("<Control-z>"     , lambda event : self.text_id.undo())
         self.text_id .bind("<Control-Z>"     , lambda event : self.text_id.redo())
+        self.text_id .bind("<Control-s>"     , lambda event : self.update_text())
+        self.text_id .bind("<Control-g>"     , lambda event : self.update_text())
         self.text_id .bind("<<TextModified>>", lambda event : undo_handling.modify_window_title())
         self.text_id .bind("<FocusIn>"       , lambda event : main_window.canvas.unbind_all("<Delete>"))
         self.text_id .bind("<FocusOut>"      , lambda event : main_window.canvas.bind_all('<Delete>', lambda event: canvas_editing.delete()))
@@ -40,7 +43,6 @@ class MyText():
         MyText.mytext_dict[self.window_id] = self
         self.label_id.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E))
         self.text_id.grid (column=0, row=1, sticky=(tk.S, tk.W, tk.E))
-        self.line_id = None
 
     def __draw_polygon_around_window(self):
         bbox_coords = main_window.canvas.bbox(self.window_id)
@@ -71,14 +73,20 @@ class MyText():
         main_window.canvas.tag_bind(self.line_id, "<Leave>", lambda event, self=self : self.deactivate_line())
         main_window.canvas.tag_lower(self.line_id, state_id)
 
+    def update_text(self):
+        # Update self.text_content, so that the <Leave>-check in deactivate() does not signal a design-change and
+        # that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
+        # To ensure this, save_in_file_new() waits for idle.
+        self.text_content = self.text_id.get("1.0", tk.END)
+
     def activate(self):
         self.frame_id.configure(style='Window.TFrame',padding=3) # increase the width of the line around the box
-        self.text = self.text_id.get("1.0", tk.END)
+        self.text_content = self.text_id.get("1.0", tk.END)
 
     def deactivate(self):
         self.frame_id.configure(style='Window.TFrame',padding=1) # decrease the width of the line around the box
         self.frame_id.focus() # "unfocus" the Text, when the mouse leaves the text.
-        if self.text_id.get("1.0", tk.END)!= self.text:
+        if self.text_id.get("1.0", tk.END)!= self.text_content:
             undo_handling.design_has_changed()
 
     def activate_line(self):

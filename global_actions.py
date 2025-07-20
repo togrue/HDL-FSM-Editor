@@ -15,6 +15,8 @@ class GlobalActions():
     dictionary = {}
     def __init__(self, menu_x, menu_y, height, width, padding):
         self.frame_id = ttk.Frame(main_window.canvas, relief=tk.FLAT, padding=padding, style='GlobalActionsWindow.TFrame')
+        self.text_before_content = None
+        self.text_after_content  = None
         self.frame_id.bind("<Enter>", lambda event, self=self : self.activate())
         self.frame_id.bind("<Leave>", lambda event, self=self : self.deactivate())
         # Create label object inside frame:
@@ -32,6 +34,10 @@ class GlobalActions():
         self.text_before_id.bind("<Control-Z>"     , lambda event : self.text_before_id.redo())
         self.text_after_id .bind("<Control-z>"     , lambda event : self.text_after_id.undo())
         self.text_after_id .bind("<Control-Z>"     , lambda event : self.text_after_id.redo())
+        self.text_before_id.bind("<Control-s>"     , lambda event : self.update_before())
+        self.text_before_id.bind("<Control-g>"     , lambda event : self.update_before())
+        self.text_after_id .bind("<Control-s>"     , lambda event : self.update_after())
+        self.text_after_id .bind("<Control-g>"     , lambda event : self.update_after())
         self.text_before_id.bind("<<TextModified>>", lambda event : undo_handling.modify_window_title())
         self.text_after_id .bind("<<TextModified>>", lambda event : undo_handling.modify_window_title())
         self.text_before_id.bind("<FocusIn>"       , lambda event : main_window.canvas.unbind_all("<Delete>"))
@@ -71,19 +77,29 @@ class GlobalActions():
     def tag(self):
         main_window.canvas.itemconfigure(self.window_id, tag='global_actions'+str(GlobalActions.global_actions_number))
 
+    def update_before(self):
+        # Update self.text_before_content, so that the <Leave>-check in deactivate() does not signal a design-change and
+        # that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
+        # To ensure this, save_in_file_new() waits for idle.
+        self.text_before_content = self.text_before_id.get("1.0", tk.END)
+
+    def update_after(self):
+        # Update self.text_after_content, so that the <Leave>-check in deactivate() does not signal a design-change and
+        # that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
+        # To ensure this, save_in_file_new() waits for idle.
+        self.text_after_content = self.text_after_id.get("1.0", tk.END)
+
     def activate(self):
         self.frame_id.configure(padding=3) # increase the width of the line around the box
-        self.text_before = self.text_before_id.get("1.0", tk.END)
-        self.text_after  = self.text_after_id.get ("1.0", tk.END)
+        self.text_before_content = self.text_before_id.get("1.0", tk.END)
+        self.text_after_content  = self.text_after_id.get ("1.0", tk.END)
 
     def deactivate(self):
         self.frame_id.configure(padding=1) # decrease the width of the line around the box
         self.frame_id.focus() # "unfocus" the Text, when the mouse leaves the text.
-        #self.text_before_id.format() # needed sometimes, when undo or redo happened.
-        #self.text_after_id.format()
-        if self.text_before_id.get("1.0", tk.END)!=self.text_before:
+        if self.text_before_id.get("1.0", tk.END)!=self.text_before_content:
             undo_handling.design_has_changed()
-        if self.text_after_id.get("1.0", tk.END)!=self.text_after:
+        if self.text_after_id.get("1.0", tk.END)!=self.text_after_content:
             undo_handling.design_has_changed()
 
     def move_to(self, event_x, event_y, first, last):

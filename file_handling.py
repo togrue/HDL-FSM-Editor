@@ -51,7 +51,7 @@ def save():
     if filename!="":
         dir_name, file_name = os.path.split(filename)
         main_window.root.title(file_name + " (" + dir_name + ")")
-        save_in_file_new(filename)
+        main_window.root.after_idle(save_in_file_new, filename) # Wait for the handling of all possible events.
 
 def write_coords(fileobject, canvas_id):
     coords = main_window.canvas.coords(canvas_id)
@@ -463,6 +463,7 @@ def remove_old_design():
     canvas_editing.label_fontsize = 8
     canvas_editing.state_name_font.configure(size=int(canvas_editing.fontsize))
     main_window.root.title("unnamed")
+    main_window.grid_drawer.draw_grid()
     return True
 
 def remove_keyword_from_line(line, keyword):
@@ -475,10 +476,10 @@ def get_data(rest_of_line, fileobject):
     return data
 
 def get_length_info_from_line(rest_of_line):
-    return int(re.sub("\|.*","",rest_of_line))
+    return int(re.sub(r"\|.*","",rest_of_line))
 
 def remove_length_info(rest_of_line):
-    return re.sub(".*\|","", rest_of_line)
+    return re.sub(r".*\|","", rest_of_line)
 
 def get_remaining_data(fileobject, length_of_data, first_data):
     data = first_data
@@ -895,7 +896,8 @@ def open_file_with_name_new(read_filename):
         #canvas_editing.priority_distance = 1.5*canvas_editing.state_radius
         update_ref = update_hdl_tab.UpdateHdlTab(design_dictionary["language"     ], design_dictionary["number_of_files"], read_filename,
                                     design_dictionary["generate_path"], design_dictionary["modulename"     ])
-        main_window.date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
+        main_window.date_of_hdl_file_shown_in_hdl_tab  = update_ref.get_date_of_hdl_file()
+        main_window.date_of_hdl_file2_shown_in_hdl_tab = update_ref.get_date_of_hdl_file2()
         main_window.show_tab("Diagram")
         main_window.root.after_idle(canvas_editing.view_all)
         if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():

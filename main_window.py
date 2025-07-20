@@ -27,7 +27,7 @@ import color_changer
 import grid_drawing
 import update_hdl_tab
 
-VERSION = "4.11"
+VERSION = "4.12"
 header_string ="HDL-FSM-Editor\nVersion " + VERSION + "\nCreated by Matthias Schweikart\nContact: matthias.schweikart@gmx.de"
 
 state_action_default_button        = None
@@ -103,7 +103,8 @@ undo_button = None
 redo_button = None
 trace_id_generate_path_value     = None
 trace_id_working_directory_value = None
-date_of_hdl_file_shown_in_hdl_tab = 0.0
+date_of_hdl_file_shown_in_hdl_tab  = 0.0
+date_of_hdl_file2_shown_in_hdl_tab = 0.0
 
 keyword_color = {"not_read": "red", "not_written": "red", "control": "green4", "datatype": "brown", "function": "violet", "comment": "blue"}
 keywords = constants.vhdl_keywords
@@ -260,6 +261,15 @@ def create_menu_bar():
     root.bind_all("<Control-n>", lambda event : file_handling.remove_old_design())
     root.bind_all("<Control-p>", lambda event : compile_handling.compile_hdl())
     root.bind_all('<Control-f>', lambda event : search_string_entry.focus_set())
+    root.bind_all("<Control-O>", lambda event : capslock_warning('O'))
+    root.bind_all("<Control-S>", lambda event : capslock_warning('S'))
+    root.bind_all("<Control-G>", lambda event : capslock_warning('G'))
+    root.bind_all("<Control-N>", lambda event : capslock_warning('N'))
+    root.bind_all("<Control-P>", lambda event : capslock_warning('P'))
+    root.bind_all('<Control-F>', lambda event : capslock_warning('F'))
+
+def capslock_warning(character):
+    messagebox.showwarning("Warning in HDL-FSM-Editor", "The character " + character + " is not bound to any action.\nPerhaps Capslock is active?")
 
 def create_notebook():
     global notebook
@@ -978,19 +988,32 @@ def show_tab(tab):
 
 def update_hdl_tab_if_necessary():
     global date_of_hdl_file_shown_in_hdl_tab
+    global date_of_hdl_file2_shown_in_hdl_tab
     if notebook.index(notebook.select())==4:
         if language.get()=="VHDL":
             if select_file_number_text.get()==1:
-                hdlfilename = generate_path_value.get() + "/" + module_name.get() + ".vhd"
+                hdlfilename  = generate_path_value.get() + "/" + module_name.get() + ".vhd"
+                hdlfilename2 = ""
             else:
-                hdlfilename = generate_path_value.get() + "/" + module_name.get() + "_e.vhd"
+                hdlfilename  = generate_path_value.get() + "/" + module_name.get() + "_e.vhd"
+                hdlfilename2 = generate_path_value.get() + "/" + module_name.get() + "_fsm.vhd"
         else: # verilog
             hdlfilename = generate_path_value.get() + "/" + module_name.get() + ".v"
-        if os.path.isfile(hdlfilename) and date_of_hdl_file_shown_in_hdl_tab<os.path.getmtime(hdlfilename):
-            answer = messagebox.askquestion("Warning in HDL-FSM-Editor", "The HDL was modified by another tool. Shall it be reloaded?", default="yes")
-            if answer=="yes":
-                update_ref = update_hdl_tab.UpdateHdlTab(language.get(), select_file_number_text.get(), file_handling.filename, generate_path_value.get(), module_name.get())
-                date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
+            hdlfilename2 = ""
+        if language.get()!="VHDL" or select_file_number_text.get()==1:
+            if os.path.isfile(hdlfilename) and date_of_hdl_file_shown_in_hdl_tab<os.path.getmtime(hdlfilename):
+                answer = messagebox.askquestion("Warning in HDL-FSM-Editor", "The HDL was modified by another tool. Shall it be reloaded?", default="yes")
+                if answer=="yes":
+                    update_ref = update_hdl_tab.UpdateHdlTab(language.get(), select_file_number_text.get(), file_handling.filename, generate_path_value.get(), module_name.get())
+                    date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
+        else:
+            if ((os.path.isfile(hdlfilename)  and date_of_hdl_file_shown_in_hdl_tab<os.path.getmtime(hdlfilename)) or
+                (os.path.isfile(hdlfilename2) and date_of_hdl_file2_shown_in_hdl_tab<os.path.getmtime(hdlfilename2))):
+                answer = messagebox.askquestion("Warning in HDL-FSM-Editor", "The HDL was modified by another tool. Shall it be reloaded?", default="yes")
+                if answer=="yes":
+                    update_ref = update_hdl_tab.UpdateHdlTab(language.get(), select_file_number_text.get(), file_handling.filename, generate_path_value.get(), module_name.get())
+                    date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
+                    date_of_hdl_file2_shown_in_hdl_tab = update_ref.get_date_of_hdl_file2()
 
 def highlight_item(hdl_item_type, *_):
     # This method must have the same name as the method custom_text.CustomText.highlight_item.

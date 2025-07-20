@@ -9,9 +9,9 @@ import hdl_generation_architecture_state_actions
 import main_window
 import link_dictionary
 
-def create_module_logic(file_name, file_line_number):
+def create_module_logic(file_name, file_line_number, state_tag_list_sorted):
     architecture  = ""
-    state_signal_type_definition = create_signal_declaration_for_the_state_variable()
+    state_signal_type_definition = create_signal_declaration_for_the_state_variable(state_tag_list_sorted)
     architecture  += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_signal_type_definition)
     file_line_number += state_signal_type_definition.count("\n")
 
@@ -81,7 +81,7 @@ def create_module_logic(file_name, file_line_number):
     architecture += "            case (state)\n"
     file_line_number += 2
 
-    transition_specifications       = hdl_generation_library.extract_transition_specifications_from_the_graph()
+    transition_specifications       = hdl_generation_library.extract_transition_specifications_from_the_graph(state_tag_list_sorted)
     state_sequence, file_line_number= hdl_generation_architecture_state_sequence.create_verilog_for_the_state_sequence(transition_specifications, file_name, file_line_number)
     architecture +=                               hdl_generation_library.indent_text_by_the_given_number_of_tabs(4, state_sequence)
     architecture += "                default:\n"
@@ -103,7 +103,7 @@ def create_module_logic(file_name, file_line_number):
     architecture += "    end\n"
     file_line_number += 2
 
-    state_actions_process, file_line_number = hdl_generation_architecture_state_actions.create_state_action_process(file_name, file_line_number)
+    state_actions_process, file_line_number = hdl_generation_architecture_state_actions.create_state_action_process(file_name, file_line_number, state_tag_list_sorted)
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_actions_process)
 
     concurrent_actions_reference, concurrent_actions = hdl_generation_library.create_concurrent_actions()
@@ -119,19 +119,20 @@ def create_module_logic(file_name, file_line_number):
     architecture += "endmodule\n"
     return architecture
 
-def create_signal_declaration_for_the_state_variable():
-    list_of_all_state_names = hdl_generation_library.get_a_list_of_all_state_names()
+def create_signal_declaration_for_the_state_variable(state_tag_list_sorted):
+    list_of_all_state_names = [main_window.canvas.itemcget(state_tag + "_name", "text") for state_tag in state_tag_list_sorted]
     number_of_states = len(list_of_all_state_names)
     if main_window.language.get()=="Verilog":
         bit_width_number_of_states = math.ceil(math.log(number_of_states,2))
         high_index = bit_width_number_of_states - 1
         signal_declaration = "reg [" + str(high_index) + ":0] state;\n"
         signal_declaration += "localparam\n"
-        state_name_declaration = ""
+        state_name_declaration_list = []
         for index, state_name in enumerate(list_of_all_state_names):
-            state_name_declaration += "    " + state_name + " = " + str(index) + ",\n"
-        #state_name_declaration = indent_identically('=', state_name_declaration)
-        signal_declaration += state_name_declaration[:-2] + ";\n" # Substitute the last "," by a ";".
+            state_name_declaration_list.append("    " + state_name + " = " + str(index) + ",\n")
+        state_name_declaration_list = indent_identically('=', state_name_declaration_list)
+        state_name_declarations = ''.join(state_name_declaration_list)
+        signal_declaration += state_name_declarations[:-2] + ";\n" # Substitute the last "," by a ";".
     else: # SystemVerilog
         name_list = ""
         for name in list_of_all_state_names:

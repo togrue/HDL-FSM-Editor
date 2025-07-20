@@ -21,8 +21,8 @@ class ConditionAction():
         self.line_coords               = None
         self.move_rectangle            = None
         self.last_action_was_shrinking = False
-        self.action                    = False
-        self.condition                 = False
+        self.action_text               = None
+        self.condition_text            = None
         self.move_rectangle            = None
         # Create frame:
         self.frame_id = ttk.Frame(main_window.canvas, relief=tk.FLAT, padding=padding, style='Window.TFrame')
@@ -44,6 +44,10 @@ class ConditionAction():
         self.action_id      .bind("<Control-Z>"     , lambda event : self.action_id.redo())
         self.condition_id   .bind("<Control-z>"     , lambda event : self.condition_id.undo())
         self.condition_id   .bind("<Control-Z>"     , lambda event : self.condition_id.redo())
+        self.action_id      .bind("<Control-s>"     , lambda event : self.update_action())
+        self.action_id      .bind("<Control-g>"     , lambda event : self.update_action())
+        self.condition_id   .bind("<Control-s>"     , lambda event : self.update_condition())
+        self.condition_id   .bind("<Control-g>"     , lambda event : self.update_condition())
         self.action_id      .bind("<<TextModified>>", lambda event : undo_handling.modify_window_title())
         self.condition_id   .bind("<<TextModified>>", lambda event : undo_handling.modify_window_title())
         self.action_id      .bind("<FocusIn>"       , lambda event : main_window.canvas.unbind_all("<Delete>"))
@@ -66,6 +70,18 @@ class ConditionAction():
         main_window.canvas.tag_bind(self.window_id, "<Enter>", lambda event : self.__draw_polygon_around_window())
         # Create dictionary for translating the canvas-id of the canvas-window into a reference to this object:
         ConditionAction.dictionary[self.window_id] = self
+
+    def update_action(self):
+        # Update self.action_text, so that the <Leave>-check in deactivate() does not signal a design-change and
+        # that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
+        # To ensure this, save_in_file_new() waits for idle.
+        self.action_text = self.action_id.get("1.0", tk.END)
+
+    def update_condition(self):
+        # Update self.condition_text, so that the <Leave>-check in deactivate() does not signal a design-change and
+        # that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
+        # To ensure this, save_in_file_new() waits for idle.
+        self.condition_text = self.condition_id.get("1.0", tk.END)
 
     def register_all_widgets_at_grid(self):
         self.condition_label.grid (row=0, column=0, sticky=(tk.W,tk.E))
@@ -122,14 +138,14 @@ class ConditionAction():
         # as the extended box is bigger than the move_polygon and no polygon-leave-event happens.
         # So in this case the polygon must be removed explicetly:
         main_window.canvas.delete(self.move_rectangle)
-        self.action    = self.action_id.get   ("1.0", tk.END)
-        self.condition = self.condition_id.get("1.0", tk.END)
+        self.action_text    = self.action_id.get   ("1.0", tk.END)
+        self.condition_text = self.condition_id.get("1.0", tk.END)
         self.register_all_widgets_at_grid()
 
     def shrink_box(self):
         self.frame_id.focus() # "unfocus" the Text, when the mouse leaves the text.
-        if (self.condition_id.get("1.0", tk.END)!= self.condition or
-            self.action_id.get   ("1.0", tk.END)!= self.action):
+        if (self.condition_id.get("1.0", tk.END)!= self.condition_text or
+            self.action_id.get   ("1.0", tk.END)!= self.action_text):
             undo_handling.design_has_changed()
         # When at leaving the box, the box is not shrinked, the mouse-pointer "passes" the canvas-window and the move_polygon is drawn/removed again.
         # But when the box is shrinked the situation is complicated, as several things happen at about the same time:
