@@ -49,7 +49,7 @@ class LinkDictionary:
         elif hdl_item_type == "custom_text_in_interface_tab":
             for text_line_number in range(1, number_of_lines + 1):
                 self.link_dict[file_name][file_line_number + text_line_number - 1] = {
-                    "tab_name": "Interface",
+                    "tab_name": GuiTab.INTERFACE,
                     "widget_reference": hdl_item_name,
                     "hdl_item_type": "",
                     "object_identifier": "",
