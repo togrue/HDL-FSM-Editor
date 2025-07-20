@@ -764,11 +764,8 @@ def open_file_with_name_new(read_filename) -> None:
         design_dictionary = json.loads(data)
         custom_text.CustomText.read_variables_of_all_windows.clear()
         custom_text.CustomText.written_variables_of_all_windows.clear()
-        # Bring the notebook tab with the graphic into the foreground:
-        notebook_ids = main_window.notebook.tabs()
-        for notebook_id in notebook_ids:
-            if main_window.notebook.tab(notebook_id, option="text") == GuiTab.DIAGRAM.value:
-                main_window.notebook.select(notebook_id)
+        # Bring the notebook tab with the diagram into the foreground
+        main_window.show_tab(GuiTab.DIAGRAM)
         # Read the design from the file:
         transition_ids = []
         ids_of_rectangles_to_raise = []
