@@ -358,9 +358,11 @@ def _get_all_readable_port_names(declaration, check) -> str:
         if ":" not in declaration:
             if check is True:
                 raise GenerationError(
-                    'There is an illegal port declaration, which will be ignored:\n"'
-                    + declaration
-                    + '"\nVHDL may be corrupted.',
+                    "Error",
+                    [
+                        f'There is an illegal port declaration, which will be ignored: "{declaration}"',
+                        "VHDL may be corrupted.",
+                    ],
                 )
         else:
             port_names = re.sub(":.*", "", declaration)
@@ -416,9 +418,11 @@ def _get_all_signals(all_signal_declarations) -> list:
             if declaration != "" and not declaration.isspace():
                 if " signal " not in declaration and " constant " not in declaration:
                     raise GenerationError(
-                        'There is an illegal signal declaration, which will be ignored:\n"'
-                        + declaration
-                        + '"\nVHDL may be corrupted.',
+                        "Error",
+                        [
+                            f'There is an illegal signal declaration, which will be ignored: "{declaration}"',
+                            "VHDL may be corrupted.",
+                        ],
                     )
                 else:
                     signals = _get_the_signal_names(declaration)
@@ -434,9 +438,11 @@ def _get_all_signals(all_signal_declarations) -> list:
                     and " logic " not in declaration
                 ):
                     raise GenerationError(
-                        'There is an illegal signal declaration, which will be ignored:\n"'
-                        + declaration
-                        + '"\nVerilog may be corrupted.',
+                        "Error",
+                        [
+                            f'There is an illegal signal declaration, which will be ignored: "{declaration}"',
+                            "Verilog may be corrupted.",
+                        ],
                     )
                 else:
                     declaration = re.sub(" reg ", " ", declaration, flags=re.I)
