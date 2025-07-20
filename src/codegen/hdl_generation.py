@@ -11,7 +11,6 @@ import codegen.hdl_generation_architecture as hdl_generation_architecture
 import codegen.hdl_generation_library as hdl_generation_library
 import codegen.hdl_generation_module as hdl_generation_module
 import file_handling
-import list_separation_check
 import main_window
 import tag_plausibility
 from codegen.hdl_generation_config import GenerationConfig
@@ -19,6 +18,7 @@ from constants import GuiTab
 from link_dictionary import link_dict
 
 from .exceptions import GenerationError
+from .list_separation_check import ListSeparationCheck
 
 last_line_number_of_file1 = 0
 
@@ -128,7 +128,7 @@ def _create_entity(config, file_name, file_line_number) -> tuple:
     file_line_number += 1
 
     generic_declarations = hdl_generation_library.get_text_from_text_widget(main_window.interface_generics_text)
-    generic_declarations = list_separation_check.ListSeparationCheck(generic_declarations, "VHDL").get_fixed_list()
+    generic_declarations = ListSeparationCheck(generic_declarations, "VHDL").get_fixed_list()
     if generic_declarations != "":
         generic_declarations = (
             "    generic (\n"
@@ -148,7 +148,7 @@ def _create_entity(config, file_name, file_line_number) -> tuple:
     entity += generic_declarations
 
     port_declarations = hdl_generation_library.get_text_from_text_widget(main_window.interface_ports_text)
-    port_declarations = list_separation_check.ListSeparationCheck(port_declarations, "VHDL").get_fixed_list()
+    port_declarations = ListSeparationCheck(port_declarations, "VHDL").get_fixed_list()
     if port_declarations != "":
         port_declarations = (
             "    port (\n"
@@ -180,7 +180,7 @@ def _create_module_ports(config, file_name, file_line_number) -> tuple:
     file_line_number += 1
 
     parameters = hdl_generation_library.get_text_from_text_widget(main_window.interface_generics_text)
-    parameters = list_separation_check.ListSeparationCheck(parameters, "Verilog").get_fixed_list()
+    parameters = ListSeparationCheck(parameters, "Verilog").get_fixed_list()
     if parameters != "":
         parameters = (
             "    #(parameter\n"
@@ -200,7 +200,7 @@ def _create_module_ports(config, file_name, file_line_number) -> tuple:
         module += parameters
 
     ports = hdl_generation_library.get_text_from_text_widget(main_window.interface_ports_text)
-    ports = list_separation_check.ListSeparationCheck(ports, "Verilog").get_fixed_list()
+    ports = ListSeparationCheck(ports, "Verilog").get_fixed_list()
     if ports != "":
         ports = "    (\n" + hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, ports) + "    );\n"
         number_of_new_lines = ports.count("\n") - 2  # Subtract first and last line
