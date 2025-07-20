@@ -19,6 +19,7 @@ import tkinter as tk
 import codegen.hdl_generation as hdl_generation
 import main_window
 from codegen.hdl_generation_config import GenerationConfig
+from constants import GuiTab
 
 
 class LinkDictionary:
@@ -39,7 +40,7 @@ class LinkDictionary:
             self.link_dict[file_name] = {}
         if hdl_item_type == "Control-Tab":
             self.link_dict[file_name][file_line_number] = {
-                "tab_name": "Control",
+                "tab_name": GuiTab.CONTROL,
                 "widget_reference": main_window,
                 "hdl_item_type": hdl_item_name,
                 "object_identifier": "",

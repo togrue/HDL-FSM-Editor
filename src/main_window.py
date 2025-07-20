@@ -23,6 +23,7 @@ import move_handling_initialization
 import undo_handling
 import update_hdl_tab
 from codegen.hdl_generation_config import GenerationConfig
+from constants import GuiTab
 from dialogs.color_changer import ColorChanger
 from link_dictionary import init_link_dict, link_dict
 from project_manager import project_manager
@@ -429,7 +430,7 @@ def create_control_notebook_tab() -> None:
     control_frame.columnconfigure((12, 1), weight=1)
     control_frame.columnconfigure((12, 2), weight=0)
 
-    notebook.add(control_frame, sticky="nsew", text="Control")
+    notebook.add(control_frame, sticky="nsew", text=GuiTab.CONTROL.value)
 
 
 def _set_path() -> None:
