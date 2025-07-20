@@ -24,6 +24,8 @@ class GenerationConfig:
         # Code style
         self.indentation: str = "    "  # 4 spaces
 
+        self.write_to_file: bool = False
+
     @classmethod
     def from_main_window(cls) -> "GenerationConfig":
         """Create a GenerationConfig instance from main_window settings"""

@@ -1,13 +1,14 @@
 # from tkinter import *
 import math
 import re
-from tkinter import messagebox
 
 import codegen.hdl_generation_architecture_state_actions as hdl_generation_architecture_state_actions
 import codegen.hdl_generation_architecture_state_sequence as hdl_generation_architecture_state_sequence
 import codegen.hdl_generation_library as hdl_generation_library
 import main_window
 from link_dictionary import link_dict
+
+from .exceptions import GenerationError
 
 
 def create_module_logic(file_name, file_line_number) -> None:
@@ -203,7 +204,7 @@ def _get_reset_edge(reset_condition) -> str:
     elif reset_condition_mod.endswith("1'b1"):
         return "posedge"
     else:
-        messagebox.showerror(
+        raise GenerationError(
             "Error", "The reset polarity could not be determined from the reset condition: " + reset_condition_mod
         )
         return "unknown_edge"
