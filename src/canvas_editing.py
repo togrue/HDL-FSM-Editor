@@ -20,6 +20,7 @@ import state_action_handling
 import state_actions_default
 import state_comment
 import undo_handling
+from constants import GuiTab
 from widgets.OptionMenu import OptionMenu
 
 # import inspect
@@ -701,7 +702,7 @@ def find(search_string, replace_string, replace) -> None:
     if continue_search:
         interface_text_fields = [main_window.interface_generics_text]
         number_of_hits = _search_in_text_fields_of_a_tab(
-            "Interface", "Generics", search_pattern, interface_text_fields, replace, replace_pattern
+            GuiTab.INTERFACE, "Generics", search_pattern, interface_text_fields, replace, replace_pattern
         )
         if number_of_hits == -1:
             continue_search = False
@@ -713,7 +714,7 @@ def find(search_string, replace_string, replace) -> None:
         else:
             interface_text_fields = [main_window.interface_ports_text]
         number_of_hits = _search_in_text_fields_of_a_tab(
-            "Interface", "Ports", search_pattern, interface_text_fields, replace, replace_pattern
+            GuiTab.INTERFACE, "Ports", search_pattern, interface_text_fields, replace, replace_pattern
         )
         if number_of_hits == -1:
             continue_search = False
@@ -878,7 +879,7 @@ def _search_in_text_fields_of_a_tab(tab, kind, search_pattern, interface_text_fi
                 end_index = index + "+" + str(len(search_pattern)) + " chars"
                 text_id.delete(index, end_index)
                 text_id.insert(index, replace_pattern)
-                if tab == "Interface":
+                if tab == GuiTab.INTERFACE:
                     if kind == "Generics":
                         text_id.update_custom_text_class_generics_list()
                     else:  # kind=="ports"

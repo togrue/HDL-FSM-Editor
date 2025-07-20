@@ -27,6 +27,7 @@ import tag_plausibility
 import transition_handling
 import undo_handling
 import update_hdl_tab
+from constants import GuiTab
 from project_manager import project_manager
 
 
@@ -802,7 +803,7 @@ def open_file_with_name_new(read_filename) -> None:
             main_window.include_timestamp_in_output.set(True)  # Default to True for backward compatibility
         if "sash_positions" in design_dictionary:
             main_window.show_tab(
-                "Interface"
+                GuiTab.INTERFACE
             )  # The tab must be shown at least once, so that the sash_positions do not have the default-value 0.
             if (
                 "1" in design_dictionary["sash_positions"]["interface_tab"]

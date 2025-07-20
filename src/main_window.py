@@ -528,7 +528,7 @@ def create_interface_notebook_tab() -> None:
     interface_ports_scroll.grid(row=1, column=1, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_interface.add(interface_ports_frame, weight=1)
 
-    notebook.add(paned_window_interface, sticky="nsew", text="Interface")
+    notebook.add(paned_window_interface, sticky="nsew", text=GuiTab.INTERFACE.value)
 
 
 def create_internals_notebook_tab() -> None:
