@@ -76,11 +76,13 @@ def create_reset_condition_and_reset_action() -> list:
         condition = ""
         raise GenerationError(
             "Error",
-            """No reset condition is specified,
-therefore the generated HDL will be corrupted.
-Please specify the reset condition by using the right
-mouse button at the transition from the reset-connector
-to the state, which shall be reached by active reset.""",
+            [
+                "No reset condition is specified,",
+                "therefore the generated HDL will be corrupted.",
+                "Please specify the reset condition by using the right",
+                "mouse button at the transition from the reset-connector",
+                "to the state, which shall be reached by active reset.",
+            ],
         )
     else:
         reference_to_reset_condition_custom_text = ref.condition_id
@@ -409,25 +411,21 @@ def _check_for_wrong_priorities(trace_array) -> None:
                 condition_sequence_string = condition_sequence_string[:-1]
                 raise GenerationError(
                     "Error in HDL-FSM-Editor",
-                    "A transition starting at state "
-                    + trace_array[index][0]["state_name"]
-                    + "\n"
-                    + "with the condition sequence "
-                    + condition_sequence_string
-                    + "\n"
-                    + "hides a transition with lower priority."
-                    + "\n"
-                    + "This is not allowed and will corrupt the HDL.",
+                    [
+                        f"A transition starting at state {trace_array[index][0]['state_name']}",
+                        f"with the condition sequence {condition_sequence_string}",
+                        "hides a transition with lower priority.",
+                        "This is not allowed and will corrupt the HDL.",
+                    ],
                 )
             else:
                 raise GenerationError(
                     "Error in HDL-FSM-Editor",
-                    "A transition starting at state "
-                    + trace_array[index][0]["state_name"]
-                    + "\n"
-                    + "with no condition hides a transition with lower priority."
-                    + "\n"
-                    + "This is not allowed and will corrupt the HDL.",
+                    [
+                        f"A transition starting at state {trace_array[index][0]['state_name']}",
+                        "with no condition hides a transition with lower priority.",
+                        "This is not allowed and will corrupt the HDL.",
+                    ],
                 )
 
 
@@ -443,9 +441,10 @@ def _merge_trace_array(trace_array) -> list:
             ):  # Check is only done, when more than 1 trace exists.
                 raise GenerationError(
                     "Warning",
-                    "There is a transition starting at state "
-                    + trace[0]["state_name"]
-                    + " which has no condition but does not have the lowest priority,\ntherefore the generated HDL may be corrupted.",
+                    [
+                        f"There is a transition starting at state {trace[0]['state_name']} which has no condition but does not have the lowest priority,",
+                        "therefore the generated HDL may be corrupted.",
+                    ],
                 )
         else:
             if trace:  # An empty trace may happen, when the transition with lowest priority has no condition and action (and has a connector?!).
@@ -461,9 +460,10 @@ def _merge_trace_array(trace_array) -> list:
                     # All traces except the trace with the lowest priority must start with an "if":
                     raise GenerationError(
                         "Warning",
-                        "There is a transition starting at state "
-                        + trace[0]["state_name"]
-                        + " which has no condition but does not have the lowest priority,\ntherefore the generated HDL may be corrupted.",
+                        [
+                            f"There is a transition starting at state {trace[0]['state_name']} which has no condition but does not have the lowest priority,",
+                            "therefore the generated HDL may be corrupted.",
+                        ],
                     )
                 if trace[0]["command"] == "action":
                     # insert before the endif, which's existence was tested here.
@@ -499,11 +499,10 @@ def _merge_trace_array(trace_array) -> list:
                         ):
                             raise GenerationError(
                                 "Error",
-                                "There is a transition starting at state "
-                                + trace[0]["state_name"]
-                                + " to state "
-                                + target_at_error
-                                + " which will never fire,\ntherefore the generated HDL may be corrupted.",
+                                [
+                                    f"There is a transition starting at state {trace[0]['state_name']} to state {target_at_error} which will never fire,",
+                                    "therefore the generated HDL may be corrupted.",
+                                ],
                             )
                             break
                         search_index += 1
@@ -568,15 +567,18 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
         if trace:
             raise GenerationError(
                 "Warning",
-                "There is a connector reached from state "
-                + trace[0]["state_name"]
-                + " which has no outgoing transition,\ntherefore the generated HDL may be corrupted.",
+                [
+                    f"There is a connector reached from state {trace[0]['state_name']} which has no outgoing transition,",
+                    "therefore the generated HDL may be corrupted.",
+                ],
             )
         else:
             raise GenerationError(
                 "Warning",
-                "There is a connector "
-                + "which has no outgoing transition,\ntherefore the generated HDL may be corrupted.",
+                [
+                    "There is a connector which has no outgoing transition,",
+                    "therefore the generated HDL may be corrupted.",
+                ],
             )
     for _, transition_tag in enumerate(outgoing_transition_tags):
         transition_target, transition_condition, transition_action, condition_action_reference = (
@@ -750,11 +752,9 @@ def _check_for_equal_priorities(transition_tags_and_priority_sorted, state_tag) 
                 state_name = "a connector"
             raise GenerationError(
                 "Warning",
-                "Two outgoing transition of "
-                + state_name
-                + " have the same priority with value "
-                + transition_tags_and_priority_sorted[n + 1][1]
-                + ".",
+                [
+                    f"Two outgoing transition of {state_name} have the same priority with value {transition_tags_and_priority_sorted[n + 1][1]}."
+                ],
             )
 
 
