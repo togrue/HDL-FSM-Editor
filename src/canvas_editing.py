@@ -743,7 +743,7 @@ def find(search_string, replace_string, replace) -> None:
             number_of_hits_all += number_of_hits
     if continue_search:
         number_of_hits = _search_in_text_fields_of_a_tab(
-            "generated HDL", "", search_pattern, [main_window.hdl_frame_text], replace, replace_pattern
+            GuiTab.GENERATED_HDL, "", search_pattern, [main_window.hdl_frame_text], replace, replace_pattern
         )
         if number_of_hits == -1:
             continue_search = False
@@ -886,7 +886,7 @@ def _search_in_text_fields_of_a_tab(tab, kind, search_pattern, interface_text_fi
                         text_id.update_custom_text_class_ports_list()
                 elif tab == GuiTab.INTERNALS:
                     text_id.update_custom_text_class_signals_list()
-                else:  # tab="generated HDL"
+                else:  # tab=GuiTab.HDL
                     pass
                 start = index + "+" + str(len(replace_pattern)) + " chars"
                 if text_id.cget("state") == tk.DISABLED:

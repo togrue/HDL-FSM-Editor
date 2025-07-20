@@ -15,6 +15,7 @@ import list_separation_check
 import main_window
 import tag_plausibility
 from codegen.hdl_generation_config import GenerationConfig
+from constants import GuiTab
 from link_dictionary import link_dict
 
 from .exceptions import GenerationError
@@ -99,9 +100,9 @@ def _copy_hdl_into_generated_hdl_tab(hdl, file_name) -> None:
     # Bring the notebook tab with the hdl into the foreground:
     # notebook_ids = main_window.notebook.tabs()
     # for id in notebook_ids:
-    #     if main_window.notebook.tab(id, option="text")=="generated HDL":
+    #     if main_window.notebook.tab(id, option="text")==GuiTab.HDL.value:
     #         main_window.notebook.select(id)
-    main_window.show_tab("generated HDL")
+    main_window.show_tab(GuiTab.GENERATED_HDL)
 
 
 def _create_entity(config, file_name, file_line_number) -> tuple:

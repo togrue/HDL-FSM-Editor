@@ -94,7 +94,7 @@ class LinkDictionary:
             file_name_architecture = gen_config.get_architecture_file()
             if file_name_architecture and selected_file == file_name_architecture:
                 file_line_number += hdl_generation.last_line_number_of_file1
-        main_window.show_tab("generated HDL")
+        main_window.show_tab(GuiTab.GENERATED_HDL)
         main_window.hdl_frame_text.highlight_item("", "", file_line_number)
         main_window.hdl_frame_text.config(state="normal")
         main_window.hdl_frame_text.focus_set()

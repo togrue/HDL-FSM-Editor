@@ -844,7 +844,7 @@ def create_hdl_notebook_tab() -> None:
 
     hdl_frame_text.bind("<Motion>", _cursor_move_hdl_tab)
 
-    notebook.add(hdl_frame, sticky="nsew", text="generated HDL")
+    notebook.add(hdl_frame, sticky="nsew", text=GuiTab.GENERATED_HDL.value)
 
 
 def create_log_notebook_tab() -> None:

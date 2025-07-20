@@ -447,5 +447,5 @@ class GuiTab(StrEnum):
     INTERFACE = "Interface"
     INTERNALS = "Internals"
     DIAGRAM = "Diagram"
-    HDL = "HDL"
+    GENERATED_HDL = "Generated HDL"
     LOG = "Log"
