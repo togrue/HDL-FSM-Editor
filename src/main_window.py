@@ -1154,10 +1154,12 @@ def _show_path_has_changed(*_) -> None:
     undo_handling.design_has_changed()
 
 
-def show_tab(tab) -> None:
+def show_tab(tab: GuiTab) -> None:
+    assert isinstance(tab, GuiTab), f"tab must be a GuiTab, but is {type(tab)}"
+
     notebook_ids = notebook.tabs()
     for tab_id in notebook_ids:
-        if notebook.tab(tab_id, option="text") == tab:
+        if notebook.tab(tab_id, option="text") == tab.value:
             notebook.select(tab_id)
             _update_hdl_tab_if_necessary()
 
