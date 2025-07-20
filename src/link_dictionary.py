@@ -47,34 +47,31 @@ class LinkDictionary:
             }
         elif hdl_item_type == "custom_text_in_interface_tab":
             for text_line_number in range(1, number_of_lines + 1):
-                self.link_dict[file_name][file_line_number] = {
+                self.link_dict[file_name][file_line_number + text_line_number - 1] = {
                     "tab_name": "Interface",
                     "widget_reference": hdl_item_name,
                     "hdl_item_type": "",
                     "object_identifier": "",
                     "number_of_line": text_line_number,
                 }
-                file_line_number += 1
         elif hdl_item_type == "custom_text_in_internals_tab":
             for text_line_number in range(1, number_of_lines + 1):
-                self.link_dict[file_name][file_line_number] = {
+                self.link_dict[file_name][file_line_number + text_line_number - 1] = {
                     "tab_name": "Internals",
                     "widget_reference": hdl_item_name,
                     "hdl_item_type": "",
                     "object_identifier": "",
                     "number_of_line": text_line_number,
                 }
-                file_line_number += 1
         elif hdl_item_type == "custom_text_in_diagram_tab":
             for text_line_number in range(1, number_of_lines + 1):
-                self.link_dict[file_name][file_line_number] = {
+                self.link_dict[file_name][file_line_number + text_line_number - 1] = {
                     "tab_name": "Diagram",
                     "widget_reference": hdl_item_name,
                     "hdl_item_type": "",
                     "object_identifier": "",
                     "number_of_line": text_line_number,
                 }
-                file_line_number += 1
 
     def has_link(self, file_name: str, file_line_number: int) -> bool:
         """Check if a link exists for the given file and line."""
