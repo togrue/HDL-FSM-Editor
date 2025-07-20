@@ -685,7 +685,7 @@ def create_diagram_notebook_tab() -> None:
     diagram_frame.grid()
     diagram_frame.columnconfigure(0, weight=1)  # tkinter method (grid_columnconfigure is tcl method)
     diagram_frame.rowconfigure(0, weight=1)
-    notebook.add(diagram_frame, sticky="nsew", text="Diagram")
+    notebook.add(diagram_frame, sticky="nsew", text=GuiTab.DIAGRAM.value)
 
     # Create the elements of the drawing area:
     h = ttk.Scrollbar(diagram_frame, orient=tk.HORIZONTAL, cursor="arrow", style="Horizontal.TScrollbar")

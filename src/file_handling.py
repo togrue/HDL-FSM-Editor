@@ -112,7 +112,7 @@ def _open_v1_file_with_name(read_filename) -> None:
     # Bring the notebook tab with the graphic into the foreground:
     notebook_ids = main_window.notebook.tabs()
     for notebook_id in notebook_ids:
-        if main_window.notebook.tab(notebook_id, option="text") == "Diagram":
+        if main_window.notebook.tab(notebook_id, option="text") == GuiTab.DIAGRAM:
             main_window.notebook.select(notebook_id)
     # Read the design from the file:
     fileobject = open(read_filename, encoding="utf-8")
@@ -767,7 +767,7 @@ def open_file_with_name_new(read_filename) -> None:
         # Bring the notebook tab with the graphic into the foreground:
         notebook_ids = main_window.notebook.tabs()
         for notebook_id in notebook_ids:
-            if main_window.notebook.tab(notebook_id, option="text") == "Diagram":
+            if main_window.notebook.tab(notebook_id, option="text") == GuiTab.DIAGRAM.value:
                 main_window.notebook.select(notebook_id)
         # Read the design from the file:
         transition_ids = []
@@ -1121,7 +1121,7 @@ def open_file_with_name_new(read_filename) -> None:
             design_dictionary["modulename"],
         )
         main_window.date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
-        main_window.show_tab("Diagram")
+        main_window.show_tab(GuiTab.DIAGRAM)
         main_window.root.after_idle(canvas_editing.view_all)
         if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
             messagebox.showerror("Error", "The database is corrupt.\nDo not use this file.\nSee details at STDOUT.")

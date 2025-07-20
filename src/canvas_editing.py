@@ -807,7 +807,7 @@ def _search_in_text_widget(text_id, search_pattern, count, canvas_window, replac
             text_id.format_after_idle()
             start = index + "+" + str(len(replace_pattern)) + " chars"
         else:
-            _move_in_foreground("Diagram")
+            _move_in_foreground(GuiTab.DIAGRAM)
             text_id.tag_add("hit", index, index + " + " + str(count.get()) + " chars")
             text_id.tag_configure("hit", background="blue")
             object_coords = main_window.canvas.bbox(canvas_window)
@@ -843,7 +843,7 @@ def _search_in_canvas_text(item, search_pattern, replace, replace_pattern) -> in
             start = len(text)  # The search-pattern cannot be found again in the next loop.
         else:
             number_of_hits += 1
-            _move_in_foreground("Diagram")
+            _move_in_foreground(GuiTab.DIAGRAM)
             main_window.canvas.select_from(item, hit_begin)
             main_window.canvas.select_to(item, hit_begin + len(search_pattern) - 1)
             object_coords = main_window.canvas.bbox(item)
