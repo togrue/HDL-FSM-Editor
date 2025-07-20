@@ -863,7 +863,9 @@ def _search_in_canvas_text(item, search_pattern, replace, replace_pattern) -> in
     return number_of_hits
 
 
-def _search_in_text_fields_of_a_tab(tab, kind, search_pattern, interface_text_fields, replace, replace_pattern) -> int:
+def _search_in_text_fields_of_a_tab(
+    tab: GuiTab, kind, search_pattern, interface_text_fields, replace, replace_pattern
+) -> int:
     count = tk.IntVar()
     number_of_hits = 0
     for text_id in interface_text_fields:
@@ -886,7 +888,7 @@ def _search_in_text_fields_of_a_tab(tab, kind, search_pattern, interface_text_fi
                         text_id.update_custom_text_class_ports_list()
                 elif tab == GuiTab.INTERNALS:
                     text_id.update_custom_text_class_signals_list()
-                else:  # tab=GuiTab.HDL
+                else:  # tab=GuiTab.GENERATED_HDL
                     pass
                 start = index + "+" + str(len(replace_pattern)) + " chars"
                 if text_id.cget("state") == tk.DISABLED:
