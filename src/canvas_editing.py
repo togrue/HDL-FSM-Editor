@@ -735,7 +735,7 @@ def find(search_string, replace_string, replace) -> None:
                 main_window.internals_process_combinatorial_text,
             ]
         number_of_hits = _search_in_text_fields_of_a_tab(
-            "Internals", "", search_pattern, internals_text_fields, replace, replace_pattern
+            GuiTab.INTERNALS, "", search_pattern, internals_text_fields, replace, replace_pattern
         )
         if number_of_hits == -1:
             continue_search = False
@@ -884,7 +884,7 @@ def _search_in_text_fields_of_a_tab(tab, kind, search_pattern, interface_text_fi
                         text_id.update_custom_text_class_generics_list()
                     else:  # kind=="ports"
                         text_id.update_custom_text_class_ports_list()
-                elif tab == "Internals":
+                elif tab == GuiTab.INTERNALS:
                     text_id.update_custom_text_class_signals_list()
                 else:  # tab="generated HDL"
                     pass

@@ -669,7 +669,7 @@ def create_internals_notebook_tab() -> None:
     )  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_internals.add(internals_process_combinatorial_frame, weight=1)
 
-    notebook.add(paned_window_internals, sticky="nsew", text="Internals")
+    notebook.add(paned_window_internals, sticky="nsew", text=GuiTab.INTERNALS.value)
 
 
 def create_diagram_notebook_tab() -> None:

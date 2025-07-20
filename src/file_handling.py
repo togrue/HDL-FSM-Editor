@@ -819,7 +819,7 @@ def open_file_with_name_new(read_filename) -> None:
                         main_window.paned_window_interface.sashpos(int(key), value)
                         main_window.sash_positions["interface_tab"][int(key)] = value
             main_window.show_tab(
-                "Internals"
+                GuiTab.INTERNALS
             )  # The tab must be shown at least once, so that the sash_positions do not have the default-value 0.
             if (
                 "2" in design_dictionary["sash_positions"]["internals_tab"]
