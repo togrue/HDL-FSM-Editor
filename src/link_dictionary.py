@@ -14,26 +14,25 @@ These 2 parameters are the keys of the LinkDictionary, so when the user clicks o
 line-number and file-name are determined and the corresponding entry of the LinkDictionary can be read.
 """
 
+import tkinter as tk
+
 import codegen.hdl_generation as hdl_generation
 import main_window
 from codegen.hdl_generation_config import GenerationConfig
 
 
 class LinkDictionary:
-    # link_dict_reference: "LinkDictionary"
-
     def __init__(self, root) -> None:
         self.root = root
-        # LinkDictionary.link_dict_reference = self
         self.link_dict = {}
 
     def add(
         self,
-        file_name,  # Filename in which the HDL-item is stored
-        file_line_number,  # File-line-number in which the HDL-item is stored
-        hdl_item_type,  # One of "Control-Tab", "custom_text_in_interface_tab", "custom_text_in_internals_tab", "custom_text_in_diagram_tab"
-        number_of_lines,  # How many lines does the HDL-item use in the file
-        hdl_item_name,  # String when "Control-Tab", widget-references in all other cases
+        file_name: str,  # Filename in which the HDL-item is stored
+        file_line_number: int,  # File-line-number in which the HDL-item is stored
+        hdl_item_type: str,  # One of HdlItemType enum values
+        number_of_lines: int,  # How many lines does the HDL-item use in the file
+        hdl_item_name: str | tk.Widget,  # String when "Control-Tab", widget-references in all other cases
         number_of_line,  # not used
     ) -> None:
         # print("add =", file_name, file_line_number, hdl_item_type, number_of_lines , hdl_item_name, number_of_line)
