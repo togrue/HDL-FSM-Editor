@@ -984,17 +984,16 @@ def _cursor_move_hdl_tab(*_) -> None:
             start_index = size_of_file1_line_number
         while hdl_frame_text.get(f"{line_number}.{start_index - 1}") == " ":
             start_index += 1
-        if selected_file in link_dict().link_dict:  # Can for example happen with empty architecture or module content.
-            if line_number_in_file in link_dict().link_dict[selected_file]:
-                hdl_frame_text.tag_add("underline", f"{line_number}.{start_index - 1}", f"{line_number + 1}.0")
-                hdl_frame_text.tag_config("underline", underline=1)
-                _func_id_jump = hdl_frame_text.bind(
-                    "<Control-Button-1>",
-                    lambda event: link_dict().jump_to_source(selected_file, line_number_in_file),
-                )
-            else:
-                hdl_frame_text.unbind("<Button-1>", _func_id_jump)
-                _func_id_jump = None
+        if link_dict().has_link(selected_file, line_number_in_file):
+            hdl_frame_text.tag_add("underline", f"{line_number}.{start_index - 1}", f"{line_number + 1}.0")
+            hdl_frame_text.tag_config("underline", underline=1)
+            _func_id_jump = hdl_frame_text.bind(
+                "<Control-Button-1>",
+                lambda event: link_dict().jump_to_source(selected_file, line_number_in_file),
+            )
+        else:
+            hdl_frame_text.unbind("<Button-1>", _func_id_jump)
+            _func_id_jump = None
         _line_number_under_pointer_hdl_tab = line_number
 
 
@@ -1032,28 +1031,26 @@ def _cursor_move_log_tab(*_) -> None:
                     if debug:
                         print("Regex found no line-number         : Getting line-number by group 2 did not work.")
                     return
-                if file_name in link_dict().link_dict:  # For example ieee source files are not a key in link_dict.
-                    if file_line_number in link_dict().link_dict[file_name]:
-                        if debug:
-                            print("Filename and line-number are found in Link-Dictionary.")
-                        log_frame_text.tag_add("underline", str(line_number) + ".0", str(line_number + 1) + ".0")
-                        log_frame_text.tag_config("underline", underline=1, foreground="red")
-                        _func_id_jump1 = log_frame_text.bind(
-                            "<Control-Button-1>",
-                            lambda event: link_dict().jump_to_source(file_name, file_line_number),
-                        )
-                        _func_id_jump2 = log_frame_text.bind(
-                            "<Alt-Button-1>",
-                            lambda event: link_dict().jump_to_hdl(file_name, file_line_number),
-                        )
-                    else:
-                        if debug:
-                            print("Filename is found in Link-Dictionary but line-number not.")
-                            # Add only tag (for coloring in red), but don't underline as no link exists.
-                        log_frame_text.tag_add("underline", str(line_number) + ".0", str(line_number + 1) + ".0")
+                if link_dict().has_link(
+                    file_name, file_line_number
+                ):  # For example ieee source files are not a key in link_dict.
+                    if debug:
+                        print("Filename and line-number are found in Link-Dictionary.")
+                    log_frame_text.tag_add("underline", str(line_number) + ".0", str(line_number + 1) + ".0")
+                    log_frame_text.tag_config("underline", underline=1, foreground="red")
+                    _func_id_jump1 = log_frame_text.bind(
+                        "<Control-Button-1>",
+                        lambda event: link_dict().jump_to_source(file_name, file_line_number),
+                    )
+                    _func_id_jump2 = log_frame_text.bind(
+                        "<Alt-Button-1>",
+                        lambda event: link_dict().jump_to_hdl(file_name, file_line_number),
+                    )
                 else:
                     if debug:
-                        print("Filename is not found in Link-Dictionary.")
+                        print("Filename or line-number not found in Link-Dictionary.")
+                    # Add only tag (for coloring in red), but don't underline as no link exists.
+                    log_frame_text.tag_add("underline", str(line_number) + ".0", str(line_number + 1) + ".0")
             # except re.error:
             except Exception as e:
                 _regex_error_happened = True

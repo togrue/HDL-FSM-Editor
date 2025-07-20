@@ -77,6 +77,10 @@ class LinkDictionary:
                 }
                 file_line_number += 1
 
+    def has_link(self, file_name: str, file_line_number: int) -> bool:
+        """Check if a link exists for the given file and line."""
+        return file_name in self.link_dict and file_line_number in self.link_dict[file_name]
+
     def jump_to_source(self, selected_file, file_line_number) -> None:
         # print("jump_to_source", selected_file, file_line_number)
         tab_to_show = self.link_dict[selected_file][file_line_number]["tab_name"]
