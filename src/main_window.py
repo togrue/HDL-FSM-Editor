@@ -100,7 +100,7 @@ paned_window_interface: ttk.PanedWindow
 _interface_package_frame: ttk.Frame
 paned_window_internals: ttk.PanedWindow
 _internals_package_frame: ttk.Frame
-sash_positions: dict[str, dict[int, int]] = {}
+sash_positions: dict[str, dict[int, int]] = {"interface_tab": {}, "internals_tab": {}}
 undo_button: ttk.Button
 redo_button: ttk.Button
 _trace_id_generate_path_value: str
@@ -1247,6 +1247,8 @@ def choose_bg_color() -> None:
 
 def __resize_event_interface_tab_frames(event) -> None:
     global sash_positions
+    if "interface_tab" not in sash_positions:
+        sash_positions["interface_tab"] = {}
     sash_positions["interface_tab"][0] = paned_window_interface.sashpos(0)
     if language.get() == "VHDL":
         sash_positions["interface_tab"][1] = paned_window_interface.sashpos(1)
@@ -1254,6 +1256,8 @@ def __resize_event_interface_tab_frames(event) -> None:
 
 def __resize_event_internals_tab_frames(event) -> None:
     global sash_positions
+    if "internals_tab" not in sash_positions:
+        sash_positions["internals_tab"] = {}
     sash_positions["internals_tab"][0] = paned_window_internals.sashpos(0)
     sash_positions["internals_tab"][1] = paned_window_internals.sashpos(1)
     if language.get() == "VHDL":
