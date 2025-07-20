@@ -911,10 +911,10 @@ def _search_in_text_fields_of_a_tab(
     return number_of_hits
 
 
-def _move_in_foreground(tab) -> None:
+def _move_in_foreground(tab: GuiTab) -> None:
     notebook_ids = main_window.notebook.tabs()
     for notebook_id in notebook_ids:
-        if main_window.notebook.tab(notebook_id, option="text") == tab:
+        if main_window.notebook.tab(notebook_id, option="text") == tab.value:
             main_window.notebook.select(notebook_id)
 
 
