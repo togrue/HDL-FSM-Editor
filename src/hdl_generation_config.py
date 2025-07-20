@@ -66,23 +66,21 @@ class GenerationConfig:
         if not self.module_name or not self.generate_path:
             return []
 
-        module_name = self.module_name
-
         # For Verilog and SystemVerilog, always generate single files
         if self.language in ["Verilog", "SystemVerilog"]:
             extension = self.get_file_extension()
-            result = [f"{self.generate_path}/{module_name}{extension}"]
-            return result
+            return [f"{self.generate_path}/{self.module_name}{extension}"]
 
         # For VHDL, check file count setting
         if self.select_file_number == 1:
             # Single file
-            result = [f"{self.generate_path}/{module_name}.vhd"]
-            return result
+            return [f"{self.generate_path}/{self.module_name}.vhd"]
         else:
             # Two files: entity and architecture
-            result = [f"{self.generate_path}/{module_name}_e.vhd", f"{self.generate_path}/{module_name}_fsm.vhd"]
-            return result
+            return [
+                f"{self.generate_path}/{self.module_name}_e.vhd",
+                f"{self.generate_path}/{self.module_name}_fsm.vhd",
+            ]
 
     def get_primary_file(self) -> Optional[str]:
         """Get the primary output file path (first file in the list)"""
