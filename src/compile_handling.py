@@ -10,6 +10,7 @@ from os.path import exists
 from tkinter import messagebox
 
 import main_window
+from constants import GuiTab
 
 
 def compile_hdl() -> None:
@@ -75,7 +76,7 @@ def _execute(command) -> bool:
 def _show_compile_messages_tab() -> None:
     notebook_ids = main_window.notebook.tabs()
     for notebook_id in notebook_ids:
-        if main_window.notebook.tab(notebook_id, option="text") == "Compile Messages":
+        if main_window.notebook.tab(notebook_id, option="text") == GuiTab.COMPILE_MSG.value:
             main_window.notebook.select(notebook_id)
 
 

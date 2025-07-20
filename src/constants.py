@@ -448,4 +448,4 @@ class GuiTab(StrEnum):
     INTERNALS = "Internals"
     DIAGRAM = "Diagram"
     GENERATED_HDL = "Generated HDL"
-    LOG = "Log"
+    COMPILE_MSG = "Compile Messages"

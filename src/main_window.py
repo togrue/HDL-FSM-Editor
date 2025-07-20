@@ -877,7 +877,7 @@ def create_log_notebook_tab() -> None:
 
     log_frame_text.bind("<Motion>", _cursor_move_log_tab)
 
-    notebook.add(log_frame, sticky="nsew", text="Compile Messages")
+    notebook.add(log_frame, sticky="nsew", text=GuiTab.COMPILE_MSG.value)
     _debug_active = tk.IntVar()
     _debug_active.set(1)  # 1: inactive, 2: active
 
