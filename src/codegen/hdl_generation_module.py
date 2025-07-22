@@ -200,21 +200,3 @@ def _get_reset_edge(reset_condition) -> str:
         raise GenerationError(
             "Error", "The reset polarity could not be determined from the reset condition: " + reset_condition_mod
         )
-        return "unknown_edge"
-
-
-def _indent_identically(character, actual_list) -> list:
-    actual_list = [
-        re.sub("[ ]*" + character, character, decl, count=1) for decl in actual_list
-    ]  # Blanks for the character will be adapted und must first be removed here.
-    max_index = 0
-    new_list = []
-    for port_declaration in actual_list:
-        index = port_declaration.find(character)
-        if index > max_index:
-            max_index = index
-    for port_declaration in actual_list:
-        index = port_declaration.find(character)
-        fill = " " * (max_index - index + 1) + character
-        new_list.append(re.sub(character, fill, port_declaration, count=1))
-    return new_list

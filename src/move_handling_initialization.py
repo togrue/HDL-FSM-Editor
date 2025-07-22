@@ -191,16 +191,6 @@ def _add_lines_connected_to_the_diagram_object_to_the_list(move_list) -> None:
             transition_handling.extend_transition_to_state_middle_points(tag_of_connected_line)
 
 
-def _get_move_list_entry_for_line_of_condition_action_block(transition_tag) -> list:
-    transition_tags = main_window.canvas.gettags(transition_tag)
-    for t in transition_tags:
-        if t.startswith("ca_connection"):  # To this transition, a condition_action block is connected.
-            ca_connection_tag = t[0:-4]
-            id_of_ca_connection = main_window.canvas.find_withtag(ca_connection_tag)[0]
-            return [id_of_ca_connection, "end", transition_tag]  # The transition_tag is needed in move_finish.
-    return []
-
-
 def _add_items_for_moving_a_single_line_point_to_the_list(
     move_list, items_near_mouse_click_location, event_x, event_y
 ) -> None:

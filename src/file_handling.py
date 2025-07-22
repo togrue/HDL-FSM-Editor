@@ -78,18 +78,6 @@ def save() -> None:
         save_in_file_new(project_manager.current_file)
 
 
-def _write_coords(fileobject, canvas_id) -> None:
-    coords = main_window.canvas.coords(canvas_id)
-    for c in coords:
-        fileobject.write(str(c) + " ")
-
-
-def _write_tags(fileobject, canvas_id) -> None:
-    tags = main_window.canvas.gettags(canvas_id)
-    for t in tags:
-        fileobject.write(str(t) + " ")
-
-
 def open_v1_file() -> None:
     filename_new = askopenfilename(filetypes=(("HDL-FSM-Editor files", "*.hfe"), ("all files", "*.*")))
     if filename_new != "":
@@ -583,13 +571,6 @@ def _get_remaining_data(fileobject, length_of_data, first_data):
     while len(data) < length_of_data:
         data = data + fileobject.readline()
     return data[:-1]
-
-
-def _print_canvas() -> None:
-    # all = main_window.canvas.bbox("all")
-    print_filename = main_window.generate_path_value.get() + "/" + main_window.module_name.get() + ".eps"
-    # main_window.canvas.postscript(file=filename, colormode="color", x=all[0], y=all[1], width=all[2]-all[0], height=all[3]-all[1])
-    main_window.canvas.postscript(file=print_filename, colormode="color")
 
 
 #########################################################################################################################################

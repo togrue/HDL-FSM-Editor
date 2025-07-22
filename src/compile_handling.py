@@ -132,22 +132,6 @@ def _replace_variables(command_array) -> list | None:
     return command_array_new
 
 
-def _copy_into_compile_messages_tab(stdout, stderr, command_array_new) -> None:
-    main_window.log_frame_text.config(state=tk.NORMAL)
-    for part in command_array_new:
-        main_window.log_frame_text.insert(tk.END, part + " ")
-    main_window.log_frame_text.insert(tk.END, "\n")
-    main_window.log_frame_text.insert(tk.END, "STDERR:\n")
-    main_window.log_frame_text.insert(tk.END, stderr)
-    main_window.log_frame_text.insert(tk.END, "STDOUT:\n")
-    main_window.log_frame_text.insert(tk.END, stdout)
-    main_window.log_frame_text.insert(
-        tk.END, "=========================================================================\n"
-    )
-    main_window.log_frame_text.config(state=tk.DISABLED)
-    main_window.log_frame_text.see(tk.END)
-
-
 def _insert_line_in_log(text) -> None:
     if main_window.language.get() == "VHDL":
         regex_message_find = main_window.regex_message_find_for_vhdl
