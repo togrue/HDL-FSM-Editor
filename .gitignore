@@ -4,3 +4,9 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .venv/
+
+# Build artifacts
+releases/
+dist/
+build/
+*.spec
