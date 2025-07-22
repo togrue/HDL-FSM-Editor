@@ -110,7 +110,7 @@ _trace_id_working_directory_value: str
 date_of_hdl_file_shown_in_hdl_tab: float = 0.0
 include_timestamp_in_output: tk.BooleanVar
 
-keywords: dict[str, list[str]] = constants.vhdl_keywords
+keywords: dict[str, list[str]] = constants.VHDL_KEYWORDS
 
 
 def read_message() -> None:
@@ -1072,7 +1072,7 @@ def switch_language_mode() -> None:
     global keywords
     new_language = language.get()
     if new_language == "VHDL":
-        keywords = constants.vhdl_keywords
+        keywords = constants.VHDL_KEYWORDS
         # enable 2 files mode
         select_file_number_text.set(2)
         _select_file_number_label.grid(row=3, column=0, sticky=tk.W)
@@ -1093,7 +1093,7 @@ def switch_language_mode() -> None:
             text="Variables for compile command:\n$file1\t= Entity-File\n$file2\t= Architecture-File\n$file\t= File with Entity and Architecture\n$name\t= Entity Name"
         )
     else:  # "Verilog" or "SystemVerilog"
-        keywords = constants.verilog_keywords
+        keywords = constants.VERILOG_KEYWORDS
         # Control: disable 2 files mode
         select_file_number_text.set(1)
         _select_file_number_label.grid_forget()

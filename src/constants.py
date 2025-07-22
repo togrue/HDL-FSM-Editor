@@ -4,7 +4,7 @@ Constants for all modules of HDL-FSM-Editor
 
 from enum import StrEnum
 
-vhdl_keywords_for_signal_handling = (
+VHDL_KEYWORDS_FOR_SIGNAL_HANDLING = (
     " to_stdulogic ",
     " to_stdlogicvector ",
     " to_stdulogicvector ",
@@ -56,7 +56,7 @@ vhdl_keywords_for_signal_handling = (
     " xor ",
 )
 
-_vhdl_keywords_all_unused = vhdl_keywords_for_signal_handling + (
+_vhdl_keywords_all_unused = VHDL_KEYWORDS_FOR_SIGNAL_HANDLING + (
     " access ",
     " assert ",
     " alias ",
@@ -125,8 +125,8 @@ _vhdl_keywords_all_unused = vhdl_keywords_for_signal_handling + (
     " wait ",
 )
 
-verilog_keywords_for_signal_handling = (" or ", " and ", " assign ", " nand ", " nor ", " not ", " xnor ", " xor ")
-_verilog_keywords_all = (
+VERILOG_KEYWORDS_FOR_SIGNAL_HANDLING = (" or ", " and ", " assign ", " nand ", " nor ", " not ", " xnor ", " xor ")
+_VERILOG_KEYWORDS_ALL_UNUSED = (
     " always ",
     " end ",
     " ifnone ",
@@ -224,7 +224,7 @@ _verilog_keywords_all = (
 )
 
 
-_keywords = {
+_KEYWORDS = {
     "not_read": ["dummy_entry_so_that_this_list_is_no_empty"],
     "not_written": ["dummy_entry_so_that_this_list_is_no_empty"],
     "control": [
@@ -312,7 +312,7 @@ _keywords = {
     "comment": ["--.*$"],
 }
 
-vhdl_keywords = {
+VHDL_KEYWORDS = {
     "not_read": ["dummy_entry_so_that_this_list_is_no_empty"],
     "not_written": ["dummy_entry_so_that_this_list_is_no_empty"],
     "control": [
@@ -402,7 +402,7 @@ vhdl_keywords = {
     "comment": [r"--.*?$", r"/\*.*?\*/"],
 }
 
-verilog_keywords = {
+VERILOG_KEYWORDS = {
     "not_read": ["dummy_entry_so_that_this_list_is_no_empty"],
     "not_written": ["dummy_entry_so_that_this_list_is_no_empty"],
     "control": [

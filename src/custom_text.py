@@ -302,7 +302,7 @@ class CustomText(tk.Text):
         return text
 
     def __remove_keywords_from_vhdl(self, text):
-        for keyword in constants.vhdl_keywords_for_signal_handling + (
+        for keyword in constants.VHDL_KEYWORDS_FOR_SIGNAL_HANDLING + (
             " process.*?begin ",  # Remove complete process headers, if some exist.
             " end\\s+?process\\s*?;",  # remove end of process, before ...
             " process .*?$",  # ... when not complete process headers exist, remove until a return is found.
@@ -327,7 +327,7 @@ class CustomText(tk.Text):
         return text
 
     def __remove_keywords_from_verilog(self, text):
-        for keyword in constants.verilog_keywords_for_signal_handling + (
+        for keyword in constants.VERILOG_KEYWORDS_FOR_SIGNAL_HANDLING + (
             " end ",
             " endcase\\s*?;",
             "\\(",
