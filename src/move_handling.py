@@ -54,13 +54,6 @@ def move_do(event, move_list, first) -> None:
             print("move: Fatal, unknown canvas type", "|" + item_type + "|")
 
 
-def _get_exact_or_rounded_canvas_coordinates(event) -> list:
-    if event.type == "5":  # ButtonRelease
-        return canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(event)
-    else:  # Motion
-        return canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
-
-
 def _state_is_moved_to_near_to_state_or_connector(move_list, event_x, event_y) -> bool:
     for entry in move_list:
         moved_item_id = entry[0]

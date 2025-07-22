@@ -149,13 +149,6 @@ def _get_condition_action_reference_of_transition(transition_tag) -> None:
     return None
 
 
-def _get_target_tag_of_transition(transition_tag):
-    transition_tags = main_window.canvas.gettags(transition_tag)
-    for transition_tag in transition_tags:
-        if transition_tag.startswith("going_to_"):
-            return transition_tag[9:]
-
-
 def extract_transition_specifications_from_the_graph() -> list:
     list_of_all_state_tags = _get_a_list_of_all_state_tags()  # list_of_all_state_tags = ["state1", "state2", ...]
     transition_specifications = []
@@ -504,7 +497,6 @@ def _merge_trace_array(trace_array) -> list:
                                     "therefore the generated HDL may be corrupted.",
                                 ],
                             )
-                            break
                         search_index += 1
                     # search_index selects a different command in trace[]:
                     if trace[search_index]["command"] == "if":

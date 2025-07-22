@@ -90,7 +90,7 @@ def _parse_and_process_arguments() -> None:
             main_window.root.title("new")
             file_handling.remove_old_design()
             file_handling.open_file_with_name_new(args.filename)
-            main_window.canvas.bind("<Visibility>", lambda event: main_window.view_all_after_window_is_built())
+            main_window.canvas.bind("<Visibility>", lambda _event: main_window.view_all_after_window_is_built())
 
     # Handle batch generation
     if args.generate_hdl:

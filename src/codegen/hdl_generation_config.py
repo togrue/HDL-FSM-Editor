@@ -124,7 +124,3 @@ class GenerationConfig:
             errors.append(f"Invalid file number setting: {self.select_file_number}")
 
         return errors
-
-    def is_valid(self) -> bool:
-        """Check if the configuration is valid"""
-        return len(self.validate()) == 0

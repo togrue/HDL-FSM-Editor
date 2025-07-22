@@ -1069,15 +1069,7 @@ def _cursor_move_log_tab(*_) -> None:
 
 
 def switch_language_mode() -> None:
-    global keywords, keyword_color
-    keyword_color = {
-        "not_read": "orange",
-        "not_written": "red",
-        "control": "green4",
-        "datatype": "brown",
-        "function": "violet",
-        "comment": "blue",
-    }
+    global keywords
     new_language = language.get()
     if new_language == "VHDL":
         keywords = constants.vhdl_keywords
@@ -1189,15 +1181,6 @@ def _update_hdl_tab_if_necessary() -> None:
                     module_name.get(),
                 )
                 date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
-
-
-def _highlight_item(hdl_item_type, *_) -> None:
-    # This method must have the same name as the method custom_text.CustomText.highlight_item.
-    # It is called, when in the "generated HDL"-tab module-name, reset-name or clock-name are clicked per mouse to jump to its declaration.
-    if hdl_item_type == "module_name":
-        _module_name_entry.select_range(0, tk.END)
-    elif hdl_item_type == "reset_and_clock_signal_name":
-        _clock_signal_name_entry.select_range(0, tk.END)
 
 
 def _change_color_of_diagram_background() -> None:
