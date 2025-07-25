@@ -16,6 +16,7 @@ class StateActionsDefault:
     dictionary = {}
 
     def __init__(self, menu_x, menu_y, height, width, padding) -> None:
+        self.text_content = None
         self.frame_id = ttk.Frame(
             main_window.canvas, relief=tk.FLAT, padding=padding, style="StateActionsWindow.TFrame"
         )  # , borderwidth=10)
@@ -40,6 +41,8 @@ class StateActionsDefault:
         )
         self.text_id.bind("<Control-z>", lambda event: self.text_id.undo())
         self.text_id.bind("<Control-Z>", lambda event: self.text_id.redo())
+        self.text_id.bind("<Control-s>", lambda event: self.update_text())
+        self.text_id.bind("<Control-g>", lambda event: self.update_text())
         self.text_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
         self.text_id.bind("<FocusIn>", lambda event: main_window.canvas.unbind_all("<Delete>"))
         self.text_id.bind(
@@ -83,15 +86,20 @@ class StateActionsDefault:
     def tag(self) -> None:
         main_window.canvas.itemconfigure(self.window_id, tag="state_actions_default")
 
+    def update_text(self) -> None:
+        # Update self.text_content, so that the <Leave>-check in deactivate() does not signal a design-change and
+        # that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
+        # To ensure this, save_in_file_new() waits for idle.
+        self.text_content = self.text_id.get("1.0", tk.END)
+
     def activate(self) -> None:
         self.frame_id.configure(padding=3)  # increase the width of the line around the box
-        self.text = self.text_id.get("1.0", tk.END)
+        self.text_content = self.text_id.get("1.0", tk.END)
 
     def deactivate(self) -> None:
         self.frame_id.configure(padding=1)  # decrease the width of the line around the box
         self.frame_id.focus()  # "unfocus" the Text, when the mouse leaves the text.
-        # self.text_id.format() # needed sometimes, when undo or redo happened.
-        if self.text_id.get("1.0", tk.END) != self.text:
+        if self.text_id.get("1.0", tk.END) != self.text_content:
             undo_handling.design_has_changed()
 
     def move_to(self, event_x, event_y, first, last) -> None:

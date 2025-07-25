@@ -13,6 +13,7 @@ import main_window
 class UpdateHdlTab:
     def __init__(self, language, number_of_files, readfile, generate_path, module_name) -> None:
         self.date_of_hdl_file = 0.0  # Default-Value, used when hdl-file not exists.
+        self.date_of_hdl_file2 = 0.0  # Default-Value, used when hdl-file not exists.
         if language == "VHDL":
             if number_of_files == 1:
                 hdlfilename = generate_path + "/" + module_name + ".vhd"
@@ -84,20 +85,21 @@ class UpdateHdlTab:
             if not os.path.isfile(hdlfilename_architecture):
                 if show_message:
                     messagebox.showerror(
-                        "Error in HDL-FSM-Editor", "The architecture file " + hdlfilename_architecture + " is missing."
+                        "Error in HDL-FSM-Editor", "The architecture file\n" + hdlfilename_architecture + " is missing."
                     )
                 return False
             if os.path.getmtime(hdlfilename_architecture) < os.path.getmtime(path_name):
                 if show_message:
                     messagebox.showerror(
                         "Error in HDL-FSM-Editor",
-                        "The file\n"
+                        "The architecture file\n"
                         + hdlfilename_architecture
                         + "\nis older than\n"
                         + path_name
                         + "\nPlease generate HDL again.",
                     )
                 return False
+            self.date_of_hdl_file2 = os.path.getmtime(hdlfilename_architecture)
         return True
 
     def __add_line_numbers(self, text) -> str:
@@ -113,3 +115,6 @@ class UpdateHdlTab:
 
     def get_date_of_hdl_file(self) -> float:
         return self.date_of_hdl_file
+
+    def get_date_of_hdl_file2(self) -> float:
+        return self.date_of_hdl_file2

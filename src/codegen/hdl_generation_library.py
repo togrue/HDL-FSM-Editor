@@ -2,7 +2,6 @@
 This module contains methods used at HDL generation.
 """
 
-import contextlib
 import re
 import tkinter as tk
 
@@ -35,28 +34,6 @@ def get_text_from_text_widget(wiget_id) -> str:
     return ""
 
 
-def get_a_list_of_all_state_names():
-    state_name_list = []
-    first_state_name = ""
-    all_canvas_items = main_window.canvas.find_all()
-    reg_ex_for_state_tag = re.compile("^state[0-9]+$")
-    for item in all_canvas_items:
-        all_item_tags = main_window.canvas.gettags(item)
-        for tag in all_item_tags:
-            if reg_ex_for_state_tag.match(tag):
-                state_name_list.append(main_window.canvas.itemcget(tag + "_name", "text"))
-            if tag == "coming_from_reset_entry":
-                tags_of_reset_transition = main_window.canvas.gettags(item)
-                for tag in tags_of_reset_transition:
-                    if tag.startswith("going_to_state"):
-                        first_state_name = main_window.canvas.itemcget(tag[9:] + "_name", "text")
-    state_name_list_sorted = sorted(state_name_list)
-    with contextlib.suppress(Exception):
-        state_name_list_sorted.remove(first_state_name)
-    state_name_list_sorted = [first_state_name] + state_name_list_sorted
-    return state_name_list_sorted
-
-
 def _get_target_state_name(all_reset_transition_tags):
     target_state_tag = ""
     for t in all_reset_transition_tags:
@@ -64,6 +41,18 @@ def _get_target_state_name(all_reset_transition_tags):
             target_state_tag = t[9:]
     target_state_name = main_window.canvas.itemcget(target_state_tag + "_name", "text")
     return target_state_name
+
+
+# TODO: Might be unused right now.
+def get_target_tag_of_transition(transition_tag):
+    transition_tags = main_window.canvas.gettags(transition_tag)
+    for transition_tag in transition_tags:
+        if transition_tag.startswith("going_to_"):
+            return transition_tag[9:]
+    for tag in transition_tags:
+        if tag.startswith("going_to_"):
+            return tag[9:]
+    return ""  # Should never happen.
 
 
 def create_reset_condition_and_reset_action() -> list:
@@ -149,10 +138,9 @@ def _get_condition_action_reference_of_transition(transition_tag) -> None:
     return None
 
 
-def extract_transition_specifications_from_the_graph() -> list:
-    list_of_all_state_tags = _get_a_list_of_all_state_tags()  # list_of_all_state_tags = ["state1", "state2", ...]
+def extract_transition_specifications_from_the_graph(state_tag_list_sorted) -> list:
     transition_specifications = []
-    for state_tag in list_of_all_state_tags:
+    for state_tag in state_tag_list_sorted:
         state_name = main_window.canvas.itemcget(state_tag + "_name", "text")
         all_tags_of_state = main_window.canvas.gettags(state_tag)
         if state_tag + "_comment_line_end" in all_tags_of_state:
@@ -160,6 +148,9 @@ def extract_transition_specifications_from_the_graph() -> list:
             reference_to_state_comment_window = state_comment.StateComment.dictionary[canvas_id_of_comment_window]
             canvas_id_of_comment_text_widget = reference_to_state_comment_window.text_id
             state_comments = reference_to_state_comment_window.text_id.get("1.0", "end")
+            state_comments = re.sub(r"^\s*[0-9]*\s*", "", state_comments)  # Remove order comment at comment start.
+            if state_comments == "":
+                canvas_id_of_comment_text_widget = None
         else:
             canvas_id_of_comment_text_widget = None
             state_comments = ""
@@ -292,10 +283,10 @@ def _create_action_and_branch_array_for_each_if_construct(transition_specificati
     branchnumber_array_of_state = {}
     action_target_array = {}
     branchnumber_array = {}
+    state_name = None
     for transition_specification in transition_specifications:
         if transition_specification["command"] == "when":
-            if action_target_array_of_state:  # The analysis of a state is ready.
-                # FIXME: state_name is not defined here.
+            if action_target_array_of_state and state_name is not None:  # The analysis of a state is ready.
                 action_target_array[state_name] = action_target_array_of_state
                 branchnumber_array[state_name] = branchnumber_array_of_state
                 action_target_array_of_state = {}
@@ -317,7 +308,9 @@ def _create_action_and_branch_array_for_each_if_construct(transition_specificati
             branchnumber_array_of_state[transition_specification["if_identifier"]] = transition_specification[
                 "branch_number"
             ]
-    if action_target_array_of_state:  # Needed for the last state, as no new "when" will come after the last state.
+    if (
+        action_target_array_of_state and state_name is not None
+    ):  # Needed for the last state, as no new "when" will come after the last state.
         action_target_array[state_name] = action_target_array_of_state
         branchnumber_array[state_name] = branchnumber_array_of_state
     return action_target_array, branchnumber_array
@@ -544,6 +537,30 @@ def _get_a_list_of_all_state_tags():
             if reg_ex_for_state_tag.match(tag):
                 state_tag_list.append(tag)
     return sorted(state_tag_list)
+
+
+def sort_list_of_all_state_tags(list_of_all_state_tags):
+    state_tag_dict_with_prio = {}
+    state_tag_list = []
+    sorted_list_of_all_state_tags = []
+    for state_tag in list_of_all_state_tags:
+        list_of_canvas_ids = main_window.canvas.find_withtag(state_tag + "_comment")
+        if list_of_canvas_ids:
+            canvas_id_of_comment_window = list_of_canvas_ids[0]
+            reference_to_state_comment_window = state_comment.StateComment.dictionary[canvas_id_of_comment_window]
+            state_comments = reference_to_state_comment_window.text_id.get("1.0", "end")
+            state_comments_list = state_comments.split("\n")
+            if state_comments_list:
+                first_line_of_state_comments = state_comments_list[0].strip()
+                first_line_is_a_number = bool(all(c in "0123456789" for c in first_line_of_state_comments))
+                if first_line_is_a_number:
+                    state_tag_dict_with_prio[int(first_line_of_state_comments)] = state_tag
+                else:
+                    state_tag_list.append(state_tag)
+    for _, tag in sorted(state_tag_dict_with_prio.items()):
+        sorted_list_of_all_state_tags.append(tag)
+    sorted_list_of_all_state_tags.extend(state_tag_list)
+    return sorted_list_of_all_state_tags
 
 
 def _extract_conditions_for_all_outgoing_transitions_of_the_state(
@@ -838,8 +855,8 @@ def _remove_verilog_block_comments(hdl_text):
 def convert_hdl_lines_into_a_searchable_string(text):
     without_comments = remove_comments_and_returns(text)
     separated = surround_character_by_blanks(";", without_comments)
-    separated = surround_character_by_blanks(r"\(", separated)  # "\" is needed to be able to search for "("
-    separated = surround_character_by_blanks(r"\)", separated)  # "\" is needed to be able to search for ")"
+    separated = surround_character_by_blanks("(", separated)
+    separated = surround_character_by_blanks(")", separated)
     separated = surround_character_by_blanks(":", separated)
     separated = surround_character_by_blanks("!=", separated)
     separated = surround_character_by_blanks("!", separated)
@@ -849,7 +866,7 @@ def convert_hdl_lines_into_a_searchable_string(text):
     separated = surround_character_by_blanks("<", separated)
     separated = surround_character_by_blanks(",", separated)
     separated = surround_character_by_blanks("'", separated)
-    separated = surround_character_by_blanks(r"\+", separated)
+    separated = surround_character_by_blanks("+", separated)
     separated = surround_character_by_blanks("-", separated)
     separated = re.sub("<  =", "<=", separated)  # restore this operator (assignment or comparison)
     separated = re.sub(">  =", ">=", separated)  # restore this operator (comparison)
@@ -864,11 +881,11 @@ def convert_hdl_lines_into_a_searchable_string(text):
 
 
 def surround_character_by_blanks(character, all_port_declarations_without_comments):
-    if character.startswith("\\"):
-        original_character = character[1:]  # remove "\"
+    if character in ("(", ")", "+"):
+        search_character = "\\" + character  # Add the escape-character
     else:
-        original_character = character
-    return re.sub(character, " " + original_character + " ", all_port_declarations_without_comments)
+        search_character = character
+    return re.sub(search_character, " " + character + " ", all_port_declarations_without_comments)
 
 
 def get_all_declared_signal_names(all_signal_declarations) -> list:

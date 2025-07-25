@@ -3,6 +3,7 @@ Methods needed for HDL generation
 """
 
 import os
+import re
 import tkinter as tk
 from datetime import datetime
 from tkinter import messagebox
@@ -12,6 +13,7 @@ import codegen.hdl_generation_library as hdl_generation_library
 import codegen.hdl_generation_module as hdl_generation_module
 import file_handling
 import main_window
+import state_comment
 import tag_plausibility
 from codegen.hdl_generation_config import GenerationConfig
 from constants import GuiTab
@@ -66,6 +68,7 @@ def _create_hdl(config, header, write_to_file) -> None:
     if file_name_architecture:
         link_dict().clear_link_dict(file_name_architecture)
     file_line_number = 3  # Line 1 = Filename, Line 2 = Header
+    state_tag_list_sorted = _create_sorted_state_tag_list()
 
     if config.language == "VHDL":
         entity, file_line_number = _create_entity(config, file_name, file_line_number)
@@ -75,21 +78,25 @@ def _create_hdl(config, header, write_to_file) -> None:
         else:
             file_to_use = file_name_architecture
             file_line_number_to_use = 3
-        architecture = hdl_generation_architecture.create_architecture(file_to_use, file_line_number_to_use)
+        architecture = hdl_generation_architecture.create_architecture(
+            file_to_use, file_line_number_to_use, state_tag_list_sorted
+        )
     else:
         entity, file_line_number = _create_module_ports(config, file_name, file_line_number)
-        architecture = hdl_generation_module.create_module_logic(file_name, file_line_number)
+        architecture = hdl_generation_module.create_module_logic(file_name, file_line_number, state_tag_list_sorted)
     if architecture is None:
         return  # No further actions required, because when writing to a file, always an architecture must exist.
     # write_hdl_file must be called even if hdl is not needed, as write_hdl_file sets last_line_number_of_file1, which is read by Linking.
     hdl = _write_hdl_file(config, write_to_file, header, entity, architecture, file_name, file_name_architecture)
     if write_to_file is True:
-        _copy_hdl_into_generated_hdl_tab(hdl, file_name)
+        _copy_hdl_into_generated_hdl_tab(hdl, file_name, file_name_architecture)
 
 
 # TODO: This should not be here!
-def _copy_hdl_into_generated_hdl_tab(hdl, file_name) -> None:
+def _copy_hdl_into_generated_hdl_tab(hdl, file_name, file_name_architecture) -> None:
     main_window.date_of_hdl_file_shown_in_hdl_tab = os.path.getmtime(file_name)
+    if file_name_architecture != "":
+        main_window.date_of_hdl_file2_shown_in_hdl_tab = os.path.getmtime(file_name_architecture)
     main_window.hdl_frame_text.config(state=tk.NORMAL)
     main_window.hdl_frame_text.delete("1.0", tk.END)
     main_window.hdl_frame_text.insert("1.0", hdl)
@@ -291,3 +298,42 @@ def _add_line_numbers(text) -> str:
     for line_number, line in enumerate(text_lines, start=1):
         content_with_numbers += format(line_number, "0" + number_of_needed_digits_as_string + "d") + ": " + line + "\n"
     return content_with_numbers
+
+
+def _create_sorted_state_tag_list():
+    state_tag_dict_with_prio = {}
+    state_tag_list = []
+    reg_ex_for_state_tag = re.compile("^state[0-9]+$")
+    for canvas_id in main_window.canvas.find_all():
+        for tag in main_window.canvas.gettags(canvas_id):
+            if reg_ex_for_state_tag.match(tag):
+                single_element_list = main_window.canvas.find_withtag(tag + "_comment")
+                if not single_element_list:
+                    state_tag_list.append(tag)
+                else:
+                    reference_to_state_comment_window = state_comment.StateComment.dictionary[single_element_list[0]]
+                    state_comments = reference_to_state_comment_window.text_id.get("1.0", "end - 1 chars")
+                    state_comments_list = state_comments.split("\n")
+                    first_line_of_state_comments = state_comments_list[0].strip()
+                    if first_line_of_state_comments == "":
+                        state_tag_list.append(tag)
+                    else:
+                        first_line_is_a_number = bool(all(c in "0123456789" for c in first_line_of_state_comments))
+                        if not first_line_is_a_number:
+                            state_tag_list.append(tag)
+                        else:
+                            if int(first_line_of_state_comments) in state_tag_dict_with_prio:
+                                state_tag_list.append(tag)
+                                messagebox.showwarning(
+                                    "Warning in HDL-FSM-Editor",
+                                    "The state '"
+                                    + main_window.canvas.itemcget(tag + "_name", "text")
+                                    + "' uses the order-number "
+                                    + first_line_of_state_comments
+                                    + " which is already used at another state.",
+                                )
+                            else:
+                                state_tag_dict_with_prio[int(first_line_of_state_comments)] = tag
+    for _, tag in sorted(state_tag_dict_with_prio.items(), reverse=True):
+        state_tag_list.insert(0, tag)
+    return state_tag_list

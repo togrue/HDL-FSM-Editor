@@ -14,10 +14,10 @@ from link_dictionary import link_dict
 from .exceptions import GenerationError
 
 
-def create_state_action_process(file_name, file_line_number) -> tuple:
+def create_state_action_process(file_name, file_line_number, state_tag_list_sorted) -> tuple:
     default_state_actions = _get_default_state_actions()
-    state_action_list = (
-        _create_state_action_list()
+    state_action_list = _create_state_action_list(
+        state_tag_list_sorted
     )  # Each entry is : ["state_name", "state_actions", "state_action_reference"]
     if default_state_actions == "" and _state_actions_contain_only_null_for_each_state(state_action_list):
         return "", file_line_number
@@ -197,30 +197,25 @@ def _create_a_list_with_all_possible_sensitivity_entries() -> list:
     return signals_list
 
 
-def _create_state_action_list():
+def _create_state_action_list(state_tag_list_sorted):
     state_action_list = []
-    list_of_all_ids = main_window.canvas.find_all()
-    for item_id in list_of_all_ids:
-        all_tags_of_this_item_id = main_window.canvas.gettags(item_id)
+    for state_tag in state_tag_list_sorted:
         state_action = "null;\n"
         state_action_reference = None
-        reg_ex_for_state_tag = re.compile("^state[0-9]+$")
-        for item_tag in all_tags_of_this_item_id:
-            if item_tag.startswith("connection") and item_tag.endswith(
+        for tag_of_state in main_window.canvas.gettags(state_tag):
+            if tag_of_state.startswith("connection") and tag_of_state.endswith(
                 "_end"
             ):  # This is a tag which exists only at states.
-                connection_name = item_tag[:-4]
+                connection_name = tag_of_state[:-4]
                 state_action_id = main_window.canvas.find_withtag(connection_name + "_start")
                 if state_action_id != ():
                     ref = state_action_handling.MyText.mytext_dict[state_action_id[0]]
                     state_action = ref.text_id.get("1.0", tk.END)
                     state_action_reference = ref.text_id
-        for item_tag in all_tags_of_this_item_id:
-            if reg_ex_for_state_tag.match(item_tag):
-                state_tag = item_tag
-                state_name = main_window.canvas.itemcget(state_tag + "_name", "text")
-                state_action_list.append([state_name, state_action, state_action_reference])
-    return sorted(state_action_list)
+                    break
+        state_name = main_window.canvas.itemcget(state_tag + "_name", "text")
+        state_action_list.append([state_name, state_action, state_action_reference])
+    return state_action_list
 
 
 def _create_sensitivity_list(state_action_list, default_state_actions, all_possible_sensitivity_entries) -> str:
