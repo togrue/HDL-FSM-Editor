@@ -67,7 +67,7 @@ class CustomText(tk.Text):
             if command in ("insert", "delete", "replace"):
                 self.event_generate("<<TextModified>>")
             return result
-        except Exception as e:
+        except Exception:
             return None
 
     def replace_tabs_by_blanks(self):

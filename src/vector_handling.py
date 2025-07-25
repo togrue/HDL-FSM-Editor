@@ -51,7 +51,7 @@ def try_to_convert_into_straight_line(coords):
     for i in range(len(cos_phi_list)):
         if cos_phi_list[i] < 0.97:
             eliminate_points = False
-    if eliminate_points == True:
+    if eliminate_points:
         return [coords[0], coords[1], coords[-2], coords[-1]]
     else:
         return coords
