@@ -28,10 +28,10 @@ import color_changer
 import grid_drawing
 import update_hdl_tab
 
-VERSION = "4.12"
+_VERSION = "4.12"
 header_string = (
     "HDL-FSM-Editor\nVersion "
-    + VERSION
+    + _VERSION
     + "\nCreated by Matthias Schweikart\nContact: matthias.schweikart@gmx.de"
 )
 
@@ -62,52 +62,52 @@ canvas = None
 hdl_frame_text = None
 log_frame_text = None
 
-select_file_number_label = None
-select_file_number_frame = None
-interface_package_label = None
-interface_package_scroll = None
-interface_generics_label = None
-interface_ports_label = None
-internals_package_label = None
-internals_package_scroll = None
-internals_architecture_label = None
-internals_process_clocked_label = None
-internals_process_combinatorial_label = None
-compile_cmd_docu = None
-debug_active = None
-regex_dialog = None
+_select_file_number_label = None
+_select_file_number_frame = None
+_interface_package_label = None
+_interface_package_scroll = None
+_interface_generics_label = None
+_interface_ports_label = None
+_internals_package_label = None
+_internals_package_scroll = None
+_internals_architecture_label = None
+_internals_process_clocked_label = None
+_internals_process_combinatorial_label = None
+_compile_cmd_docu = None
+_debug_active = None
+_regex_dialog = None
 regex_message_find_for_vhdl = "(.*?):([0-9]+):[0-9]+:.*"
 regex_message_find_for_verilog = "(.*?):([0-9]+): .*"  # Added ' ' after the second ':', to get no hit at time stamps (i.e. 16:58:36).
 regex_file_name_quote = "\\1"
 regex_file_line_number_quote = "\\2"
-regex_dialog_entry = None
-regex_dialog_filename_entry = None
-regex_dialog_linenumber_entry = None
-regex_error_happened = False
-line_number_under_pointer_log_tab = 0
-line_number_under_pointer_hdl_tab = 0
-func_id_jump1 = None
-func_id_jump2 = None
+_regex_dialog_entry = None
+_regex_dialog_filename_entry = None
+_regex_dialog_linenumber_entry = None
+_regex_error_happened = False
+_line_number_under_pointer_log_tab = 0
+_line_number_under_pointer_hdl_tab = 0
+_func_id_jump1 = None
+_func_id_jump2 = None
 size_of_file1_line_number = 0
 size_of_file2_line_number = 0
-func_id_jump = None
-module_name_entry = None
-clock_signal_name_entry = None
+_func_id_jump = None
+_module_name_entry = None
+_clock_signal_name_entry = None
 diagram_background_color = "white"
-diagram_background_color_error = None
+_diagram_background_color_error = None
 show_grid = True
 grid_drawer = None
 paned_window_interface = None
-interface_package_frame = None
+_interface_package_frame = None
 paned_window_internals = None
-internals_package_frame = None
+_internals_package_frame = None
 sash_positions = {}
 sash_positions["interface_tab"] = {}
 sash_positions["internals_tab"] = {}
 undo_button = None
 redo_button = None
-trace_id_generate_path_value = None
-trace_id_working_directory_value = None
+_trace_id_generate_path_value = None
+_trace_id_working_directory_value = None
 date_of_hdl_file_shown_in_hdl_tab = 0.0
 date_of_hdl_file2_shown_in_hdl_tab = 0.0
 
@@ -122,7 +122,7 @@ keyword_color = {
 keywords = constants.vhdl_keywords
 
 
-def read_message():
+def _read_message():
     try:
         source = urllib.request.urlopen("http://www.hdl-fsm-editor.de/message.txt")
         message = source.read()
@@ -133,7 +133,7 @@ def read_message():
         pass
 
 
-def check_version():
+def _check_version():
     try:
         print("Checking for a newer version ...")
         source = urllib.request.urlopen("http://www.hdl-fsm-editor.de/index.php")
@@ -143,7 +143,7 @@ def check_version():
         end_index = new_version.find("(")
         new_version = new_version[:end_index]
         new_version = re.sub(" ", "", new_version)
-        if new_version != "Version" + VERSION:
+        if new_version != "Version" + _VERSION:
             print(
                 "Please update to the new version of HDL-FSM-Editor available at http://www.hdl-fsm-editor.de"
             )
@@ -173,9 +173,9 @@ def evaluate_commandline_parameters():
     )
     args = argument_parser.parse_args()
     if not args.no_version_check:
-        check_version()
+        _check_version()
     if not args.no_message:
-        read_message()
+        _read_message()
     if args.filename is not None:
         if not exists(args.filename):
             messagebox.showerror(
@@ -198,7 +198,7 @@ def evaluate_commandline_parameters():
             if args.generate_hdl:
                 hdl_generation.run_hdl_generation(write_to_file=True)
                 sys.exit()
-            canvas.bind("<Visibility>", lambda event: view_all_after_window_is_built())
+            canvas.bind("<Visibility>", lambda event: _view_all_after_window_is_built())
     return
 
 
@@ -206,12 +206,12 @@ def show_window():
     root.wm_deiconify()
 
 
-def view_all_after_window_is_built():
+def _view_all_after_window_is_built():
     canvas_editing.view_all()
     canvas.unbind("<Visibility>")
 
 
-def close_tool():
+def _close_tool():
     title = root.title()
     if title.endswith("*"):
         discard = messagebox.askokcancel(
@@ -240,7 +240,7 @@ def create_root():
     root.columnconfigure(0, weight=1)
     root.rowconfigure(1, weight=1)
     root.grid()
-    root.protocol("WM_DELETE_WINDOW", close_tool)
+    root.protocol("WM_DELETE_WINDOW", _close_tool)
     link_dictionary.LinkDictionary(root)
 
 
@@ -360,7 +360,7 @@ def create_menu_bar():
     )
 
     notebook.bind(
-        "<<NotebookTabChanged>>", lambda event: handle_notebook_tab_changed_event()
+        "<<NotebookTabChanged>>", lambda event: _handle_notebook_tab_changed_event()
     )
 
     file_menu_button.grid(row=0, column=0)
@@ -382,15 +382,15 @@ def create_menu_bar():
     root.bind_all("<Control-n>", lambda event: file_handling.remove_old_design())
     root.bind_all("<Control-p>", lambda event: compile_handling.compile_hdl())
     root.bind_all("<Control-f>", lambda event: search_string_entry.focus_set())
-    root.bind_all("<Control-O>", lambda event: capslock_warning("O"))
-    root.bind_all("<Control-S>", lambda event: capslock_warning("S"))
-    root.bind_all("<Control-G>", lambda event: capslock_warning("G"))
-    root.bind_all("<Control-N>", lambda event: capslock_warning("N"))
-    root.bind_all("<Control-P>", lambda event: capslock_warning("P"))
-    root.bind_all("<Control-F>", lambda event: capslock_warning("F"))
+    root.bind_all("<Control-O>", lambda event: _capslock_warning("O"))
+    root.bind_all("<Control-S>", lambda event: _capslock_warning("S"))
+    root.bind_all("<Control-G>", lambda event: _capslock_warning("G"))
+    root.bind_all("<Control-N>", lambda event: _capslock_warning("N"))
+    root.bind_all("<Control-P>", lambda event: _capslock_warning("P"))
+    root.bind_all("<Control-F>", lambda event: _capslock_warning("F"))
 
 
-def capslock_warning(character):
+def _capslock_warning(character):
     messagebox.showwarning(
         "Warning in HDL-FSM-Editor",
         "The character "
@@ -416,23 +416,23 @@ def create_control_notebook_tab():
         clock_signal_name, \
         compile_cmd
     global \
-        select_file_number_label, \
-        select_file_number_frame, \
-        compile_cmd_docu, \
+        _select_file_number_label, \
+        _select_file_number_frame, \
+        _compile_cmd_docu, \
         edit_cmd, \
-        module_name_entry, \
-        clock_signal_name_entry
-    global diagram_background_color, diagram_background_color_error
+        _module_name_entry, \
+        _clock_signal_name_entry
+    global diagram_background_color, _diagram_background_color_error
     control_frame = ttk.Frame(notebook, takefocus=False)
     control_frame.grid()
 
     module_name = tk.StringVar()
     module_name.set("")
     module_name_label = ttk.Label(control_frame, text="Module-Name:", padding=5)
-    module_name_entry = ttk.Entry(control_frame, width=23, textvariable=module_name)
+    _module_name_entry = ttk.Entry(control_frame, width=23, textvariable=module_name)
     module_name_label.grid(row=0, column=0, sticky=tk.W)
-    module_name_entry.grid(row=0, column=1, sticky=tk.W)
-    module_name_entry.select_clear()
+    _module_name_entry.grid(row=0, column=1, sticky=tk.W)
+    _module_name_entry.select_clear()
 
     language = tk.StringVar()
     language.set("VHDL")
@@ -448,7 +448,7 @@ def create_control_notebook_tab():
     language_combobox.grid(row=1, column=1, sticky=tk.W)
 
     generate_path_value = tk.StringVar(value="")
-    generate_path_value.trace_add("write", show_path_has_changed)
+    generate_path_value.trace_add("write", _show_path_has_changed)
     generate_path_label = ttk.Label(
         control_frame, text="Path for generated HDL:", padding=5
     )
@@ -456,7 +456,7 @@ def create_control_notebook_tab():
         control_frame, textvariable=generate_path_value, width=80
     )
     generate_path_button = ttk.Button(
-        control_frame, text="Select...", command=set_path, style="Path.TButton"
+        control_frame, text="Select...", command=_set_path, style="Path.TButton"
     )
     generate_path_label.grid(row=2, column=0, sticky=tk.W)
     generate_path_entry.grid(row=2, column=1, sticky=(tk.W, tk.E))
@@ -467,26 +467,26 @@ def create_control_notebook_tab():
 
     select_file_number_text = tk.IntVar()
     select_file_number_text.set(2)
-    select_file_number_label = ttk.Label(
+    _select_file_number_label = ttk.Label(
         control_frame, text="Select for generation:", padding=5
     )
-    select_file_number_frame = ttk.Frame(control_frame)
+    _select_file_number_frame = ttk.Frame(control_frame)
     select_file_number_radio_button1 = ttk.Radiobutton(
-        select_file_number_frame,
+        _select_file_number_frame,
         takefocus=False,
         variable=select_file_number_text,
         text="1 file",
         value=1,
     )
     select_file_number_radio_button2 = ttk.Radiobutton(
-        select_file_number_frame,
+        _select_file_number_frame,
         takefocus=False,
         variable=select_file_number_text,
         text="2 files",
         value=2,
     )
-    select_file_number_label.grid(row=3, column=0, sticky=tk.W)
-    select_file_number_frame.grid(row=3, column=1, sticky=tk.W)
+    _select_file_number_label.grid(row=3, column=0, sticky=tk.W)
+    _select_file_number_frame.grid(row=3, column=1, sticky=tk.W)
     select_file_number_radio_button1.grid(row=0, column=1, sticky=tk.W)
     select_file_number_radio_button2.grid(row=0, column=2, sticky=tk.W)
 
@@ -509,14 +509,14 @@ def create_control_notebook_tab():
     clock_signal_name_label = ttk.Label(
         control_frame, text="Name of clock input port:", padding=5
     )
-    clock_signal_name_entry = ttk.Entry(
+    _clock_signal_name_entry = ttk.Entry(
         control_frame, width=23, textvariable=clock_signal_name
     )
-    clock_signal_name_entry.bind(
+    _clock_signal_name_entry.bind(
         "<Key>", lambda event: undo_handling.modify_window_title()
     )
     clock_signal_name_label.grid(row=5, column=0, sticky=tk.W)
-    clock_signal_name_entry.grid(row=5, column=1, sticky=tk.W)
+    _clock_signal_name_entry.grid(row=5, column=1, sticky=tk.W)
 
     compile_cmd = tk.StringVar()
     compile_cmd.set("ghdl -a $file1 $file2; ghdl -e $name; ghdl -r $name")
@@ -527,12 +527,12 @@ def create_control_notebook_tab():
     control_frame.columnconfigure((6, 0), weight=0)
     control_frame.columnconfigure((6, 1), weight=1)
 
-    compile_cmd_docu = ttk.Label(
+    _compile_cmd_docu = ttk.Label(
         control_frame,
         text="Variables for compile command:\n$file1\t= Entity-File\n$file2\t= Architecture-File\n$file\t= File with Entity and Architecture\n$name\t= Module Name",
         padding=5,
     )
-    compile_cmd_docu.grid(row=7, column=1, sticky=tk.W)
+    _compile_cmd_docu.grid(row=7, column=1, sticky=tk.W)
     control_frame.columnconfigure((7, 0), weight=0)
     control_frame.columnconfigure((7, 1), weight=1)
 
@@ -548,7 +548,7 @@ def create_control_notebook_tab():
     control_frame.columnconfigure((8, 1), weight=1)
 
     working_directory_value = tk.StringVar(value="")
-    working_directory_value.trace_add("write", show_path_has_changed)
+    working_directory_value.trace_add("write", _show_path_has_changed)
     working_directory_label = ttk.Label(
         control_frame, text="Working directory:", padding=5
     )
@@ -558,7 +558,7 @@ def create_control_notebook_tab():
     working_directory_button = ttk.Button(
         control_frame,
         text="Select...",
-        command=set_working_directory,
+        command=_set_working_directory,
         style="Path.TButton",
     )
     working_directory_label.grid(row=9, column=0, sticky=tk.W)
@@ -570,7 +570,7 @@ def create_control_notebook_tab():
 
     diagram_background_color = tk.StringVar(value="white")
     diagram_background_color.trace_add(
-        "write", lambda *args: change_color_of_diagram_background()
+        "write", lambda *args: _change_color_of_diagram_background()
     )
     diagram_background_color_label = ttk.Label(
         control_frame, text="Diagram background color:", padding=5
@@ -590,8 +590,8 @@ def create_control_notebook_tab():
     control_frame.columnconfigure((10, 0), weight=0)
     control_frame.columnconfigure((10, 1), weight=1)
     control_frame.columnconfigure((10, 2), weight=0)
-    diagram_background_color_error = ttk.Label(control_frame, text="", padding=5)
-    diagram_background_color_error.grid(row=11, column=1, sticky=tk.W)
+    _diagram_background_color_error = ttk.Label(control_frame, text="", padding=5)
+    _diagram_background_color_error.grid(row=11, column=1, sticky=tk.W)
     control_frame.columnconfigure((11, 0), weight=0)
     control_frame.columnconfigure((11, 1), weight=1)
     control_frame.columnconfigure((11, 2), weight=0)
@@ -599,13 +599,13 @@ def create_control_notebook_tab():
     notebook.add(control_frame, sticky=tk.N + tk.E + tk.W + tk.S, text="Control")
 
 
-def set_path():
+def _set_path():
     path = askdirectory()
     if path != "" and not path.isspace():
         generate_path_value.set(path)
 
 
-def set_working_directory():
+def _set_working_directory():
     path = askdirectory()
     if path != "" and not path.isspace():
         working_directory_value.set(path)
@@ -613,27 +613,27 @@ def set_working_directory():
 
 def create_interface_notebook_tab():
     global interface_package_text, interface_generics_text, interface_ports_text
-    global interface_package_label, interface_package_scroll
-    global interface_generics_label, interface_ports_label
-    global paned_window_interface, interface_package_frame
+    global _interface_package_label, _interface_package_scroll
+    global _interface_generics_label, _interface_ports_label
+    global paned_window_interface, _interface_package_frame
 
     paned_window_interface = ttk.PanedWindow(
         notebook, orient=tk.VERTICAL, takefocus=True
     )
 
-    interface_package_frame = ttk.Frame(paned_window_interface)
-    interface_package_frame.columnconfigure(0, weight=1)
-    interface_package_frame.columnconfigure(1, weight=0)
-    interface_package_frame.rowconfigure(0, weight=0)
-    interface_package_frame.rowconfigure(1, weight=1)
-    interface_package_label = ttk.Label(
-        interface_package_frame, text="Packages:", padding=5
+    _interface_package_frame = ttk.Frame(paned_window_interface)
+    _interface_package_frame.columnconfigure(0, weight=1)
+    _interface_package_frame.columnconfigure(1, weight=0)
+    _interface_package_frame.rowconfigure(0, weight=0)
+    _interface_package_frame.rowconfigure(1, weight=1)
+    _interface_package_label = ttk.Label(
+        _interface_package_frame, text="Packages:", padding=5
     )
     interface_package_info = ttk.Label(
-        interface_package_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5
+        _interface_package_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5
     )
     interface_package_text = custom_text.CustomText(
-        interface_package_frame,
+        _interface_package_frame,
         text_type="package",
         height=3,
         width=10,
@@ -651,33 +651,33 @@ def create_interface_notebook_tab():
         "<<TextModified>>", lambda event: undo_handling.modify_window_title()
     )
     interface_package_text.bind(
-        "<Key>", lambda event, id=interface_package_text: handle_key(event, id)
+        "<Key>", lambda event, id=interface_package_text: _handle_key(event, id)
     )
-    interface_package_scroll = ttk.Scrollbar(
-        interface_package_frame,
+    _interface_package_scroll = ttk.Scrollbar(
+        _interface_package_frame,
         orient=tk.VERTICAL,
         cursor="arrow",
         command=interface_package_text.yview,
     )
-    interface_package_text.config(yscrollcommand=interface_package_scroll.set)
-    interface_package_label.grid(
+    interface_package_text.config(yscrollcommand=_interface_package_scroll.set)
+    _interface_package_label.grid(
         row=0, column=0, sticky=(tk.W, tk.N, tk.S)
     )  # "W" nötig, damit Text links bleibt
     interface_package_info.grid(row=0, column=0, sticky=tk.E)
     interface_package_text.grid(
         row=1, column=0, sticky=(tk.W, tk.E, tk.S, tk.N)
     )  # "W,E" nötig, damit Text tatsächlich breiter wird
-    interface_package_scroll.grid(
+    _interface_package_scroll.grid(
         row=1, column=1, sticky=(tk.W, tk.E, tk.S, tk.N)
     )  # "W,E" nötig, damit Text tatsächlich breiter wird
-    paned_window_interface.add(interface_package_frame, weight=1)
+    paned_window_interface.add(_interface_package_frame, weight=1)
 
     interface_generics_frame = ttk.Frame(paned_window_interface)
     interface_generics_frame.columnconfigure(0, weight=1)
     interface_generics_frame.columnconfigure(1, weight=0)
     interface_generics_frame.rowconfigure(0, weight=0)
     interface_generics_frame.rowconfigure(1, weight=1)
-    interface_generics_label = ttk.Label(
+    _interface_generics_label = ttk.Label(
         interface_generics_frame, text="Generics:", padding=5
     )
     interface_generics_info = ttk.Label(
@@ -698,7 +698,7 @@ def create_interface_notebook_tab():
         "<<TextModified>>", lambda event: undo_handling.modify_window_title()
     )
     interface_generics_text.bind(
-        "<Key>", lambda event, id=interface_generics_text: handle_key_at_generics(id)
+        "<Key>", lambda event, id=interface_generics_text: _handle_key_at_generics(id)
     )
     interface_generics_scroll = ttk.Scrollbar(
         interface_generics_frame,
@@ -707,7 +707,7 @@ def create_interface_notebook_tab():
         command=interface_generics_text.yview,
     )
     interface_generics_text.config(yscrollcommand=interface_generics_scroll.set)
-    interface_generics_label.grid(row=0, column=0, sticky=(tk.W, tk.N, tk.S))
+    _interface_generics_label.grid(row=0, column=0, sticky=(tk.W, tk.N, tk.S))
     interface_generics_info.grid(row=0, column=0, sticky=tk.E)
     interface_generics_text.grid(row=1, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
     interface_generics_scroll.grid(
@@ -721,7 +721,7 @@ def create_interface_notebook_tab():
     interface_ports_frame.columnconfigure(1, weight=0)
     interface_ports_frame.rowconfigure(0, weight=0)
     interface_ports_frame.rowconfigure(1, weight=1)
-    interface_ports_label = ttk.Label(interface_ports_frame, text="Ports:", padding=5)
+    _interface_ports_label = ttk.Label(interface_ports_frame, text="Ports:", padding=5)
     interface_ports_info = ttk.Label(
         interface_ports_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5
     )
@@ -739,7 +739,7 @@ def create_interface_notebook_tab():
         "<<TextModified>>", lambda event: undo_handling.modify_window_title()
     )
     interface_ports_text.bind(
-        "<Key>", lambda event, id=interface_ports_text: handle_key_at_ports(id)
+        "<Key>", lambda event, id=interface_ports_text: _handle_key_at_ports(id)
     )
     interface_ports_scroll = ttk.Scrollbar(
         interface_ports_frame,
@@ -748,7 +748,7 @@ def create_interface_notebook_tab():
         command=interface_ports_text.yview,
     )
     interface_ports_text.config(yscrollcommand=interface_ports_scroll.set)
-    interface_ports_label.grid(row=0, column=0, sticky=tk.W)
+    _interface_ports_label.grid(row=0, column=0, sticky=tk.W)
     interface_ports_info.grid(row=0, column=0, sticky=tk.E)
     interface_ports_text.grid(row=1, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
     interface_ports_scroll.grid(
@@ -767,30 +767,30 @@ def create_internals_notebook_tab():
         internals_architecture_text, \
         internals_process_clocked_text, \
         internals_process_combinatorial_text
-    global internals_package_label, internals_package_scroll
+    global _internals_package_label, _internals_package_scroll
     global \
-        internals_architecture_label, \
-        internals_process_clocked_label, \
-        internals_process_combinatorial_label
-    global paned_window_internals, internals_package_frame
+        _internals_architecture_label, \
+        _internals_process_clocked_label, \
+        _internals_process_combinatorial_label
+    global paned_window_internals, _internals_package_frame
 
     paned_window_internals = ttk.PanedWindow(
         notebook, orient=tk.VERTICAL, takefocus=True
     )
 
-    internals_package_frame = ttk.Frame(paned_window_internals)
-    internals_package_frame.columnconfigure(0, weight=1)
-    internals_package_frame.columnconfigure(1, weight=0)
-    internals_package_frame.rowconfigure(0, weight=0)
-    internals_package_frame.rowconfigure(1, weight=1)
-    internals_package_label = ttk.Label(
-        internals_package_frame, text="Packages:", padding=5
+    _internals_package_frame = ttk.Frame(paned_window_internals)
+    _internals_package_frame.columnconfigure(0, weight=1)
+    _internals_package_frame.columnconfigure(1, weight=0)
+    _internals_package_frame.rowconfigure(0, weight=0)
+    _internals_package_frame.rowconfigure(1, weight=1)
+    _internals_package_label = ttk.Label(
+        _internals_package_frame, text="Packages:", padding=5
     )
     interface_package_info = ttk.Label(
-        internals_package_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5
+        _internals_package_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5
     )
     internals_package_text = custom_text.CustomText(
-        internals_package_frame,
+        _internals_package_frame,
         text_type="package",
         height=3,
         width=10,
@@ -804,33 +804,33 @@ def create_internals_notebook_tab():
         "<<TextModified>>", lambda event: undo_handling.modify_window_title()
     )
     internals_package_text.bind(
-        "<Key>", lambda event, id=internals_package_text: handle_key(event, id)
+        "<Key>", lambda event, id=internals_package_text: _handle_key(event, id)
     )
-    internals_package_scroll = ttk.Scrollbar(
-        internals_package_frame,
+    _internals_package_scroll = ttk.Scrollbar(
+        _internals_package_frame,
         orient=tk.VERTICAL,
         cursor="arrow",
         command=internals_package_text.yview,
     )
-    internals_package_text.config(yscrollcommand=internals_package_scroll.set)
-    internals_package_label.grid(
+    internals_package_text.config(yscrollcommand=_internals_package_scroll.set)
+    _internals_package_label.grid(
         row=0, column=0, sticky=tk.W
     )  # "W" nötig, damit Text links bleibt
     interface_package_info.grid(row=0, column=0, sticky=tk.E)
     internals_package_text.grid(
         row=1, column=0, sticky=(tk.W, tk.E, tk.S, tk.N)
     )  # "W,E" nötig, damit Text tatsächlich breiter wird
-    internals_package_scroll.grid(
+    _internals_package_scroll.grid(
         row=1, column=1, sticky=(tk.W, tk.E, tk.S, tk.N)
     )  # "W,E" nötig, damit Text tatsächlich breiter wird
-    paned_window_internals.add(internals_package_frame, weight=1)
+    paned_window_internals.add(_internals_package_frame, weight=1)
 
     internals_architecture_frame = ttk.Frame(paned_window_internals)
     internals_architecture_frame.columnconfigure(0, weight=1)
     internals_architecture_frame.columnconfigure(1, weight=0)
     internals_architecture_frame.rowconfigure(0, weight=0)
     internals_architecture_frame.rowconfigure(1, weight=1)
-    internals_architecture_label = ttk.Label(
+    _internals_architecture_label = ttk.Label(
         internals_architecture_frame, text="Architecture Declarations:", padding=5
     )
     interface_architecture_info = ttk.Label(
@@ -855,7 +855,7 @@ def create_internals_notebook_tab():
     )
     internals_architecture_text.bind(
         "<Key>",
-        lambda event, id=internals_architecture_text: handle_key_at_declarations(id),
+        lambda event, id=internals_architecture_text: _handle_key_at_declarations(id),
     )
     internals_architecture_scroll = ttk.Scrollbar(
         internals_architecture_frame,
@@ -864,7 +864,7 @@ def create_internals_notebook_tab():
         command=internals_architecture_text.yview,
     )
     internals_architecture_text.config(yscrollcommand=internals_architecture_scroll.set)
-    internals_architecture_label.grid(row=0, column=0, sticky=tk.W)
+    _internals_architecture_label.grid(row=0, column=0, sticky=tk.W)
     interface_architecture_info.grid(row=0, column=0, sticky=tk.E)
     internals_architecture_text.grid(row=1, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
     internals_architecture_scroll.grid(
@@ -880,7 +880,7 @@ def create_internals_notebook_tab():
     internals_process_clocked_frame.columnconfigure(1, weight=0)
     internals_process_clocked_frame.rowconfigure(0, weight=0)
     internals_process_clocked_frame.rowconfigure(1, weight=1)
-    internals_process_clocked_label = ttk.Label(
+    _internals_process_clocked_label = ttk.Label(
         internals_process_clocked_frame,
         text="Variable Declarations for clocked process:",
         padding=5,
@@ -909,7 +909,7 @@ def create_internals_notebook_tab():
     )
     internals_process_clocked_text.bind(
         "<Key>",
-        lambda event, id=internals_process_clocked_text: handle_key_at_declarations(id),
+        lambda event, id=internals_process_clocked_text: _handle_key_at_declarations(id),
     )
     internals_process_clocked_scroll = ttk.Scrollbar(
         internals_process_clocked_frame,
@@ -920,7 +920,7 @@ def create_internals_notebook_tab():
     internals_process_clocked_text.config(
         yscrollcommand=internals_process_clocked_scroll.set
     )
-    internals_process_clocked_label.grid(row=0, column=0, sticky=tk.W)
+    _internals_process_clocked_label.grid(row=0, column=0, sticky=tk.W)
     interface_process_clocked_info.grid(row=0, column=0, sticky=tk.E)
     internals_process_clocked_text.grid(
         row=1, column=0, sticky=(tk.N, tk.W, tk.E, tk.S)
@@ -935,7 +935,7 @@ def create_internals_notebook_tab():
     internals_process_combinatorial_frame.columnconfigure(1, weight=0)
     internals_process_combinatorial_frame.rowconfigure(0, weight=0)
     internals_process_combinatorial_frame.rowconfigure(1, weight=1)
-    internals_process_combinatorial_label = ttk.Label(
+    _internals_process_combinatorial_label = ttk.Label(
         internals_process_combinatorial_frame,
         text="Variable Declarations for combinatorial process:",
         padding=5,
@@ -965,7 +965,7 @@ def create_internals_notebook_tab():
     internals_process_combinatorial_text.bind(
         "<Key>",
         lambda event,
-        id=internals_process_combinatorial_text: handle_key_at_declarations(id),
+        id=internals_process_combinatorial_text: _handle_key_at_declarations(id),
     )
     internals_process_combinatorial_scroll = ttk.Scrollbar(
         internals_process_combinatorial_frame,
@@ -976,7 +976,7 @@ def create_internals_notebook_tab():
     internals_process_combinatorial_text.config(
         yscrollcommand=internals_process_combinatorial_scroll.set
     )
-    internals_process_combinatorial_label.grid(row=0, column=0, sticky=tk.W)
+    _internals_process_combinatorial_label.grid(row=0, column=0, sticky=tk.W)
     interface_process_combinatorial_info.grid(row=0, column=0, sticky=tk.E)
     internals_process_combinatorial_text.grid(
         row=1, column=0, sticky=(tk.N, tk.W, tk.E, tk.S)
@@ -1188,12 +1188,12 @@ def __check_for_window_resize(_):
     grid_drawer.draw_grid()
 
 
-def handle_notebook_tab_changed_event():
-    enable_undo_redo_if_diagram_tab_is_active_else_disable()
-    update_hdl_tab_if_necessary()
+def _handle_notebook_tab_changed_event():
+    _enable_undo_redo_if_diagram_tab_is_active_else_disable()
+    _update_hdl_tab_if_necessary()
 
 
-def enable_undo_redo_if_diagram_tab_is_active_else_disable():
+def _enable_undo_redo_if_diagram_tab_is_active_else_disable():
     if notebook.index(notebook.select()) == 3:
         canvas.bind_all("<Control-z>", lambda event: undo_handling.undo())
         canvas.bind_all("<Control-Z>", lambda event: undo_handling.redo())
@@ -1226,13 +1226,13 @@ def create_hdl_notebook_tab():
     hdl_frame_text.config(yscrollcommand=hdl_frame_text_scroll.set)
     hdl_frame_text_scroll.grid(row=0, column=1, sticky=(tk.W, tk.E, tk.S, tk.N))
 
-    hdl_frame_text.bind("<Motion>", cursor_move_hdl_tab)
+    hdl_frame_text.bind("<Motion>", _cursor_move_hdl_tab)
 
     notebook.add(hdl_frame, sticky=tk.N + tk.E + tk.W + tk.S, text="generated HDL")
 
 
 def create_log_notebook_tab():
-    global log_frame_text, debug_active
+    global log_frame_text, _debug_active
     log_frame = ttk.Frame(notebook)
     log_frame.grid()
     log_frame.columnconfigure(0, weight=1)
@@ -1249,7 +1249,7 @@ def create_log_notebook_tab():
         log_frame_button_frame, takefocus=False, text="Clear", style="Find.TButton"
     )
     log_frame_clear_button.grid(row=0, column=0, sticky=tk.W)
-    log_frame_clear_button.bind("<Button-1>", clear_log_tab)
+    log_frame_clear_button.bind("<Button-1>", _clear_log_tab)
 
     log_frame_regex_button = ttk.Button(
         log_frame_button_frame,
@@ -1258,7 +1258,7 @@ def create_log_notebook_tab():
         style="Find.TButton",
     )
     log_frame_regex_button.grid(row=0, column=1, sticky=tk.W)
-    log_frame_regex_button.bind("<Button-1>", edit_regex)
+    log_frame_regex_button.bind("<Button-1>", _edit_regex)
 
     log_frame_text_scroll = ttk.Scrollbar(
         log_frame, orient=tk.VERTICAL, cursor="arrow", command=log_frame_text.yview
@@ -1266,37 +1266,37 @@ def create_log_notebook_tab():
     log_frame_text.config(yscrollcommand=log_frame_text_scroll.set)
     log_frame_text_scroll.grid(row=1, column=1, sticky=(tk.W, tk.E, tk.S, tk.N))
 
-    log_frame_text.bind("<Motion>", cursor_move_log_tab)
+    log_frame_text.bind("<Motion>", _cursor_move_log_tab)
 
     notebook.add(log_frame, sticky=tk.N + tk.E + tk.W + tk.S, text="Compile Messages")
-    debug_active = tk.IntVar()
-    debug_active.set(1)  # 1: inactive, 2: active
+    _debug_active = tk.IntVar()
+    _debug_active.set(1)  # 1: inactive, 2: active
 
 
-def clear_log_tab(_):
+def _clear_log_tab(_):
     log_frame_text.config(state=tk.NORMAL)
     log_frame_text.delete("1.0", tk.END)
     log_frame_text.config(state=tk.DISABLED)
 
 
-def edit_regex(*_):
+def _edit_regex(*_):
     global \
-        regex_dialog, \
-        regex_dialog_entry, \
-        regex_dialog_filename_entry, \
-        regex_dialog_linenumber_entry
-    regex_dialog = tk.Toplevel()
-    regex_dialog.title("Enter Regex for Python:")
+        _regex_dialog, \
+        _regex_dialog_entry, \
+        _regex_dialog_filename_entry, \
+        _regex_dialog_linenumber_entry
+    _regex_dialog = tk.Toplevel()
+    _regex_dialog.title("Enter Regex for Python:")
     regex_dialog_header = ttk.Label(
-        regex_dialog,
+        _regex_dialog,
         text="Regex for finding a message with\ngroup for file-name and\ngroup for line-number:",
         justify="left",
     )
-    regex_dialog_entry = ttk.Entry(regex_dialog)
-    regex_dialog_identifier_frame = ttk.Frame(regex_dialog)
-    regex_button_frame = ttk.Frame(regex_dialog)
+    _regex_dialog_entry = ttk.Entry(_regex_dialog)
+    regex_dialog_identifier_frame = ttk.Frame(_regex_dialog)
+    regex_button_frame = ttk.Frame(_regex_dialog)
     regex_dialog_header.grid(row=0, sticky=(tk.W, tk.E))
-    regex_dialog_entry.grid(row=1, sticky=(tk.W, tk.E))
+    _regex_dialog_entry.grid(row=1, sticky=(tk.W, tk.E))
     regex_dialog_identifier_frame.grid(row=2)
     regex_button_frame.grid(row=3, sticky=(tk.W, tk.E))
     regex_dialog_filename_label = ttk.Label(
@@ -1304,22 +1304,22 @@ def edit_regex(*_):
         text="Group identifier for file-name:",
         justify="left",
     )
-    regex_dialog_filename_entry = ttk.Entry(regex_dialog_identifier_frame, width=40)
+    _regex_dialog_filename_entry = ttk.Entry(regex_dialog_identifier_frame, width=40)
     regex_dialog_linenumber_label = ttk.Label(
         regex_dialog_identifier_frame,
         text="Group identifier for line-number:",
         justify="left",
     )
-    regex_dialog_linenumber_entry = ttk.Entry(regex_dialog_identifier_frame, width=40)
+    _regex_dialog_linenumber_entry = ttk.Entry(regex_dialog_identifier_frame, width=40)
     regex_dialog_filename_label.grid(row=0, column=0, sticky=tk.W)
-    regex_dialog_filename_entry.grid(row=0, column=1)
+    _regex_dialog_filename_entry.grid(row=0, column=1)
     regex_dialog_linenumber_label.grid(row=1, column=0, sticky=tk.W)
-    regex_dialog_linenumber_entry.grid(row=1, column=1)
+    _regex_dialog_linenumber_entry.grid(row=1, column=1)
     regex_dialog_store_button = ttk.Button(
-        regex_button_frame, text="Store", command=regex_store
+        regex_button_frame, text="Store", command=_regex_store
     )
     regex_dialog_cancel_button = ttk.Button(
-        regex_button_frame, text="Cancel", command=regex_cancel
+        regex_button_frame, text="Cancel", command=_regex_cancel
     )
     debug_stdout_label = ttk.Label(
         regex_button_frame, text="Debug Regex at STDOUT:", padding=5
@@ -1332,51 +1332,51 @@ def edit_regex(*_):
     debug_stdout_radio_button1 = ttk.Radiobutton(
         debug_stdout_frame,
         takefocus=False,
-        variable=debug_active,
+        variable=_debug_active,
         text="Inactive",
         value=1,
     )
     debug_stdout_radio_button2 = ttk.Radiobutton(
         debug_stdout_frame,
         takefocus=False,
-        variable=debug_active,
+        variable=_debug_active,
         text="Active",
         value=2,
     )
     debug_stdout_radio_button1.grid(row=0, column=1, sticky=tk.W)
     debug_stdout_radio_button2.grid(row=0, column=2, sticky=tk.W)
     if language.get() == "VHDL":
-        regex_dialog_entry.insert(0, regex_message_find_for_vhdl)
+        _regex_dialog_entry.insert(0, regex_message_find_for_vhdl)
     else:
-        regex_dialog_entry.insert(0, regex_message_find_for_verilog)
-    regex_dialog_filename_entry.insert(0, regex_file_name_quote)
-    regex_dialog_linenumber_entry.insert(0, regex_file_line_number_quote)
+        _regex_dialog_entry.insert(0, regex_message_find_for_verilog)
+    _regex_dialog_filename_entry.insert(0, regex_file_name_quote)
+    _regex_dialog_linenumber_entry.insert(0, regex_file_line_number_quote)
 
 
-def regex_store():
+def _regex_store():
     global \
         regex_message_find_for_vhdl, \
         regex_message_find_for_verilog, \
         regex_file_name_quote, \
         regex_file_line_number_quote, \
-        regex_error_happened
+        _regex_error_happened
     if language.get() == "VHDL":
-        regex_message_find_for_vhdl = regex_dialog_entry.get()
+        regex_message_find_for_vhdl = _regex_dialog_entry.get()
     else:
-        regex_message_find_for_verilog = regex_dialog_entry.get()
-    regex_file_name_quote = regex_dialog_filename_entry.get()
-    regex_file_line_number_quote = regex_dialog_linenumber_entry.get()
+        regex_message_find_for_verilog = _regex_dialog_entry.get()
+    regex_file_name_quote = _regex_dialog_filename_entry.get()
+    regex_file_line_number_quote = _regex_dialog_linenumber_entry.get()
     undo_handling.design_has_changed()
-    regex_error_happened = False
-    regex_dialog.destroy()
+    _regex_error_happened = False
+    _regex_dialog.destroy()
 
 
-def regex_cancel():
-    regex_dialog.destroy()
+def _regex_cancel():
+    _regex_dialog.destroy()
 
 
-def cursor_move_hdl_tab(*_):
-    global line_number_under_pointer_hdl_tab, func_id_jump
+def _cursor_move_hdl_tab(*_):
+    global _line_number_under_pointer_hdl_tab, _func_id_jump
     if hdl_frame_text.get("1.0", tk.END + "- 1 char") == "":
         return
     # Determine current cursor position:
@@ -1387,7 +1387,7 @@ def cursor_move_hdl_tab(*_):
     )  # index_string has the format "1.34"
     # Determine current line number:
     line_number = int(re.sub(r"\..*", "", index_string))  # Remove everything after '.'
-    if line_number != line_number_under_pointer_hdl_tab:
+    if line_number != _line_number_under_pointer_hdl_tab:
         # print("cursor_move_hdl_tab: line_number =", line_number, index_string)
         hdl_frame_text.tag_delete("underline")
         file_name, file_name_architecture = hdl_generation.get_file_names()
@@ -1417,27 +1417,27 @@ def cursor_move_hdl_tab(*_):
                     str(line_number + 1) + ".0",
                 )
                 hdl_frame_text.tag_config("underline", underline=1)
-                func_id_jump = hdl_frame_text.bind(
+                _func_id_jump = hdl_frame_text.bind(
                     "<Control-Button-1>",
                     lambda event: link_dictionary.LinkDictionary.link_dict_reference.jump_to_source(
                         selected_file, line_number_in_file
                     ),
                 )
             else:
-                hdl_frame_text.unbind("<Button-1>", func_id_jump)
-                func_id_jump = None
-        line_number_under_pointer_hdl_tab = line_number
+                hdl_frame_text.unbind("<Button-1>", _func_id_jump)
+                _func_id_jump = None
+        _line_number_under_pointer_hdl_tab = line_number
 
 
-def cursor_move_log_tab(*_):
+def _cursor_move_log_tab(*_):
     global \
-        func_id_jump1, \
-        func_id_jump2, \
-        regex_error_happened, \
-        line_number_under_pointer_log_tab
+        _func_id_jump1, \
+        _func_id_jump2, \
+        _regex_error_happened, \
+        _line_number_under_pointer_log_tab
     if log_frame_text.get("1.0", tk.END + "- 1 char") == "":
         return
-    if debug_active.get() == 2:
+    if _debug_active.get() == 2:
         debug = True
     else:
         debug = False
@@ -1448,8 +1448,8 @@ def cursor_move_log_tab(*_):
     # Determine current line number:
     line_number = int(re.sub(r"\..*", "", index_string))
     if (
-        line_number != line_number_under_pointer_log_tab
-        and regex_error_happened is False
+        line_number != _line_number_under_pointer_log_tab
+        and _regex_error_happened is False
     ):
         log_frame_text.tag_delete("underline")
         if language.get() == "VHDL":
@@ -1509,13 +1509,13 @@ def cursor_move_log_tab(*_):
                         log_frame_text.tag_config(
                             "underline", underline=1, foreground="red"
                         )
-                        func_id_jump1 = log_frame_text.bind(
+                        _func_id_jump1 = log_frame_text.bind(
                             "<Control-Button-1>",
                             lambda event: link_dictionary.LinkDictionary.link_dict_reference.jump_to_source(
                                 file_name, file_line_number
                             ),
                         )
-                        func_id_jump2 = log_frame_text.bind(
+                        _func_id_jump2 = log_frame_text.bind(
                             "<Alt-Button-1>",
                             lambda event: link_dictionary.LinkDictionary.link_dict_reference.jump_to_hdl(
                                 file_name, file_line_number
@@ -1537,20 +1537,20 @@ def cursor_move_log_tab(*_):
                         print("Filename is not found in Link-Dictionary.")
             # except re.error:
             except Exception as e:
-                regex_error_happened = True
+                _regex_error_happened = True
                 messagebox.showerror(
                     "Error in HDL-FSM-Editor by regular expression", repr(e)
                 )
         else:
             if debug:
                 print("Regex did not match line           : ", content_of_line)
-            if func_id_jump1 is not None:
-                log_frame_text.unbind("<Button-1>", func_id_jump1)
-            if func_id_jump2 is not None:
-                log_frame_text.unbind("<Button-1>", func_id_jump2)
-            func_id_jump1 = None
-            func_id_jump2 = None
-        line_number_under_pointer_log_tab = line_number
+            if _func_id_jump1 is not None:
+                log_frame_text.unbind("<Button-1>", _func_id_jump1)
+            if _func_id_jump2 is not None:
+                log_frame_text.unbind("<Button-1>", _func_id_jump2)
+            _func_id_jump1 = None
+            _func_id_jump2 = None
+        _line_number_under_pointer_log_tab = line_number
 
 
 def switch_language_mode():
@@ -1568,46 +1568,46 @@ def switch_language_mode():
         keywords = constants.vhdl_keywords
         # enable 2 files mode
         select_file_number_text.set(2)
-        select_file_number_label.grid(row=3, column=0, sticky=tk.W)
-        select_file_number_frame.grid(row=3, column=1, sticky=tk.W)
+        _select_file_number_label.grid(row=3, column=0, sticky=tk.W)
+        _select_file_number_frame.grid(row=3, column=1, sticky=tk.W)
         # Interface: Adapt documentation for generics and ports
-        paned_window_interface.insert(0, interface_package_frame, weight=1)
-        interface_generics_label.config(text="Generics:")
-        interface_ports_label.config(text="Ports:")
+        paned_window_interface.insert(0, _interface_package_frame, weight=1)
+        _interface_generics_label.config(text="Generics:")
+        _interface_ports_label.config(text="Ports:")
         # Internals: Enable VHDL-package text field
-        paned_window_internals.insert(0, internals_package_frame, weight=1)
+        paned_window_internals.insert(0, _internals_package_frame, weight=1)
         # Internals: Architecture-Declarations, 2*Variable Declarations umbenennen
-        internals_architecture_label.config(text="Architecture Declarations:")
-        internals_process_clocked_label.config(
+        _internals_architecture_label.config(text="Architecture Declarations:")
+        _internals_process_clocked_label.config(
             text="Variable Declarations for clocked process:"
         )
-        internals_process_combinatorial_label.config(
+        _internals_process_combinatorial_label.config(
             text="Variable Declarations for combinatorial process:"
         )
         # Modify compile command:
         compile_cmd.set("ghdl -a $file1 $file2; ghdl -e $name; ghdl -r $name")
-        compile_cmd_docu.config(
+        _compile_cmd_docu.config(
             text="Variables for compile command:\n$file1\t= Entity-File\n$file2\t= Architecture-File\n$file\t= File with Entity and Architecture\n$name\t= Entity Name"
         )
     else:  # "Verilog" or "SystemVerilog"
         keywords = constants.verilog_keywords
         # Control: disable 2 files mode
         select_file_number_text.set(1)
-        select_file_number_label.grid_forget()
-        select_file_number_frame.grid_forget()
+        _select_file_number_label.grid_forget()
+        _select_file_number_frame.grid_forget()
         # Interface: Remove VHDL-package text field
-        paned_window_interface.forget(interface_package_frame)
+        paned_window_interface.forget(_interface_package_frame)
         # Interface: Adapt documentation for generics and ports
-        interface_generics_label.config(text="Parameters:")
-        interface_ports_label.config(text="Ports:")
+        _interface_generics_label.config(text="Parameters:")
+        _interface_ports_label.config(text="Ports:")
         # Internals: Remove VHDL-package text field
-        paned_window_internals.forget(internals_package_frame)
+        paned_window_internals.forget(_internals_package_frame)
         # Internals: Architecture-Declarations umbenennen, 2*Variable Declarations umbenennen
-        internals_architecture_label.config(text="Internal Declarations:")
-        internals_process_clocked_label.config(
+        _internals_architecture_label.config(text="Internal Declarations:")
+        _internals_process_clocked_label.config(
             text="Local Variable Declarations for clocked always process (not supported by all Verilog compilers):"
         )
-        internals_process_combinatorial_label.config(
+        _internals_process_combinatorial_label.config(
             text="Local Variable Declarations for combinatorial always process (not supported by all Verilog compilers):"
         )
         # Modify compile command:
@@ -1615,12 +1615,12 @@ def switch_language_mode():
             compile_cmd.set("iverilog -o $name $file; vvp $name")
         else:
             compile_cmd.set("iverilog -g2012 -o $name $file; vvp $name")
-        compile_cmd_docu.config(
+        _compile_cmd_docu.config(
             text="Variables for compile command:\n$file\t= Module-File\n$name\t= Module Name"
         )
 
 
-def handle_key(event, custom_text_ref):
+def _handle_key(event, custom_text_ref):
     custom_text_ref.after_idle(
         custom_text_ref.update_highlight_tags,
         canvas_editing.fontsize,
@@ -1628,22 +1628,22 @@ def handle_key(event, custom_text_ref):
     )
 
 
-def handle_key_at_ports(custom_text_ref):
+def _handle_key_at_ports(custom_text_ref):
     custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_ports_list)
     custom_text_ref.after_idle(custom_text_ref.update_highlighting)
 
 
-def handle_key_at_generics(custom_text_ref):
+def _handle_key_at_generics(custom_text_ref):
     custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_generics_list)
     custom_text_ref.after_idle(custom_text_ref.update_highlighting)
 
 
-def handle_key_at_declarations(custom_text_ref):
+def _handle_key_at_declarations(custom_text_ref):
     custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_signals_list)
     custom_text_ref.after_idle(custom_text_ref.update_highlighting)
 
 
-def show_path_has_changed(*_):
+def _show_path_has_changed(*_):
     undo_handling.design_has_changed()
 
 
@@ -1652,10 +1652,10 @@ def show_tab(tab):
     for tab_id in notebook_ids:
         if notebook.tab(tab_id, option="text") == tab:
             notebook.select(tab_id)
-            update_hdl_tab_if_necessary()
+            _update_hdl_tab_if_necessary()
 
 
-def update_hdl_tab_if_necessary():
+def _update_hdl_tab_if_necessary():
     global date_of_hdl_file_shown_in_hdl_tab
     global date_of_hdl_file2_shown_in_hdl_tab
     if notebook.index(notebook.select()) == 4:
@@ -1724,22 +1724,22 @@ def update_hdl_tab_if_necessary():
                     )
 
 
-def highlight_item(hdl_item_type, *_):
+def _highlight_item(hdl_item_type, *_):
     # This method must have the same name as the method custom_text.CustomText.highlight_item.
     # It is called, when in the "generated HDL"-tab module-name, reset-name or clock-name are clicked per mouse to jump to its declaration.
     if hdl_item_type == "module_name":
-        module_name_entry.select_range(0, tk.END)
+        _module_name_entry.select_range(0, tk.END)
     elif hdl_item_type == "reset_and_clock_signal_name":
-        clock_signal_name_entry.select_range(0, tk.END)
+        _clock_signal_name_entry.select_range(0, tk.END)
 
 
-def change_color_of_diagram_background():
+def _change_color_of_diagram_background():
     try:
         canvas.configure(bg=diagram_background_color.get())
-        diagram_background_color_error.configure(text="")
+        _diagram_background_color_error.configure(text="")
     except tk.TclError:
         canvas.configure(bg="white")
-        diagram_background_color_error.configure(
+        _diagram_background_color_error.configure(
             text="The string '"
             + diagram_background_color.get()
             + "' is not a valid color definition, using 'white' instead."

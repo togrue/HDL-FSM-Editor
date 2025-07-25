@@ -29,12 +29,12 @@ import constants
 import tag_plausibility
 
 filename = ""
-filename_old = ""
+_filename_old = ""
 
 
 def save_as():
-    global filename, filename_old
-    filename_old = filename
+    global filename, _filename_old
+    _filename_old = filename
     filename = asksaveasfilename(
         defaultextension=".hfe",
         initialfile=main_window.module_name.get(),
@@ -47,8 +47,8 @@ def save_as():
 
 
 def save():
-    global filename, filename_old
-    filename_old = filename
+    global filename, _filename_old
+    _filename_old = filename
     if filename == "":
         filename = asksaveasfilename(
             defaultextension=".hfe",
@@ -63,13 +63,13 @@ def save():
         )  # Wait for the handling of all possible events.
 
 
-def write_coords(fileobject, canvas_id):
+def _write_coords(fileobject, canvas_id):
     coords = main_window.canvas.coords(canvas_id)
     for c in coords:
         fileobject.write(str(c) + " ")
 
 
-def write_tags(fileobject, canvas_id):
+def _write_tags(fileobject, canvas_id):
     tags = main_window.canvas.gettags(canvas_id)
     for t in tags:
         fileobject.write(str(t) + " ")
@@ -82,7 +82,7 @@ def open_file_old():
     if filename_new != "":
         removed = remove_old_design()
         if removed:
-            open_file_with_name(filename_new)
+            _open_file_with_name(filename_new)
 
 
 def open_file():
@@ -95,7 +95,7 @@ def open_file():
             open_file_with_name_new(filename_new)
 
 
-def open_file_with_name(read_filename):
+def _open_file_with_name(read_filename):
     custom_text.CustomText.read_variables_of_all_windows.clear()
     custom_text.CustomText.written_variables_of_all_windows.clear()
     # Bring the notebook tab with the graphic into the foreground:
@@ -128,8 +128,8 @@ def open_file_with_name(read_filename):
         elif line.startswith("edit_cmd|"):
             main_window.edit_cmd.set(line[9:-1])
         elif line.startswith("interface_package|"):
-            rest_of_line = remove_keyword_from_line(line, "interface_package|")
-            data = get_data(rest_of_line, fileobject)
+            rest_of_line = _remove_keyword_from_line(line, "interface_package|")
+            data = _get_data(rest_of_line, fileobject)
             main_window.interface_package_text.insert("1.0", data)
             main_window.interface_package_text.update_highlight_tags(
                 10,
@@ -143,8 +143,8 @@ def open_file_with_name(read_filename):
                 ],
             )
         elif line.startswith("interface_generics|"):
-            rest_of_line = remove_keyword_from_line(line, "interface_generics|")
-            data = get_data(rest_of_line, fileobject)
+            rest_of_line = _remove_keyword_from_line(line, "interface_generics|")
+            data = _get_data(rest_of_line, fileobject)
             main_window.interface_generics_text.insert("1.0", data)
             main_window.interface_generics_text.update_highlight_tags(
                 10,
@@ -159,8 +159,8 @@ def open_file_with_name(read_filename):
             )
             main_window.interface_generics_text.update_custom_text_class_generics_list()
         elif line.startswith("interface_ports|"):
-            rest_of_line = remove_keyword_from_line(line, "interface_ports|")
-            data = get_data(rest_of_line, fileobject)
+            rest_of_line = _remove_keyword_from_line(line, "interface_ports|")
+            data = _get_data(rest_of_line, fileobject)
             main_window.interface_ports_text.insert("1.0", data)
             main_window.interface_ports_text.update_highlight_tags(
                 10,
@@ -175,8 +175,8 @@ def open_file_with_name(read_filename):
             )
             main_window.interface_ports_text.update_custom_text_class_ports_list()
         elif line.startswith("internals_package|"):
-            rest_of_line = remove_keyword_from_line(line, "internals_package|")
-            data = get_data(rest_of_line, fileobject)
+            rest_of_line = _remove_keyword_from_line(line, "internals_package|")
+            data = _get_data(rest_of_line, fileobject)
             main_window.internals_package_text.insert("1.0", data)
             main_window.internals_package_text.update_highlight_tags(
                 10,
@@ -190,8 +190,8 @@ def open_file_with_name(read_filename):
                 ],
             )
         elif line.startswith("internals_architecture|"):
-            rest_of_line = remove_keyword_from_line(line, "internals_architecture|")
-            data = get_data(rest_of_line, fileobject)
+            rest_of_line = _remove_keyword_from_line(line, "internals_architecture|")
+            data = _get_data(rest_of_line, fileobject)
             main_window.internals_architecture_text.insert("1.0", data)
             main_window.internals_architecture_text.update_highlight_tags(
                 10,
@@ -206,8 +206,8 @@ def open_file_with_name(read_filename):
             )
             main_window.internals_architecture_text.update_custom_text_class_signals_list()
         elif line.startswith("internals_process|"):
-            rest_of_line = remove_keyword_from_line(line, "internals_process|")
-            data = get_data(rest_of_line, fileobject)
+            rest_of_line = _remove_keyword_from_line(line, "internals_process|")
+            data = _get_data(rest_of_line, fileobject)
             main_window.internals_process_clocked_text.insert("1.0", data)
             main_window.internals_process_clocked_text.update_highlight_tags(
                 10,
@@ -222,10 +222,10 @@ def open_file_with_name(read_filename):
             )
             main_window.internals_process_clocked_text.update_custom_text_class_signals_list()
         elif line.startswith("internals_process_combinatorial|"):
-            rest_of_line = remove_keyword_from_line(
+            rest_of_line = _remove_keyword_from_line(
                 line, "internals_process_combinatorial|"
             )
-            data = get_data(rest_of_line, fileobject)
+            data = _get_data(rest_of_line, fileobject)
             main_window.internals_process_combinatorial_text.insert("1.0", data)
             main_window.internals_process_combinatorial_text.update_highlight_tags(
                 10,
@@ -242,40 +242,40 @@ def open_file_with_name(read_filename):
         elif line.startswith(
             "state_number|"
         ):  # The state_number (as transition_number, connector_number, ...) must be restored,
-            rest_of_line = remove_keyword_from_line(
+            rest_of_line = _remove_keyword_from_line(
                 line, "state_number|"
             )  # otherwise it could happen, that 2 states get both the tag "state1".
             state_handling.state_number = int(rest_of_line)
         elif line.startswith("transition_number|"):
-            rest_of_line = remove_keyword_from_line(line, "transition_number|")
+            rest_of_line = _remove_keyword_from_line(line, "transition_number|")
             transition_handling.transition_number = int(rest_of_line)
         elif line.startswith("reset_entry_number|"):
-            rest_of_line = remove_keyword_from_line(line, "reset_entry_number|")
+            rest_of_line = _remove_keyword_from_line(line, "reset_entry_number|")
             reset_entry_handling.reset_entry_number = int(rest_of_line)
             if reset_entry_handling.reset_entry_number == 0:
                 main_window.reset_entry_button.config(state=tk.NORMAL)
             else:
                 main_window.reset_entry_button.config(state=tk.DISABLED)
         elif line.startswith("connector_number|"):
-            rest_of_line = remove_keyword_from_line(line, "connector_number|")
+            rest_of_line = _remove_keyword_from_line(line, "connector_number|")
             connector_handling.connector_number = int(rest_of_line)
         elif line.startswith("conditionaction_id|"):
-            rest_of_line = remove_keyword_from_line(line, "conditionaction_id|")
+            rest_of_line = _remove_keyword_from_line(line, "conditionaction_id|")
             condition_action_handling.ConditionAction.conditionaction_id = int(
                 rest_of_line
             )
         elif line.startswith("mytext_id|"):
-            rest_of_line = remove_keyword_from_line(line, "mytext_id|")
+            rest_of_line = _remove_keyword_from_line(line, "mytext_id|")
             state_action_handling.MyText.mytext_id = int(rest_of_line)
         elif line.startswith("global_actions_number|"):
-            rest_of_line = remove_keyword_from_line(line, "global_actions_number|")
+            rest_of_line = _remove_keyword_from_line(line, "global_actions_number|")
             global_actions_handling.global_actions_clocked_number = int(rest_of_line)
             if global_actions_handling.global_actions_clocked_number == 0:
                 main_window.global_action_clocked_button.config(state=tk.NORMAL)
             else:
                 main_window.global_action_clocked_button.config(state=tk.DISABLED)
         elif line.startswith("state_actions_default_number|"):
-            rest_of_line = remove_keyword_from_line(
+            rest_of_line = _remove_keyword_from_line(
                 line, "state_actions_default_number|"
             )
             global_actions_handling.state_actions_default_number = int(rest_of_line)
@@ -284,7 +284,7 @@ def open_file_with_name(read_filename):
             else:
                 main_window.state_action_default_button.config(state=tk.DISABLED)
         elif line.startswith("global_actions_combinatorial_number|"):
-            rest_of_line = remove_keyword_from_line(
+            rest_of_line = _remove_keyword_from_line(
                 line, "global_actions_combinatorial_number|"
             )
             global_actions_handling.global_actions_combinatorial_number = int(
@@ -295,27 +295,27 @@ def open_file_with_name(read_filename):
             else:
                 main_window.global_action_combinatorial_button.config(state=tk.DISABLED)
         elif line.startswith("state_radius|"):
-            rest_of_line = remove_keyword_from_line(line, "state_radius|")
+            rest_of_line = _remove_keyword_from_line(line, "state_radius|")
             canvas_editing.state_radius = float(rest_of_line)
         elif line.startswith("reset_entry_size|"):
-            rest_of_line = remove_keyword_from_line(line, "reset_entry_size|")
+            rest_of_line = _remove_keyword_from_line(line, "reset_entry_size|")
             canvas_editing.reset_entry_size = int(float(rest_of_line))
         elif line.startswith("priority_distance|"):
-            rest_of_line = remove_keyword_from_line(line, "priority_distance|")
+            rest_of_line = _remove_keyword_from_line(line, "priority_distance|")
             canvas_editing.priority_distance = int(float(rest_of_line))
         elif line.startswith("fontsize|"):
-            rest_of_line = remove_keyword_from_line(line, "fontsize|")
+            rest_of_line = _remove_keyword_from_line(line, "fontsize|")
             fontsize = float(rest_of_line)
             canvas_editing.fontsize = fontsize
             canvas_editing.state_name_font.configure(size=int(fontsize))
         elif line.startswith("label_fontsize|"):
-            rest_of_line = remove_keyword_from_line(line, "label_fontsize|")
+            rest_of_line = _remove_keyword_from_line(line, "label_fontsize|")
             canvas_editing.label_fontsize = float(rest_of_line)
         elif line.startswith("visible_center|"):
-            rest_of_line = remove_keyword_from_line(line, "visible_center|")
+            rest_of_line = _remove_keyword_from_line(line, "visible_center|")
             canvas_editing.shift_visible_center_to_window_center(rest_of_line)
         elif line.startswith("state|"):
-            rest_of_line = remove_keyword_from_line(line, "state|")
+            rest_of_line = _remove_keyword_from_line(line, "state|")
             coords = []
             tags = ()
             entries = rest_of_line.split()
@@ -344,7 +344,7 @@ def open_file_with_name(read_filename):
                 lambda event, id=state_id: state_handling.show_menu(event, id),
             )
         elif line.startswith("polygon|"):
-            rest_of_line = remove_keyword_from_line(line, "polygon|")
+            rest_of_line = _remove_keyword_from_line(line, "polygon|")
             coords = []
             tags = ()
             entries = rest_of_line.split()
@@ -368,7 +368,7 @@ def open_file_with_name(read_filename):
                 lambda event, id=polygon_id: main_window.canvas.itemconfig(id, width=1),
             )
         elif line.startswith("text|"):
-            rest_of_line = remove_keyword_from_line(line, "text|")
+            rest_of_line = _remove_keyword_from_line(line, "text|")
             tags = ()
             entries = rest_of_line.split()
             coords = []
@@ -399,7 +399,7 @@ def open_file_with_name(read_filename):
                         ),
                     )
         elif line.startswith("line|"):
-            rest_of_line = remove_keyword_from_line(line, "line|")
+            rest_of_line = _remove_keyword_from_line(line, "line|")
             coords = []
             tags = ()
             entries = rest_of_line.split()
@@ -446,7 +446,7 @@ def open_file_with_name(read_filename):
                         ),
                     )
         elif line.startswith("rectangle|"):  # Used as connector or as priority entry.
-            rest_of_line = remove_keyword_from_line(line, "rectangle|")
+            rest_of_line = _remove_keyword_from_line(line, "rectangle|")
             coords = []
             tags = ()
             entries = rest_of_line.split()
@@ -467,8 +467,8 @@ def open_file_with_name(read_filename):
                 canvas_id
             )  # priority rectangles are always in "foreground"
         elif line.startswith("window_state_action_block|"):
-            rest_of_line = remove_keyword_from_line(line, "window_state_action_block|")
-            text = get_data(rest_of_line, fileobject)
+            rest_of_line = _remove_keyword_from_line(line, "window_state_action_block|")
+            text = _get_data(rest_of_line, fileobject)
             coords = []
             tags = ()
             last_line = fileobject.readline()
@@ -491,12 +491,12 @@ def open_file_with_name(read_filename):
             action_ref.text_id.format()
             main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
         elif line.startswith("window_condition_action_block|"):
-            rest_of_line = remove_keyword_from_line(
+            rest_of_line = _remove_keyword_from_line(
                 line, "window_condition_action_block|"
             )
-            condition = get_data(rest_of_line, fileobject)
+            condition = _get_data(rest_of_line, fileobject)
             next_line = fileobject.readline()
-            action = get_data(next_line, fileobject)
+            action = _get_data(next_line, fileobject)
             coords = []
             tags = ()
             last_line = fileobject.readline()
@@ -538,10 +538,10 @@ def open_file_with_name(read_filename):
                 condition_action_ref.action_id.grid_forget()
             main_window.canvas.itemconfigure(condition_action_ref.window_id, tag=tags)
         elif line.startswith("window_global_actions|"):
-            rest_of_line = remove_keyword_from_line(line, "window_global_actions|")
-            text_before = get_data(rest_of_line, fileobject)
+            rest_of_line = _remove_keyword_from_line(line, "window_global_actions|")
+            text_before = _get_data(rest_of_line, fileobject)
             next_line = fileobject.readline()
-            text_after = get_data(next_line, fileobject)
+            text_after = _get_data(next_line, fileobject)
             coords = []
             tags = ()
             last_line = fileobject.readline()
@@ -561,10 +561,10 @@ def open_file_with_name(read_filename):
             global_actions_ref.text_after_id.format()
             main_window.canvas.itemconfigure(global_actions_ref.window_id, tag=tags)
         elif line.startswith("window_global_actions_combinatorial|"):
-            rest_of_line = remove_keyword_from_line(
+            rest_of_line = _remove_keyword_from_line(
                 line, "window_global_actions_combinatorial|"
             )
-            text = get_data(rest_of_line, fileobject)
+            text = _get_data(rest_of_line, fileobject)
             coords = []
             tags = ()
             last_line = fileobject.readline()
@@ -582,10 +582,10 @@ def open_file_with_name(read_filename):
             action_ref.text_id.format()
             main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
         elif line.startswith("window_state_actions_default|"):
-            rest_of_line = remove_keyword_from_line(
+            rest_of_line = _remove_keyword_from_line(
                 line, "window_state_actions_default|"
             )
-            text = get_data(rest_of_line, fileobject)
+            text = _get_data(rest_of_line, fileobject)
             coords = []
             tags = ()
             last_line = fileobject.readline()
@@ -674,33 +674,33 @@ def remove_old_design():
     return True
 
 
-def remove_keyword_from_line(line, keyword):
+def _remove_keyword_from_line(line, keyword):
     return line[len(keyword) :]
 
 
-def get_data(rest_of_line, fileobject):
-    length_of_data = get_length_info_from_line(rest_of_line)
-    first_data = remove_length_info(rest_of_line)
-    data = get_remaining_data(fileobject, length_of_data, first_data)
+def _get_data(rest_of_line, fileobject):
+    length_of_data = _get_length_info_from_line(rest_of_line)
+    first_data = _remove_length_info(rest_of_line)
+    data = _get_remaining_data(fileobject, length_of_data, first_data)
     return data
 
 
-def get_length_info_from_line(rest_of_line):
+def _get_length_info_from_line(rest_of_line):
     return int(re.sub(r"\|.*", "", rest_of_line))
 
 
-def remove_length_info(rest_of_line):
+def _remove_length_info(rest_of_line):
     return re.sub(r".*\|", "", rest_of_line)
 
 
-def get_remaining_data(fileobject, length_of_data, first_data):
+def _get_remaining_data(fileobject, length_of_data, first_data):
     data = first_data
     while len(data) < length_of_data:
         data = data + fileobject.readline()
     return data[:-1]
 
 
-def print_canvas():
+def _print_canvas():
     # all = main_window.canvas.bbox("all")
     print_filename = (
         main_window.generate_path_value.get()
@@ -907,8 +907,8 @@ def save_in_file_new(
         fileobject = open(save_filename, "w", encoding="utf-8")
         fileobject.write(json.dumps(design_dictionary, indent=4, default=str))
         fileobject.close()
-        if not save_filename.endswith(".tmp") and os.path.isfile(filename_old + ".tmp"):
-            os.remove(filename_old + ".tmp")
+        if not save_filename.endswith(".tmp") and os.path.isfile(_filename_old + ".tmp"):
+            os.remove(_filename_old + ".tmp")
     except Exception as _:
         messagebox.showerror(
             "Error in HDL-FSM-Editor",

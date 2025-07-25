@@ -12,7 +12,7 @@ import link_dictionary
 
 def create_module_logic(file_name, file_line_number, state_tag_list_sorted):
     architecture = ""
-    state_signal_type_definition = create_signal_declaration_for_the_state_variable(
+    state_signal_type_definition = _create_signal_declaration_for_the_state_variable(
         state_tag_list_sorted
     )
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(
@@ -50,7 +50,7 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted):
         "    always @(posedge "
         + main_window.clock_signal_name.get()
         + " or "
-        + get_reset_edge(reset_condition)
+        + _get_reset_edge(reset_condition)
         + " "
         + main_window.reset_signal_name.get()
         + ") begin: p_states\n"
@@ -226,7 +226,7 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted):
     return architecture
 
 
-def create_signal_declaration_for_the_state_variable(state_tag_list_sorted):
+def _create_signal_declaration_for_the_state_variable(state_tag_list_sorted):
     list_of_all_state_names = [
         main_window.canvas.itemcget(state_tag + "_name", "text")
         for state_tag in state_tag_list_sorted
@@ -242,7 +242,7 @@ def create_signal_declaration_for_the_state_variable(state_tag_list_sorted):
             state_name_declaration_list.append(
                 "    " + state_name + " = " + str(index) + ",\n"
             )
-        state_name_declaration_list = indent_identically(
+        state_name_declaration_list = _indent_identically(
             "=", state_name_declaration_list
         )
         state_name_declarations = "".join(state_name_declaration_list)
@@ -259,7 +259,7 @@ def create_signal_declaration_for_the_state_variable(state_tag_list_sorted):
     return signal_declaration
 
 
-def get_reset_edge(reset_condition):
+def _get_reset_edge(reset_condition):
     reset_condition_mod = hdl_generation_library.remove_comments_and_returns(
         reset_condition
     )
@@ -277,7 +277,7 @@ def get_reset_edge(reset_condition):
         return "unknown_edge"
 
 
-def indent_identically(character, actual_list):
+def _indent_identically(character, actual_list):
     actual_list = [
         re.sub("[ ]*" + character, character, decl, count=1) for decl in actual_list
     ]  # Blanks for the character will be adapted und must first be removed here.

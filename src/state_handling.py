@@ -25,7 +25,7 @@ def move_to(event_x, event_y, state_id, first, last):
     if first is True:
         # Calculate the difference between the "anchor" point and the event:
         coords = main_window.canvas.coords(state_id)
-        middle_point = calculate_middle_point(coords)
+        middle_point = _calculate_middle_point(coords)
         difference_x, difference_y = (
             -event_x + middle_point[0],
             -event_y + middle_point[1],
@@ -39,8 +39,8 @@ def move_to(event_x, event_y, state_id, first, last):
         event_y = canvas_editing.state_radius * round(
             event_y / canvas_editing.state_radius
         )
-    text_tag = determine_the_tag_of_the_state_name(state_id)
-    state_radius = determine_the_radius_of_the_state(state_id)
+    text_tag = _determine_the_tag_of_the_state_name(state_id)
+    state_radius = _determine_the_radius_of_the_state(state_id)
     main_window.canvas.coords(
         state_id,
         event_x - state_radius,
@@ -53,20 +53,20 @@ def move_to(event_x, event_y, state_id, first, last):
     main_window.canvas.tag_raise(text_tag, state_id)
 
 
-def calculate_middle_point(coords):
+def _calculate_middle_point(coords):
     middle_x = (coords[0] + coords[2]) / 2
     middle_y = (coords[1] + coords[3]) / 2
     return [middle_x, middle_y]
 
 
-def determine_the_tag_of_the_state_name(state_id):
+def _determine_the_tag_of_the_state_name(state_id):
     tags = main_window.canvas.gettags(state_id)
     for tag in tags:
         if tag.startswith("state") and not tag.endswith("_comment_line_end"):
             return tag + "_name"
 
 
-def determine_the_radius_of_the_state(state_id):
+def _determine_the_radius_of_the_state(state_id):
     state_coords = main_window.canvas.coords(state_id)
     return (state_coords[2] - state_coords[0]) // 2
 
@@ -157,17 +157,17 @@ def show_menu(event, state_id):
         listbox=listbox,
         menu_x=event_x,
         menu_y=event_y,
-        state_id=state_id: evaluate_menu(
+        state_id=state_id: _evaluate_menu(
             event, window, listbox, menu_x, menu_y, state_id
         ),
     )
     listbox.bind(
         "<Leave>",
-        lambda event, window=window, listbox=listbox: close_menu(window, listbox),
+        lambda event, window=window, listbox=listbox: _close_menu(window, listbox),
     )
 
 
-def evaluate_menu(event, window, listbox, menu_x, menu_y, state_id):
+def _evaluate_menu(event, window, listbox, menu_x, menu_y, state_id):
     selected_entry = listbox.get(listbox.curselection())
     listbox.destroy()
     main_window.canvas.delete(window)
@@ -204,7 +204,7 @@ def evaluate_menu(event, window, listbox, menu_x, menu_y, state_id):
         undo_handling.design_has_changed()
 
 
-def close_menu(window, listbox):
+def _close_menu(window, listbox):
     listbox.destroy()
     main_window.canvas.delete(window)
 
@@ -219,7 +219,7 @@ def edit_state_name(event, text_id):
     text_box.select_range(0, tk.END)
     text_box.bind(
         "<Return>",
-        lambda event, text_id=text_id, text_box=text_box: update_state_name(
+        lambda event, text_id=text_id, text_box=text_box: _update_state_name(
             text_id, text_box
         ),
     )
@@ -228,7 +228,7 @@ def edit_state_name(event, text_id):
         lambda event,
         text_id=text_id,
         text_box=text_box,
-        old_text=old_text: abort_edit_text(text_id, text_box, old_text),
+        old_text=old_text: _abort_edit_text(text_id, text_box, old_text),
     )
     event_x, event_y = (
         canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(
@@ -241,7 +241,7 @@ def edit_state_name(event, text_id):
     text_box.focus_set()
 
 
-def update_state_name(text_id, text_box):
+def _update_state_name(text_id, text_box):
     main_window.canvas.delete("entry-window")
     new_text = text_box.get()
     text_box.destroy()
@@ -251,8 +251,8 @@ def update_state_name(text_id, text_box):
             "state"
         ):  # Format of text_id tag: 'state' + str(state_number) + "_name"
             state_tag = t[:-5]
-            show_new_state_name(new_text, text_id)
-            resize_state(state_tag, text_id)
+            _show_new_state_name(new_text, text_id)
+            _resize_state(state_tag, text_id)
     undo_handling.design_has_changed()
     main_window.canvas.bind(
         "<Button-1>", move_handling_initialization.move_initialization
@@ -286,7 +286,7 @@ def __get_list_of_state_names(text_id):
     return state_name_list
 
 
-def abort_edit_text(text_id, text_box, old_text):
+def _abort_edit_text(text_id, text_box, old_text):
     main_window.canvas.delete("entry-window")
     main_window.canvas.itemconfig(text_id, text=old_text)
     text_box.destroy()
@@ -296,7 +296,7 @@ def abort_edit_text(text_id, text_box, old_text):
     main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
 
 
-def show_new_state_name(new_text, text_id):
+def _show_new_state_name(new_text, text_id):
     state_name_list = __get_list_of_state_names(text_id)
     if new_text != "":
         if new_text not in state_name_list:
@@ -308,7 +308,7 @@ def show_new_state_name(new_text, text_id):
             )
 
 
-def resize_state(state_tag, text_id):
+def _resize_state(state_tag, text_id):
     state_coords = main_window.canvas.coords(state_tag)
     state_width = state_coords[2] - state_coords[0]
     size = main_window.canvas.bbox(text_id)

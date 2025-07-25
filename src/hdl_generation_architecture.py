@@ -30,7 +30,7 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted):
     architecture += "\n"
     architecture += "architecture fsm of " + main_window.module_name.get() + " is\n"
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(
-        1, create_type_definition_for_the_state_signal(state_tag_list_sorted)
+        1, _create_type_definition_for_the_state_signal(state_tag_list_sorted)
     )
     architecture += "    signal state : t_state;\n"
     file_line_number += 4
@@ -246,7 +246,7 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted):
     return architecture
 
 
-def create_type_definition_for_the_state_signal(state_tag_list_sorted):
+def _create_type_definition_for_the_state_signal(state_tag_list_sorted):
     list_of_all_state_names = [
         main_window.canvas.itemcget(state_tag + "_name", "text")
         for state_tag in state_tag_list_sorted

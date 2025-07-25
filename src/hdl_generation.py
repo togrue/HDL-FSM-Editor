@@ -23,7 +23,7 @@ last_line_number_of_file1 = 0
 
 
 def run_hdl_generation(write_to_file):
-    if design_is_not_ready_for_hdl_generation():
+    if _design_is_not_ready_for_hdl_generation():
         return
     if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
         messagebox.showerror(
@@ -37,10 +37,10 @@ def run_hdl_generation(write_to_file):
         header = "-- Created by HDL-FSM-Editor at " + datetime.today().ctime() + "\n"
     else:
         header = "// Created by HDL-FSM-Editor at " + datetime.today().ctime() + "\n"
-    create_hdl(header, write_to_file)
+    _create_hdl(header, write_to_file)
 
 
-def design_is_not_ready_for_hdl_generation():
+def _design_is_not_ready_for_hdl_generation():
     name = main_window.module_name.get()
     if name.isspace() or name == "":
         messagebox.showerror(
@@ -84,16 +84,16 @@ def design_is_not_ready_for_hdl_generation():
     return False
 
 
-def create_hdl(header, write_to_file):
+def _create_hdl(header, write_to_file):
     file_name, file_name_architecture = get_file_names()
     link_dictionary.LinkDictionary.link_dict_reference.clear_link_dict(file_name)
     link_dictionary.LinkDictionary.link_dict_reference.clear_link_dict(
         file_name_architecture
     )
     file_line_number = 3  # Line 1 = Filename, Line 2 = Header
-    state_tag_list_sorted = create_sorted_state_tag_list()
+    state_tag_list_sorted = _create_sorted_state_tag_list()
     if main_window.language.get() == "VHDL":
-        entity, file_line_number = create_entity(file_name, file_line_number)
+        entity, file_line_number = _create_entity(file_name, file_line_number)
         if file_name_architecture == "":  # All VHDL is written in 1 file.
             file_to_use = file_name
             file_line_number_to_use = file_line_number
@@ -104,21 +104,21 @@ def create_hdl(header, write_to_file):
             file_to_use, file_line_number_to_use, state_tag_list_sorted
         )
     else:
-        entity, file_line_number = create_module_ports(file_name, file_line_number)
+        entity, file_line_number = _create_module_ports(file_name, file_line_number)
         architecture = hdl_generation_module.create_module_logic(
             file_name, file_line_number, state_tag_list_sorted
         )
     if architecture is None:
         return  # No further actions required, because when writing to a file, always an architecture must exist.
     # write_hdl_file must be called even if hdl is not needed, as write_hdl_file sets last_line_number_of_file1, which is read by Linking.
-    hdl = write_hdl_file(
+    hdl = _write_hdl_file(
         write_to_file, header, entity, architecture, file_name, file_name_architecture
     )
     if write_to_file is True:
-        copy_hdl_into_generated_hdl_tab(hdl, file_name, file_name_architecture)
+        _copy_hdl_into_generated_hdl_tab(hdl, file_name, file_name_architecture)
 
 
-def copy_hdl_into_generated_hdl_tab(hdl, file_name, file_name_architecture):
+def _copy_hdl_into_generated_hdl_tab(hdl, file_name, file_name_architecture):
     main_window.date_of_hdl_file_shown_in_hdl_tab = os.path.getmtime(file_name)
     if file_name_architecture != "":
         main_window.date_of_hdl_file2_shown_in_hdl_tab = os.path.getmtime(
@@ -139,7 +139,7 @@ def copy_hdl_into_generated_hdl_tab(hdl, file_name, file_name_architecture):
     main_window.show_tab("generated HDL")
 
 
-def create_entity(file_name, file_line_number):
+def _create_entity(file_name, file_line_number):
     entity = ""
 
     package_statements = hdl_generation_library.get_text_from_text_widget(
@@ -229,7 +229,7 @@ def create_entity(file_name, file_line_number):
     return entity, file_line_number
 
 
-def create_module_ports(file_name, file_line_number):
+def _create_module_ports(file_name, file_line_number):
     module = ""
     file_line_number = 3  # Line 1 = Filename, Line 2 = Header
     module += "module " + main_window.module_name.get() + "\n"
@@ -290,7 +290,7 @@ def create_module_ports(file_name, file_line_number):
     return module, file_line_number
 
 
-def write_hdl_file(
+def _write_hdl_file(
     write_to_file, header, entity, architecture, path_name, path_name_architecture
 ):
     global last_line_number_of_file1
@@ -317,7 +317,7 @@ def write_hdl_file(
             len(str(last_line_number_of_file1)) + 2
         )  # "+2" because of string ": "
         main_window.size_of_file2_line_number = 0
-        content_with_numbers = add_line_numbers(content)
+        content_with_numbers = _add_line_numbers(content)
     else:
         content1 = "-- Filename: " + name_of_file + "\n"
         content1 += header
@@ -342,8 +342,8 @@ def write_hdl_file(
             )
             fileobject_architecture.write(content2)
             fileobject_architecture.close()
-        content_with_numbers1 = add_line_numbers(content1)
-        content_with_numbers2 = add_line_numbers(content2)
+        content_with_numbers1 = _add_line_numbers(content1)
+        content_with_numbers2 = _add_line_numbers(content2)
         content_with_numbers = content_with_numbers1 + content_with_numbers2
         main_window.size_of_file2_line_number = (
             len(str(content_with_numbers.count("\n"))) + 2
@@ -382,7 +382,7 @@ def get_file_names():
     return file_name, file_name_architecture
 
 
-def add_line_numbers(text):
+def _add_line_numbers(text):
     text_lines = text.split("\n")
     text_length_as_string = str(len(text_lines))
     number_of_needed_digits_as_string = str(len(text_length_as_string))
@@ -397,7 +397,7 @@ def add_line_numbers(text):
     return content_with_numbers
 
 
-def create_sorted_state_tag_list():
+def _create_sorted_state_tag_list():
     state_tag_dict_with_prio = {}
     state_tag_list = []
     reg_ex_for_state_tag = re.compile("^state[0-9]+$")

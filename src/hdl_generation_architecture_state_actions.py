@@ -14,22 +14,22 @@ import link_dictionary
 
 
 def create_state_action_process(file_name, file_line_number, state_tag_list_sorted):
-    default_state_actions = get_default_state_actions()
-    state_action_list = create_state_action_list(
+    default_state_actions = _get_default_state_actions()
+    state_action_list = _create_state_action_list(
         state_tag_list_sorted
     )  # Each entry is : ["state_name", "state_actions", "state_action_reference"]
-    if default_state_actions == "" and state_actions_contain_only_null_for_each_state(
+    if default_state_actions == "" and _state_actions_contain_only_null_for_each_state(
         state_action_list
     ):
         return "", file_line_number
     all_possible_sensitivity_entries = (
-        create_a_list_with_all_possible_sensitivity_entries()
+        _create_a_list_with_all_possible_sensitivity_entries()
     )  # from Interface/Ports and from Internals/Architecture Declarations
     variable_declarations = hdl_generation_library.get_text_from_text_widget(
         main_window.internals_process_combinatorial_text
     )
     if main_window.language.get() == "VHDL":
-        state_action_process, file_line_number = create_state_action_process_for_vhdl(
+        state_action_process, file_line_number = _create_state_action_process_for_vhdl(
             file_name,
             file_line_number,
             state_action_list,
@@ -39,7 +39,7 @@ def create_state_action_process(file_name, file_line_number, state_tag_list_sort
         )
     else:
         state_action_process, file_line_number = (
-            create_state_action_process_for_verilog(
+            _create_state_action_process_for_verilog(
                 file_name,
                 file_line_number,
                 state_action_list,
@@ -51,14 +51,14 @@ def create_state_action_process(file_name, file_line_number, state_tag_list_sort
     return state_action_process, file_line_number
 
 
-def state_actions_contain_only_null_for_each_state(state_action_list):
+def _state_actions_contain_only_null_for_each_state(state_action_list):
     for entry in state_action_list:
         if entry[1] != "null;\n":
             return False
     return True
 
 
-def create_state_action_process_for_vhdl(
+def _create_state_action_process_for_vhdl(
     file_name,
     file_line_number,
     state_action_list,
@@ -68,7 +68,7 @@ def create_state_action_process_for_vhdl(
 ):
     state_action_process = "p_state_actions: process "
     state_action_process += (
-        create_sensitivity_list(
+        _create_sensitivity_list(
             state_action_list, default_state_actions, all_possible_sensitivity_entries
         )
         + "\n"
@@ -123,7 +123,7 @@ def create_state_action_process_for_vhdl(
     file_line_number += 2
 
     for state_action in state_action_list:
-        when_entry = create_when_entry(state_action)
+        when_entry = _create_when_entry(state_action)
         state_action_process += (
             hdl_generation_library.indent_text_by_the_given_number_of_tabs(
                 2, when_entry
@@ -147,7 +147,7 @@ def create_state_action_process_for_vhdl(
     return state_action_process, file_line_number
 
 
-def create_state_action_process_for_verilog(
+def _create_state_action_process_for_verilog(
     file_name,
     file_line_number,
     state_action_list,
@@ -156,7 +156,7 @@ def create_state_action_process_for_verilog(
     variable_declarations,
 ):
     state_action_process = "always @"
-    state_action_process += create_sensitivity_list(
+    state_action_process += _create_sensitivity_list(
         state_action_list, default_state_actions, all_possible_sensitivity_entries
     )
     state_action_process += " begin: p_state_actions\n"
@@ -208,7 +208,7 @@ def create_state_action_process_for_verilog(
     file_line_number += 2
 
     for state_action in state_action_list:
-        when_entry = create_when_entry(state_action)
+        when_entry = _create_when_entry(state_action)
         number_of_lines = when_entry.count("\n")
         state_action_process += (
             hdl_generation_library.indent_text_by_the_given_number_of_tabs(
@@ -239,18 +239,18 @@ def create_state_action_process_for_verilog(
     return state_action_process, file_line_number
 
 
-def create_a_list_with_all_possible_sensitivity_entries():
+def _create_a_list_with_all_possible_sensitivity_entries():
     all_port_declarations = main_window.interface_ports_text.get("1.0", tk.END).lower()
     readable_ports_list = get_all_readable_ports(all_port_declarations, check=True)
     all_signal_declarations = main_window.internals_architecture_text.get(
         "1.0", tk.END
     ).lower()
-    signals_list = get_all_signals(all_signal_declarations)
+    signals_list = _get_all_signals(all_signal_declarations)
     signals_list.extend(readable_ports_list)
     return signals_list
 
 
-def create_state_action_list(state_tag_list_sorted):
+def _create_state_action_list(state_tag_list_sorted):
     state_action_list = []
     for state_tag in state_tag_list_sorted:
         state_action = "null;\n"
@@ -273,7 +273,7 @@ def create_state_action_list(state_tag_list_sorted):
     return state_action_list
 
 
-def create_sensitivity_list(
+def _create_sensitivity_list(
     state_action_list, default_state_actions, all_possible_sensitivity_entries
 ):
     sensitivity_list = "("
@@ -282,7 +282,7 @@ def create_sensitivity_list(
             default_state_actions
         )
     )
-    default_state_actions_separated = remove_left_hand_sides(
+    default_state_actions_separated = _remove_left_hand_sides(
         default_state_actions_separated
     )
     for entry in all_possible_sensitivity_entries:
@@ -294,7 +294,7 @@ def create_sensitivity_list(
                 list_entry[1]
             )
         )
-        state_action_separated = remove_left_hand_sides(state_action_separated)
+        state_action_separated = _remove_left_hand_sides(state_action_separated)
         for entry in all_possible_sensitivity_entries:
             if (
                 " " + entry + " " in state_action_separated
@@ -305,7 +305,7 @@ def create_sensitivity_list(
     return sensitivity_list
 
 
-def remove_left_hand_sides(state_action):
+def _remove_left_hand_sides(state_action):
     # Insert ";" for the search pattern later:
     state_action = ";" + state_action
     state_action = re.sub(" begin ", " ; ", state_action, flags=re.I)
@@ -316,7 +316,7 @@ def remove_left_hand_sides(state_action):
     return state_action
 
 
-def get_default_state_actions():
+def _get_default_state_actions():
     item_ids = main_window.canvas.find_withtag("state_actions_default")
     if item_ids == ():
         return ""
@@ -329,7 +329,7 @@ def get_default_state_actions():
         return comment + " Default State Actions:\n" + ref.text_id.get("1.0", tk.END)
 
 
-def create_when_entry(state_action):
+def _create_when_entry(state_action):
     if main_window.language.get() == "VHDL":
         when_entry = "when " + state_action[0] + "=>\n"
         when_entry += hdl_generation_library.indent_text_by_the_given_number_of_tabs(
@@ -351,11 +351,11 @@ def create_when_entry(state_action):
 
 
 def get_all_readable_ports(all_port_declarations, check):
-    port_declaration_list = create_list_of_declarations(all_port_declarations)
+    port_declaration_list = _create_list_of_declarations(all_port_declarations)
     readable_port_list = []
     for declaration in port_declaration_list:
         if declaration != "" and not declaration.isspace():
-            inputs = get_all_readable_port_names(
+            inputs = _get_all_readable_port_names(
                 declaration, check
             )  # One declaration can contain a comma separated list of names!
             if inputs != "":
@@ -364,17 +364,17 @@ def get_all_readable_ports(all_port_declarations, check):
 
 
 def get_all_writable_ports(all_port_declarations):
-    port_declaration_list = create_list_of_declarations(all_port_declarations)
+    port_declaration_list = _create_list_of_declarations(all_port_declarations)
     writeable_port_list = []
     for declaration in port_declaration_list:
         if declaration != "" and not declaration.isspace():
-            outputs = get_all_writable_port_names(declaration)
+            outputs = _get_all_writable_port_names(declaration)
             if outputs != "":
                 writeable_port_list.extend(outputs.split(","))
     return writeable_port_list
 
 
-def create_list_of_declarations(all_declarations):
+def _create_list_of_declarations(all_declarations):
     all_declarations_without_comments = (
         hdl_generation_library.remove_comments_and_returns(all_declarations)
     )
@@ -389,7 +389,7 @@ def create_list_of_declarations(all_declarations):
 
 
 def get_all_port_types(all_port_declarations):
-    port_declaration_list = create_list_of_declarations(all_port_declarations)
+    port_declaration_list = _create_list_of_declarations(all_port_declarations)
     port_types_list = []
     for declaration in port_declaration_list:
         if (
@@ -413,7 +413,7 @@ def get_all_port_types(all_port_declarations):
 
 
 def get_all_generic_names(all_generic_declarations):
-    generic_declaration_list = create_list_of_declarations(all_generic_declarations)
+    generic_declaration_list = _create_list_of_declarations(all_generic_declarations)
     generic_name_list = []
     for declaration in generic_declaration_list:
         if declaration != "" and not declaration.isspace():
@@ -430,7 +430,7 @@ def get_all_generic_names(all_generic_declarations):
     return generic_name_list
 
 
-def get_all_readable_port_names(declaration, check):
+def _get_all_readable_port_names(declaration, check):
     port_names = ""
     if " in " in declaration and main_window.language.get() == "VHDL":
         if ":" not in declaration:
@@ -454,7 +454,7 @@ def get_all_readable_port_names(declaration, check):
     return port_names_without_blanks
 
 
-def get_all_writable_port_names(declaration):
+def _get_all_writable_port_names(declaration):
     port_names = ""
     if " out " in declaration and main_window.language.get() == "VHDL":
         if ":" in declaration:
@@ -472,7 +472,7 @@ def get_all_writable_port_names(declaration):
     return port_names_without_blanks
 
 
-def get_all_signals(all_signal_declarations):
+def _get_all_signals(all_signal_declarations):
     all_signal_declarations_without_comments = (
         hdl_generation_library.remove_comments_and_returns(all_signal_declarations)
     )
@@ -490,7 +490,7 @@ def get_all_signals(all_signal_declarations):
         )
     )
     signal_declaration_list = all_signal_declarations_separated.split(";")
-    signal_declaration_list_extended = add_blank_at_the_beginning_of_each_line(
+    signal_declaration_list_extended = _add_blank_at_the_beginning_of_each_line(
         signal_declaration_list
     )  # needed for search of " signal "
     signals_list = []
@@ -505,7 +505,7 @@ def get_all_signals(all_signal_declarations):
                         + '"\nVHDL may be corrupted.',
                     )
                 else:
-                    signals = get_the_signal_names(declaration)
+                    signals = _get_the_signal_names(declaration)
                     if signals != "":
                         signals_list.extend(signals.split(","))
     else:
@@ -533,14 +533,14 @@ def get_all_signals(all_signal_declarations):
     return signals_list
 
 
-def add_blank_at_the_beginning_of_each_line(signal_declaration_list):
+def _add_blank_at_the_beginning_of_each_line(signal_declaration_list):
     signal_declaration_list_extended = []
     for d in signal_declaration_list:
         signal_declaration_list_extended.append(re.sub("^", " ", d))
     return signal_declaration_list_extended
 
 
-def get_the_signal_names(declaration):
+def _get_the_signal_names(declaration):
     signal_names = re.sub(":.*", "", declaration)
     signal_names_alone = re.sub(" signal ", "", signal_names, flags=re.I)
     signal_names_without_blanks = re.sub(" ", "", signal_names_alone)
