@@ -1,6 +1,7 @@
 """
 HDL-FSM-Editor: A tool for modellings FSMs
 """
+
 from tkinter import ttk
 import main_window
 import undo_handling
@@ -12,30 +13,30 @@ main_window.create_root()
 
 style = ttk.Style(main_window.root)
 style.theme_use("default")
-#style.theme_use('clam')
-#style.theme_use('winnative')
-#style.theme_use('alt')
-#style.theme_use('classic')
-#style.theme_use('vista')
-#style.theme_use('xpnative')
-style.configure("Window.TFrame"                     , background="blue")
-style.configure("Window.TMenubutton"                )
-style.configure("StateActionsWindow.TFrame"         , background="cyan2")
-style.configure("StateActionsWindow.TLabel"         , background="cyan2")
-style.configure("GlobalActionsWindow.TFrame"        , background="PaleGreen2")
-style.configure("GlobalActionsWindow.TLabel"        , background="PaleGreen2")
-style.configure('DefaultStateActions.TButton'       , background="cyan2")
-style.configure('GlobalActionsClocked.TButton'      , background="PaleGreen2")
-style.configure('GlobalActionsCombinatorial.TButton', background="PaleGreen2")
-style.configure("NewState.TButton"                  , background="SkyBlue1")
-style.configure("NewTransition.TButton"             , background="white")
-style.configure("NewConnector.TButton"              , background="orchid1")
-style.configure("ResetEntry.TButton"                , background="IndianRed1")
-style.configure("View.TButton"                      , background="lemon chiffon")
-style.configure("Undo.TButton"                      )
-style.configure("Redo.TButton"                      )
-style.configure("Find.TButton"                      )
-style.configure("Path.TButton"                      )
+# style.theme_use('clam')
+# style.theme_use('winnative')
+# style.theme_use('alt')
+# style.theme_use('classic')
+# style.theme_use('vista')
+# style.theme_use('xpnative')
+style.configure("Window.TFrame", background="blue")
+style.configure("Window.TMenubutton")
+style.configure("StateActionsWindow.TFrame", background="cyan2")
+style.configure("StateActionsWindow.TLabel", background="cyan2")
+style.configure("GlobalActionsWindow.TFrame", background="PaleGreen2")
+style.configure("GlobalActionsWindow.TLabel", background="PaleGreen2")
+style.configure("DefaultStateActions.TButton", background="cyan2")
+style.configure("GlobalActionsClocked.TButton", background="PaleGreen2")
+style.configure("GlobalActionsCombinatorial.TButton", background="PaleGreen2")
+style.configure("NewState.TButton", background="SkyBlue1")
+style.configure("NewTransition.TButton", background="white")
+style.configure("NewConnector.TButton", background="orchid1")
+style.configure("ResetEntry.TButton", background="IndianRed1")
+style.configure("View.TButton", background="lemon chiffon")
+style.configure("Undo.TButton")
+style.configure("Redo.TButton")
+style.configure("Find.TButton")
+style.configure("Path.TButton")
 
 main_window.set_word_boundaries()
 main_window.create_notebook()
@@ -47,7 +48,7 @@ main_window.create_hdl_notebook_tab()
 main_window.create_log_notebook_tab()
 main_window.create_menu_bar()
 
-undo_handling.design_has_changed() # Init the undo/redo-stack with an empty design.
+undo_handling.design_has_changed()  # Init the undo/redo-stack with an empty design.
 
 main_window.evaluate_commandline_parameters()
 main_window.show_window()
