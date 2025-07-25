@@ -9,7 +9,7 @@ import main_window
 from link_dictionary import link_dict
 
 
-def create_architecture(file_name, file_line_number) -> None:
+def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> None:
     architecture = ""
 
     package_statements = hdl_generation_library.get_text_from_text_widget(main_window.internals_package_text)
@@ -27,7 +27,7 @@ def create_architecture(file_name, file_line_number) -> None:
     architecture += "\n"
     architecture += "architecture fsm of " + main_window.module_name.get() + " is\n"
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(
-        1, _create_type_definition_for_the_state_signal()
+        1, _create_type_definition_for_the_state_signal(state_tag_list_sorted)
     )
     architecture += "    signal state : t_state;\n"
     file_line_number += 4
@@ -132,7 +132,9 @@ def create_architecture(file_name, file_line_number) -> None:
     architecture += "            -- State Machine:\n"
     architecture += "            case state is\n"
     file_line_number += 2
-    transition_specifications = hdl_generation_library.extract_transition_specifications_from_the_graph()
+    transition_specifications = hdl_generation_library.extract_transition_specifications_from_the_graph(
+        state_tag_list_sorted
+    )
     state_sequence, file_line_number = hdl_generation_architecture_state_sequence.create_vhdl_for_the_state_sequence(
         transition_specifications, file_name, file_line_number
     )
@@ -161,7 +163,7 @@ def create_architecture(file_name, file_line_number) -> None:
     architecture += "    end process;\n"
     file_line_number += 2
     state_actions_process, file_line_number = hdl_generation_architecture_state_actions.create_state_action_process(
-        file_name, file_line_number
+        file_name, file_line_number, state_tag_list_sorted
     )
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_actions_process)
 
@@ -185,8 +187,10 @@ def create_architecture(file_name, file_line_number) -> None:
     return architecture
 
 
-def _create_type_definition_for_the_state_signal() -> None:
-    list_of_all_state_names = hdl_generation_library.get_a_list_of_all_state_names()
+def _create_type_definition_for_the_state_signal(state_tag_list_sorted) -> None:
+    list_of_all_state_names = [
+        main_window.canvas.itemcget(state_tag + "_name", "text") for state_tag in state_tag_list_sorted
+    ]
     if list_of_all_state_names != []:
         type_definition = "type t_state is ("
         list_of_all_state_names_reduced_by_last_entry = list_of_all_state_names[:-1]
@@ -200,4 +204,4 @@ def _create_type_definition_for_the_state_signal() -> None:
                 type_definition += "\n"
         type_definition += list_of_all_state_names[-1] + ");\n"
         return type_definition
-    return None
+    return "type t_state is ();\n"

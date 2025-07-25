@@ -462,8 +462,10 @@ def transition_start(event) -> None:
                     "<Escape  >",
                     lambda event,
                     transition_id=transition_id,
-                    transition_draw_funcid=transition_draw_funcid: _abort_inserting_transition(
-                        transition_id, transition_draw_funcid
+                    transition_draw_funcid=transition_draw_funcid,
+                    tag_of_object_where_transition_starts=tag_of_object_where_transition_starts,
+                    tag_to_delete="transition" + str(transition_number) + "_start": _abort_inserting_transition(
+                        transition_id, transition_draw_funcid, tag_of_object_where_transition_starts, tag_to_delete
                     ),
                 )
 
@@ -560,7 +562,10 @@ def _move_transition_end_point_to_the_middle_of_the_end_state(end_state_canvas_i
     return transition_coords
 
 
-def _abort_inserting_transition(transition_id, transition_draw_funcid) -> None:
+def _abort_inserting_transition(
+    transition_id, transition_draw_funcid, tag_of_object_where_transition_starts, tag_to_delete
+) -> None:
+    main_window.canvas.dtag(tag_of_object_where_transition_starts, tag_to_delete)
     main_window.canvas.delete(transition_id)
     _end_transition_insertion_by_modifying_bindings(transition_draw_funcid)
 

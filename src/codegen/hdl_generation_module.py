@@ -11,9 +11,9 @@ from link_dictionary import link_dict
 from .exceptions import GenerationError
 
 
-def create_module_logic(file_name, file_line_number) -> None:
+def create_module_logic(file_name, file_line_number, state_tag_list_sorted) -> None:
     architecture = ""
-    state_signal_type_definition = _create_signal_declaration_for_the_state_variable()
+    state_signal_type_definition = _create_signal_declaration_for_the_state_variable(state_tag_list_sorted)
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_signal_type_definition)
     file_line_number += state_signal_type_definition.count("\n")
 
@@ -115,7 +115,9 @@ def create_module_logic(file_name, file_line_number) -> None:
     architecture += "            case (state)\n"
     file_line_number += 2
 
-    transition_specifications = hdl_generation_library.extract_transition_specifications_from_the_graph()
+    transition_specifications = hdl_generation_library.extract_transition_specifications_from_the_graph(
+        state_tag_list_sorted
+    )
     state_sequence, file_line_number = hdl_generation_architecture_state_sequence.create_verilog_for_the_state_sequence(
         transition_specifications, file_name, file_line_number
     )
@@ -145,7 +147,7 @@ def create_module_logic(file_name, file_line_number) -> None:
     file_line_number += 2
 
     state_actions_process, file_line_number = hdl_generation_architecture_state_actions.create_state_action_process(
-        file_name, file_line_number
+        file_name, file_line_number, state_tag_list_sorted
     )
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_actions_process)
 
@@ -168,25 +170,45 @@ def create_module_logic(file_name, file_line_number) -> None:
     return architecture
 
 
-def _create_signal_declaration_for_the_state_variable() -> str:
-    list_of_all_state_names = hdl_generation_library.get_a_list_of_all_state_names()
+def _create_signal_declaration_for_the_state_variable(state_tag_list_sorted) -> str:
+    list_of_all_state_names = [
+        main_window.canvas.itemcget(state_tag + "_name", "text") for state_tag in state_tag_list_sorted
+    ]
     number_of_states = len(list_of_all_state_names)
     if main_window.language.get() == "Verilog":
         bit_width_number_of_states = math.ceil(math.log(number_of_states, 2))
         high_index = bit_width_number_of_states - 1
         signal_declaration = "reg [" + str(high_index) + ":0] state;\n"
         signal_declaration += "localparam\n"
-        state_name_declaration = ""
+        state_name_declaration_list = []
         for index, state_name in enumerate(list_of_all_state_names):
-            state_name_declaration += "    " + state_name + " = " + str(index) + ",\n"
-        # state_name_declaration = indent_identically('=', state_name_declaration)
-        signal_declaration += state_name_declaration[:-2] + ";\n"  # Substitute the last "," by a ";".
+            state_name_declaration_list.append("    " + state_name + " = " + str(index) + ",\n")
+        state_name_declaration_list = _indent_identically("=", state_name_declaration_list)
+        state_name_declarations = "".join(state_name_declaration_list)
+        signal_declaration += state_name_declarations[:-2] + ";\n"  # Substitute the last "," by a ";".
     else:  # SystemVerilog
         name_list = ""
         for name in list_of_all_state_names:
             name_list += name + ", "
         signal_declaration = "typedef enum {" + name_list[:-2] + "} t_state;\nt_state state;\n"
     return signal_declaration
+
+
+def _indent_identically(character, actual_list) -> list:
+    actual_list = [
+        re.sub("[ ]*" + character, character, decl, count=1) for decl in actual_list
+    ]  # Blanks for the character will be adapted und must first be removed here.
+    max_index = 0
+    new_list = []
+    for port_declaration in actual_list:
+        index = port_declaration.find(character)
+        if index > max_index:
+            max_index = index
+    for port_declaration in actual_list:
+        index = port_declaration.find(character)
+        fill = " " * (max_index - index + 1) + character
+        new_list.append(re.sub(character, fill, port_declaration, count=1))
+    return new_list
 
 
 def _get_reset_edge(reset_condition) -> str:

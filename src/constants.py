@@ -433,7 +433,7 @@ VERILOG_KEYWORDS = {
     "datatype": ["wire", "reg", "integer", "boolean", "bit", "bit_vector", "real", "logic"],
     "function": ["and", "nand", "or", "nor", "xnor", "xor", "not"],
     # It is important to have "comment" at the end of this list, as all other highlighting-tags are removed when highlighting works at the comment keyword.
-    "comment": ["//.*$", "/\\*.*\\*/"],
+    "comment": [r"//.*?$", r"/\*.*?\*/"],
 }
 
 CONNECTOR_COLOR = "violet"

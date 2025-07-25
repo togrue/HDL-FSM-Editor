@@ -75,7 +75,9 @@ def save() -> None:
     if project_manager.current_file != "":
         dir_name, file_name = os.path.split(project_manager.current_file)
         main_window.root.title(file_name + " (" + dir_name + ")")
-        save_in_file_new(project_manager.current_file)
+        main_window.root.after_idle(
+            save_in_file_new, project_manager.current_file
+        )  # Wait for the handling of all possible events.
 
 
 def open_v1_file() -> None:
@@ -544,6 +546,7 @@ def remove_old_design() -> bool:
     canvas_editing.state_name_font.configure(size=int(canvas_editing.fontsize))
     main_window.include_timestamp_in_output.set(True)
     main_window.root.title("unnamed")
+    main_window.grid_drawer.draw_grid()
     return True
 
 
@@ -1099,6 +1102,7 @@ def open_file_with_name_new(read_filename) -> None:
             design_dictionary["modulename"],
         )
         main_window.date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
+        main_window.date_of_hdl_file2_shown_in_hdl_tab = update_ref.get_date_of_hdl_file2()
         main_window.show_tab(GuiTab.DIAGRAM)
         main_window.root.after_idle(canvas_editing.view_all)
         if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
