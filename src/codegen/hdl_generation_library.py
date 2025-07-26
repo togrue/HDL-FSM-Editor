@@ -44,7 +44,7 @@ def _get_target_state_name(all_reset_transition_tags):
 
 
 # TODO: Might be unused right now.
-def get_target_tag_of_transition(transition_tag):
+def _get_target_tag_of_transition(transition_tag):
     transition_tags = main_window.canvas.gettags(transition_tag)
     for transition_tag in transition_tags:
         if transition_tag.startswith("going_to_"):
@@ -539,7 +539,7 @@ def _get_a_list_of_all_state_tags():
     return sorted(state_tag_list)
 
 
-def sort_list_of_all_state_tags(list_of_all_state_tags):
+def _sort_list_of_all_state_tags(list_of_all_state_tags):
     state_tag_dict_with_prio = {}
     state_tag_list = []
     sorted_list_of_all_state_tags = []
