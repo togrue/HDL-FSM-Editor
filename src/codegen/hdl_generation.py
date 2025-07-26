@@ -28,7 +28,7 @@ last_line_number_of_file1 = 0
 def run_hdl_generation(write_to_file) -> None:
     try:
         config = GenerationConfig.from_main_window()
-        generate_hdl(config, write_to_file)
+        _generate_hdl(config, write_to_file)
     except GenerationError as e:
         messagebox.showerror(e.caption, e.message)
     except Exception:
@@ -39,7 +39,7 @@ def run_hdl_generation(write_to_file) -> None:
         print(traceback.format_exc())
 
 
-def generate_hdl(config: GenerationConfig, write_to_file: bool) -> None:
+def _generate_hdl(config: GenerationConfig, write_to_file: bool) -> None:
     errors = config.validate()
     if errors:
         raise GenerationError("Error in HDL-FSM-Editor", errors)

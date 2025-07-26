@@ -271,15 +271,15 @@ def create_menu_bar() -> None:
     root.bind_all("<Control-n>", lambda event: file_handling.remove_old_design())
     root.bind_all("<Control-p>", lambda event: compile_handling.compile_hdl())
     root.bind_all("<Control-f>", lambda event: search_string_entry.focus_set())
-    root.bind_all("<Control-O>", lambda event: capslock_warning("O"))
-    root.bind_all("<Control-S>", lambda event: capslock_warning("S"))
-    root.bind_all("<Control-G>", lambda event: capslock_warning("G"))
-    root.bind_all("<Control-N>", lambda event: capslock_warning("N"))
-    root.bind_all("<Control-P>", lambda event: capslock_warning("P"))
-    root.bind_all("<Control-F>", lambda event: capslock_warning("F"))
+    root.bind_all("<Control-O>", lambda event: _capslock_warning("O"))
+    root.bind_all("<Control-S>", lambda event: _capslock_warning("S"))
+    root.bind_all("<Control-G>", lambda event: _capslock_warning("G"))
+    root.bind_all("<Control-N>", lambda event: _capslock_warning("N"))
+    root.bind_all("<Control-P>", lambda event: _capslock_warning("P"))
+    root.bind_all("<Control-F>", lambda event: _capslock_warning("F"))
 
 
-def capslock_warning(character):
+def _capslock_warning(character):
     messagebox.showwarning(
         "Warning in HDL-FSM-Editor",
         "The character " + character + " is not bound to any action.\nPerhaps Capslock is active?",
