@@ -22,10 +22,3 @@ uv sync --dev
 For the best development experience, install these VSCode extensions:
 - **Python** - Official Python extension
 - **Ruff** - Fast Python linter and formatter
-
-### Optional: Pre-commit Hooks
-For 'enforced' clean commits:
-Might save rebasing work.
-```bash
-pre-commit install
-```
