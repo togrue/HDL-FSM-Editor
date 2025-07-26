@@ -14,7 +14,7 @@ module division_unsigned_control
     reg [0:0] state;
     localparam
         idle = 0,
-        run = 1;
+        run  = 1;
     integer counter;
     always @(posedge clk_i or posedge res_i) begin: p_states
         if (res_i==1'b1) begin
