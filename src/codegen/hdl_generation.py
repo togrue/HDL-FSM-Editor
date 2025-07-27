@@ -247,9 +247,8 @@ def _write_hdl_file(config, write_to_file, header, entity, architecture, path_na
         content += entity
         content += architecture
         if write_to_file:
-            fileobject = open(path_name, "w", encoding="utf-8")
-            fileobject.write(content)
-            fileobject.close()
+            with open(path_name, "w", encoding="utf-8") as fileobject:
+                fileobject.write(content)
         last_line_number_of_file1 = content.count("\n") + 1  # For example: 3 lines are separated by 2 returns.
         main_window.size_of_file1_line_number = len(str(last_line_number_of_file1)) + 2  # "+2" because of string ": "
         main_window.size_of_file2_line_number = 0
@@ -259,9 +258,8 @@ def _write_hdl_file(config, write_to_file, header, entity, architecture, path_na
         content1 += header
         content1 += entity
         if write_to_file:
-            fileobject_entity = open(path_name, "w", encoding="utf-8")
-            fileobject_entity.write(content1)
-            fileobject_entity.close()
+            with open(path_name, "w", encoding="utf-8") as fileobject:
+                fileobject.write(content1)
         last_line_number_of_file1 = content1.count("\n") + 1  # For example: 3 lines are separated by 2 returns.
         main_window.size_of_file1_line_number = len(str(last_line_number_of_file1)) + 2  # "+2" because of string ": "
         _, name_of_architecture_file = os.path.split(path_name_architecture)
@@ -269,9 +267,8 @@ def _write_hdl_file(config, write_to_file, header, entity, architecture, path_na
         content2 += header
         content2 += architecture
         if write_to_file:
-            fileobject_architecture = open(path_name_architecture, "w", encoding="utf-8")
-            fileobject_architecture.write(content2)
-            fileobject_architecture.close()
+            with open(path_name_architecture, "w", encoding="utf-8") as fileobject:
+                fileobject.write(content2)
         content_with_numbers1 = _add_line_numbers(content1)
         content_with_numbers2 = _add_line_numbers(content2)
         content_with_numbers = content_with_numbers1 + content_with_numbers2

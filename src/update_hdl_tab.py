@@ -32,9 +32,8 @@ class UpdateHdlTab:
         if self.__hdl_is_up_to_date(readfile, hdlfilename, hdlfilename_architecture, show_message=False):
             # print("HDL-file exists and is 'newer' than the design-file =", self.date_of_hdl_file)
             try:
-                fileobject = open(hdlfilename, encoding="utf-8")
-                entity = fileobject.read()
-                fileobject.close()
+                with open(hdlfilename, encoding="utf-8") as fileobject:
+                    entity = fileobject.read()
                 hdl += self.__add_line_numbers(entity)
             except FileNotFoundError:
                 messagebox.showerror(
@@ -43,9 +42,8 @@ class UpdateHdlTab:
             if hdlfilename_architecture is not None:
                 # HDL-file exists and was generated after the design-file was saved.
                 try:
-                    fileobject = open(hdlfilename_architecture, encoding="utf-8")
-                    arch = fileobject.read()
-                    fileobject.close()
+                    with open(hdlfilename_architecture, encoding="utf-8") as fileobject:
+                        arch = fileobject.read()
                     hdl += self.__add_line_numbers(arch)
                 except FileNotFoundError:
                     messagebox.showerror(

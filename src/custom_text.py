@@ -79,9 +79,8 @@ class CustomText(tk.Text):
 
     def edit_in_external_editor(self) -> None:
         file_name = "hdl-fsm-editor.tmp.vhd" if main_window.language.get() == "VHDL" else "hdl-fsm-editor.tmp.v"
-        fileobject = open(file_name, "w")
-        fileobject.write(self.get("1.0", tk.END + "- 1 chars"))
-        fileobject.close()
+        with open(file_name, "w") as fileobject:
+            fileobject.write(self.get("1.0", tk.END + "- 1 chars"))
         try:
             edit_cmd = main_window.edit_cmd.get().split()
             edit_cmd.append(file_name)
@@ -93,9 +92,8 @@ class CustomText(tk.Text):
             poll = process.poll()
             if poll is not None:
                 break
-        fileobject = open(file_name)
-        new_text = fileobject.read()
-        fileobject.close()
+        with open(file_name) as fileobject:
+            new_text = fileobject.read()
         os.remove(file_name)
         self.delete("1.0", tk.END)
         self.insert("1.0", new_text)
