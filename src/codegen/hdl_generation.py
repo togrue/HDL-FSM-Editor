@@ -25,14 +25,18 @@ from .list_separation_check import ListSeparationCheck
 last_line_number_of_file1 = 0
 
 
-def run_hdl_generation(write_to_file) -> None:
+def run_hdl_generation(write_to_file, is_script_mode: bool = False) -> None:
+    config = GenerationConfig.from_main_window()
     try:
-        config = GenerationConfig.from_main_window()
         _generate_hdl(config, write_to_file)
     except GenerationError as e:
-        messagebox.showerror(e.caption, e.message)
+        if is_script_mode:
+            print(f"{e.caption}:\n{e.message}")
+        else:
+            messagebox.showerror(e.caption, e.message)
     except Exception:
-        messagebox.showerror("Unexpected Error", "An unexpected error occurred.\nSee details at STDOUT.")
+        if not is_script_mode:
+            messagebox.showerror("Unexpected Error", "An unexpected error occurred.\nSee details at STDOUT.")
         # Print stack trace
         import traceback
 

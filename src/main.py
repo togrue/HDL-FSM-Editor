@@ -94,7 +94,7 @@ def _parse_and_process_arguments() -> None:
 
     # Handle batch generation
     if args.generate_hdl:
-        hdl_generation.run_hdl_generation(write_to_file=True)
+        hdl_generation.run_hdl_generation(write_to_file=True, is_script_mode=True)
         sys.exit()
 
 
