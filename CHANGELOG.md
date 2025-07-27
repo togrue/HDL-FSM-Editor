@@ -13,6 +13,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Fixed
 ## Security
 
+## [4.13] - xx.yy.2025
+
+## Added
+- The time-stamp in generated HDL can now be turned off. To simplify the handling with version control.
+- Additional FSM examples from http://www.hdl-fsm-editor.de/ - Designs
+
+## Changed
+- Updated command line arguments to use dashes.
+- The project layout was restructured.
+- Improve "project unsaved dialog" when closing the application.
+
+## Deprecated
+## Removed
+## Fixed
+## Security
+
 ## [4.12] - 27.07.2025
 
 ### Added
