@@ -9,6 +9,39 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 
+# Canvas drawing constants
+CANVAS_STATE_WIDTH_NORMAL = 2
+CANVAS_STATE_WIDTH_HOVER = 4
+CANVAS_POLYGON_WIDTH_NORMAL = 1
+CANVAS_POLYGON_WIDTH_HOVER = 2
+CANVAS_LINE_WIDTH_NORMAL = 1
+CANVAS_LINE_WIDTH_HOVER = 3
+
+# Text widget dimensions
+TEXT_WIDGET_HEIGHT = 1
+TEXT_WIDGET_WIDTH = 8
+TEXT_WIDGET_PADDING = 1
+
+# Dash pattern for dashed lines
+DASH_PATTERN = (2, 2)
+
+# File parsing constants
+MODULENAME_PREFIX_LENGTH = 11
+LANGUAGE_PREFIX_LENGTH = 9
+GENERATE_PATH_PREFIX_LENGTH = 14
+WORKING_DIRECTORY_PREFIX_LENGTH = 18
+NUMBER_OF_FILES_PREFIX_LENGTH = 16
+RESET_SIGNAL_PREFIX_LENGTH = 18
+CLOCK_SIGNAL_PREFIX_LENGTH = 18
+COMPILE_CMD_PREFIX_LENGTH = 12
+EDIT_CMD_PREFIX_LENGTH = 9
+
+# Text widget position
+TEXT_WIDGET_START_POS = "1.0"
+
+# Highlight tag delay
+HIGHLIGHT_TAG_FONT_SIZE = 10
+
 import canvas_editing
 import condition_action_handling
 import connector_handling
@@ -108,78 +141,78 @@ def _open_v1_file_with_name(read_filename) -> None:
     fileobject = open(read_filename, encoding="utf-8")
     for line in fileobject:
         if line.startswith("modulename|"):
-            main_window.module_name.set(line[11:-1])
+            main_window.module_name.set(line[MODULENAME_PREFIX_LENGTH:-1])
         elif line.startswith("language|"):
             old_language = main_window.language.get()
-            main_window.language.set(line[9:-1])
-            if line[9:1] != old_language:
+            main_window.language.set(line[LANGUAGE_PREFIX_LENGTH:-1])
+            if line[LANGUAGE_PREFIX_LENGTH:1] != old_language:
                 main_window.switch_language_mode()
         elif line.startswith("generate_path|"):
-            main_window.generate_path_value.set(line[14:-1])
+            main_window.generate_path_value.set(line[GENERATE_PATH_PREFIX_LENGTH:-1])
         elif line.startswith("working_directory|"):
-            main_window.working_directory_value.set(line[18:-1])
+            main_window.working_directory_value.set(line[WORKING_DIRECTORY_PREFIX_LENGTH:-1])
         elif line.startswith("number_of_files|"):
-            main_window.select_file_number_text.set(int(line[16:-1]))
+            main_window.select_file_number_text.set(int(line[NUMBER_OF_FILES_PREFIX_LENGTH:-1]))
         elif line.startswith("reset_signal_name|"):
-            main_window.reset_signal_name.set(line[18:-1])
+            main_window.reset_signal_name.set(line[RESET_SIGNAL_PREFIX_LENGTH:-1])
         elif line.startswith("clock_signal_name|"):
-            main_window.clock_signal_name.set(line[18:-1])
+            main_window.clock_signal_name.set(line[CLOCK_SIGNAL_PREFIX_LENGTH:-1])
         elif line.startswith("compile_cmd|"):
-            main_window.compile_cmd.set(line[12:-1])
+            main_window.compile_cmd.set(line[COMPILE_CMD_PREFIX_LENGTH:-1])
         elif line.startswith("edit_cmd|"):
-            main_window.edit_cmd.set(line[9:-1])
+            main_window.edit_cmd.set(line[EDIT_CMD_PREFIX_LENGTH:-1])
         elif line.startswith("interface_package|"):
             rest_of_line = _remove_keyword_from_line(line, "interface_package|")
             data = _get_data(rest_of_line, fileobject)
-            main_window.interface_package_text.insert("1.0", data)
+            main_window.interface_package_text.insert(TEXT_WIDGET_START_POS, data)
             main_window.interface_package_text.update_highlight_tags(
-                10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
+                HIGHLIGHT_TAG_FONT_SIZE, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
         elif line.startswith("interface_generics|"):
             rest_of_line = _remove_keyword_from_line(line, "interface_generics|")
             data = _get_data(rest_of_line, fileobject)
-            main_window.interface_generics_text.insert("1.0", data)
+            main_window.interface_generics_text.insert(TEXT_WIDGET_START_POS, data)
             main_window.interface_generics_text.update_highlight_tags(
-                10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
+                HIGHLIGHT_TAG_FONT_SIZE, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
             main_window.interface_generics_text.update_custom_text_class_generics_list()
         elif line.startswith("interface_ports|"):
             rest_of_line = _remove_keyword_from_line(line, "interface_ports|")
             data = _get_data(rest_of_line, fileobject)
-            main_window.interface_ports_text.insert("1.0", data)
+            main_window.interface_ports_text.insert(TEXT_WIDGET_START_POS, data)
             main_window.interface_ports_text.update_highlight_tags(
-                10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
+                HIGHLIGHT_TAG_FONT_SIZE, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
             main_window.interface_ports_text.update_custom_text_class_ports_list()
         elif line.startswith("internals_package|"):
             rest_of_line = _remove_keyword_from_line(line, "internals_package|")
             data = _get_data(rest_of_line, fileobject)
-            main_window.internals_package_text.insert("1.0", data)
+            main_window.internals_package_text.insert(TEXT_WIDGET_START_POS, data)
             main_window.internals_package_text.update_highlight_tags(
-                10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
+                HIGHLIGHT_TAG_FONT_SIZE, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
         elif line.startswith("internals_architecture|"):
             rest_of_line = _remove_keyword_from_line(line, "internals_architecture|")
             data = _get_data(rest_of_line, fileobject)
-            main_window.internals_architecture_text.insert("1.0", data)
+            main_window.internals_architecture_text.insert(TEXT_WIDGET_START_POS, data)
             main_window.internals_architecture_text.update_highlight_tags(
-                10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
+                HIGHLIGHT_TAG_FONT_SIZE, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
             main_window.internals_architecture_text.update_custom_text_class_signals_list()
         elif line.startswith("internals_process|"):
             rest_of_line = _remove_keyword_from_line(line, "internals_process|")
             data = _get_data(rest_of_line, fileobject)
-            main_window.internals_process_clocked_text.insert("1.0", data)
+            main_window.internals_process_clocked_text.insert(TEXT_WIDGET_START_POS, data)
             main_window.internals_process_clocked_text.update_highlight_tags(
-                10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
+                HIGHLIGHT_TAG_FONT_SIZE, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
             main_window.internals_process_clocked_text.update_custom_text_class_signals_list()
         elif line.startswith("internals_process_combinatorial|"):
             rest_of_line = _remove_keyword_from_line(line, "internals_process_combinatorial|")
             data = _get_data(rest_of_line, fileobject)
-            main_window.internals_process_combinatorial_text.insert("1.0", data)
+            main_window.internals_process_combinatorial_text.insert(TEXT_WIDGET_START_POS, data)
             main_window.internals_process_combinatorial_text.update_highlight_tags(
-                10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
+                HIGHLIGHT_TAG_FONT_SIZE, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
             main_window.internals_process_combinatorial_text.update_custom_text_class_signals_list()
         elif line.startswith(
@@ -264,13 +297,17 @@ def _open_v1_file_with_name(read_filename) -> None:
                 except ValueError:
                     tags = tags + (e,)
             state_id = main_window.canvas.create_oval(
-                coords, fill=constants.STATE_COLOR, width=2, outline="blue", tags=tags
+                coords, fill=constants.STATE_COLOR, width=CANVAS_STATE_WIDTH_NORMAL, outline="blue", tags=tags
             )
             main_window.canvas.tag_bind(
-                state_id, "<Enter>", lambda event, id=state_id: main_window.canvas.itemconfig(id, width=4)
+                state_id,
+                "<Enter>",
+                lambda event, id=state_id: main_window.canvas.itemconfig(id, width=CANVAS_STATE_WIDTH_HOVER),
             )
             main_window.canvas.tag_bind(
-                state_id, "<Leave>", lambda event, id=state_id: main_window.canvas.itemconfig(id, width=2)
+                state_id,
+                "<Leave>",
+                lambda event, id=state_id: main_window.canvas.itemconfig(id, width=CANVAS_STATE_WIDTH_NORMAL),
             )
             main_window.canvas.tag_bind(
                 state_id, "<Button-3>", lambda event, id=state_id: state_handling.show_menu(event, id)
@@ -288,10 +325,14 @@ def _open_v1_file_with_name(read_filename) -> None:
                     tags = tags + (e,)
             polygon_id = main_window.canvas.create_polygon(coords, fill="red", outline="orange", tags=tags)
             main_window.canvas.tag_bind(
-                polygon_id, "<Enter>", lambda event, id=polygon_id: main_window.canvas.itemconfig(id, width=2)
+                polygon_id,
+                "<Enter>",
+                lambda event, id=polygon_id: main_window.canvas.itemconfig(id, width=CANVAS_POLYGON_WIDTH_HOVER),
             )
             main_window.canvas.tag_bind(
-                polygon_id, "<Leave>", lambda event, id=polygon_id: main_window.canvas.itemconfig(id, width=1)
+                polygon_id,
+                "<Leave>",
+                lambda event, id=polygon_id: main_window.canvas.itemconfig(id, width=CANVAS_POLYGON_WIDTH_NORMAL),
             )
         elif line.startswith("text|"):
             rest_of_line = _remove_keyword_from_line(line, "text|")
@@ -331,16 +372,22 @@ def _open_v1_file_with_name(read_filename) -> None:
             trans_id = main_window.canvas.create_line(coords, smooth=True, fill="blue", tags=tags)
             main_window.canvas.tag_lower(trans_id)  # Lines are always "under" the priority rectangles.
             main_window.canvas.tag_bind(
-                trans_id, "<Enter>", lambda event, trans_id=trans_id: main_window.canvas.itemconfig(trans_id, width=3)
+                trans_id,
+                "<Enter>",
+                lambda event, trans_id=trans_id: main_window.canvas.itemconfig(trans_id, width=CANVAS_LINE_WIDTH_HOVER),
             )
             main_window.canvas.tag_bind(
-                trans_id, "<Leave>", lambda event, trans_id=trans_id: main_window.canvas.itemconfig(trans_id, width=1)
+                trans_id,
+                "<Leave>",
+                lambda event, trans_id=trans_id: main_window.canvas.itemconfig(
+                    trans_id, width=CANVAS_LINE_WIDTH_NORMAL
+                ),
             )
             for t in tags:
                 if t.startswith("connected_to_transition"):
-                    main_window.canvas.itemconfig(trans_id, dash=(2, 2), state=tk.HIDDEN)
+                    main_window.canvas.itemconfig(trans_id, dash=DASH_PATTERN, state=tk.HIDDEN)
                 elif t.startswith("connected_to_state"):
-                    main_window.canvas.itemconfig(trans_id, dash=(2, 2))
+                    main_window.canvas.itemconfig(trans_id, dash=DASH_PATTERN)
                 elif t.startswith("transition"):
                     main_window.canvas.itemconfig(trans_id, arrow="last")
                     main_window.canvas.tag_bind(
@@ -376,10 +423,16 @@ def _open_v1_file_with_name(read_filename) -> None:
                     coords.append(v)
                 except ValueError:
                     tags = tags + (e,)
+            WINDOW_X_OFFSET = 100
             action_ref = state_action_handling.MyText(
-                coords[0] - 100, coords[1], height=1, width=8, padding=1, increment=False
+                coords[0] - WINDOW_X_OFFSET,
+                coords[1],
+                height=TEXT_WIDGET_HEIGHT,
+                width=TEXT_WIDGET_WIDTH,
+                padding=TEXT_WIDGET_PADDING,
+                increment=False,
             )
-            action_ref.text_id.insert("1.0", text)
+            action_ref.text_id.insert(TEXT_WIDGET_START_POS, text)
             action_ref.text_id.format()
             main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
         elif line.startswith("window_condition_action_block|"):
@@ -402,11 +455,17 @@ def _open_v1_file_with_name(read_filename) -> None:
                 if t == "connected_to_reset_transition":
                     connected_to_reset_entry = True
             condition_action_ref = condition_action_handling.ConditionAction(
-                coords[0], coords[1], connected_to_reset_entry, height=1, width=8, padding=1, increment=False
+                coords[0],
+                coords[1],
+                connected_to_reset_entry,
+                height=TEXT_WIDGET_HEIGHT,
+                width=TEXT_WIDGET_WIDTH,
+                padding=TEXT_WIDGET_PADDING,
+                increment=False,
             )
-            condition_action_ref.condition_id.insert("1.0", condition)
+            condition_action_ref.condition_id.insert(TEXT_WIDGET_START_POS, condition)
             condition_action_ref.condition_id.format()
-            condition_action_ref.action_id.insert("1.0", action)
+            condition_action_ref.action_id.insert(TEXT_WIDGET_START_POS, action)
             condition_action_ref.action_id.format()
             if (
                 condition_action_ref.condition_id.get("1.0", tk.END) == "\n"
@@ -436,10 +495,12 @@ def _open_v1_file_with_name(read_filename) -> None:
                     coords.append(v)
                 except ValueError:
                     tags = tags + (e,)
-            global_actions_ref = global_actions.GlobalActions(coords[0], coords[1], height=1, width=8, padding=1)
-            global_actions_ref.text_before_id.insert("1.0", text_before)
+            global_actions_ref = global_actions.GlobalActions(
+                coords[0], coords[1], height=TEXT_WIDGET_HEIGHT, width=TEXT_WIDGET_WIDTH, padding=TEXT_WIDGET_PADDING
+            )
+            global_actions_ref.text_before_id.insert(TEXT_WIDGET_START_POS, text_before)
             global_actions_ref.text_before_id.format()
-            global_actions_ref.text_after_id.insert("1.0", text_after)
+            global_actions_ref.text_after_id.insert(TEXT_WIDGET_START_POS, text_after)
             global_actions_ref.text_after_id.format()
             main_window.canvas.itemconfigure(global_actions_ref.window_id, tag=tags)
         elif line.startswith("window_global_actions_combinatorial|"):
