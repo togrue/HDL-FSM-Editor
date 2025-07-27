@@ -83,7 +83,7 @@ def save() -> None:
 def open_v1_file() -> None:
     filename_new = askopenfilename(filetypes=(("HDL-FSM-Editor files", "*.hfe"), ("all files", "*.*")))
     if filename_new != "":
-        removed = remove_old_design()
+        removed = clear_design()
         if removed:
             _open_v1_file_with_name(filename_new)
 
@@ -91,7 +91,7 @@ def open_v1_file() -> None:
 def open_file() -> None:
     filename_new = askopenfilename(filetypes=(("HDL-FSM-Editor files", "*.hfe"), ("all files", "*.*")))
     if filename_new != "":
-        removed = remove_old_design()
+        removed = clear_design()
         if removed:
             open_file_with_name_new(filename_new)
 
@@ -488,7 +488,7 @@ def _open_v1_file_with_name(read_filename) -> None:
     canvas_editing.view_all()
 
 
-def remove_old_design() -> bool:
+def clear_design() -> bool:
     global filename
     title = main_window.root.title()
     if title.endswith("*"):
