@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Fixed
 ## Security
 
-## [4.12] - xx.yy.2025
+## [4.12] - 27.07.2025
 
 ### Added
 - If the first line of a state comment only contains an integer, this value will determine the order of the states in the generated HDL.
@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - In VHDL 2-files mode now not only the entity-file is checked for updates (caused by another instance of HFE) but also the architecture-file.
 
 ### Fixed
+- When inserting a transition was aborted by "Escape", then moving the state where the transition started, caused an exception. Fixed.
 - "Undo" after deleting a textbox (like "Global Actions") created sometimes graphical artefacts. Fixed.
 - The "New" button cleared the canvas but did not activate the grid. Fixed.
 - Since version 4.11 the Verilog in the generated-HDL tab was completely colored as comment. Fixed.
