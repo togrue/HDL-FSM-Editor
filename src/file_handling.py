@@ -38,7 +38,7 @@ def ask_save_unsaved_changes(title) -> str:
     """
     result = messagebox.askyesnocancel(
         "HDL-FSM-Editor",
-        "There are unsaved changes in design:\n" + title[:-1] + "\nDo you want to save them?",
+        f"There are unsaved changes in design:\n{title[:-1]}\nDo you want to save them?",
         default="cancel",
         icon="warning",
     )
@@ -59,7 +59,7 @@ def save_as() -> None:
     )
     if project_manager.current_file != "":
         dir_name, file_name = os.path.split(project_manager.current_file)
-        main_window.root.title(file_name + " (" + dir_name + ")")
+        main_window.root.title(f"{file_name} ({dir_name})")
         save_in_file_new(project_manager.current_file)
 
 
@@ -74,7 +74,7 @@ def save() -> None:
         )
     if project_manager.current_file != "":
         dir_name, file_name = os.path.split(project_manager.current_file)
-        main_window.root.title(file_name + " (" + dir_name + ")")
+        main_window.root.title(f"{file_name} ({dir_name})")
         main_window.root.after_idle(
             save_in_file_new, project_manager.current_file
         )  # Wait for the handling of all possible events.
@@ -484,7 +484,7 @@ def _open_v1_file_with_name(read_filename) -> None:
     undo_handling.design_has_changed()  # Initialize the stack with the read design.
     # main_window.root.update()
     dir_name, file_name = os.path.split(read_filename)
-    main_window.root.title(file_name + " (" + dir_name + ")")
+    main_window.root.title(f"{file_name} ({dir_name})")
     canvas_editing.view_all()
 
 
@@ -609,16 +609,16 @@ def save_in_file_new(save_filename) -> None:  # Called at saving and at every de
     design_dictionary["fontsize"] = canvas_editing.fontsize
     design_dictionary["label_fontsize"] = canvas_editing.label_fontsize
     design_dictionary["visible_center"] = canvas_editing.get_visible_center_as_string()
-    design_dictionary["interface_package"] = main_window.interface_package_text.get("1.0", tk.END + "-1 chars")
-    design_dictionary["interface_generics"] = main_window.interface_generics_text.get("1.0", tk.END + "-1 chars")
-    design_dictionary["interface_ports"] = main_window.interface_ports_text.get("1.0", tk.END + "-1 chars")
-    design_dictionary["internals_package"] = main_window.internals_package_text.get("1.0", tk.END + "-1 chars")
+    design_dictionary["interface_package"] = main_window.interface_package_text.get("1.0", f"{tk.END}-1 chars")
+    design_dictionary["interface_generics"] = main_window.interface_generics_text.get("1.0", f"{tk.END}-1 chars")
+    design_dictionary["interface_ports"] = main_window.interface_ports_text.get("1.0", f"{tk.END}-1 chars")
+    design_dictionary["internals_package"] = main_window.internals_package_text.get("1.0", f"{tk.END}-1 chars")
     design_dictionary["internals_architecture"] = main_window.internals_architecture_text.get(
-        "1.0", tk.END + "-1 chars"
+        "1.0", f"{tk.END}-1 chars"
     )
-    design_dictionary["internals_process"] = main_window.internals_process_clocked_text.get("1.0", tk.END + "-1 chars")
+    design_dictionary["internals_process"] = main_window.internals_process_clocked_text.get("1.0", f"{tk.END}-1 chars")
     design_dictionary["internals_process_combinatorial"] = main_window.internals_process_combinatorial_text.get(
-        "1.0", tk.END + "-1 chars"
+        "1.0", f"{tk.END}-1 chars"
     )
     design_dictionary["sash_positions"] = main_window.sash_positions
     design_dictionary["state"] = []
@@ -660,7 +660,7 @@ def save_in_file_new(save_filename) -> None:  # Called at saving and at every de
                 design_dictionary["window_state_action_block"].append(
                     [
                         main_window.canvas.coords(i),
-                        state_action_handling.MyText.mytext_dict[i].text_id.get("1.0", tk.END + "-1 chars"),
+                        state_action_handling.MyText.mytext_dict[i].text_id.get("1.0", f"{tk.END}-1 chars"),
                         main_window.canvas.gettags(i),
                     ]
                 )
@@ -668,7 +668,7 @@ def save_in_file_new(save_filename) -> None:  # Called at saving and at every de
                 design_dictionary["window_state_comment"].append(
                     [
                         main_window.canvas.coords(i),
-                        state_comment.StateComment.dictionary[i].text_id.get("1.0", tk.END + "-1 chars"),
+                        state_comment.StateComment.dictionary[i].text_id.get("1.0", f"{tk.END}-1 chars"),
                         main_window.canvas.gettags(i),
                     ]
                 )
@@ -677,10 +677,10 @@ def save_in_file_new(save_filename) -> None:  # Called at saving and at every de
                     [
                         main_window.canvas.coords(i),
                         condition_action_handling.ConditionAction.dictionary[i].condition_id.get(
-                            "1.0", tk.END + "-1 chars"
+                            "1.0", f"{tk.END}-1 chars"
                         ),
                         condition_action_handling.ConditionAction.dictionary[i].action_id.get(
-                            "1.0", tk.END + "-1 chars"
+                            "1.0", f"{tk.END}-1 chars"
                         ),
                         main_window.canvas.gettags(i),
                     ]
@@ -689,8 +689,8 @@ def save_in_file_new(save_filename) -> None:  # Called at saving and at every de
                 design_dictionary["window_global_actions"].append(
                     [
                         main_window.canvas.coords(i),
-                        global_actions.GlobalActions.dictionary[i].text_before_id.get("1.0", tk.END + "-1 chars"),
-                        global_actions.GlobalActions.dictionary[i].text_after_id.get("1.0", tk.END + "-1 chars"),
+                        global_actions.GlobalActions.dictionary[i].text_before_id.get("1.0", f"{tk.END}-1 chars"),
+                        global_actions.GlobalActions.dictionary[i].text_after_id.get("1.0", f"{tk.END}-1 chars"),
                         main_window.canvas.gettags(i),
                     ]
                 )
@@ -699,7 +699,7 @@ def save_in_file_new(save_filename) -> None:  # Called at saving and at every de
                     [
                         main_window.canvas.coords(i),
                         global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[i].text_id.get(
-                            "1.0", tk.END + "-1 chars"
+                            "1.0", f"{tk.END}-1 chars"
                         ),
                         main_window.canvas.gettags(i),
                     ]
@@ -708,7 +708,7 @@ def save_in_file_new(save_filename) -> None:  # Called at saving and at every de
                 design_dictionary["window_state_actions_default"].append(
                     [
                         main_window.canvas.coords(i),
-                        state_actions_default.StateActionsDefault.dictionary[i].text_id.get("1.0", tk.END + "-1 chars"),
+                        state_actions_default.StateActionsDefault.dictionary[i].text_id.get("1.0", f"{tk.END}-1 chars"),
                         main_window.canvas.gettags(i),
                     ]
                 )
@@ -718,10 +718,10 @@ def save_in_file_new(save_filename) -> None:  # Called at saving and at every de
         fileobject = open(save_filename, "w", encoding="utf-8")
         fileobject.write(json.dumps(design_dictionary, indent=4, default=str))
         fileobject.close()
-        if not save_filename.endswith(".tmp") and os.path.isfile(project_manager.previous_file + ".tmp"):
-            os.remove(project_manager.previous_file + ".tmp")
+        if not save_filename.endswith(".tmp") and os.path.isfile(f"{project_manager.previous_file}.tmp"):
+            os.remove(f"{project_manager.previous_file}.tmp")
     except Exception as _:
-        messagebox.showerror("Error in HDL-FSM-Editor", "Writing to file " + save_filename + " caused exception ")
+        messagebox.showerror("Error in HDL-FSM-Editor", f"Writing to file {save_filename} caused exception ")
     if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
         messagebox.showerror("Error", "The database is corrupt.\nDo not use the written file.\nSee details at STDOUT.")
 
@@ -729,17 +729,15 @@ def save_in_file_new(save_filename) -> None:  # Called at saving and at every de
 def open_file_with_name_new(read_filename) -> None:
     global filename
     replaced_read_filename = read_filename
-    if os.path.isfile(read_filename + ".tmp"):
+    if os.path.isfile(f"{read_filename}.tmp"):
         answer = messagebox.askyesno(
             "HDL-FSM-Editor",
-            "Found BackUp-File\n"
-            + read_filename
-            + ".tmp\n"
-            + "This file remains after a HDL-FSM-Editor crash and contains all latest changes.\n"
-            + "Shall this file be read?",
+            f"Found BackUp-File\n{read_filename}.tmp\n"
+            "This file remains after a HDL-FSM-Editor crash and contains all latest changes.\n"
+            "Shall this file be read?",
         )
         if answer is True:
-            replaced_read_filename = read_filename + ".tmp"
+            replaced_read_filename = f"{read_filename}.tmp"
     try:
         fileobject = open(replaced_read_filename, encoding="utf-8")
         data = fileobject.read()
@@ -1082,8 +1080,8 @@ def open_file_with_name_new(read_filename) -> None:
         for priority_id in priority_ids:
             main_window.canvas.tag_raise(priority_id)
         for transition_identifer in hide_priority_rectangle_list:
-            main_window.canvas.itemconfigure(transition_identifer + "priority", state=tk.HIDDEN)
-            main_window.canvas.itemconfigure(transition_identifer + "rectangle", state=tk.HIDDEN)
+            main_window.canvas.itemconfigure(f"{transition_identifer}priority", state=tk.HIDDEN)
+            main_window.canvas.itemconfigure(f"{transition_identifer}rectangle", state=tk.HIDDEN)
         undo_handling.stack = []
         # Loading the design created by "traces" some stack-entries, which are removed here:
         undo_handling.stack_write_pointer = 0
@@ -1092,7 +1090,7 @@ def open_file_with_name_new(read_filename) -> None:
         undo_handling.design_has_changed()  # Initialize the stack with the read design.
         main_window.root.update()
         dir_name, file_name = os.path.split(read_filename)
-        main_window.root.title(file_name + " (" + dir_name + ")")
+        main_window.root.title(f"{file_name} ({dir_name})")
         # canvas_editing.priority_distance = 1.5*canvas_editing.state_radius
         update_ref = update_hdl_tab.UpdateHdlTab(
             design_dictionary["language"],
@@ -1108,8 +1106,8 @@ def open_file_with_name_new(read_filename) -> None:
         if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
             messagebox.showerror("Error", "The database is corrupt.\nDo not use this file.\nSee details at STDOUT.")
     except FileNotFoundError:
-        messagebox.showerror("Error", "File " + read_filename + " could not be found.")
+        messagebox.showerror("Error", f"File {read_filename} could not be found.")
     except ValueError:  # includes JSONDecodeError
         messagebox.showerror(
-            "Error", "File \n" + read_filename + "\nhas wrong format.\nProbably a HDL-FSM-Editor file format Version 1."
+            "Error", f"File \n{read_filename}\nhas wrong format.\nProbably a HDL-FSM-Editor file format Version 1."
         )
