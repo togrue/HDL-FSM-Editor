@@ -15,6 +15,7 @@ dev = [
     "ruff>=0.12.4",
     "mypy>=1.17.0",
     "pyinstaller>=6.14.2",
+    "pytest-xdist>=3.8.0",
 ]
 
 [tool.ruff]
@@ -47,6 +48,8 @@ addopts = [
     "--tb=short",
     "--strict-markers",
     "--disable-warnings",
+    "-n",
+    "auto",
 ]
 markers = [
     "golden_file: marks tests as golden file tests",

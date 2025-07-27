@@ -13,8 +13,12 @@
         }
     },
     "python.testing.pytestArgs": [
-        "tests"
+        "tests",
+        "-n",
+        "auto",
+        "--tb=short"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "python.testing.autoTestDiscoverOnSaveEnabled": true
 }

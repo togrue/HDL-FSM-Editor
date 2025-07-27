@@ -59,6 +59,8 @@ def get_output_file_names(hfe_file: Path, output_dir: Path) -> list[Path]:
 
 def run_hdl_generation(hfe_file: Path, output_dir: Path) -> subprocess.CompletedProcess:
     """Run HDL-FSM-Editor to generate HDL from .hfe file."""
+    # Note: we have to ensure that the tests don't overwrite files of other tests.
+    # This is currently not checked. So ensure that all modules have a unique module name!
     output_dir.mkdir(parents=True, exist_ok=True)
     original_cwd = os.getcwd()
     os.chdir(output_dir)
