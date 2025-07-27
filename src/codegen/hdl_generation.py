@@ -25,10 +25,12 @@ from .list_separation_check import ListSeparationCheck
 last_line_number_of_file1 = 0
 
 
-def run_hdl_generation(write_to_file, is_script_mode: bool = False) -> None:
+def run_hdl_generation(write_to_file, is_script_mode: bool = False) -> bool:
     config = GenerationConfig.from_main_window()
+    success = False
     try:
         _generate_hdl(config, write_to_file)
+        success = True
     except GenerationError as e:
         if is_script_mode:
             print(f"{e.caption}:\n{e.message}")
@@ -41,6 +43,8 @@ def run_hdl_generation(write_to_file, is_script_mode: bool = False) -> None:
         import traceback
 
         print(traceback.format_exc())
+
+    return success
 
 
 def _generate_hdl(config: GenerationConfig, write_to_file: bool) -> None:
