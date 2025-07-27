@@ -324,6 +324,9 @@ def _create_sorted_state_tag_list():
                         else:
                             if int(first_line_of_state_comments) in state_tag_dict_with_prio:
                                 state_tag_list.append(tag)
+                                # TODO: Just log this. Messageboxes should not be part of the code generation.
+                                # And show the warnings in the HDL source tab or in a separate log window
+                                # In script mode the warnings should end up on the console
                                 messagebox.showwarning(
                                     "Warning in HDL-FSM-Editor",
                                     "The state '"
