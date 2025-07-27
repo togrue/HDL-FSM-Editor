@@ -81,7 +81,7 @@ def run_hdl_generation(hfe_file: Path, output_dir: Path) -> subprocess.Completed
 
 def collect_hfe_test_cases() -> list[tuple[str, Path]]:
     """Collect all HFE files and create test cases."""
-    examples_dir = Path(__file__).parent.parent / "examples"
+    examples_dir = Path(__file__).parent / "test_input"
     hfe_files = list(examples_dir.glob("*.hfe"))
     if not hfe_files:
         pytest.skip("No .hfe files found in examples directory")
