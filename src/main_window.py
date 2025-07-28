@@ -331,7 +331,7 @@ def create_control_notebook_tab() -> None:
 
     generate_path_value = tk.StringVar(value="")
     generate_path_value.trace_add("write", _show_path_has_changed)
-    generate_path_label = ttk.Label(control_frame, text="Path for generated HDL:", padding=5)
+    generate_path_label = ttk.Label(control_frame, text="Directory for generated HDL:", padding=5)
     generate_path_entry = ttk.Entry(control_frame, textvariable=generate_path_value, width=80)
     generate_path_button = ttk.Button(control_frame, text="Select...", command=_set_path, style="Path.TButton")
     generate_path_label.grid(row=2, column=0, sticky=tk.W)
