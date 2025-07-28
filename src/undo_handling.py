@@ -98,6 +98,8 @@ def _remove_stack_entries_from_write_pointer_to_the_end_of_the_stack() -> None:
         del stack[stack_write_pointer:]
 
 
+# TODO: This should be the same as saving to a file.
+# Maybe including some extra information as the zoom level.
 def _get_complete_design_as_text_object():
     design = ""
     design += "modulename|" + main_window.module_name.get() + "\n"
@@ -249,6 +251,7 @@ def _get_complete_design_as_text_object():
             if print_tags is True:
                 print_tags = False
             design += " \n"
+
     return design
 
 
