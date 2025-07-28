@@ -162,7 +162,30 @@ def clear_design() -> bool:
 
 
 def save_in_file_new(save_filename) -> None:  # Called at saving and at every design change (writing to .tmp-file)
+    design_dictionary = _save_design_to_dict()
+    try:
+        with open(save_filename, "w", encoding="utf-8") as fileobject:
+            json.dump(design_dictionary, fileobject, indent=4, default=str, ensure_ascii=False)
+        if not save_filename.endswith(".tmp") and os.path.isfile(f"{project_manager.previous_file}.tmp"):
+            os.remove(f"{project_manager.previous_file}.tmp")
+    except Exception as _:
+        messagebox.showerror("Error in HDL-FSM-Editor", f"Writing to file {save_filename} caused exception ")
+    if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
+        messagebox.showerror("Error", "The database is corrupt.\nDo not use the written file.\nSee details at STDOUT.")
+
+
+def _save_design_to_dict() -> dict[str, Any]:
     design_dictionary = {}
+    _save_control_data(design_dictionary)
+    _save_interface_data(design_dictionary)
+    _save_internals_data(design_dictionary)
+    _save_log_config(design_dictionary)
+    _save_canvas_data(design_dictionary)
+
+    return design_dictionary
+
+
+def _save_control_data(design_dictionary: dict[str, Any]) -> None:
     design_dictionary["modulename"] = main_window.module_name.get()
     design_dictionary["language"] = main_window.language.get()
     design_dictionary["generate_path"] = main_window.generate_path_value.get()
@@ -172,8 +195,37 @@ def save_in_file_new(save_filename) -> None:  # Called at saving and at every de
     design_dictionary["clock_signal_name"] = main_window.clock_signal_name.get()
     design_dictionary["compile_cmd"] = main_window.compile_cmd.get()
     design_dictionary["edit_cmd"] = main_window.edit_cmd.get()
-    design_dictionary["diagram_background_color"] = main_window.diagram_background_color.get()
     design_dictionary["include_timestamp_in_output"] = main_window.include_timestamp_in_output.get()
+
+
+def _save_interface_data(design_dictionary: dict[str, Any]) -> None:
+    design_dictionary["interface_package"] = main_window.interface_package_text.get("1.0", f"{tk.END}-1 chars")
+    design_dictionary["interface_generics"] = main_window.interface_generics_text.get("1.0", f"{tk.END}-1 chars")
+    design_dictionary["interface_ports"] = main_window.interface_ports_text.get("1.0", f"{tk.END}-1 chars")
+
+
+def _save_internals_data(design_dictionary: dict[str, Any]) -> None:
+    design_dictionary["internals_package"] = main_window.internals_package_text.get("1.0", f"{tk.END}-1 chars")
+    design_dictionary["internals_architecture"] = main_window.internals_architecture_text.get(
+        "1.0", f"{tk.END}-1 chars"
+    )
+    design_dictionary["internals_process"] = main_window.internals_process_clocked_text.get("1.0", f"{tk.END}-1 chars")
+    design_dictionary["internals_process_combinatorial"] = main_window.internals_process_combinatorial_text.get(
+        "1.0", f"{tk.END}-1 chars"
+    )
+
+
+def _save_log_config(design_dictionary: dict[str, Any]) -> None:
+    if main_window.language.get() == "VHDL":
+        design_dictionary["regex_message_find"] = main_window.regex_message_find_for_vhdl
+    else:
+        design_dictionary["regex_message_find"] = main_window.regex_message_find_for_verilog
+    design_dictionary["regex_file_name_quote"] = main_window.regex_file_name_quote
+    design_dictionary["regex_file_line_number_quote"] = main_window.regex_file_line_number_quote
+
+
+def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
+    design_dictionary["diagram_background_color"] = main_window.diagram_background_color.get()
     design_dictionary["state_number"] = state_handling.state_number
     design_dictionary["transition_number"] = transition_handling.transition_number
     design_dictionary["reset_entry_number"] = reset_entry_handling.reset_entry_number
@@ -191,17 +243,6 @@ def save_in_file_new(save_filename) -> None:  # Called at saving and at every de
     design_dictionary["fontsize"] = canvas_editing.fontsize
     design_dictionary["label_fontsize"] = canvas_editing.label_fontsize
     design_dictionary["visible_center"] = canvas_editing.get_visible_center_as_string()
-    design_dictionary["interface_package"] = main_window.interface_package_text.get("1.0", f"{tk.END}-1 chars")
-    design_dictionary["interface_generics"] = main_window.interface_generics_text.get("1.0", f"{tk.END}-1 chars")
-    design_dictionary["interface_ports"] = main_window.interface_ports_text.get("1.0", f"{tk.END}-1 chars")
-    design_dictionary["internals_package"] = main_window.internals_package_text.get("1.0", f"{tk.END}-1 chars")
-    design_dictionary["internals_architecture"] = main_window.internals_architecture_text.get(
-        "1.0", f"{tk.END}-1 chars"
-    )
-    design_dictionary["internals_process"] = main_window.internals_process_clocked_text.get("1.0", f"{tk.END}-1 chars")
-    design_dictionary["internals_process_combinatorial"] = main_window.internals_process_combinatorial_text.get(
-        "1.0", f"{tk.END}-1 chars"
-    )
     design_dictionary["sash_positions"] = main_window.sash_positions
     design_dictionary["state"] = []
     design_dictionary["text"] = []
@@ -214,12 +255,6 @@ def save_in_file_new(save_filename) -> None:  # Called at saving and at every de
     design_dictionary["window_global_actions"] = []
     design_dictionary["window_global_actions_combinatorial"] = []
     design_dictionary["window_state_actions_default"] = []
-    if main_window.language.get() == "VHDL":
-        design_dictionary["regex_message_find"] = main_window.regex_message_find_for_vhdl
-    else:
-        design_dictionary["regex_message_find"] = main_window.regex_message_find_for_verilog
-    design_dictionary["regex_file_name_quote"] = main_window.regex_file_name_quote
-    design_dictionary["regex_file_line_number_quote"] = main_window.regex_file_line_number_quote
 
     items = main_window.canvas.find_all()
     for i in items:
@@ -296,15 +331,6 @@ def save_in_file_new(save_filename) -> None:  # Called at saving and at every de
                 )
             else:
                 print("file_handling: Fatal, unknown dictionary key ", i)
-    try:
-        with open(save_filename, "w", encoding="utf-8") as fileobject:
-            fileobject.write(json.dumps(design_dictionary, indent=4, default=str))
-        if not save_filename.endswith(".tmp") and os.path.isfile(f"{project_manager.previous_file}.tmp"):
-            os.remove(f"{project_manager.previous_file}.tmp")
-    except Exception as _:
-        messagebox.showerror("Error in HDL-FSM-Editor", f"Writing to file {save_filename} caused exception ")
-    if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
-        messagebox.showerror("Error", "The database is corrupt.\nDo not use the written file.\nSee details at STDOUT.")
 
 
 def open_file_with_name_new(read_filename) -> None:
