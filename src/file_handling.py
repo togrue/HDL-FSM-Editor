@@ -407,10 +407,7 @@ def _load_control_data(design_dictionary: dict[str, Any]) -> None:
     if design_dictionary["language"] != old_language:
         main_window.switch_language_mode()
     main_window.generate_path_value.set(design_dictionary["generate_path"])
-    if "working_directory" in design_dictionary:
-        main_window.working_directory_value.set(design_dictionary["working_directory"])
-    else:
-        main_window.working_directory_value.set("")
+    main_window.working_directory_value.set(design_dictionary.get("working_directory", ""))
     # For Verilog and SystemVerilog, always use single file mode regardless of what's in the file
     if design_dictionary["language"] in ["Verilog", "SystemVerilog"]:
         main_window.select_file_number_text.set(1)
@@ -420,10 +417,7 @@ def _load_control_data(design_dictionary: dict[str, Any]) -> None:
     main_window.clock_signal_name.set(design_dictionary["clock_signal_name"])
     main_window.compile_cmd.set(design_dictionary["compile_cmd"])
     main_window.edit_cmd.set(design_dictionary["edit_cmd"])
-    if "include_timestamp_in_output" in design_dictionary:
-        main_window.include_timestamp_in_output.set(design_dictionary["include_timestamp_in_output"])
-    else:
-        main_window.include_timestamp_in_output.set(True)  # Default to True for backward compatibility
+    main_window.include_timestamp_in_output.set(design_dictionary.get("include_timestamp_in_output", True))
 
 
 def _load_interface_data(design_dictionary: dict[str, Any]) -> None:
@@ -473,6 +467,7 @@ def _load_internals_data(design_dictionary: dict[str, Any]) -> None:
 
 def _load_log_config(design_dictionary: dict[str, Any]) -> None:
     """Load regex configuration for log parsing."""
+
     if "regex_message_find" in design_dictionary:
         if design_dictionary["language"] == "VHDL":
             main_window.regex_message_find_for_vhdl = design_dictionary["regex_message_find"]
@@ -485,12 +480,8 @@ def _load_log_config(design_dictionary: dict[str, Any]) -> None:
 def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
     """Load canvas-related data including colors, dimensions, and UI state."""
     # Load diagram background color
-    if "diagram_background_color" in design_dictionary:
-        diagram_background_color = design_dictionary["diagram_background_color"]
-        main_window.diagram_background_color.set(diagram_background_color)
-    else:
-        diagram_background_color = "white"
-    main_window.canvas.configure(bg=diagram_background_color)
+    main_window.diagram_background_color.set(design_dictionary.get("diagram_background_color", "white"))
+    main_window.canvas.configure(bg=main_window.diagram_background_color.get())
 
     # Load sash positions
     if "sash_positions" in design_dictionary:
@@ -717,15 +708,14 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
 
     # Load state comments
-    if "window_state_comment" in design_dictionary:  # HDL-FSM-versions before 4.2 did not support state-comments.
-        for definition in design_dictionary["window_state_comment"]:
-            coords = definition[0]
-            text = definition[1]
-            tags = definition[2]
-            comment_ref = state_comment.StateComment(coords[0] - 100, coords[1], height=1, width=8, padding=1)
-            comment_ref.text_id.insert("1.0", text)
-            comment_ref.text_id.format()
-            main_window.canvas.itemconfigure(comment_ref.window_id, tag=tags)
+    for definition in design_dictionary.get("window_state_comment", []):
+        coords = definition[0]
+        text = definition[1]
+        tags = definition[2]
+        comment_ref = state_comment.StateComment(coords[0] - 100, coords[1], height=1, width=8, padding=1)
+        comment_ref.text_id.insert("1.0", text)
+        comment_ref.text_id.format()
+        main_window.canvas.itemconfigure(comment_ref.window_id, tag=tags)
 
     # Load condition action blocks
     for definition in design_dictionary["window_condition_action_block"]:
