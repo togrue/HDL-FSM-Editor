@@ -39,7 +39,7 @@ class RegexDialog(simpledialog.Dialog):
         # Header
         ttk.Label(
             master,
-            text="Regex for finding a message with\ngroup for file-name and\ngroup for line-number:",
+            text="Regex to extract file name and line number from simulator messages:",
             justify="left",
         ).grid(row=0, column=0, sticky="ew", padx=0, pady=0)
 
