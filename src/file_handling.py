@@ -351,6 +351,12 @@ def open_file_with_name_new(read_filename) -> None:
         design_dictionary = json.loads(data)
         _load_design_from_dict(design_dictionary)
 
+        # Final cleanup
+        undo_handling.stack = []
+        # Loading the design created by "traces" some stack-entries, which are removed here:
+        undo_handling.stack_write_pointer = 0
+        main_window.undo_button.config(state="disabled")
+
         # Put the read design into stack[0]:
         undo_handling.design_has_changed()  # Initialize the stack with the read design.
         main_window.root.update()
@@ -391,12 +397,6 @@ def _load_design_from_dict(design_dictionary: dict[str, Any]) -> None:
     _load_log_config(design_dictionary)
     _load_canvas_data(design_dictionary)
     _load_canvas_elements(design_dictionary)
-
-    # Final cleanup
-    undo_handling.stack = []
-    # Loading the design created by "traces" some stack-entries, which are removed here:
-    undo_handling.stack_write_pointer = 0
-    main_window.undo_button.config(state="disabled")
 
 
 def _load_control_data(design_dictionary: dict[str, Any]) -> None:
