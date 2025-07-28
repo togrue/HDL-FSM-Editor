@@ -86,18 +86,6 @@ class RegexDialog(simpledialog.Dialog):
 
         return self.pattern_entry  # Return widget that should have initial focus
 
-    def buttonbox(self) -> None:
-        """Create the button box."""
-        box = ttk.Frame(self)
-
-        ttk.Button(box, text="Store", command=self.ok, default=tk.ACTIVE).pack(side=tk.LEFT, padx=5, pady=5)
-        ttk.Button(box, text="Cancel", command=self.cancel).pack(side=tk.LEFT, padx=5, pady=5)
-
-        self.bind("<Return>", lambda event: self.ok())
-        self.bind("<Escape>", lambda event: self.cancel())
-
-        box.pack()
-
     def apply(self) -> None:
         """Process the dialog data and set the result."""
         self.result = RegexConfig(
