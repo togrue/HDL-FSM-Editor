@@ -384,10 +384,23 @@ def _load_design_from_dict(design_dictionary: dict[str, Any]) -> None:
     custom_text.CustomText.written_variables_of_all_windows.clear()
     # Bring the notebook tab with the diagram into the foreground
     main_window.show_tab(GuiTab.DIAGRAM)
-    # Read the design from the file:
-    transition_ids = []
-    ids_of_rectangles_to_raise = []
-    priority_ids = []
+
+    _load_control_data(design_dictionary)
+    _load_interface_data(design_dictionary)
+    _load_internals_data(design_dictionary)
+    _load_log_config(design_dictionary)
+    _load_canvas_data(design_dictionary)
+    _load_canvas_elements(design_dictionary)
+
+    # Final cleanup
+    undo_handling.stack = []
+    # Loading the design created by "traces" some stack-entries, which are removed here:
+    undo_handling.stack_write_pointer = 0
+    main_window.undo_button.config(state="disabled")
+
+
+def _load_control_data(design_dictionary: dict[str, Any]) -> None:
+    """Load control data including module name, language, paths, and signal names."""
     main_window.module_name.set(design_dictionary["modulename"])
     old_language = main_window.language.get()
     main_window.language.set(design_dictionary["language"])
@@ -407,15 +420,79 @@ def _load_design_from_dict(design_dictionary: dict[str, Any]) -> None:
     main_window.clock_signal_name.set(design_dictionary["clock_signal_name"])
     main_window.compile_cmd.set(design_dictionary["compile_cmd"])
     main_window.edit_cmd.set(design_dictionary["edit_cmd"])
+    if "include_timestamp_in_output" in design_dictionary:
+        main_window.include_timestamp_in_output.set(design_dictionary["include_timestamp_in_output"])
+    else:
+        main_window.include_timestamp_in_output.set(True)  # Default to True for backward compatibility
+
+
+def _load_interface_data(design_dictionary: dict[str, Any]) -> None:
+    """Load interface data including package, generics, and ports text."""
+    main_window.interface_package_text.insert("1.0", design_dictionary["interface_package"])
+    main_window.interface_generics_text.insert("1.0", design_dictionary["interface_generics"])
+    main_window.interface_ports_text.insert("1.0", design_dictionary["interface_ports"])
+
+    # Update highlight tags and custom text class lists
+    main_window.interface_package_text.update_highlight_tags(
+        10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
+    )
+    main_window.interface_generics_text.update_highlight_tags(
+        10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
+    )
+    main_window.interface_ports_text.update_highlight_tags(
+        10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
+    )
+    main_window.interface_generics_text.update_custom_text_class_generics_list()
+    main_window.interface_ports_text.update_custom_text_class_ports_list()
+
+
+def _load_internals_data(design_dictionary: dict[str, Any]) -> None:
+    """Load internals data including package, architecture, and process text."""
+    main_window.internals_package_text.insert("1.0", design_dictionary["internals_package"])
+    main_window.internals_architecture_text.insert("1.0", design_dictionary["internals_architecture"])
+    main_window.internals_process_clocked_text.insert("1.0", design_dictionary["internals_process"])
+    main_window.internals_process_combinatorial_text.insert("1.0", design_dictionary["internals_process_combinatorial"])
+
+    # Update highlight tags and custom text class lists
+    main_window.internals_package_text.update_highlight_tags(
+        10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
+    )
+    main_window.internals_architecture_text.update_highlight_tags(
+        10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
+    )
+    main_window.internals_process_clocked_text.update_highlight_tags(
+        10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
+    )
+    main_window.internals_process_combinatorial_text.update_highlight_tags(
+        10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
+    )
+    main_window.internals_architecture_text.update_custom_text_class_signals_list()
+    main_window.internals_process_clocked_text.update_custom_text_class_signals_list()
+    main_window.internals_process_combinatorial_text.update_custom_text_class_signals_list()
+
+
+def _load_log_config(design_dictionary: dict[str, Any]) -> None:
+    """Load regex configuration for log parsing."""
+    if "regex_message_find" in design_dictionary:
+        if design_dictionary["language"] == "VHDL":
+            main_window.regex_message_find_for_vhdl = design_dictionary["regex_message_find"]
+        else:
+            main_window.regex_message_find_for_verilog = design_dictionary["regex_message_find"]
+        main_window.regex_file_name_quote = design_dictionary["regex_file_name_quote"]
+        main_window.regex_file_line_number_quote = design_dictionary["regex_file_line_number_quote"]
+
+
+def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
+    """Load canvas-related data including colors, dimensions, and UI state."""
+    # Load diagram background color
     if "diagram_background_color" in design_dictionary:
         diagram_background_color = design_dictionary["diagram_background_color"]
         main_window.diagram_background_color.set(diagram_background_color)
     else:
         diagram_background_color = "white"
-    if "include_timestamp_in_output" in design_dictionary:
-        main_window.include_timestamp_in_output.set(design_dictionary["include_timestamp_in_output"])
-    else:
-        main_window.include_timestamp_in_output.set(True)  # Default to True for backward compatibility
+    main_window.canvas.configure(bg=diagram_background_color)
+
+    # Load sash positions
     if "sash_positions" in design_dictionary:
         main_window.show_tab(
             GuiTab.INTERFACE
@@ -449,47 +526,8 @@ def _load_design_from_dict(design_dictionary: dict[str, Any]) -> None:
                 ):
                     main_window.paned_window_internals.sashpos(int(key), value)
                     main_window.sash_positions["internals_tab"][int(key)] = value
-    main_window.canvas.configure(bg=diagram_background_color)
-    main_window.interface_package_text.insert("1.0", design_dictionary["interface_package"])
-    main_window.interface_generics_text.insert("1.0", design_dictionary["interface_generics"])
-    main_window.interface_ports_text.insert("1.0", design_dictionary["interface_ports"])
-    main_window.internals_package_text.insert("1.0", design_dictionary["internals_package"])
-    main_window.internals_architecture_text.insert("1.0", design_dictionary["internals_architecture"])
-    main_window.internals_process_clocked_text.insert("1.0", design_dictionary["internals_process"])
-    main_window.internals_process_combinatorial_text.insert("1.0", design_dictionary["internals_process_combinatorial"])
-    if "regex_message_find" in design_dictionary:
-        if design_dictionary["language"] == "VHDL":
-            main_window.regex_message_find_for_vhdl = design_dictionary["regex_message_find"]
-        else:
-            main_window.regex_message_find_for_verilog = design_dictionary["regex_message_find"]
-        main_window.regex_file_name_quote = design_dictionary["regex_file_name_quote"]
-        main_window.regex_file_line_number_quote = design_dictionary["regex_file_line_number_quote"]
-    main_window.interface_package_text.update_highlight_tags(
-        10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
-    )
-    main_window.interface_generics_text.update_highlight_tags(
-        10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
-    )
-    main_window.interface_ports_text.update_highlight_tags(
-        10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
-    )
-    main_window.internals_package_text.update_highlight_tags(
-        10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
-    )
-    main_window.internals_architecture_text.update_highlight_tags(
-        10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
-    )
-    main_window.internals_process_clocked_text.update_highlight_tags(
-        10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
-    )
-    main_window.internals_process_combinatorial_text.update_highlight_tags(
-        10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
-    )
-    main_window.interface_generics_text.update_custom_text_class_generics_list()
-    main_window.interface_ports_text.update_custom_text_class_ports_list()
-    main_window.internals_architecture_text.update_custom_text_class_signals_list()
-    main_window.internals_process_clocked_text.update_custom_text_class_signals_list()
-    main_window.internals_process_combinatorial_text.update_custom_text_class_signals_list()
+
+    # Load canvas editing parameters
     state_handling.state_number = design_dictionary["state_number"]
     transition_handling.transition_number = design_dictionary["transition_number"]
     reset_entry_handling.reset_entry_number = design_dictionary["reset_entry_number"]
@@ -517,6 +555,8 @@ def _load_design_from_dict(design_dictionary: dict[str, Any]) -> None:
         main_window.global_action_combinatorial_button.config(state=tk.NORMAL)
     else:
         main_window.global_action_combinatorial_button.config(state=tk.DISABLED)
+
+    # Load canvas visual parameters
     canvas_editing.state_radius = design_dictionary["state_radius"]
     canvas_editing.reset_entry_size = int(design_dictionary["reset_entry_size"])  # stored as float in dictionary
     canvas_editing.priority_distance = int(design_dictionary["priority_distance"])  # stored as float in dictionary
@@ -524,8 +564,17 @@ def _load_design_from_dict(design_dictionary: dict[str, Any]) -> None:
     canvas_editing.state_name_font.configure(size=int(canvas_editing.fontsize))
     canvas_editing.label_fontsize = design_dictionary["label_fontsize"]
     canvas_editing.shift_visible_center_to_window_center(design_dictionary["visible_center"])
+
+
+def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
+    """Load all canvas elements including states, transitions, text, and windows."""
+    transition_ids = []
+    ids_of_rectangles_to_raise = []
+    priority_ids = []
     hide_priority_rectangle_list = []
     transition_identifier = ""
+
+    # Load states
     for definition in design_dictionary["state"]:
         coords = definition[0]
         tags = definition[1]
@@ -547,7 +596,9 @@ def _load_design_from_dict(design_dictionary: dict[str, Any]) -> None:
         main_window.canvas.tag_bind(
             state_id, "<Button-3>", lambda event, id=state_id: state_handling.show_menu(event, id)
         )
-    for definition in design_dictionary["polygon"]:  # Reset symbol
+
+    # Load polygons (reset symbols)
+    for definition in design_dictionary["polygon"]:
         coords = definition[0]
         tags = definition[1]
         polygon_id = main_window.canvas.create_polygon(coords, fill="red", outline="orange", tags=tags)
@@ -564,6 +615,8 @@ def _load_design_from_dict(design_dictionary: dict[str, Any]) -> None:
                 number_of_outgoing_transitions += 1
         if number_of_outgoing_transitions == 1:
             hide_priority_rectangle_list.append(transition_identifier)
+
+    # Load text elements
     for definition in design_dictionary["text"]:
         coords = definition[0]
         tags = definition[1]
@@ -583,6 +636,8 @@ def _load_design_from_dict(design_dictionary: dict[str, Any]) -> None:
                     "<Double-Button-1>",
                     lambda event, text_id=text_id: state_handling.edit_state_name(event, text_id),
                 )
+
+    # Load lines (transitions)
     for definition in design_dictionary["line"]:
         coords = definition[0]
         tags = definition[1]
@@ -604,6 +659,8 @@ def _load_design_from_dict(design_dictionary: dict[str, Any]) -> None:
                 main_window.canvas.tag_bind(
                     trans_id, "<Button-3>", lambda event, id=trans_id: transition_handling.show_menu(event, id)
                 )
+
+    # Load rectangles
     for definition in design_dictionary["rectangle"]:
         coords = definition[0]
         tags = definition[1]
@@ -629,6 +686,25 @@ def _load_design_from_dict(design_dictionary: dict[str, Any]) -> None:
             main_window.canvas.tag_bind(
                 canvas_id, "<Leave>", lambda event, id=canvas_id: main_window.canvas.itemconfig(id, width=1)
             )
+
+    # Load window elements
+    _load_window_elements(design_dictionary)
+
+    # Sort the display order for the transition priorities:
+    for transition_id in transition_ids:
+        main_window.canvas.tag_raise(transition_id)
+    for rectangle_id in ids_of_rectangles_to_raise:
+        main_window.canvas.tag_raise(rectangle_id)
+    for priority_id in priority_ids:
+        main_window.canvas.tag_raise(priority_id)
+    for transition_identifer in hide_priority_rectangle_list:
+        main_window.canvas.itemconfigure(f"{transition_identifer}priority", state=tk.HIDDEN)
+        main_window.canvas.itemconfigure(f"{transition_identifer}rectangle", state=tk.HIDDEN)
+
+
+def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
+    """Load all window elements including state actions, comments, and global actions."""
+    # Load state action blocks
     for definition in design_dictionary["window_state_action_block"]:
         coords = definition[0]
         text = definition[1]
@@ -639,6 +715,8 @@ def _load_design_from_dict(design_dictionary: dict[str, Any]) -> None:
         action_ref.text_id.insert("1.0", text)
         action_ref.text_id.format()
         main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
+
+    # Load state comments
     if "window_state_comment" in design_dictionary:  # HDL-FSM-versions before 4.2 did not support state-comments.
         for definition in design_dictionary["window_state_comment"]:
             coords = definition[0]
@@ -648,6 +726,8 @@ def _load_design_from_dict(design_dictionary: dict[str, Any]) -> None:
             comment_ref.text_id.insert("1.0", text)
             comment_ref.text_id.format()
             main_window.canvas.itemconfigure(comment_ref.window_id, tag=tags)
+
+    # Load condition action blocks
     for definition in design_dictionary["window_condition_action_block"]:
         coords = definition[0]
         condition = definition[1]
@@ -677,6 +757,8 @@ def _load_design_from_dict(design_dictionary: dict[str, Any]) -> None:
             condition_action_ref.action_label.grid_forget()
             condition_action_ref.action_id.grid_forget()
         main_window.canvas.itemconfigure(condition_action_ref.window_id, tag=tags)
+
+    # Load global actions
     for definition in design_dictionary["window_global_actions"]:
         coords = definition[0]
         text_before = definition[1]
@@ -688,6 +770,8 @@ def _load_design_from_dict(design_dictionary: dict[str, Any]) -> None:
         global_actions_ref.text_after_id.insert("1.0", text_after)
         global_actions_ref.text_after_id.format()
         main_window.canvas.itemconfigure(global_actions_ref.window_id, tag=tags)
+
+    # Load global actions combinatorial
     for definition in design_dictionary["window_global_actions_combinatorial"]:
         coords = definition[0]
         text = definition[1]
@@ -698,6 +782,8 @@ def _load_design_from_dict(design_dictionary: dict[str, Any]) -> None:
         action_ref.text_id.insert("1.0", text)
         action_ref.text_id.format()
         main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
+
+    # Load state actions default
     for definition in design_dictionary["window_state_actions_default"]:
         coords = definition[0]
         text = definition[1]
@@ -706,17 +792,3 @@ def _load_design_from_dict(design_dictionary: dict[str, Any]) -> None:
         action_ref.text_id.insert("1.0", text)
         action_ref.text_id.format()
         main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
-    # Sort the display order for the transition priorities:
-    for transition_id in transition_ids:
-        main_window.canvas.tag_raise(transition_id)
-    for rectangle_id in ids_of_rectangles_to_raise:
-        main_window.canvas.tag_raise(rectangle_id)
-    for priority_id in priority_ids:
-        main_window.canvas.tag_raise(priority_id)
-    for transition_identifer in hide_priority_rectangle_list:
-        main_window.canvas.itemconfigure(f"{transition_identifer}priority", state=tk.HIDDEN)
-        main_window.canvas.itemconfigure(f"{transition_identifer}rectangle", state=tk.HIDDEN)
-    undo_handling.stack = []
-    # Loading the design created by "traces" some stack-entries, which are removed here:
-    undo_handling.stack_write_pointer = 0
-    main_window.undo_button.config(state="disabled")
