@@ -25,6 +25,7 @@ import update_hdl_tab
 from codegen.hdl_generation_config import GenerationConfig
 from constants import GuiTab
 from dialogs.color_changer import ColorChanger
+from dialogs.regex_dialog import RegexDialog
 from link_dictionary import init_link_dict, link_dict
 from project_manager import project_manager
 
@@ -74,16 +75,12 @@ _internals_process_clocked_label: ttk.Label
 _internals_process_combinatorial_label: ttk.Label
 _compile_cmd_docu: ttk.Label
 _debug_active: tk.IntVar
-_regex_dialog: tk.Toplevel
 regex_message_find_for_vhdl: str = "(.*?):([0-9]+):[0-9]+:.*"
 regex_message_find_for_verilog: str = (
     "(.*?):([0-9]+): .*"  # Added ' ' after the second ':', to get no hit at time stamps (i.e. 16:58:36).
 )
 regex_file_name_quote: str = "\\1"
 regex_file_line_number_quote: str = "\\2"
-_regex_dialog_entry: ttk.Entry
-_regex_dialog_filename_entry: ttk.Entry
-_regex_dialog_linenumber_entry: ttk.Entry
 _regex_error_happened: bool = False
 _line_number_under_pointer_log_tab: int = 0
 _line_number_under_pointer_hdl_tab: int = 0
@@ -881,7 +878,7 @@ def create_log_notebook_tab() -> None:
         log_frame_button_frame, takefocus=False, text="Define Regex for Hyperlinks", style="Find.TButton"
     )
     log_frame_regex_button.grid(row=0, column=1, sticky=tk.W)
-    log_frame_regex_button.bind("<Button-1>", _edit_regex)
+    log_frame_regex_button.config(command=_edit_regex)
 
     log_frame_text_scroll = ttk.Scrollbar(log_frame, orient=tk.VERTICAL, cursor="arrow", command=log_frame_text.yview)
     log_frame_text.config(yscrollcommand=log_frame_text_scroll.set)
@@ -901,77 +898,40 @@ def _clear_log_tab(_) -> None:
 
 
 def _edit_regex(*_) -> None:
-    global _regex_dialog, _regex_dialog_entry, _regex_dialog_filename_entry, _regex_dialog_linenumber_entry
-    _regex_dialog = tk.Toplevel()
-    _regex_dialog.title("Enter Regex for Python:")
-    regex_dialog_header = ttk.Label(
-        _regex_dialog,
-        text="Regex for finding a message with\ngroup for file-name and\ngroup for line-number:",
-        justify="left",
-    )
-    _regex_dialog_entry = ttk.Entry(_regex_dialog)
-    regex_dialog_identifier_frame = ttk.Frame(_regex_dialog)
-    regex_button_frame = ttk.Frame(_regex_dialog)
-    regex_dialog_header.grid(row=0, sticky="ew")
-    _regex_dialog_entry.grid(row=1, sticky="ew")
-    regex_dialog_identifier_frame.grid(row=2)
-    regex_button_frame.grid(row=3, sticky="ew")
-    regex_dialog_filename_label = ttk.Label(
-        regex_dialog_identifier_frame, text="Group identifier for file-name:", justify="left"
-    )
-    _regex_dialog_filename_entry = ttk.Entry(regex_dialog_identifier_frame, width=40)
-    regex_dialog_linenumber_label = ttk.Label(
-        regex_dialog_identifier_frame, text="Group identifier for line-number:", justify="left"
-    )
-    _regex_dialog_linenumber_entry = ttk.Entry(regex_dialog_identifier_frame, width=40)
-    regex_dialog_filename_label.grid(row=0, column=0, sticky=tk.W)
-    _regex_dialog_filename_entry.grid(row=0, column=1)
-    regex_dialog_linenumber_label.grid(row=1, column=0, sticky=tk.W)
-    _regex_dialog_linenumber_entry.grid(row=1, column=1)
-    regex_dialog_store_button = ttk.Button(regex_button_frame, text="Store", command=_regex_store)
-    regex_dialog_cancel_button = ttk.Button(regex_button_frame, text="Cancel", command=_regex_cancel)
-    debug_stdout_label = ttk.Label(regex_button_frame, text="Debug Regex at STDOUT:", padding=5)
-    debug_stdout_frame = ttk.Frame(regex_button_frame)
-    regex_dialog_store_button.grid(row=0, column=0)
-    regex_dialog_cancel_button.grid(row=0, column=1)
-    debug_stdout_label.grid(row=0, column=2, sticky=tk.W)
-    debug_stdout_frame.grid(row=0, column=3, sticky=tk.W)
-    debug_stdout_radio_button1 = ttk.Radiobutton(
-        debug_stdout_frame, takefocus=False, variable=_debug_active, text="Inactive", value=1
-    )
-    debug_stdout_radio_button2 = ttk.Radiobutton(
-        debug_stdout_frame, takefocus=False, variable=_debug_active, text="Active", value=2
-    )
-    debug_stdout_radio_button1.grid(row=0, column=1, sticky=tk.W)
-    debug_stdout_radio_button2.grid(row=0, column=2, sticky=tk.W)
-    if language.get() == "VHDL":
-        _regex_dialog_entry.insert(0, regex_message_find_for_vhdl)
-    else:
-        _regex_dialog_entry.insert(0, regex_message_find_for_verilog)
-    _regex_dialog_filename_entry.insert(0, regex_file_name_quote)
-    _regex_dialog_linenumber_entry.insert(0, regex_file_line_number_quote)
-
-
-def _regex_store() -> None:
+    """Open the regex configuration dialog and update settings if confirmed."""
     global \
         regex_message_find_for_vhdl, \
         regex_message_find_for_verilog, \
         regex_file_name_quote, \
         regex_file_line_number_quote, \
         _regex_error_happened
-    if language.get() == "VHDL":
-        regex_message_find_for_vhdl = _regex_dialog_entry.get()
-    else:
-        regex_message_find_for_verilog = _regex_dialog_entry.get()
-    regex_file_name_quote = _regex_dialog_filename_entry.get()
-    regex_file_line_number_quote = _regex_dialog_linenumber_entry.get()
-    undo_handling.design_has_changed()
-    _regex_error_happened = False
-    _regex_dialog.destroy()
 
+    # Determine current pattern based on language
+    current_pattern = regex_message_find_for_vhdl if language.get() == "VHDL" else regex_message_find_for_verilog
 
-def _regex_cancel() -> None:
-    _regex_dialog.destroy()
+    # Create and show dialog
+    result = RegexDialog.ask_regex(
+        parent=root,
+        language=language.get(),
+        current_pattern=current_pattern,
+        current_filename_group=regex_file_name_quote,
+        current_line_number_group=regex_file_line_number_quote,
+        current_debug_active=_debug_active.get() == 2,
+    )
+
+    if result is not None:
+        # Update global variables based on language
+        if language.get() == "VHDL":
+            regex_message_find_for_vhdl = result.pattern
+        else:
+            regex_message_find_for_verilog = result.pattern
+
+        regex_file_name_quote = result.filename_group
+        regex_file_line_number_quote = result.line_number_group
+        _debug_active.set(2 if result.debug_active else 1)
+
+        undo_handling.design_has_changed()
+        _regex_error_happened = False
 
 
 def _cursor_move_hdl_tab(*_) -> None:
