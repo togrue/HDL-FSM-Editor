@@ -274,11 +274,11 @@ def _get_fill_color(canvas_id):
     return "fill=" + color + " "
 
 
-line_index = 0
+_line_index = 0
 
 
 def _set_diagram_to_version_selected_by_stack_pointer():
-    global line_index
+    global _line_index
     # Remove the old design:
     state_action_handling.MyText.mytext_dict = {}
     condition_action_handling.ConditionAction.dictionary = {}
@@ -297,74 +297,74 @@ def _set_diagram_to_version_selected_by_stack_pointer():
     for line in lines_without_return:
         lines.append(line + "\n")
     # Build the new design:
-    line_index = 0
+    _line_index = 0
     list_of_states = []
-    while line_index < len(lines):
-        if lines[line_index].startswith("state_number|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "state_number|")
+    while _line_index < len(lines):
+        if lines[_line_index].startswith("state_number|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "state_number|")
             state_handling.state_number = int(rest_of_line)
-        elif lines[line_index].startswith("transition_number|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "transition_number|")
+        elif lines[_line_index].startswith("transition_number|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "transition_number|")
             transition_handling.transition_number = int(rest_of_line)
-        elif lines[line_index].startswith("reset_entry_number|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "reset_entry_number|")
+        elif lines[_line_index].startswith("reset_entry_number|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "reset_entry_number|")
             reset_entry_handling.reset_entry_number = int(rest_of_line)
             if reset_entry_handling.reset_entry_number == 0:
                 main_window.reset_entry_button.config(state=tk.NORMAL)
             else:
                 main_window.reset_entry_button.config(state=tk.DISABLED)
-        elif lines[line_index].startswith("connector_number|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "connector_number|")
+        elif lines[_line_index].startswith("connector_number|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "connector_number|")
             connector_handling.connector_number = int(rest_of_line)
-        elif lines[line_index].startswith("conditionaction_id|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "conditionaction_id|")
+        elif lines[_line_index].startswith("conditionaction_id|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "conditionaction_id|")
             condition_action_handling.ConditionAction.conditionaction_id = int(rest_of_line)
-        elif lines[line_index].startswith("mytext_id|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "mytext_id|")
+        elif lines[_line_index].startswith("mytext_id|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "mytext_id|")
             state_action_handling.MyText.mytext_id = int(rest_of_line)
-        elif lines[line_index].startswith("state_actions_default_number|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "state_actions_default_number|")
+        elif lines[_line_index].startswith("state_actions_default_number|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "state_actions_default_number|")
             global_actions_handling.state_actions_default_number = int(rest_of_line)
             if global_actions_handling.state_actions_default_number == 0:
                 main_window.state_action_default_button.config(state=tk.NORMAL)
             else:
                 main_window.state_action_default_button.config(state=tk.DISABLED)
-        elif lines[line_index].startswith("global_actions_number|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "global_actions_number|")
+        elif lines[_line_index].startswith("global_actions_number|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "global_actions_number|")
             global_actions_handling.global_actions_clocked_number = int(rest_of_line)
             if global_actions_handling.global_actions_clocked_number == 0:
                 main_window.global_action_clocked_button.config(state=tk.NORMAL)
             else:
                 main_window.global_action_clocked_button.config(state=tk.DISABLED)
-        elif lines[line_index].startswith("global_actions_combinatorial_number|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "global_actions_combinatorial_number|")
+        elif lines[_line_index].startswith("global_actions_combinatorial_number|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "global_actions_combinatorial_number|")
             global_actions_handling.global_actions_combinatorial_number = int(rest_of_line)
             if global_actions_handling.global_actions_combinatorial_number == 0:
                 main_window.global_action_combinatorial_button.config(state=tk.NORMAL)
             else:
                 main_window.global_action_combinatorial_button.config(state=tk.DISABLED)
-        elif lines[line_index].startswith("state_radius|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "state_radius|")
+        elif lines[_line_index].startswith("state_radius|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "state_radius|")
             canvas_editing.state_radius = float(rest_of_line)
-        elif lines[line_index].startswith("reset_entry_size|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "reset_entry_size|")
+        elif lines[_line_index].startswith("reset_entry_size|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "reset_entry_size|")
             canvas_editing.reset_entry_size = int(float(rest_of_line))
-        elif lines[line_index].startswith("priority_distance|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "priority_distance|")
+        elif lines[_line_index].startswith("priority_distance|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "priority_distance|")
             canvas_editing.priority_distance = int(float(rest_of_line))
-        elif lines[line_index].startswith("fontsize|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "fontsize|")
+        elif lines[_line_index].startswith("fontsize|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "fontsize|")
             fontsize = float(rest_of_line)
             canvas_editing.fontsize = fontsize
             canvas_editing.state_name_font.configure(size=int(fontsize))
-        elif lines[line_index].startswith("label_fontsize|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "label_fontsize|")
+        elif lines[_line_index].startswith("label_fontsize|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "label_fontsize|")
             canvas_editing.label_fontsize = float(rest_of_line)
-        elif lines[line_index].startswith("visible_center|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "visible_center|")
+        elif lines[_line_index].startswith("visible_center|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "visible_center|")
             canvas_editing.shift_visible_center_to_window_center(rest_of_line)
-        elif lines[line_index].startswith("state|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "state|")
+        elif lines[_line_index].startswith("state|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "state|")
             coords = []
             tags = ()
             fill_color = constants.STATE_COLOR
@@ -389,8 +389,8 @@ def _set_diagram_to_version_selected_by_stack_pointer():
                 state_id, "<Button-3>", lambda event, id=state_id: state_handling.show_menu(event, id)
             )
             list_of_states.append(state_id)
-        elif lines[line_index].startswith("polygon|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "polygon|")
+        elif lines[_line_index].startswith("polygon|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "polygon|")
             coords = []
             tags = ()
             entries = rest_of_line.split()
@@ -407,8 +407,8 @@ def _set_diagram_to_version_selected_by_stack_pointer():
             main_window.canvas.tag_bind(
                 polygon_id, "<Leave>", lambda event, id=polygon_id: main_window.canvas.itemconfig(id, width=1)
             )
-        elif lines[line_index].startswith("text|"):  # This is a state-name or a priority-number.
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "text|")
+        elif lines[_line_index].startswith("text|"):  # This is a state-name or a priority-number.
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "text|")
             tags = ()
             entries = rest_of_line.split()
             coords = []
@@ -431,8 +431,8 @@ def _set_diagram_to_version_selected_by_stack_pointer():
                         "<Double-Button-1>",
                         lambda event, text_id=text_id: state_handling.edit_state_name(event, text_id),
                     )
-        elif lines[line_index].startswith("line|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "line|")
+        elif lines[_line_index].startswith("line|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "line|")
             coords = []
             tags = ()
             entries = rest_of_line.split()
@@ -460,8 +460,8 @@ def _set_diagram_to_version_selected_by_stack_pointer():
                     main_window.canvas.tag_bind(
                         trans_id, "<Button-3>", lambda event, id=trans_id: transition_handling.show_menu(event, id)
                     )
-        elif lines[line_index].startswith("rectangle|"):  # Used as connector or as priority entry.
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "rectangle|")
+        elif lines[_line_index].startswith("rectangle|"):  # Used as connector or as priority entry.
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "rectangle|")
             coords = []
             tags = ()
             entries = rest_of_line.split()
@@ -477,13 +477,13 @@ def _set_diagram_to_version_selected_by_stack_pointer():
                     rectangle_color = constants.CONNECTOR_COLOR
             notebook_id = main_window.canvas.create_rectangle(coords, tag=tags, fill=rectangle_color)
             main_window.canvas.tag_raise(notebook_id)  # priority rectangles are always in "foreground"
-        elif lines[line_index].startswith("window_state_action_block|"):  # state_action
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "window_state_action_block|")
+        elif lines[_line_index].startswith("window_state_action_block|"):  # state_action
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_state_action_block|")
             text = _get_data(rest_of_line, lines)
             coords = []
             tags = ()
-            line_index += 1
-            last_line = lines[line_index]
+            _line_index += 1
+            last_line = lines[_line_index]
             entries = last_line.split()
             for e in entries:
                 try:
@@ -497,13 +497,13 @@ def _set_diagram_to_version_selected_by_stack_pointer():
             action_ref.text_id.insert("1.0", text)
             action_ref.text_id.format()
             main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
-        elif lines[line_index].startswith("window_state_comment|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "window_state_comment|")
+        elif lines[_line_index].startswith("window_state_comment|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_state_comment|")
             text = _get_data(rest_of_line, lines)
             coords = []
             tags = ()
-            line_index += 1
-            last_line = lines[line_index]
+            _line_index += 1
+            last_line = lines[_line_index]
             entries = last_line.split()
             for e in entries:
                 try:
@@ -515,16 +515,16 @@ def _set_diagram_to_version_selected_by_stack_pointer():
             comment_ref.text_id.insert("1.0", text)
             comment_ref.text_id.format()
             main_window.canvas.itemconfigure(comment_ref.window_id, tag=tags)
-        elif lines[line_index].startswith("window_condition_action_block|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "window_condition_action_block|")
+        elif lines[_line_index].startswith("window_condition_action_block|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_condition_action_block|")
             condition = _get_data(rest_of_line, lines)
-            line_index += 1
-            next_line = lines[line_index]
+            _line_index += 1
+            next_line = lines[_line_index]
             action = _get_data(next_line, lines)
             coords = []
             tags = ()
-            line_index += 1
-            last_line = lines[line_index]
+            _line_index += 1
+            last_line = lines[_line_index]
             entries = last_line.split()
             for e in entries:
                 try:
@@ -556,16 +556,16 @@ def _set_diagram_to_version_selected_by_stack_pointer():
                 condition_action_ref.action_label.grid_forget()
                 condition_action_ref.action_id.grid_forget()
             main_window.canvas.itemconfigure(condition_action_ref.window_id, tag=tags)
-        elif lines[line_index].startswith("window_global_actions|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "window_global_actions|")
+        elif lines[_line_index].startswith("window_global_actions|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_global_actions|")
             text_before = _get_data(rest_of_line, lines)
-            line_index += 1
-            next_line = lines[line_index]
+            _line_index += 1
+            next_line = lines[_line_index]
             text_after = _get_data(next_line, lines)
             coords = []
             tags = ()
-            line_index += 1
-            last_line = lines[line_index]
+            _line_index += 1
+            last_line = lines[_line_index]
             entries = last_line.split()
             for e in entries:
                 try:
@@ -579,13 +579,13 @@ def _set_diagram_to_version_selected_by_stack_pointer():
             global_actions_ref.text_after_id.insert("1.0", text_after)
             global_actions_ref.text_after_id.format()
             main_window.canvas.itemconfigure(global_actions_ref.window_id, tag=tags)
-        elif lines[line_index].startswith("window_global_actions_combinatorial|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "window_global_actions_combinatorial|")
+        elif lines[_line_index].startswith("window_global_actions_combinatorial|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_global_actions_combinatorial|")
             text = _get_data(rest_of_line, lines)
             coords = []
             tags = ()
-            line_index += 1
-            last_line = lines[line_index]
+            _line_index += 1
+            last_line = lines[_line_index]
             entries = last_line.split()
             for e in entries:
                 try:
@@ -599,13 +599,13 @@ def _set_diagram_to_version_selected_by_stack_pointer():
             action_ref.text_id.insert("1.0", text)
             action_ref.text_id.format()
             main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
-        elif lines[line_index].startswith("window_state_actions_default|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "window_state_actions_default|")
+        elif lines[_line_index].startswith("window_state_actions_default|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_state_actions_default|")
             text = _get_data(rest_of_line, lines)
             coords = []
             tags = ()
-            line_index += 1
-            last_line = lines[line_index]
+            _line_index += 1
+            last_line = lines[_line_index]
             entries = last_line.split()
             for e in entries:
                 try:
@@ -618,16 +618,16 @@ def _set_diagram_to_version_selected_by_stack_pointer():
             action_ref.text_id.format()
             main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
 
-        elif lines[line_index].startswith("interface_package|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "interface_package|")
+        elif lines[_line_index].startswith("interface_package|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "interface_package|")
             data = _get_data(rest_of_line, lines)
             main_window.interface_package_text.delete("1.0", tk.END)
             main_window.interface_package_text.insert("1.0", data)
             main_window.interface_package_text.update_highlight_tags(
                 10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
-        elif lines[line_index].startswith("interface_generics|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "interface_generics|")
+        elif lines[_line_index].startswith("interface_generics|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "interface_generics|")
             data = _get_data(rest_of_line, lines)
             main_window.interface_generics_text.delete("1.0", tk.END)
             main_window.interface_generics_text.insert("1.0", data)
@@ -635,8 +635,8 @@ def _set_diagram_to_version_selected_by_stack_pointer():
                 10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
             main_window.interface_generics_text.update_custom_text_class_generics_list()
-        elif lines[line_index].startswith("interface_ports|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "interface_ports|")
+        elif lines[_line_index].startswith("interface_ports|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "interface_ports|")
             data = _get_data(rest_of_line, lines)
             main_window.interface_ports_text.delete("1.0", tk.END)
             main_window.interface_ports_text.insert("1.0", data)
@@ -644,16 +644,16 @@ def _set_diagram_to_version_selected_by_stack_pointer():
                 10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
             main_window.interface_ports_text.update_custom_text_class_ports_list()
-        elif lines[line_index].startswith("internals_package|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "internals_package|")
+        elif lines[_line_index].startswith("internals_package|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "internals_package|")
             data = _get_data(rest_of_line, lines)
             main_window.internals_package_text.delete("1.0", tk.END)
             main_window.internals_package_text.insert("1.0", data)
             main_window.internals_package_text.update_highlight_tags(
                 10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
-        elif lines[line_index].startswith("internals_architecture|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "internals_architecture|")
+        elif lines[_line_index].startswith("internals_architecture|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "internals_architecture|")
             data = _get_data(rest_of_line, lines)
             main_window.internals_architecture_text.delete("1.0", tk.END)
             main_window.internals_architecture_text.insert("1.0", data)
@@ -661,8 +661,8 @@ def _set_diagram_to_version_selected_by_stack_pointer():
                 10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
             main_window.internals_architecture_text.update_custom_text_class_signals_list()
-        elif lines[line_index].startswith("internals_process|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "internals_process|")
+        elif lines[_line_index].startswith("internals_process|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "internals_process|")
             data = _get_data(rest_of_line, lines)
             main_window.internals_process_clocked_text.delete("1.0", tk.END)
             main_window.internals_process_clocked_text.insert("1.0", data)
@@ -670,8 +670,8 @@ def _set_diagram_to_version_selected_by_stack_pointer():
                 10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
             main_window.internals_process_clocked_text.update_custom_text_class_signals_list()
-        elif lines[line_index].startswith("internals_process_combinatorial|"):
-            rest_of_line = _remove_keyword_from_line(lines[line_index], "internals_process_combinatorial|")
+        elif lines[_line_index].startswith("internals_process_combinatorial|"):
+            rest_of_line = _remove_keyword_from_line(lines[_line_index], "internals_process_combinatorial|")
             data = _get_data(rest_of_line, lines)
             main_window.internals_process_combinatorial_text.delete("1.0", tk.END)
             main_window.internals_process_combinatorial_text.insert("1.0", data)
@@ -679,7 +679,7 @@ def _set_diagram_to_version_selected_by_stack_pointer():
                 10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
             main_window.internals_process_combinatorial_text.update_custom_text_class_signals_list()
-        line_index += 1
+        _line_index += 1
     for state in list_of_states:
         canvas_editing.adapt_visibility_of_priority_rectangles_at_state(state)
     main_window.grid_drawer.draw_grid()
@@ -705,9 +705,9 @@ def _remove_length_info(rest_of_line):
 
 
 def _get_remaining_data(lines, length_of_data, first_data):
-    global line_index
+    global _line_index
     data = first_data
     while len(data) < length_of_data:
-        line_index += 1
-        data = data + lines[line_index]
+        _line_index += 1
+        data = data + lines[_line_index]
     return data[:-1]

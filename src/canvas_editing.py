@@ -30,10 +30,10 @@ priority_distance = 30
 reset_entry_size = 40
 canvas_x_coordinate = 0
 canvas_y_coordinate = 0
-windows_x_coordinate = 0
-windows_y_coordinate = 0
-windows_x_coordinate_old = 0
-windows_y_coordinate_old = 0
+_windows_x_coordinate = 0
+_windows_y_coordinate = 0
+_windows_x_coordinate_old = 0
+_windows_y_coordinate_old = 0
 fontsize = 10
 label_fontsize = 8
 state_name_font = None
@@ -41,12 +41,12 @@ state_name_font = None
 
 def store_mouse_position(event):  # used by delete().
     global canvas_x_coordinate, canvas_y_coordinate
-    global windows_x_coordinate, windows_y_coordinate
-    global windows_x_coordinate_old, windows_y_coordinate_old
-    windows_x_coordinate_old = windows_x_coordinate
-    windows_y_coordinate_old = windows_y_coordinate
-    windows_x_coordinate = event.x
-    windows_y_coordinate = event.y
+    global _windows_x_coordinate, _windows_y_coordinate
+    global _windows_x_coordinate_old, _windows_y_coordinate_old
+    _windows_x_coordinate_old = _windows_x_coordinate
+    _windows_y_coordinate_old = _windows_y_coordinate
+    _windows_x_coordinate = event.x
+    _windows_y_coordinate = event.y
     [canvas_x_coordinate, canvas_y_coordinate] = translate_window_event_coordinates_in_exact_canvas_coordinates(event)
 
 

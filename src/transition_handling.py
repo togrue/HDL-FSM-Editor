@@ -16,12 +16,12 @@ import vector_handling
 from widgets.OptionMenu import OptionMenu
 
 transition_number = 0
-difference_x = 0
-difference_y = 0
+_difference_x = 0
+_difference_y = 0
 
 
 def move_to(event_x, event_y, transition_id, point, first, move_list, last):
-    global difference_x, difference_y
+    global _difference_x, _difference_y
     if main_window.canvas.type(move_list[0][0]) == "line" and (move_list[0][1] in ("start", "end")):
         middle_of_line_is_moved = False
     else:
@@ -41,12 +41,12 @@ def move_to(event_x, event_y, transition_id, point, first, move_list, last):
             else:
                 print("transition_handling: Fatal, unknown point =", point)
                 return
-            difference_x, difference_y = -event_x + point_to_move[0], -event_y + point_to_move[1]
+            _difference_x, _difference_y = -event_x + point_to_move[0], -event_y + point_to_move[1]
     else:
-        difference_x = 0
-        difference_y = 0
+        _difference_x = 0
+        _difference_y = 0
     # Keep the distance between event and anchor point constant:
-    event_x, event_y = event_x + difference_x, event_y + difference_y
+    event_x, event_y = event_x + _difference_x, event_y + _difference_y
     if last is True:
         event_x = canvas_editing.state_radius * round(event_x / canvas_editing.state_radius)
         event_y = canvas_editing.state_radius * round(event_y / canvas_editing.state_radius)

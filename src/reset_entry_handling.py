@@ -10,8 +10,8 @@ import main_window
 import undo_handling
 
 reset_entry_number = 0
-difference_x = 0
-difference_y = 0
+_difference_x = 0
+_difference_y = 0
 
 
 def insert_reset_entry(event):
@@ -76,14 +76,14 @@ def _move_reset_entry_polygon_to_event(canvas_grid_coordinates_of_the_event, res
 
 
 def move_to(event_x, event_y, polygon_id, first, last):
-    global difference_x, difference_y
+    global _difference_x, _difference_y
     if first is True:
         # Calculate the difference between the "anchor" point and the event:
         coords = main_window.canvas.coords(polygon_id)
         middle_point = [coords[4], coords[5]]
-        difference_x, difference_y = -event_x + middle_point[0], -event_y + middle_point[1]
+        _difference_x, _difference_y = -event_x + middle_point[0], -event_y + middle_point[1]
     # Keep the distance between event and anchor point constant:
-    event_x, event_y = event_x + difference_x, event_y + difference_y
+    event_x, event_y = event_x + _difference_x, event_y + _difference_y
     if last is True:
         event_x = canvas_editing.state_radius * round(event_x / canvas_editing.state_radius)
         event_y = canvas_editing.state_radius * round(event_y / canvas_editing.state_radius)
