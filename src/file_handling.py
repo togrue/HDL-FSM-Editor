@@ -84,20 +84,20 @@ def save() -> None:
 def open_v1_file() -> None:
     filename_new = askopenfilename(filetypes=(("HDL-FSM-Editor files", "*.hfe"), ("all files", "*.*")))
     if filename_new != "":
-        removed = clear_design()
-        if removed:
+        success = new_design()
+        if success:
             file_handling_v1.open_v1_file_with_name(filename_new)
 
 
 def open_file() -> None:
     filename_new = askopenfilename(filetypes=(("HDL-FSM-Editor files", "*.hfe"), ("all files", "*.*")))
     if filename_new != "":
-        removed = clear_design()
-        if removed:
+        success = new_design()
+        if success:
             open_file_with_name_new(filename_new)
 
 
-def clear_design() -> bool:
+def new_design() -> bool:
     title = main_window.root.title()
     if title.endswith("*"):
         action = ask_save_unsaved_changes(title)
@@ -108,6 +108,12 @@ def clear_design() -> bool:
             # Check if save was successful (current_file is not empty)
             if project_manager.current_file == "":
                 return False
+
+    _clear_design()
+    return True
+
+
+def _clear_design() -> bool:
     project_manager.current_file = ""
     main_window.module_name.set("")
     main_window.reset_signal_name.set("")
