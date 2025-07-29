@@ -114,7 +114,7 @@ def move_to(event_x, event_y, transition_id, point, first, move_list, last):
                 1,
                 0,
             )
-        [rectangle_width_half, rectangle_height_half] = get_rectangle_dimensions(transition_tag + "rectangle")
+        [rectangle_width_half, rectangle_height_half] = _get_rectangle_dimensions(transition_tag + "rectangle")
         main_window.canvas.coords(
             transition_tag + "rectangle",
             priority_middle_x - rectangle_width_half,
