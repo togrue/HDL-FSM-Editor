@@ -8,6 +8,7 @@ import sys
 import tkinter as tk
 import urllib.error
 import urllib.request
+from pathlib import Path
 from tkinter import messagebox, ttk
 from tkinter.filedialog import askdirectory
 
@@ -167,11 +168,29 @@ def _close_tool() -> None:
     sys.exit()
 
 
+def _get_resource_path(resource_name: str) -> Path:
+    """Get the path to a resource file, handling both development and PyInstaller environments."""
+    base_path = Path(sys._MEIPASS) if getattr(sys, "frozen", False) else Path(__file__).parent.parent
+
+    return base_path / "rsc" / resource_name
+
+
 def create_root() -> None:
     global root
     # The top window:
     root = tk.Tk()
     root.withdraw()  # Because it could be batch-mode because of "-generate_hdl" switch.
+
+    # Set the application icon
+    try:
+        icon_path = _get_resource_path("hfe_icon.ico")
+        if icon_path.exists():
+            root.iconbitmap(icon_path)
+        else:
+            print(f"Warning: Icon file not found at {icon_path}")
+    except Exception as e:
+        print(f"Warning: Could not set application icon: {e}")
+
     # Configure the grid field where the notebook will be placed in, so that the notebook is resized at window resize:
     root.columnconfigure(0, weight=1)
     root.rowconfigure(1, weight=1)

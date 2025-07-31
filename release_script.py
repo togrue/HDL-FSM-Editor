@@ -201,8 +201,27 @@ def build_executable():
     if spec_path.exists():
         spec_path.unlink()
 
-    # Build executable
-    cmd = ["pyinstaller", "--onefile", "--windowed", "src/main.py", "--name", "HDL-FSM-Editor"]
+    # Check if icon file exists
+    icon_path = Path("rsc/hfe_icon.ico")
+    if not icon_path.exists():
+        print(f"❌ Error: Icon file not found at {icon_path}")
+        sys.exit(1)
+
+    # Build executable with icon
+    cmd = [
+        "uv",
+        "run",
+        "pyinstaller",
+        "--onefile",
+        "--windowed",
+        "--icon",
+        str(icon_path),
+        "--add-data",
+        f"{icon_path};rsc",
+        "src/main.py",
+        "--name",
+        "HDL-FSM-Editor",
+    ]
 
     try:
         subprocess.run(cmd, check=True)
