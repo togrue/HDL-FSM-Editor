@@ -986,48 +986,57 @@ def _cursor_move_log_tab(*_) -> None:
         regex_message_find = regex_message_find_for_vhdl if language.get() == "VHDL" else regex_message_find_for_verilog
         content_of_line = log_frame_text.get(str(line_number) + ".0", str(line_number + 1) + ".0")
         content_of_line = content_of_line[:-1]  # Remove return
-        match_object_of_message = re.match(regex_message_find, content_of_line)
+
         if debug:
             print("\nUsed Regex                         : ", regex_message_find)
-        if match_object_of_message is not None:
-            file_name = re.sub(regex_message_find, regex_file_name_quote, content_of_line)
+        try:
+            message_rgx = re.compile(regex_message_find)
+        except re.error as e:
+            _regex_error_happened = True
+            messagebox.showerror("Error in HDL-FSM-Editor by regular expression", repr(e))
+            return
+
+        if message_rgx.match(content_of_line):
+            file_name = message_rgx.sub(regex_file_name_quote, content_of_line)
             if debug:
                 print("Regex found line                   : ", content_of_line)
                 print("Regex found filename (group 1)     :", '"' + file_name + '"')
-            try:
-                file_line_number_string = re.sub(regex_message_find, regex_file_line_number_quote, content_of_line)
-                if file_line_number_string != content_of_line:
+
+            file_line_number_string = message_rgx.sub(regex_file_line_number_quote, content_of_line)
+            if file_line_number_string != content_of_line:
+                try:
                     file_line_number = int(file_line_number_string)
-                    if debug:
-                        print("Regex found line-number (group 2)  :", '"' + file_line_number_string + '"')
-                else:
-                    if debug:
-                        print("Regex found no line-number         : Getting line-number by group 2 did not work.")
+                except ValueError:
+                    messagebox.showerror("Error converting line number to integer:", file_line_number_string)
                     return
-                if link_dict().has_link(
-                    file_name, file_line_number
-                ):  # For example ieee source files are not a key in link_dict.
-                    if debug:
-                        print("Filename and line-number are found in Link-Dictionary.")
-                    log_frame_text.tag_add("underline", str(line_number) + ".0", str(line_number + 1) + ".0")
-                    log_frame_text.tag_config("underline", underline=1, foreground="red")
-                    _func_id_jump1 = log_frame_text.bind(
-                        "<Control-Button-1>",
-                        lambda event: link_dict().jump_to_source(file_name, file_line_number),
-                    )
-                    _func_id_jump2 = log_frame_text.bind(
-                        "<Alt-Button-1>",
-                        lambda event: link_dict().jump_to_hdl(file_name, file_line_number),
-                    )
-                else:
-                    if debug:
-                        print("Filename or line-number not found in Link-Dictionary.")
-                    # Add only tag (for coloring in red), but don't underline as no link exists.
-                    log_frame_text.tag_add("underline", str(line_number) + ".0", str(line_number + 1) + ".0")
-            # except re.error:
-            except Exception as e:
-                _regex_error_happened = True
-                messagebox.showerror("Error in HDL-FSM-Editor by regular expression", repr(e))
+                if debug:
+                    print("Regex found line-number (group 2)  :", '"' + file_line_number_string + '"')
+            else:
+                if debug:
+                    print("Regex found no line-number         : Getting line-number by group 2 did not work.")
+                return
+
+            if link_dict().has_link(
+                file_name, file_line_number
+            ):  # For example ieee source files are not a key in link_dict.
+                if debug:
+                    print("Filename and line-number are found in Link-Dictionary.")
+                log_frame_text.tag_add("underline", str(line_number) + ".0", str(line_number + 1) + ".0")
+                log_frame_text.tag_config("underline", underline=1, foreground="red")
+                _func_id_jump1 = log_frame_text.bind(
+                    "<Control-Button-1>",
+                    lambda event: link_dict().jump_to_source(file_name, file_line_number),
+                )
+                _func_id_jump2 = log_frame_text.bind(
+                    "<Alt-Button-1>",
+                    lambda event: link_dict().jump_to_hdl(file_name, file_line_number),
+                )
+            else:
+                if debug:
+                    print("Filename or line-number not found in Link-Dictionary.")
+                # Add only tag (for coloring in red), but don't underline as no link exists.
+                log_frame_text.tag_add("underline", str(line_number) + ".0", str(line_number + 1) + ".0")
+
         else:
             if debug:
                 print("Regex did not match line           : ", content_of_line)

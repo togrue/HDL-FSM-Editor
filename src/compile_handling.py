@@ -137,8 +137,13 @@ def _insert_line_in_log(text) -> None:
         regex_message_find = main_window.regex_message_find_for_vhdl
     else:
         regex_message_find = main_window.regex_message_find_for_verilog
+    try:
+        match_object_of_message = re.match(regex_message_find, text)
+    except re.error as e:
+        print("Error in HDL-FSM-Editor by regular expression", repr(e))
+        return
+
     text_low = text.lower()
-    match_object_of_message = re.match(regex_message_find, text)
     main_window.log_frame_text.config(state=tk.NORMAL)
     if match_object_of_message is not None or "error" in text_low or "warning" in text_low:
         if main_window.language.get() == "VHDL" and "report note" in text_low:
