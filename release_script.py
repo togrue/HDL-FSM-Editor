@@ -23,11 +23,11 @@ def parse_arguments():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python release_script.py --release     # Create a full release with git tag
-  python release_script.py --dev         # Create a dev build without git tag
-  python release_script.py -r            # Short form for release
-  python release_script.py -d            # Short form for dev build
-  python release_script.py --cleanup     # Clean up PyInstaller build artifacts
+  uv run release_script.py --release     # Create a full release with git tag
+  uv run release_script.py --dev         # Create a dev build without git tag
+  uv run release_script.py -r            # Short form for release
+  uv run release_script.py -d            # Short form for dev build
+  uv run release_script.py --cleanup     # Clean up PyInstaller build artifacts
         """,
     )
 
