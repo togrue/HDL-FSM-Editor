@@ -2,6 +2,7 @@
 This class lets the user configure regex patterns for log parsing.
 """
 
+import re
 import tkinter as tk
 from dataclasses import dataclass
 from tkinter import simpledialog, ttk
@@ -34,6 +35,29 @@ class RegexDialog(simpledialog.Dialog):
         self.current_debug_active = current_debug_active
         super().__init__(parent, "Enter Regex for Python:")
 
+    def validate_regex(self, pattern: str) -> bool:
+        """Validate if the given pattern is a valid regex."""
+        if not pattern.strip():
+            return True  # Empty pattern is considered valid
+        try:
+            re.compile(pattern)
+            return True
+        except re.error:
+            return False
+
+    def on_pattern_change(self, event: tk.Event) -> None:
+        """Handle pattern entry changes and update background color based on validity."""
+        pattern = self.pattern_entry.get()
+        is_valid = self.validate_regex(pattern)
+
+        if is_valid:
+            self.pattern_entry.configure(style="TEntry")
+        else:
+            # Create a custom style for invalid regex with light red background
+            style = ttk.Style()
+            style.configure("InvalidRegex.TEntry", fieldbackground="#ffcccc")
+            self.pattern_entry.configure(style="InvalidRegex.TEntry")
+
     def body(self, master: tk.Frame) -> tk.Widget | None:
         """Create the dialog body. Return the widget that should have initial focus."""
         # Header
@@ -47,6 +71,10 @@ class RegexDialog(simpledialog.Dialog):
         self.pattern_entry = ttk.Entry(master)
         self.pattern_entry.grid(row=1, column=0, sticky="ew", padx=0, pady=0)
         self.pattern_entry.insert(0, self.current_pattern)
+        # Bind the validation function to key release events
+        self.pattern_entry.bind("<KeyRelease>", self.on_pattern_change)
+        # Initial validation
+        self.on_pattern_change(None)
 
         # Group identifiers frame
         id_frame = ttk.Frame(master)
