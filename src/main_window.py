@@ -86,11 +86,11 @@ regex_file_line_number_quote: str = "\\2"
 _regex_error_happened: bool = False
 _line_number_under_pointer_log_tab: int = 0
 _line_number_under_pointer_hdl_tab: int = 0
+_func_id_jump: str | None = None
 _func_id_jump1: str | None = None
 _func_id_jump2: str | None = None
 size_of_file1_line_number: int = 0
 size_of_file2_line_number: int = 0
-_func_id_jump: str | None = None
 _module_name_entry: ttk.Entry
 _clock_signal_name_entry: ttk.Entry
 diagram_background_color: tk.StringVar
