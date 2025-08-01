@@ -2,8 +2,6 @@
 Constants for all modules of HDL-FSM-Editor
 """
 
-from enum import StrEnum
-
 VHDL_KEYWORDS_FOR_SIGNAL_HANDLING = (
     " to_stdulogic ",
     " to_stdlogicvector ",
@@ -438,6 +436,19 @@ VERILOG_KEYWORDS = {
 
 CONNECTOR_COLOR = "violet"
 STATE_COLOR = "cyan"
+
+
+try:
+    from enum import StrEnum
+
+except ImportError:
+    from enum import Enum
+
+    # StrEnum was added in Python 3.11.
+    # So we use this compatibility class for Python 3.10 and lower.
+    class StrEnum(str, Enum):
+        def __str__(self):
+            return self.value
 
 
 class GuiTab(StrEnum):
