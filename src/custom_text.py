@@ -24,8 +24,8 @@ class CustomText(tk.Text):
     https://stackoverflow.com/questions/40617515/python-tkinter-text-modified-callback
     """
 
-    read_variables_of_all_windows = {}
-    written_variables_of_all_windows = {}
+    read_variables_of_all_windows: dict["CustomText", list[str]] = {}
+    written_variables_of_all_windows: dict["CustomText", list[str]] = {}
 
     def __init__(self, *args, text_type, **kwargs) -> None:
         """A text widget that report on internal widget commands"""
@@ -49,12 +49,12 @@ class CustomText(tk.Text):
             "<Key>", lambda event: self.format_after_idle()
         )  # This binding will be overwritten for the CustomText objects in Interface/Internals tab.
         self.bind("<Button-1>", lambda event: self.tag_delete("highlight"))
-        self.signals_list = []
-        self.constants_list = []
-        self.readable_ports_list = []
-        self.writable_ports_list = []
-        self.generics_list = []
-        self.port_types_list = []
+        self.signals_list: list[str] = []
+        self.constants_list: list[str] = []
+        self.readable_ports_list: list[str] = []
+        self.writable_ports_list: list[str] = []
+        self.generics_list: list[str] = []
+        self.port_types_list: list[str] = []
         CustomText.read_variables_of_all_windows[self] = []
         CustomText.written_variables_of_all_windows[self] = []
         self.tag_config("message_red", foreground="red")

@@ -4,6 +4,7 @@ This module contains methods used at HDL generation.
 
 import re
 import tkinter as tk
+from typing import Any
 
 import canvas_editing
 import condition_action_handling
@@ -99,11 +100,13 @@ def _get_reset_transition_tag() -> str:
     return reset_transition_tag
 
 
-def _get_transition_target_condition_action(transition_tag) -> tuple[str, str, str, str]:
+def _get_transition_target_condition_action(
+    transition_tag,
+) -> tuple[str, str, str, condition_action_handling.ConditionAction | str]:
     tags = main_window.canvas.gettags(transition_tag)
     transition_condition = ""
     transition_action = ""
-    condition_action_reference = ""
+    condition_action_reference: condition_action_handling.ConditionAction | str = ""
     transition_target = ""
     for tag in tags:
         if tag.startswith("going_to_state"):
@@ -124,7 +127,9 @@ def _get_transition_target_condition_action(transition_tag) -> tuple[str, str, s
     return transition_target, transition_condition, transition_action, condition_action_reference
 
 
-def _get_condition_action_reference_of_transition(transition_tag) -> None:
+def _get_condition_action_reference_of_transition(
+    transition_tag: str,
+) -> condition_action_handling.ConditionAction | None:
     tags = main_window.canvas.gettags(transition_tag)
     for tag in tags:
         if tag.startswith("ca_connection"):  # Complete tag: ca_connection<n>_end
@@ -146,7 +151,7 @@ def extract_transition_specifications_from_the_graph(state_tag_list_sorted) -> l
         if state_tag + "_comment_line_end" in all_tags_of_state:
             canvas_id_of_comment_window = main_window.canvas.find_withtag(state_tag + "_comment")[0]
             reference_to_state_comment_window = state_comment.StateComment.dictionary[canvas_id_of_comment_window]
-            canvas_id_of_comment_text_widget = reference_to_state_comment_window.text_id
+            canvas_id_of_comment_text_widget: Any = reference_to_state_comment_window.text_id
             state_comments = reference_to_state_comment_window.text_id.get("1.0", "end")
             state_comments = re.sub(r"^\s*[0-9]*\s*", "", state_comments)  # Remove order comment at comment start.
             if state_comments == "":

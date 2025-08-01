@@ -154,7 +154,8 @@ def _clear_design() -> bool:
     canvas_editing.canvas_y_coordinate = 0
     canvas_editing.fontsize = 10
     canvas_editing.label_fontsize = 8
-    canvas_editing.state_name_font.configure(size=int(canvas_editing.fontsize))
+    if canvas_editing.state_name_font is not None:
+        canvas_editing.state_name_font.configure(size=int(canvas_editing.fontsize))
     main_window.include_timestamp_in_output.set(True)
     main_window.root.title("unnamed")
     main_window.grid_drawer.draw_grid()
@@ -178,7 +179,7 @@ def save_in_file_new(save_filename) -> None:  # Called at saving and at every de
 
 
 def _save_design_to_dict() -> dict[str, Any]:
-    design_dictionary = {}
+    design_dictionary: dict[str, Any] = {}
     _save_control_data(design_dictionary)
     _save_interface_data(design_dictionary)
     _save_internals_data(design_dictionary)
@@ -555,18 +556,19 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
     canvas_editing.reset_entry_size = int(design_dictionary["reset_entry_size"])  # stored as float in dictionary
     canvas_editing.priority_distance = int(design_dictionary["priority_distance"])  # stored as float in dictionary
     canvas_editing.fontsize = design_dictionary["fontsize"]
-    canvas_editing.state_name_font.configure(size=int(canvas_editing.fontsize))
+    if canvas_editing.state_name_font is not None:
+        canvas_editing.state_name_font.configure(size=int(canvas_editing.fontsize))
     canvas_editing.label_fontsize = design_dictionary["label_fontsize"]
     canvas_editing.shift_visible_center_to_window_center(design_dictionary["visible_center"])
 
 
 def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
     """Load all canvas elements including states, transitions, text, and windows."""
-    transition_ids = []
-    ids_of_rectangles_to_raise = []
-    priority_ids = []
-    hide_priority_rectangle_list = []
-    transition_identifier = ""
+    transition_ids: list[int] = []
+    ids_of_rectangles_to_raise: list[int] = []
+    priority_ids: list[int] = []
+    hide_priority_rectangle_list: list[str] = []
+    transition_identifier: str = ""
 
     # Load states
     for definition in design_dictionary["state"]:

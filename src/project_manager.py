@@ -26,7 +26,7 @@ class ProjectManager:
         return self._current_file
 
     @current_file.setter
-    def current_file(self, value: str) -> str:
+    def current_file(self, value: str) -> None:
         """Set the current file path."""
         self._current_file = value
 
@@ -36,7 +36,7 @@ class ProjectManager:
         return self._previous_file
 
     @previous_file.setter
-    def previous_file(self, value: str) -> str:
+    def previous_file(self, value: str) -> None:
         """Set the previous file path."""
         self._previous_file = value
 

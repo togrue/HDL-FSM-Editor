@@ -5,6 +5,7 @@ This module contains method used when the user edits the diagram.
 import re
 import tkinter as tk
 from tkinter import font, messagebox
+from typing import Any
 
 import canvas_modify_bindings
 import condition_action_handling
@@ -26,18 +27,18 @@ from widgets.OptionMenu import OptionMenu
 # import inspect
 
 # Global variables:
-state_radius = 20.0
-priority_distance = 30
-reset_entry_size = 40
-canvas_x_coordinate = 0
-canvas_y_coordinate = 0
-_windows_x_coordinate = 0
-_windows_y_coordinate = 0
-_windows_x_coordinate_old = 0
-_windows_y_coordinate_old = 0
-fontsize = 10
-label_fontsize = 8
-state_name_font = None
+state_radius: float = 20.0
+priority_distance: float = 30.0
+reset_entry_size: float = 40.0
+canvas_x_coordinate: float = 0.0
+canvas_y_coordinate: float = 0.0
+_windows_x_coordinate: int = 0
+_windows_y_coordinate: int = 0
+_windows_x_coordinate_old: int = 0
+_windows_y_coordinate_old: int = 0
+fontsize: float = 10.0
+label_fontsize: float = 8.0
+state_name_font: font.Font | None = None
 
 
 def store_mouse_position(event) -> None:  # used by delete().
@@ -46,8 +47,8 @@ def store_mouse_position(event) -> None:  # used by delete().
     global _windows_x_coordinate_old, _windows_y_coordinate_old
     _windows_x_coordinate_old = _windows_x_coordinate
     _windows_y_coordinate_old = _windows_y_coordinate
-    _windows_x_coordinate = event.x
-    _windows_y_coordinate = event.y
+    _windows_x_coordinate = int(event.x)
+    _windows_y_coordinate = int(event.y)
     [canvas_x_coordinate, canvas_y_coordinate] = translate_window_event_coordinates_in_exact_canvas_coordinates(event)
 
 
@@ -57,13 +58,13 @@ def create_font_for_state_names() -> None:  # Called once by create_diagram_note
     state_name_font.configure(size=int(fontsize))
 
 
-def translate_window_event_coordinates_in_rounded_canvas_coordinates(event) -> list:
+def translate_window_event_coordinates_in_rounded_canvas_coordinates(event) -> list[float]:
     canvas_grid_x_coordinate = main_window.canvas.canvasx(event.x, gridspacing=state_radius)
     canvas_grid_y_coordinate = main_window.canvas.canvasy(event.y, gridspacing=state_radius)
     return [canvas_grid_x_coordinate, canvas_grid_y_coordinate]
 
 
-def translate_window_event_coordinates_in_exact_canvas_coordinates(event) -> list:
+def translate_window_event_coordinates_in_exact_canvas_coordinates(event) -> list[float]:
     canvas_grid_x_coordinate, canvas_grid_y_coordinate = (
         main_window.canvas.canvasx(event.x),
         main_window.canvas.canvasy(event.y),
@@ -124,7 +125,7 @@ def delete() -> None:
                     global_actions_handling.state_actions_default_number = 0
                     main_window.state_action_default_button.config(state=tk.NORMAL)
                 elif tag.startswith("state_action"):
-                    ref = state_action_handling.MyText.mytext_dict[item_id[0]]
+                    ref: Any = state_action_handling.MyText.mytext_dict[item_id[0]]
                     del custom_text.CustomText.read_variables_of_all_windows[ref.text_id]
                     del custom_text.CustomText.written_variables_of_all_windows[ref.text_id]
                     main_window.canvas.delete(tag)  # delete window
@@ -135,14 +136,14 @@ def delete() -> None:
                         tag.replace("_comment", ""), tag + "_line_end"
                     )  # delete at state: "state"<integer>"_comment_line_end"
                 elif tag.startswith("condition_action"):
-                    ref = condition_action_handling.ConditionAction.dictionary[item_id[0]]
+                    ref: Any = condition_action_handling.ConditionAction.dictionary[item_id[0]]
                     del custom_text.CustomText.read_variables_of_all_windows[ref.condition_id]
                     del custom_text.CustomText.written_variables_of_all_windows[ref.condition_id]
                     del custom_text.CustomText.read_variables_of_all_windows[ref.action_id]
                     del custom_text.CustomText.written_variables_of_all_windows[ref.action_id]
                     main_window.canvas.delete(tag)  # delete window
                 elif tag == "global_actions1":
-                    ref = global_actions.GlobalActions.dictionary[item_id[0]]
+                    ref: Any = global_actions.GlobalActions.dictionary[item_id[0]]
                     del custom_text.CustomText.read_variables_of_all_windows[ref.text_before_id]
                     del custom_text.CustomText.written_variables_of_all_windows[ref.text_before_id]
                     del custom_text.CustomText.read_variables_of_all_windows[ref.text_after_id]
@@ -151,7 +152,7 @@ def delete() -> None:
                     global_actions_handling.global_actions_clocked_number = 0
                     main_window.global_action_clocked_button.config(state=tk.NORMAL)
                 elif tag == "global_actions_combinatorial1":
-                    ref = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[item_id[0]]
+                    ref: Any = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[item_id[0]]
                     del custom_text.CustomText.read_variables_of_all_windows[ref.text_id]
                     del custom_text.CustomText.written_variables_of_all_windows[ref.text_id]
                     main_window.canvas.delete(tag)  # delete window
@@ -536,11 +537,11 @@ def _adapt_global_size_variables(factor) -> None:
 
 def scroll_start(event) -> None:
     main_window.grid_drawer.remove_grid()
-    main_window.canvas.scan_mark(event.x, event.y)
+    main_window.canvas.scan_mark(int(event.x), int(event.y))
 
 
 def scroll_move(event) -> None:
-    main_window.canvas.scan_dragto(event.x, event.y, gain=1)
+    main_window.canvas.scan_dragto(int(event.x), int(event.y), gain=1)
 
 
 def scroll_end(event) -> None:
@@ -549,13 +550,13 @@ def scroll_end(event) -> None:
 
 def scroll_wheel(event) -> None:
     main_window.grid_drawer.remove_grid()
-    main_window.canvas.scan_mark(event.x, event.y)
+    main_window.canvas.scan_mark(int(event.x), int(event.y))
     delta_y = 0
     if event.num == 5 or event.delta < 0:  # scroll down
         delta_y = -10
     elif event.num == 4 or event.delta >= 0:  # scroll up
         delta_y = +10
-    main_window.canvas.scan_dragto(event.x, event.y + delta_y, gain=1)
+    main_window.canvas.scan_dragto(int(event.x), int(event.y + delta_y), gain=1)
     main_window.grid_drawer.draw_grid()
 
 

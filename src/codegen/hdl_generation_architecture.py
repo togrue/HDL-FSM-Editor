@@ -9,7 +9,7 @@ import main_window
 from link_dictionary import link_dict
 
 
-def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> None:
+def create_architecture(file_name: str, file_line_number: int, state_tag_list_sorted: list[str]) -> tuple[str, int]:
     architecture = ""
 
     package_statements = hdl_generation_library.get_text_from_text_widget(main_window.internals_package_text)
@@ -195,7 +195,7 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> N
     return architecture
 
 
-def _create_type_definition_for_the_state_signal(state_tag_list_sorted) -> None:
+def _create_type_definition_for_the_state_signal(state_tag_list_sorted: list[str]) -> str:
     list_of_all_state_names = [
         main_window.canvas.itemcget(state_tag + "_name", "text") for state_tag in state_tag_list_sorted
     ]

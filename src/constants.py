@@ -447,9 +447,11 @@ except ImportError:
 
     # StrEnum was added in Python 3.11.
     # So we use this compatibility class for Python 3.10 and lower.
-    class StrEnum(str, Enum):
+    class _StrEnum(str, Enum):
         def __str__(self):
             return self.value
+
+    StrEnum = _StrEnum  # type: ignore
 
 
 class GuiTab(StrEnum):

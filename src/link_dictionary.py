@@ -14,6 +14,7 @@ These 2 parameters are the keys of the LinkDictionary, so when the user clicks o
 line-number and file-name are determined and the corresponding entry of the LinkDictionary can be read.
 """
 
+from typing import Any
 import tkinter as tk
 
 import codegen.hdl_generation as hdl_generation
@@ -30,7 +31,7 @@ class LinkDictionary:
 
     def __init__(self, root) -> None:
         self.root = root
-        self.link_dict = {}
+        self.link_dict: dict[str, dict[int, dict[str, Any]]] = {}
 
     def add(
         self,

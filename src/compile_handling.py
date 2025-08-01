@@ -75,13 +75,13 @@ def _execute(command) -> bool:
     return True
 
 
-def _get_command_list():
+def _get_command_list() -> list[str]:
     command_string_tmp = main_window.compile_cmd.get()
     command_string = command_string_tmp.replace(";", " ; ")
     return command_string.split(";")
 
 
-def _replace_variables(command_array) -> list | None:
+def _replace_variables(command_array: list[str]) -> list[str] | None:
     command_array_new = []
     for entry in command_array:
         if entry == "$file":

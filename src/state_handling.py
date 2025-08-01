@@ -91,22 +91,16 @@ def insert_state(event) -> None:
     )
     # main_window.canvas.tag_lower(state_id,'all')
     text_id = main_window.canvas.create_text(
-        event_x,
-        event_y,
+        float(event_x),
+        float(event_y),
         text="S" + str(state_number),
         tags="state" + str(state_number) + "_name",
-        font=canvas_editing.state_name_font,
+        font=canvas_editing.state_name_font if canvas_editing.state_name_font is not None else "TkDefaultFont",
     )
-    main_window.canvas.tag_bind(
-        text_id, "<Double-Button-1>", lambda event, text_id=text_id: edit_state_name(event, text_id)
-    )
-    main_window.canvas.tag_bind(
-        state_id, "<Enter>", lambda event, id=state_id: main_window.canvas.itemconfig(id, width=4)
-    )
-    main_window.canvas.tag_bind(
-        state_id, "<Leave>", lambda event, id=state_id: main_window.canvas.itemconfig(id, width=2)
-    )
-    main_window.canvas.tag_bind(state_id, "<Button-3>", lambda event, id=state_id: show_menu(event, id))
+    main_window.canvas.tag_bind(text_id, "<Double-Button-1>", lambda event: edit_state_name(event, text_id))
+    main_window.canvas.tag_bind(state_id, "<Enter>", lambda event: main_window.canvas.itemconfig(state_id, width=4))
+    main_window.canvas.tag_bind(state_id, "<Leave>", lambda event: main_window.canvas.itemconfig(state_id, width=2))
+    main_window.canvas.tag_bind(state_id, "<Button-3>", lambda event: show_menu(event, state_id))
     undo_handling.design_has_changed()
     # print ("New State"    , state_id, main_window.canvas.coords(state_id))
     # print ("New Statename", text_id , main_window.canvas.coords(text_id))
@@ -123,14 +117,12 @@ def show_menu(event, state_id) -> None:
         relief=tk.RAISED,
     )
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
-    window = main_window.canvas.create_window(event_x + 40, event_y, window=listbox)
+    window = main_window.canvas.create_window(float(event_x + 40), float(event_y), window=listbox)
     listbox.bind(
         "<Button-1>",
-        lambda event, window=window, listbox=listbox, menu_x=event_x, menu_y=event_y, state_id=state_id: _evaluate_menu(
-            event, window, listbox, menu_x, menu_y, state_id
-        ),
+        lambda event: _evaluate_menu(event, window, listbox, event_x, event_y, state_id),
     )
-    listbox.bind("<Leave>", lambda event, window=window, listbox=listbox: _close_menu(window, listbox))
+    listbox.bind("<Leave>", lambda event: _close_menu(window, listbox))
 
 
 def _evaluate_menu(event, window, listbox, menu_x, menu_y, state_id) -> None:
@@ -179,15 +171,13 @@ def edit_state_name(event, text_id) -> None:
     # text_box = Entry(None, width=10, justify=tk.CENTER) funktioniert auch, unklar, was richtig/besser ist.
     text_box.insert(tk.END, old_text)
     text_box.select_range(0, tk.END)
-    text_box.bind("<Return>", lambda event, text_id=text_id, text_box=text_box: _update_state_name(text_id, text_box))
+    text_box.bind("<Return>", lambda event: _update_state_name(text_id, text_box))
     text_box.bind(
         "<Escape>",
-        lambda event, text_id=text_id, text_box=text_box, old_text=old_text: _abort_edit_text(
-            text_id, text_box, old_text
-        ),
+        lambda event: _abort_edit_text(text_id, text_box, old_text),
     )
     event_x, event_y = canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(event)
-    main_window.canvas.create_window(event_x, event_y, window=text_box, tag="entry-window")
+    main_window.canvas.create_window(event_x, event_y, window=text_box, tags="entry-window")
     text_box.focus_set()
 
 
@@ -251,16 +241,16 @@ def _resize_state(state_tag, text_id) -> None:
     state_coords = main_window.canvas.coords(state_tag)
     state_width = state_coords[2] - state_coords[0]
     size = main_window.canvas.bbox(text_id)
-    text_width = (
+    text_width = float(
         size[2] - size[0] + 15
     )  # Make the text a little bit bigger, so that it does not touch the state circle.
     if text_width < 2 * canvas_editing.state_radius:
         text_width = 2 * canvas_editing.state_radius
     difference = text_width - state_width
-    state_coords[0] = state_coords[0] - difference // 2
-    state_coords[1] = state_coords[1] - difference // 2
-    state_coords[2] = state_coords[2] + difference // 2
-    state_coords[3] = state_coords[3] + difference // 2
+    state_coords[0] = int(state_coords[0] - difference // 2)
+    state_coords[1] = int(state_coords[1] - difference // 2)
+    state_coords[2] = int(state_coords[2] + difference // 2)
+    state_coords[3] = int(state_coords[3] + difference // 2)
     overlapping_list = main_window.canvas.find_overlapping(*state_coords)
     state_is_too_big = False
     for canvas_item in overlapping_list:

@@ -16,8 +16,8 @@ class MyText:
     Handles the state action of a single state.
     """
 
-    mytext_id = 0
-    mytext_dict = {}
+    mytext_id: int = 0
+    mytext_dict: dict[int, "MyText"] = {}
 
     def __init__(self, menu_x, menu_y, height, width, padding, increment) -> None:
         if increment is True:

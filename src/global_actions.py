@@ -17,15 +17,15 @@ class GlobalActions:
     Handles the global actions window in the diagram.
     """
 
-    global_actions_number = 1
-    dictionary = {}
+    global_actions_number: int = 1
+    dictionary: dict[int, "GlobalActions"] = {}
 
     def __init__(self, menu_x, menu_y, height, width, padding) -> None:
         self.frame_id = ttk.Frame(
             main_window.canvas, relief=tk.FLAT, padding=padding, style="GlobalActionsWindow.TFrame"
         )
-        self.text_before_content = None
-        self.text_after_content = None
+        self.text_before_content: str | None = None
+        self.text_after_content: str | None = None
         self.frame_id.bind("<Enter>", lambda event, self=self: self.activate())
         self.frame_id.bind("<Leave>", lambda event, self=self: self.deactivate())
         # Create label object inside frame:

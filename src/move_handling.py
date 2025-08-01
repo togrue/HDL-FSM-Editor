@@ -2,6 +2,8 @@
 This module contains a method to decide which graphical object must be moved.
 """
 
+from typing import Any
+
 import canvas_editing
 import condition_action_handling
 import connector_handling
@@ -38,17 +40,17 @@ def move_do(event, move_list, first) -> None:
             connector_handling.move_to(event_x, event_y, item_id, first, last)
         elif item_type == "window":
             if item_id in state_action_handling.MyText.mytext_dict:
-                ref = state_action_handling.MyText.mytext_dict[item_id]
+                ref: Any = state_action_handling.MyText.mytext_dict[item_id]
             elif item_id in state_comment.StateComment.dictionary:
-                ref = state_comment.StateComment.dictionary[item_id]
+                ref: Any = state_comment.StateComment.dictionary[item_id]
             elif item_id in state_actions_default.StateActionsDefault.dictionary:
-                ref = state_actions_default.StateActionsDefault.dictionary[item_id]
+                ref: Any = state_actions_default.StateActionsDefault.dictionary[item_id]
             elif item_id in global_actions.GlobalActions.dictionary:
-                ref = global_actions.GlobalActions.dictionary[item_id]
+                ref: Any = global_actions.GlobalActions.dictionary[item_id]
             elif item_id in global_actions_combinatorial.GlobalActionsCombinatorial.dictionary:
-                ref = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[item_id]
+                ref: Any = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[item_id]
             else:
-                ref = condition_action_handling.ConditionAction.dictionary[item_id]
+                ref: Any = condition_action_handling.ConditionAction.dictionary[item_id]
             ref.move_to(event_x, event_y, first, last)
         else:
             print("move: Fatal, unknown canvas type", "|" + item_type + "|")

@@ -17,7 +17,7 @@ class GlobalActionsCombinatorial:
     Class for combinatorial actions independent from the state machine
     """
 
-    dictionary = {}
+    dictionary: dict[int, "GlobalActionsCombinatorial"] = {}
 
     def __init__(self, menu_x, menu_y, height, width, padding) -> None:
         self.text_content = None
