@@ -10,7 +10,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 from tkinter import messagebox, ttk
-from tkinter.filedialog import askdirectory
+from tkinter.filedialog import askdirectory, askopenfilename
 
 import canvas_editing
 import canvas_modify_bindings
@@ -41,6 +41,7 @@ notebook: ttk.Notebook
 module_name: tk.StringVar
 language: tk.StringVar
 generate_path_value: tk.StringVar
+additional_sources_value: tk.StringVar
 working_directory_value: tk.StringVar
 select_file_number_text: tk.IntVar
 reset_signal_name: tk.StringVar
@@ -311,6 +312,7 @@ def create_control_notebook_tab() -> None:
         module_name, \
         language, \
         generate_path_value, \
+        additional_sources_value, \
         working_directory_value, \
         select_file_number_text, \
         reset_signal_name, \
@@ -415,6 +417,22 @@ def create_control_notebook_tab() -> None:
     control_frame.columnconfigure((8, 0), weight=0)
     control_frame.columnconfigure((8, 1), weight=1)
 
+    additional_sources_value = tk.StringVar(value="")
+    additional_sources_value.trace_add("write", _show_path_has_changed)
+    additional_sources_label = ttk.Label(
+        control_frame,
+        text="Additional sources:\n(used only by HDL-SCHEM-Editor, must\nbe added manually to compile command)",
+        padding=5,
+    )
+    additional_sources_entry = ttk.Entry(control_frame, textvariable=additional_sources_value, width=80)
+    additional_sources_button = ttk.Button(control_frame, text="Select...", command=__add_path, style="Path.TButton")
+    additional_sources_label.grid(row=9, column=0, sticky=tk.W)
+    additional_sources_entry.grid(row=9, column=1, sticky=(tk.W, tk.E))
+    additional_sources_button.grid(row=9, column=2, sticky=(tk.W, tk.E))
+    control_frame.columnconfigure((9, 0), weight=0)
+    control_frame.columnconfigure((9, 1), weight=1)
+    control_frame.columnconfigure((9, 2), weight=0)
+
     working_directory_value = tk.StringVar(value="")
     working_directory_value.trace_add("write", _show_path_has_changed)
     working_directory_label = ttk.Label(control_frame, text="Working directory:", padding=5)
@@ -422,12 +440,12 @@ def create_control_notebook_tab() -> None:
     working_directory_button = ttk.Button(
         control_frame, text="Select...", command=_set_working_directory, style="Path.TButton"
     )
-    working_directory_label.grid(row=9, column=0, sticky=tk.W)
-    working_directory_entry.grid(row=9, column=1, sticky="ew")
-    working_directory_button.grid(row=9, column=2, sticky="ew")
-    control_frame.columnconfigure((9, 0), weight=0)
-    control_frame.columnconfigure((9, 1), weight=1)
-    control_frame.columnconfigure((9, 2), weight=0)
+    working_directory_label.grid(row=10, column=0, sticky=tk.W)
+    working_directory_entry.grid(row=10, column=1, sticky="ew")
+    working_directory_button.grid(row=10, column=2, sticky="ew")
+    control_frame.columnconfigure((10, 0), weight=0)
+    control_frame.columnconfigure((10, 1), weight=1)
+    control_frame.columnconfigure((10, 2), weight=0)
 
     diagram_background_color = tk.StringVar(value="white")
     diagram_background_color.trace_add("write", lambda *args: _change_color_of_diagram_background())
@@ -436,27 +454,27 @@ def create_control_notebook_tab() -> None:
     diagram_background_color_button = ttk.Button(
         control_frame, text="Choose color...", command=choose_bg_color, style="Path.TButton"
     )
-    diagram_background_color_label.grid(row=10, column=0, sticky=tk.W)
-    diagram_background_color_entry.grid(row=10, column=1, sticky="ew")
-    diagram_background_color_button.grid(row=10, column=2, sticky="ew")
-    control_frame.columnconfigure((10, 0), weight=0)
-    control_frame.columnconfigure((10, 1), weight=1)
-    control_frame.columnconfigure((10, 2), weight=0)
-    _diagram_background_color_error = ttk.Label(control_frame, text="", padding=5)
-    _diagram_background_color_error.grid(row=11, column=1, sticky=tk.W)
+    diagram_background_color_label.grid(row=11, column=0, sticky=tk.W)
+    diagram_background_color_entry.grid(row=11, column=1, sticky="ew")
+    diagram_background_color_button.grid(row=11, column=2, sticky="ew")
     control_frame.columnconfigure((11, 0), weight=0)
     control_frame.columnconfigure((11, 1), weight=1)
     control_frame.columnconfigure((11, 2), weight=0)
+    _diagram_background_color_error = ttk.Label(control_frame, text="", padding=5)
+    _diagram_background_color_error.grid(row=12, column=1, sticky=tk.W)
+    control_frame.columnconfigure((12, 0), weight=0)
+    control_frame.columnconfigure((12, 1), weight=1)
+    control_frame.columnconfigure((12, 2), weight=0)
 
     include_timestamp_label = ttk.Label(control_frame, text="Include timestamp in generated HDL files:", padding=5)
     include_timestamp_in_output = tk.BooleanVar(value=True)
     include_timestamp_in_output.trace_add("write", lambda *args: undo_handling.update_window_title())
     include_timestamp_checkbox = ttk.Checkbutton(control_frame, variable=include_timestamp_in_output, padding=5)
-    include_timestamp_label.grid(row=12, column=0, sticky=tk.W)
-    include_timestamp_checkbox.grid(row=12, column=1, sticky=tk.W)
-    control_frame.columnconfigure((12, 0), weight=0)
-    control_frame.columnconfigure((12, 1), weight=1)
-    control_frame.columnconfigure((12, 2), weight=0)
+    include_timestamp_label.grid(row=13, column=0, sticky=tk.W)
+    include_timestamp_checkbox.grid(row=13, column=1, sticky=tk.W)
+    control_frame.columnconfigure((13, 0), weight=0)
+    control_frame.columnconfigure((13, 1), weight=1)
+    control_frame.columnconfigure((13, 2), weight=0)
 
     notebook.add(control_frame, sticky="nsew", text=GuiTab.CONTROL.value)
 
@@ -465,6 +483,20 @@ def _set_path() -> None:
     path = askdirectory()
     if path != "" and not path.isspace():
         generate_path_value.set(path)
+
+
+def __add_path():
+    old_entry = additional_sources_value.get()
+    if old_entry != "":
+        old_entries = old_entry.split(",")
+        path = askopenfilename(initialdir=os.path.dirname(old_entries[0]))
+    else:
+        path = askopenfilename()
+    if path != "":
+        if old_entry == "":
+            additional_sources_value.set(path)
+        else:
+            additional_sources_value.set(old_entry + ", " + path)
 
 
 def _set_working_directory() -> None:

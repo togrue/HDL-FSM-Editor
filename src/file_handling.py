@@ -195,6 +195,7 @@ def _save_control_data(design_dictionary: dict[str, Any]) -> None:
     design_dictionary["modulename"] = main_window.module_name.get()
     design_dictionary["language"] = main_window.language.get()
     design_dictionary["generate_path"] = main_window.generate_path_value.get()
+    design_dictionary["additional_sources"] = main_window.additional_sources_value.get()
     design_dictionary["working_directory"] = main_window.working_directory_value.get()
     design_dictionary["number_of_files"] = main_window.select_file_number_text.get()
     design_dictionary["reset_signal_name"] = main_window.reset_signal_name.get()
@@ -413,6 +414,7 @@ def _load_control_data(design_dictionary: dict[str, Any]) -> None:
     if design_dictionary["language"] != old_language:
         main_window.switch_language_mode()
     main_window.generate_path_value.set(design_dictionary["generate_path"])
+    main_window.additional_sources_value.set(design_dictionary.get("additional_sources", ""))
     main_window.working_directory_value.set(design_dictionary.get("working_directory", ""))
     # For Verilog and SystemVerilog, always use single file mode regardless of what's in the file
     if design_dictionary["language"] in ["Verilog", "SystemVerilog"]:

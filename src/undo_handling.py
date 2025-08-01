@@ -105,6 +105,7 @@ def _get_complete_design_as_text_object():
     design += "modulename|" + main_window.module_name.get() + "\n"
     design += "language|" + main_window.language.get() + "\n"
     design += "generate_path|" + main_window.generate_path_value.get() + "\n"
+    design += "additional_sources|" + main_window.additional_sources_value.get() + "\n"
     design += "working_directory|" + main_window.working_directory_value.get() + "\n"
     design += "number_of_files|" + str(main_window.select_file_number_text.get()) + "\n"
     design += "reset_signal_name|" + main_window.reset_signal_name.get() + "\n"
