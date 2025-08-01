@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Fixed
 ## Security
 
-## [4.13] - xx.yy.2025
+## [5.0] - 01.08.2025
 
 ## Added
 - The time-stamp in generated HDL can now be turned off. To simplify the handling with version control.
