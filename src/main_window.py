@@ -198,11 +198,15 @@ def create_root() -> None:
 
     # Set the application icon
     try:
-        icon_path = _get_resource_path("hfe_icon.ico")
-        if icon_path.exists():
+        # On windows, the icon file must be a .ico file.
+        # On Linux, the icon file must be a .png file.
+        if sys.platform == "win32":
+            icon_path = _get_resource_path("hfe_icon.ico")
             root.iconbitmap(icon_path)
         else:
-            print(f"Warning: Icon file not found at {icon_path}")
+            icon_path = _get_resource_path("hfe_icon.png")
+            icon = tk.PhotoImage(file=icon_path)
+            root.iconphoto(False, icon)
     except Exception as e:
         print(f"Warning: Could not set application icon: {e}")
 
