@@ -184,7 +184,12 @@ def create_root() -> None:
 
     # Set the application icon
     try:
-        icon_path = _get_resource_path("hfe_icon.ico")
+        # On windows, the icon file must be a .ico file.
+        # On Linux, the icon file must be a .png file.
+        if sys.platform == "win32":
+            icon_path = _get_resource_path("hfe_icon.ico")
+        else:
+            icon_path = _get_resource_path("hfe_icon.png")
         if icon_path.exists():
             root.iconbitmap(icon_path)
         else:
