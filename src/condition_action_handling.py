@@ -1,5 +1,23 @@
 """
 This class handles the condition&action box which can be activated for each transition.
+
+A condition&action box which has only an condition and no action (or vice versa) shows only the condition.
+When this condition&action box is entered by the mouse pointer it increases and shows also the action-entry.
+This increasing is triggered by a enter-binding of the surrounding frame of the condition&action box.
+The enter-binding of this frame is removed at entering in order to prevent the enter-binding from being
+senseless triggered again when the box is left.
+At entering the condition&action box a enter-canvas-binding is defined for the way back.
+When the condition&action box is left the enter-canvas-binding is triggered and unbinds itself and
+defines the enter-binding of the surrounding frame again.
+When the mouse-pointer is moved slow, these events happen in this order:
+1. Enter the canvas-window of the condition&action box (the blue polygon arround the window is drawn to
+   signal that it can be moved now)
+2. Leave the polygon (which deletes the polygon)
+3. Enter the canvas-frame (which surrounds the canvas-widgets of the condition&action box)
+4. Enter the canvas (when leaving the condition&action box)
+Depending on the mouse-speed when the condition&action box is entered, the event 1, 2 or 3 may be missing.
+If event 2 is missing, then the polygon exists under the extended condition&action box.
+That is the reason, why the polygon must always also be removed at event 4.
 """
 
 import tkinter as tk
@@ -22,15 +40,15 @@ class ConditionAction:
         self.difference_y = 0
         self.line_id = None
         self.line_coords = None
-        self.move_rectangle = None
-        self.last_action_was_shrinking = False
+        self.canvas_enter_func_id = None
+        self.debug_events = False
         self.action_text = None
         self.condition_text = None
         self.move_rectangle = None
         # Create frame:
         self.frame_id = ttk.Frame(main_window.canvas, relief=tk.FLAT, padding=padding, style="Window.TFrame")
-        self.frame_id.bind("<Enter>", lambda event: self.extend_box())
-        self.frame_id.bind("<Leave>", lambda event: self.shrink_box())
+        self.condition_action_enter_func_id = self.frame_id.bind("<Enter>", lambda event: self.enter_box())
+
         # Create objects inside frame:
         if connected_to_reset_entry:
             label_action_text = "Transition actions (asynchronous):"
@@ -85,16 +103,9 @@ class ConditionAction:
         self.register_all_widgets_at_grid()
         # Create canvas window for the frame:
         self.window_id = main_window.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
-        # Moving a condition&action block had the problem, that the block could only be picked up at
-        # a small distance away from its borders which is difficult for the user to handle.
-        # To improve the moving a method (move_item) was built, which allowed picking up also inside the block.
-        # But with this solution selecting text by the mousepointer could not be used anymore.
-        # And this solution showed very bad moving behaviour under Linux Mint.
-        # So a new solution was implemented which draws a rectangle around the block to move which
-        # signals the user, that picking the block for moving is now possible.
-        # Instead of a real rectangle, a polygon was used, because then a "leave" binding was possible,
-        # when the mouse pointer enters the condition&action block:
-        main_window.canvas.tag_bind(self.window_id, "<Enter>", lambda event: self.__draw_polygon_around_window())
+        self.window_enter_func_id = main_window.canvas.tag_bind(
+            self.window_id, "<Enter>", lambda event: self.__draw_polygon_around_window()
+        )
         # Create dictionary for translating the canvas-id of the canvas-window into a reference to this object:
         ConditionAction.dictionary[self.window_id] = self
 
@@ -154,17 +165,10 @@ class ConditionAction:
         main_window.canvas.tag_lower(self.line_id, transition_id)
 
     def __draw_polygon_around_window(self) -> None:
-        # When the window is entered from "outside" and is extended,
-        # then no window-leaving-event is detected and the polygon is removed by extend_box().
-        # When the window is entered from "inside" of an extended box (after a editing action),
-        # then the window will be shrinked, if it still has no condition.
-        # As in this case the move_polygon is sometimes (depending on the mouse speed) also
-        # drawn (unnecessarily), this shall not happen before the window has been shrinked,
-        # otherwise the polygon would have wrong dimensions:
-        if not self.last_action_was_shrinking:
-            main_window.canvas.after_idle(self.__draw_polygon_around_window_delayed)
-
-    def __draw_polygon_around_window_delayed(self) -> None:
+        # Instead of a real rectangle, a polygon was used, because then a "leave" binding was possible,
+        # when the mouse pointer enters the condition&action block.
+        if self.debug_events is True:
+            print("event 1: enter-window")
         bbox_coords = main_window.canvas.bbox(self.window_id)
         polygon_coords = []
         polygon_coords.append(bbox_coords[0] - 3)
@@ -179,18 +183,37 @@ class ConditionAction:
         self.move_rectangle = main_window.canvas.create_polygon(
             polygon_coords, width=1, fill="blue", tag="polygon_for_move"
         )
-        main_window.canvas.tag_bind(
-            self.move_rectangle, "<Leave>", lambda event: main_window.canvas.delete(self.move_rectangle)
-        )
+        main_window.canvas.tag_bind(self.move_rectangle, "<Leave>", self.delete_polygon)
+        if self.window_enter_func_id is not None:
+            main_window.canvas.tag_unbind(self.window_id, "<Enter>", self.window_enter_func_id)
+            self.window_enter_func_id = None
 
-    def extend_box(self) -> None:
-        # When a small box is extendend the self-destroying mechanism of the move_rectangle does not work,
-        # as the extended box is bigger than the move_polygon and no polygon-leave-event happens.
-        # So in this case the polygon must be removed explicetly:
+    def delete_polygon(self, event):
+        if self.debug_events is True:
+            print("event 3: leave-polygon: delete polygon")
         main_window.canvas.delete(self.move_rectangle)
+
+    def enter_box(self) -> None:
+        self.frame_id.configure(padding=3)  # increase the width of the line around the box
+        if self.debug_events is True:
+            print("event 2: enter-frame: extend box")
         self.action_text = self.action_id.get("1.0", tk.END)
         self.condition_text = self.condition_id.get("1.0", tk.END)
         self.register_all_widgets_at_grid()
+        self.canvas_enter_func_id = main_window.canvas.bind("<Enter>", self.leave_box)
+
+    def leave_box(self, event):
+        self.frame_id.configure(padding=1)
+        if self.debug_events is True:
+            print("event 4: canvas-enter: shrink-box")
+        if self.canvas_enter_func_id is not None:
+            main_window.canvas.unbind("<Enter>", self.canvas_enter_func_id)
+            self.canvas_enter_func_id = None
+        self.shrink_box()
+        self.window_enter_func_id = main_window.canvas.tag_bind(
+            self.window_id, "<Enter>", lambda event: self.__draw_polygon_around_window()
+        )
+        main_window.canvas.delete(self.move_rectangle)
 
     def shrink_box(self) -> None:
         self.frame_id.focus()  # "unfocus" the Text, when the mouse leaves the text.
@@ -199,39 +222,21 @@ class ConditionAction:
             or self.action_id.get("1.0", tk.END) != self.action_text
         ):
             undo_handling.design_has_changed()
-        # When at leaving the box, the box is not shrinked, the mouse-pointer "passes" the canvas-window and the move_polygon is drawn/removed again.
-        # But when the box is shrinked the situation is complicated, as several things happen at about the same time:
-        # Because the box is shrinked, the canvas-window is shrinked.
-        # The mouse-pointer, which was first in the box, is now outside of it without any mouse-pointer moving.
-        # Although, depending on the speed of the mouse-pointer, the canvas-window sometimes recognizes an enter-event.
-        # Then a move-polygon is drawn around the shrinked box.
-        # This move-polygon sometimes is not removed, if no window-leaving-event is triggered anymore.
-        # To avoid this case, the flag last_action_was_shrinking is used.
-        # It is raised, when the box is shrinked, so that at a possible canvas-window-enter-event no move-polygon is drawn.
-        # But to clear this flag is difficult, as when the mouse-pointer is outside of the shrinked box, no event regarding the box is triggered anymore.
-        # So it is automatically cleared after a short time.
-        self.last_action_was_shrinking = False
         if self.condition_id.get("1.0", tk.END) == "\n" and self.action_id.get("1.0", tk.END) != "\n":
             self.condition_label.grid_forget()
             self.condition_id.grid_forget()
-            self.last_action_was_shrinking = True
-            main_window.canvas.after(500, self.__clear_last_action_was_shrinking)
         if self.condition_id.get("1.0", tk.END) != "\n" and self.action_id.get("1.0", tk.END) == "\n":
             self.action_label.grid_forget()
             self.action_id.grid_forget()
-            self.last_action_was_shrinking = True
-            main_window.canvas.after(500, self.__clear_last_action_was_shrinking)
-
-    def __clear_last_action_was_shrinking(self) -> None:
-        self.last_action_was_shrinking = False
 
     def move_to(self, event_x, event_y, first, last) -> None:
         main_window.canvas.delete(
             self.move_rectangle
-        )  # During moving there might be no move-polygon-leave-event, so for delete it hear for clean graphics.
-        self.frame_id.configure(padding=1)  # decrease the width of the line around the box
+        )  # During moving there might be no polygon-leave-event (which deletes the polygon), so for delete it hear for clean graphics.
+        if last is True:
+            self.frame_id.configure(padding=1)  # decrease the width of the line around the box
         if first is True:
-            self.frame_id.configure(padding=4)  # increase the width of the line around the box
+            self.frame_id.configure(padding=3)  # increase the width of the line around the box
             # Calculate the difference between the "anchor" point and the event:
             coords = main_window.canvas.coords(self.window_id)
             self.difference_x, self.difference_y = -event_x + coords[0], -event_y + coords[1]
