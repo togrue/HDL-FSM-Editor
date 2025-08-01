@@ -1,0 +1,40 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run HDL-FSM-Editor (Verilog)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/main.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--no-version-check",
+                "--no-message",
+                "examples/division_unsigned_control.hfe"
+            ]
+        },
+        {
+            "name": "Run HDL-FSM-Editor (VHDL)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/main.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--no-version-check",
+                "--no-message",
+                "examples/multiply_wt_booth_control.hfe"
+            ]
+        },
+        {
+            "name": "Run HDL-FSM-Editor without args",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/main.py",
+            "console": "integratedTerminal",
+            "args": []
+        }
+    ]
+}

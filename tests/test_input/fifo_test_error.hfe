@@ -1,0 +1,298 @@
+{
+    "modulename": "fifo_test",
+    "language": "VHDL",
+    "generate_path": ".",
+    "working_directory": ".",
+    "number_of_files": 2,
+    "reset_signal_name": "res_i",
+    "clock_signal_name": "clk_i",
+    "compile_cmd": "ghdl -a $file1 $file2; ghdl -e $name; ghdl -r $name",
+    "edit_cmd": "C:/Program Files/Notepad++/notepad++.exe -nosession -multiInst",
+    "diagram_background_color": "#fcfdc6",
+    "include_timestamp_in_output": false,
+    "state_number": 2,
+    "transition_number": 3,
+    "reset_entry_number": 1,
+    "connector_number": 0,
+    "conditionaction_id": 2,
+    "mytext_id": 0,
+    "global_actions_number": 0,
+    "state_actions_default_number": 0,
+    "global_actions_combinatorial_number": 0,
+    "state_radius": 20.0,
+    "reset_entry_size": 40,
+    "priority_distance": 14,
+    "fontsize": 10,
+    "label_fontsize": 8,
+    "visible_center": "109.5 306.5 ",
+    "interface_package": "",
+    "interface_generics": "",
+    "interface_ports": "",
+    "internals_package": "",
+    "internals_architecture": "",
+    "internals_process": "",
+    "internals_process_combinatorial": "",
+    "sash_positions": {
+        "interface_tab": {
+            "0": 135,
+            "1": 275
+        },
+        "internals_tab": {
+            "0": 100,
+            "1": 205,
+            "2": 310
+        }
+    },
+    "state": [
+        [
+            [
+                0.0,
+                100.0,
+                40.0,
+                140.0
+            ],
+            [
+                "state1",
+                "transition0_end",
+                "transition1_start",
+                "transition2_start"
+            ],
+            "cyan"
+        ],
+        [
+            [
+                0.0,
+                340.0,
+                40.0,
+                380.0
+            ],
+            [
+                "state2",
+                "transition1_end",
+                "transition2_end"
+            ],
+            "cyan"
+        ]
+    ],
+    "text": [
+        [
+            [
+                -172.0,
+                120.0
+            ],
+            [
+                "reset_text"
+            ],
+            "Reset"
+        ],
+        [
+            [
+                20.0,
+                120.0
+            ],
+            [
+                "state1_name"
+            ],
+            "S1"
+        ],
+        [
+            [
+                20.0,
+                360.0
+            ],
+            [
+                "state2_name"
+            ],
+            "S2"
+        ],
+        [
+            [
+                -126.0,
+                120.0
+            ],
+            [
+                "transition0priority"
+            ],
+            "1"
+        ],
+        [
+            [
+                20.0,
+                154.0
+            ],
+            [
+                "transition1priority"
+            ],
+            "1"
+        ],
+        [
+            [
+                50.205717596792546,
+                135.6081589068928
+            ],
+            [
+                "transition2priority"
+            ],
+            "2"
+        ]
+    ],
+    "line": [
+        [
+            [
+                -126.0,
+                120.0,
+                -140.0,
+                120.0
+            ],
+            [
+                "ca_connection2",
+                "connected_to_transition0"
+            ]
+        ],
+        [
+            [
+                -140.0,
+                120.0,
+                0.0,
+                120.0
+            ],
+            [
+                "transition0",
+                "coming_from_reset_entry",
+                "going_to_state1",
+                "ca_connection2_end"
+            ]
+        ],
+        [
+            [
+                20.0,
+                140.0,
+                20.0,
+                340.0
+            ],
+            [
+                "transition1",
+                "coming_from_state1",
+                "going_to_state2"
+            ]
+        ],
+        [
+            [
+                85.0,
+                156.0,
+                37.76806917458385,
+                129.18126994523107
+            ],
+            [
+                "ca_connection1",
+                "connected_to_transition2"
+            ]
+        ],
+        [
+            [
+                37.76806917458385,
+                129.18126994523107,
+                289.0,
+                259.0,
+                38.72372152196466,
+                352.9699038151731
+            ],
+            [
+                "transition2",
+                "coming_from_state1",
+                "going_to_state2",
+                "ca_connection1_end"
+            ]
+        ]
+    ],
+    "polygon": [
+        [
+            [
+                -192.0,
+                108.0,
+                -152.0,
+                108.0,
+                -140.0,
+                120.0,
+                -152.0,
+                132.0,
+                -192.0,
+                132.0
+            ],
+            [
+                "reset_entry",
+                "transition0_start"
+            ]
+        ]
+    ],
+    "rectangle": [
+        [
+            [
+                -130.0,
+                112.0,
+                -121.0,
+                129.0
+            ],
+            [
+                "transition0rectangle"
+            ]
+        ],
+        [
+            [
+                16.0,
+                146.0,
+                25.0,
+                163.0
+            ],
+            [
+                "transition1rectangle"
+            ]
+        ],
+        [
+            [
+                46.0,
+                128.0,
+                55.0,
+                145.0
+            ],
+            [
+                "transition2rectangle"
+            ]
+        ]
+    ],
+    "window_state_action_block": [],
+    "window_state_comment": [],
+    "window_condition_action_block": [
+        [
+            [
+                85.0,
+                156.0
+            ],
+            "ddd",
+            "",
+            [
+                "condition_action1",
+                "ca_connection1_anchor"
+            ]
+        ],
+        [
+            [
+                -126.0,
+                120.0
+            ],
+            "aaa",
+            "",
+            [
+                "condition_action2",
+                "ca_connection2_anchor",
+                "connected_to_reset_transition"
+            ]
+        ]
+    ],
+    "window_global_actions": [],
+    "window_global_actions_combinatorial": [],
+    "window_state_actions_default": [],
+    "regex_message_find": "(.*?):([0-9]+):[0-9]+:.*",
+    "regex_file_name_quote": "\\1",
+    "regex_file_line_number_quote": "\\2"
+}

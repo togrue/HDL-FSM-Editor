@@ -1,0 +1,12 @@
+__pycache__/
+.vscode/
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.venv/
+
+# Build artifacts
+releases/
+dist/
+build/
+*.spec

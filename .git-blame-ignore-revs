@@ -1,0 +1,10 @@
+# Git SHAs listed in this file are ignored by git blame
+
+# Move all source files into a src directory
+776e0ed6bf17906e0723cdaa74a2ccc7df7e0270
+
+# Format all files with ruff
+ee3d8f526f839ff5fe846e6976959d057b6c3f96
+
+# Rename all "local" globals
+b192490bc98b3fcdb1065dd046984f70dd502789

@@ -1,0 +1,549 @@
+{
+    "modulename": "multiply_wt_booth_control",
+    "language": "VHDL",
+    "generate_path": ".",
+    "working_directory": ".",
+    "number_of_files": 1,
+    "reset_signal_name": "res_i",
+    "clock_signal_name": "clk_i",
+    "compile_cmd": "ghdl -a $file; ghdl -e $name; ghdl -r $name",
+    "edit_cmd": "C:/Program Files/Notepad++/notepad++.exe -nosession -multiInst",
+    "include_timestamp_in_output": false,
+    "interface_package": "library ieee;\nuse ieee.std_logic_1164.all;",
+    "interface_generics": "g_counter_max : natural := 8",
+    "interface_ports": "res_i        : in  std_logic;\nclk_i        : in  std_logic;\nstart_i      : in  std_logic;\nready_o      : out std_logic;\nreg_enable_o : out std_logic",
+    "internals_package": "library ieee;\nuse ieee.std_logic_1164.all;",
+    "internals_architecture": "signal counter : natural range 0 to g_counter_max;",
+    "internals_process": "",
+    "internals_process_combinatorial": "",
+    "regex_message_find": "(.*?):([0-9]+):[0-9]+:.*(",
+    "regex_file_name_quote": "\\1",
+    "regex_file_line_number_quote": "\\2",
+    "diagram_background_color": "white",
+    "state_number": 2,
+    "transition_number": 8,
+    "reset_entry_number": 1,
+    "connector_number": 2,
+    "conditionaction_id": 6,
+    "mytext_id": 2,
+    "global_actions_number": 0,
+    "state_actions_default_number": 0,
+    "global_actions_combinatorial_number": 0,
+    "state_radius": 10.0,
+    "reset_entry_size": 20.0,
+    "priority_distance": 15.0,
+    "fontsize": 5.0,
+    "label_fontsize": 3.999999999999999,
+    "visible_center": "306.5 190.5 ",
+    "sash_positions": {
+        "interface_tab": {
+            "0": 126,
+            "1": 257
+        },
+        "internals_tab": {
+            "0": 99,
+            "1": 203,
+            "2": 307
+        }
+    },
+    "state": [
+        [
+            [
+                339.99999999999994,
+                89.99999999999999,
+                359.99999999999994,
+                110.00000000000007
+            ],
+            [
+                "state1",
+                "transition0_end",
+                "connection1_end",
+                "transition3_start",
+                "transition4_end",
+                "transition7_start",
+                "transition7_end"
+            ],
+            "cyan"
+        ],
+        [
+            [
+                339.99999999999994,
+                329.99999999999994,
+                359.99999999999994,
+                349.99999999999994
+            ],
+            [
+                "state2",
+                "transition1_end",
+                "connection2_end",
+                "transition6_start"
+            ],
+            "cyan"
+        ]
+    ],
+    "text": [
+        [
+            [
+                134.00000000000006,
+                100.00000000000001
+            ],
+            [
+                "reset_text"
+            ],
+            "Reset"
+        ],
+        [
+            [
+                349.99999999999994,
+                100.00000000000001
+            ],
+            [
+                "state1_name"
+            ],
+            "idle"
+        ],
+        [
+            [
+                349.99999999999994,
+                339.99999999999994
+            ],
+            [
+                "state2_name"
+            ],
+            "run"
+        ],
+        [
+            [
+                324.78625443335,
+                336.96903932151594
+            ],
+            [
+                "transition6priority"
+            ],
+            "1"
+        ],
+        [
+            [
+                363.1700921573704,
+                208.47616936230094
+            ],
+            [
+                "transition4priority"
+            ],
+            "1"
+        ],
+        [
+            [
+                349.64285714285717,
+                237.50000000000014
+            ],
+            [
+                "transition1priority"
+            ],
+            "2"
+        ],
+        [
+            [
+                349.99999999999994,
+                125.0
+            ],
+            [
+                "transition3priority"
+            ],
+            "1"
+        ],
+        [
+            [
+                164.99999999999997,
+                100.00000000000001
+            ],
+            [
+                "transition0priority"
+            ],
+            "1"
+        ],
+        [
+            [
+                359.9745511552967,
+                77.0760315553705
+            ],
+            [
+                "transition7priority"
+            ],
+            "2"
+        ]
+    ],
+    "line": [
+        [
+            [
+                339.70021605905424,
+                338.5733300143206,
+                260.0,
+                330.0000000000002,
+                250.0,
+                240.00000000000014,
+                347.19174393396537,
+                220.49197971217907
+            ],
+            [
+                "transition6",
+                "coming_from_state2",
+                "going_to_connector2"
+            ]
+        ],
+        [
+            [
+                351.881441736767,
+                218.3537384803286,
+                430.0000000000003,
+                150.0,
+                358.4799830400507,
+                105.29998940003188
+            ],
+            [
+                "transition4",
+                "going_to_state1",
+                "ca_connection3_end",
+                "coming_from_connector2"
+            ]
+        ],
+        [
+            [
+                293.26190476190476,
+                154.1666666666667,
+                349.99999999999994,
+                110.00000000000007
+            ],
+            [
+                "ca_connection4",
+                "connected_to_transition3"
+            ]
+        ],
+        [
+            [
+                349.99999999999994,
+                110.00000000000007,
+                349.99999999999994,
+                217.50000000000014
+            ],
+            [
+                "transition3",
+                "coming_from_state1",
+                "going_to_connector2",
+                "ca_connection4_end"
+            ]
+        ],
+        [
+            [
+                150.0,
+                100.00000000000001,
+                339.99999999999994,
+                100.00000000000001
+            ],
+            [
+                "transition0",
+                "coming_from_reset_entry",
+                "going_to_state1",
+                "ca_connection1_end"
+            ]
+        ],
+        [
+            [
+                386.50000000000006,
+                91.99999999999994,
+                349.99999999999994,
+                100.00000000000001
+            ],
+            [
+                "connection1",
+                "connected_to_state1"
+            ]
+        ],
+        [
+            [
+                175.77777777777766,
+                101.44444444444437,
+                150.0,
+                100.00000000000001
+            ],
+            [
+                "ca_connection1",
+                "connected_to_transition0"
+            ]
+        ],
+        [
+            [
+                311.7222222222222,
+                281.6666666666668,
+                349.99999999999994,
+                222.50000000000014
+            ],
+            [
+                "ca_connection2",
+                "connected_to_transition1"
+            ]
+        ],
+        [
+            [
+                381.05555555555526,
+                195.8333333333333,
+                351.881441736767,
+                218.3537384803286
+            ],
+            [
+                "ca_connection3",
+                "connected_to_transition4"
+            ]
+        ],
+        [
+            [
+                316.26984126984127,
+                36.468253968253975,
+                353.98982046211864,
+                90.83041262214826
+            ],
+            [
+                "ca_connection6",
+                "connected_to_transition7"
+            ]
+        ],
+        [
+            [
+                353.98982046211864,
+                90.83041262214826,
+                378.4999999999999,
+                34.49999999999999,
+                320.0,
+                36.500000000000014,
+                345.72831997444064,
+                90.95827727923277
+            ],
+            [
+                "transition7",
+                "coming_from_state1",
+                "going_to_state1",
+                "ca_connection6_end"
+            ]
+        ],
+        [
+            [
+                349.64285714285717,
+                222.50000000000014,
+                349.64285714285717,
+                329.64285714285717
+            ],
+            [
+                "transition1",
+                "going_to_state2",
+                "ca_connection2_end",
+                "coming_from_connector2"
+            ]
+        ],
+        [
+            [
+                374.5000000000001,
+                344.0,
+                359.49268082845117,
+                341.3694066969412
+            ],
+            [
+                "connection2",
+                "connected_to_state2"
+            ]
+        ]
+    ],
+    "polygon": [
+        [
+            [
+                123.99999999999999,
+                93.99999999999997,
+                143.99999999999991,
+                93.99999999999997,
+                150.0,
+                100.00000000000001,
+                143.99999999999991,
+                105.99999999999996,
+                123.99999999999999,
+                105.99999999999996
+            ],
+            [
+                "reset_entry",
+                "transition0_start"
+            ]
+        ]
+    ],
+    "rectangle": [
+        [
+            [
+                347.49999999999994,
+                217.50000000000014,
+                352.49999999999994,
+                222.50000000000014
+            ],
+            [
+                "connector2",
+                "transition1_start",
+                "transition3_end",
+                "transition6_end",
+                "transition4_start"
+            ]
+        ],
+        [
+            [
+                322.53625443335005,
+                332.7190393215158,
+                327.0362544333502,
+                341.21903932151577
+            ],
+            [
+                "transition6rectangle"
+            ]
+        ],
+        [
+            [
+                360.92009215737016,
+                204.22616936230082,
+                365.42009215737033,
+                212.72616936230105
+            ],
+            [
+                "transition4rectangle"
+            ]
+        ],
+        [
+            [
+                347.3928571428572,
+                233.25000000000003,
+                351.8928571428571,
+                241.74999999999997
+            ],
+            [
+                "transition1rectangle"
+            ]
+        ],
+        [
+            [
+                347.75,
+                120.7500000000001,
+                352.2499999999999,
+                129.24999999999997
+            ],
+            [
+                "transition3rectangle"
+            ]
+        ],
+        [
+            [
+                162.7499999999999,
+                95.74999999999994,
+                167.25000000000006,
+                104.25000000000003
+            ],
+            [
+                "transition0rectangle"
+            ]
+        ],
+        [
+            [
+                357.9999999999998,
+                73.00000000000003,
+                362.49999999999994,
+                81.49999999999997
+            ],
+            [
+                "transition7rectangle"
+            ]
+        ]
+    ],
+    "window_state_action_block": [
+        [
+            [
+                386.50000000000006,
+                91.99999999999994
+            ],
+            "if start_i='1' then\n    reg_enable_o <= '1';\nelse\n    reg_enable_o <= '0';\nend if;",
+            [
+                "state_action1",
+                "connection1_start"
+            ]
+        ],
+        [
+            [
+                374.5000000000001,
+                344.0
+            ],
+            "reg_enable_o <= '1';",
+            [
+                "state_action2",
+                "connection2_start"
+            ]
+        ]
+    ],
+    "window_state_comment": [],
+    "window_condition_action_block": [
+        [
+            [
+                175.77777777777766,
+                101.44444444444437
+            ],
+            "res_i='1'",
+            "counter   <=  0 ;\nready_o   <= '0';",
+            [
+                "condition_action1",
+                "ca_connection1_anchor",
+                "connected_to_reset_transition"
+            ]
+        ],
+        [
+            [
+                311.7222222222222,
+                281.6666666666668
+            ],
+            "",
+            "counter <= counter + 1;",
+            [
+                "condition_action2",
+                "ca_connection2_anchor"
+            ]
+        ],
+        [
+            [
+                381.05555555555526,
+                195.8333333333333
+            ],
+            "counter=g_counter_max",
+            "ready_o   <= '1';\ncounter   <=  0 ;",
+            [
+                "condition_action3",
+                "ca_connection3_anchor"
+            ]
+        ],
+        [
+            [
+                293.26190476190476,
+                154.1666666666667
+            ],
+            "start_i='1'",
+            "ready_o <= '0';",
+            [
+                "condition_action4",
+                "ca_connection4_anchor"
+            ]
+        ],
+        [
+            [
+                316.26984126984127,
+                36.468253968253975
+            ],
+            "",
+            "ready_o <= '0';",
+            [
+                "condition_action6",
+                "ca_connection6_anchor"
+            ]
+        ]
+    ],
+    "window_global_actions": [],
+    "window_global_actions_combinatorial": [],
+    "window_state_actions_default": []
+}

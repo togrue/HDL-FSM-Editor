@@ -1,0 +1,57 @@
+[project]
+name = "hdl-fsm-editor"
+version = "0.1.0"
+description = "HDL-FSM-Editor for VHDL and Verilog"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "pre-commit>=4.2.0",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.2.0",
+    "pytest>=8.4.1",
+    "ruff>=0.12.4",
+    "mypy>=1.17.0",
+    "pyinstaller>=6.14.2",
+    "pytest-xdist>=3.8.0",
+]
+
+[tool.ruff]
+
+# Allow lines to be as long as 120.
+line-length = 120
+
+[tool.ruff.lint]
+
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+    "--disable-warnings",
+    "-n",
+    "auto",
+]
+markers = [
+    "golden_file: marks tests as golden file tests",
+    "batch_mode: marks tests as batch mode tests",
+]

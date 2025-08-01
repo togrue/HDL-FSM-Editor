@@ -1,0 +1,24 @@
+{
+    "[python]": {
+        "python.linting.enabled": true,
+        "python.linting.ruffEnabled": true,
+        "python.formatting.provider": "ruff",
+        "python.formatting.ruffArgs": [
+            "--fix"
+        ],
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit",
+            "source.fixAll": "explicit"
+        }
+    },
+    "python.testing.pytestArgs": [
+        "tests",
+        "-n",
+        "auto",
+        "--tb=short"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.testing.autoTestDiscoverOnSaveEnabled": true
+}
