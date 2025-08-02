@@ -11,6 +11,7 @@ import urllib.request
 from pathlib import Path
 from tkinter import messagebox, ttk
 from tkinter.filedialog import askdirectory, askopenfilename
+from typing import Union
 
 import canvas_editing
 import canvas_modify_bindings
@@ -86,9 +87,9 @@ regex_file_line_number_quote: str = "\\2"
 _regex_error_happened: bool = False
 _line_number_under_pointer_log_tab: int = 0
 _line_number_under_pointer_hdl_tab: int = 0
-_func_id_jump: str | None = None
-_func_id_jump1: str | None = None
-_func_id_jump2: str | None = None
+_func_id_jump: Union[str, None] = None
+_func_id_jump1: Union[str, None] = None
+_func_id_jump2: Union[str, None] = None
 size_of_file1_line_number: int = 0
 size_of_file2_line_number: int = 0
 _module_name_entry: ttk.Entry
@@ -185,7 +186,11 @@ def _close_tool() -> None:
 
 def _get_resource_path(resource_name: str) -> Path:
     """Get the path to a resource file, handling both development and PyInstaller environments."""
-    base_path = Path(sys._MEIPASS) if getattr(sys, "frozen", False) else Path(__file__).parent.parent
+    if getattr(sys, "frozen", False):
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = Path(getattr(sys, "_MEIPASS", ""))
+    else:
+        base_path = Path(__file__).parent.parent
 
     return base_path / "rsc" / resource_name
 
@@ -1027,9 +1032,9 @@ def _cursor_move_hdl_tab(*_) -> None:
             start_index = size_of_file1_line_number
         while hdl_frame_text.get(f"{line_number}.{start_index - 1}") == " ":
             start_index += 1
-        if link_dict().has_link(selected_file, line_number_in_file):
+        if selected_file and link_dict().has_link(selected_file, line_number_in_file):
             hdl_frame_text.tag_add("underline", f"{line_number}.{start_index - 1}", f"{line_number + 1}.0")
-            hdl_frame_text.tag_config("underline", underline=1)
+            hdl_frame_text.tag_configure("underline", underline=True)
             _func_id_jump = hdl_frame_text.bind(
                 "<Control-Button-1>",
                 lambda event: link_dict().jump_to_source(selected_file, line_number_in_file),
@@ -1092,7 +1097,7 @@ def _cursor_move_log_tab(*_) -> None:
                 if debug:
                     print("Filename and line-number are found in Link-Dictionary.")
                 log_frame_text.tag_add("underline", str(line_number) + ".0", str(line_number + 1) + ".0")
-                log_frame_text.tag_config("underline", underline=1, foreground="red")
+                log_frame_text.tag_configure("underline", underline=True, foreground="red")
                 _func_id_jump1 = log_frame_text.bind(
                     "<Control-Button-1>",
                     lambda event: link_dict().jump_to_source(file_name, file_line_number),
