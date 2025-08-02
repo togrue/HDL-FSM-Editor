@@ -2,6 +2,8 @@
 This module contains all methods needed for reading and writing from or to a file.
 """
 
+
+
 import json
 import os
 import tkinter as tk
@@ -617,7 +619,7 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
         coords = definition[0]
         tags = definition[1]
         text = definition[2]
-        text_id = main_window.canvas.create_text(coords, text=text, tags=tags, font=canvas_editing.state_name_font)
+        text_id = main_window.canvas.create_text(coords, text=text, tags=tags, font=canvas_editing.state_name_font or ("Arial", 10))
         for t in tags:
             if t.startswith("transition"):
                 priority_ids.append(text_id)
@@ -672,7 +674,7 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
                     number_of_outgoing_transitions += 1
             if number_of_outgoing_transitions == 1:
                 hide_priority_rectangle_list.append(transition_identifier)
-        canvas_id = main_window.canvas.create_rectangle(coords, tag=tags, fill=rectangle_color)
+        canvas_id = main_window.canvas.create_rectangle(coords, tags=tags, fill=rectangle_color)
         if rectangle_color == constants.STATE_COLOR:  # priority rectangle
             ids_of_rectangles_to_raise.append(canvas_id)
         else:
@@ -710,7 +712,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         )
         action_ref.text_id.insert("1.0", text)
         action_ref.text_id.format()
-        main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
+        main_window.canvas.itemconfigure(action_ref.window_id, tags=tags)
 
     # Load state comments
     for definition in design_dictionary.get("window_state_comment", []):
@@ -720,7 +722,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         comment_ref = state_comment.StateComment(coords[0] - 100, coords[1], height=1, width=8, padding=1)
         comment_ref.text_id.insert("1.0", text)
         comment_ref.text_id.format()
-        main_window.canvas.itemconfigure(comment_ref.window_id, tag=tags)
+        main_window.canvas.itemconfigure(comment_ref.window_id, tags=tags)
 
     # Load condition action blocks
     for definition in design_dictionary["window_condition_action_block"]:
@@ -751,7 +753,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         ):
             condition_action_ref.action_label.grid_forget()
             condition_action_ref.action_id.grid_forget()
-        main_window.canvas.itemconfigure(condition_action_ref.window_id, tag=tags)
+        main_window.canvas.itemconfigure(condition_action_ref.window_id, tags=tags)
 
     # Load global actions
     for definition in design_dictionary["window_global_actions"]:
@@ -764,7 +766,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         global_actions_ref.text_before_id.format()
         global_actions_ref.text_after_id.insert("1.0", text_after)
         global_actions_ref.text_after_id.format()
-        main_window.canvas.itemconfigure(global_actions_ref.window_id, tag=tags)
+        main_window.canvas.itemconfigure(global_actions_ref.window_id, tags=tags)
 
     # Load global actions combinatorial
     for definition in design_dictionary["window_global_actions_combinatorial"]:
@@ -776,7 +778,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         )
         action_ref.text_id.insert("1.0", text)
         action_ref.text_id.format()
-        main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
+        main_window.canvas.itemconfigure(action_ref.window_id, tags=tags)
 
     # Load state actions default
     for definition in design_dictionary["window_state_actions_default"]:
@@ -786,4 +788,4 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         action_ref = state_actions_default.StateActionsDefault(coords[0], coords[1], height=1, width=8, padding=1)
         action_ref.text_id.insert("1.0", text)
         action_ref.text_id.format()
-        main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
+        main_window.canvas.itemconfigure(action_ref.window_id, tags=tags)
