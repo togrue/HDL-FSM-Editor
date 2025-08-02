@@ -2,8 +2,6 @@
 This module contains all methods needed for reading and writing from or to a file.
 """
 
-
-
 import json
 import os
 import tkinter as tk
@@ -619,7 +617,9 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
         coords = definition[0]
         tags = definition[1]
         text = definition[2]
-        text_id = main_window.canvas.create_text(coords, text=text, tags=tags, font=canvas_editing.state_name_font or ("Arial", 10))
+        text_id = main_window.canvas.create_text(
+            coords, text=text, tags=tags, font=canvas_editing.state_name_font or ("Arial", 10)
+        )
         for t in tags:
             if t.startswith("transition"):
                 priority_ids.append(text_id)
