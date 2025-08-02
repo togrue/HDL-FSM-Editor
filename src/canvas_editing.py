@@ -152,7 +152,9 @@ def delete() -> None:
                     global_actions_handling.global_actions_clocked_number = 0
                     main_window.global_action_clocked_button.config(state=tk.NORMAL)
                 elif tag == "global_actions_combinatorial1":
-                    global_action_combinatorial_ref: Any = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[item_id[0]]
+                    global_action_combinatorial_ref: Any = (
+                        global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[item_id[0]]
+                    )
                     del custom_text.CustomText.read_variables_of_all_windows[global_action_combinatorial_ref.text_id]
                     del custom_text.CustomText.written_variables_of_all_windows[global_action_combinatorial_ref.text_id]
                     main_window.canvas.delete(tag)  # delete window
