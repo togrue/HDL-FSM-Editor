@@ -4,6 +4,7 @@ This module handles the transitions in the diagram.
 
 import math
 import tkinter as tk
+from typing import Optional, Union
 
 import canvas_editing
 import canvas_modify_bindings
@@ -303,6 +304,8 @@ def shorten_to_state_border(transition_tag) -> None:
             connection = True
             end_state_tag = tag[13:]
     if connection is False:
+        if start_state_tag is None or end_state_tag is None:
+            return
         start_state_coords = main_window.canvas.coords(start_state_tag)
         end_state_coords = main_window.canvas.coords(end_state_tag)
         if start_state_tag == "reset_entry":
@@ -364,6 +367,8 @@ def shorten_to_state_border(transition_tag) -> None:
         if list_of_grid_line_canvas_ids:
             main_window.canvas.tag_raise(transition_tag, "grid_line")
     else:
+        if end_state_tag is None:
+            return
         end_state_coords = main_window.canvas.coords(end_state_tag)
         end_state_radius = (end_state_coords[2] - end_state_coords[0]) / 2
 
@@ -442,30 +447,30 @@ def transition_start(event) -> None:
                 main_window.canvas.tag_bind(
                     transition_id,
                     "<Enter>",
-                    lambda event, tid=transition_id: main_window.canvas.itemconfig(tid, width=3),
+                    lambda event, tid=transition_id: main_window.canvas.itemconfig(tid, width=3),  # type: ignore[misc]
                 )
                 main_window.canvas.tag_bind(
                     transition_id,
                     "<Leave>",
-                    lambda event, tid=transition_id: main_window.canvas.itemconfig(tid, width=1),
+                    lambda event, tid=transition_id: main_window.canvas.itemconfig(tid, width=1),  # type: ignore[misc]
                 )
                 main_window.canvas.tag_bind(
                     transition_id,
                     "<Button-3>",
-                    lambda event, tid=transition_id: show_menu(event, tid),
+                    lambda event, tid=transition_id: show_menu(event, tid),  # type: ignore[misc]
                 )
                 main_window.root.unbind_all("<Escape>")
                 transition_draw_funcid = main_window.canvas.bind(
                     "<Motion>",
-                    lambda event, tid=transition_id: _transition_draw(event, tid),
-                    add="+",
+                    lambda event, tid=transition_id: _transition_draw(event, tid),  # type: ignore[misc]
+                    add=True,
                 )
                 main_window.canvas.bind(
                     "<Button-1>",
                     lambda event,
                     tid=transition_id,
                     cid=canvas_id,
-                    tdf=transition_draw_funcid: _handle_next_added_transition_point(event, tid, cid, tdf),
+                    tdf=transition_draw_funcid: _handle_next_added_transition_point(event, tid, cid, tdf),  # type: ignore[misc]
                 )
                 main_window.root.bind_all(
                     "<Escape  >",
@@ -474,7 +479,7 @@ def transition_start(event) -> None:
                     tdf=transition_draw_funcid,
                     tows=tag_of_object_where_transition_starts: _abort_inserting_transition(
                         tid, tdf, tows, "transition" + str(transition_number) + "_start"
-                    ),
+                    ),  # type: ignore[misc]
                 )
 
 
@@ -531,7 +536,7 @@ def _check_if_transition_ends_at_connector(end_state_canvas_id) -> bool:
     return False
 
 
-def _get_canvas_id_of_state_or_connector_under_new_transition_point(event_x, event_y) -> int | None:
+def _get_canvas_id_of_state_or_connector_under_new_transition_point(event_x, event_y) -> Optional[int]:
     for canvas_id in main_window.canvas.find_overlapping(event_x, event_y, event_x, event_y):
         element_type = main_window.canvas.type(canvas_id)
         if (element_type == "oval") or (
@@ -688,21 +693,22 @@ def _add_priority_rectangle_to_the_new_transition(transition_coords, start_state
         font=canvas_editing.state_name_font if canvas_editing.state_name_font is not None else "TkDefaultFont",
     )
     text_rectangle = main_window.canvas.bbox(tag_of_new_transition + "priority")
-    main_window.canvas.itemconfigure(tag_of_new_transition + "priority", state=transition_priority_visibility)
-    main_window.canvas.create_rectangle(
-        float(text_rectangle[0]),
-        float(text_rectangle[1]),
-        float(text_rectangle[2]),
-        float(text_rectangle[3]),
-        tags=tag_of_new_transition + "rectangle",
-        fill=constants.STATE_COLOR,
-        state=transition_priority_visibility,
-    )
+    if text_rectangle is not None:
+        main_window.canvas.itemconfigure(tag_of_new_transition + "priority", state=transition_priority_visibility)
+        main_window.canvas.create_rectangle(  # type: ignore[call-overload]
+            float(text_rectangle[0]),
+            float(text_rectangle[1]),
+            float(text_rectangle[2]),
+            float(text_rectangle[3]),
+            fill=constants.STATE_COLOR,
+            tags=tag_of_new_transition + "rectangle",
+            state=transition_priority_visibility,
+        )
     main_window.canvas.tag_raise(tag_of_new_transition + "priority")
     main_window.canvas.tag_bind(
         tag_of_new_transition + "priority",
         "<Double-Button-1>",
-        lambda event, transition_tag=tag_of_new_transition: edit_priority(event, transition_tag),
+        lambda event, transition_tag=tag_of_new_transition: edit_priority(event, transition_tag),  # type: ignore[misc]
     )
 
 
@@ -738,13 +744,13 @@ def edit_priority(event, transition_tag) -> None:
     text_box.select_range(0, tk.END)
     text_box.bind(
         "<Return>",
-        lambda event, transition_tag=transition_tag, text_box=text_box: _update_priority(transition_tag, text_box),
+        lambda event, transition_tag=transition_tag, text_box=text_box: _update_priority(transition_tag, text_box),  # type: ignore[misc]
     )
     text_box.bind(
         "<Escape>",
         lambda event, transition_tag=transition_tag, text_box=text_box, old_text=old_text: _abort_edit_text(
             transition_tag, text_box, old_text
-        ),
+        ),  # type: ignore[misc]
     )
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
     main_window.canvas.create_window(float(event_x), float(event_y), window=text_box, tags="entry-window")
@@ -761,7 +767,7 @@ def _update_priority(transition_tag, text_box) -> None:
     main_window.canvas.tag_raise(transition_tag + "priority", transition_tag + "rectangle")
     undo_handling.design_has_changed()
     main_window.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
-    main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+    main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())  # type: ignore[misc]
 
 
 def _abort_edit_text(transition_tag, text_box, old_text) -> None:
@@ -771,7 +777,7 @@ def _abort_edit_text(transition_tag, text_box, old_text) -> None:
     main_window.canvas.tag_raise(transition_tag + "rectangle", transition_tag)
     main_window.canvas.tag_raise(transition_tag + "priority", transition_tag + "rectangle")
     main_window.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
-    main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+    main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())  # type: ignore[misc]
 
 
 def show_menu(event, transition_id) -> None:
@@ -793,9 +799,9 @@ def show_menu(event, transition_id) -> None:
         listbox=listbox,
         menu_x=event_x,
         menu_y=event_y,
-        transition_id=transition_id: _evaluate_menu(event, window, listbox, menu_x, menu_y, transition_id),
+        transition_id=transition_id: _evaluate_menu(event, window, listbox, menu_x, menu_y, transition_id),  # type: ignore[misc]
     )
-    listbox.bind("<Leave>", lambda event, window=window, listbox=listbox: _close_menu(event, window, listbox))
+    listbox.bind("<Leave>", lambda event, window=window, listbox=listbox: _close_menu(event, window, listbox))  # type: ignore[misc]
 
 
 def _evaluate_menu(event, window, listbox, menu_x, menu_y, transition_id) -> None:
