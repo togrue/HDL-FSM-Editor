@@ -116,3 +116,7 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "subprocess.*"
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "enum.*"
+ignore_missing_imports = true
