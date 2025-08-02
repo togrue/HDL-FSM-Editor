@@ -55,3 +55,64 @@ markers = [
     "golden_file: marks tests as golden file tests",
     "batch_mode: marks tests as batch mode tests",
 ]
+
+[tool.mypy]
+# Start with less strict settings and gradually tighten
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+disallow_untyped_decorators = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = false
+warn_unreachable = true
+strict_equality = false
+
+# Disable lambda type inference warnings
+disable_error_code = ["misc"]
+
+# Python version
+python_version = "3.9"
+
+# Show error codes
+show_error_codes = true
+
+# Ignore missing imports for third-party libraries
+ignore_missing_imports = true
+
+# Exclude test files and generated files
+exclude = [
+    "tests/.*",
+    ".*_test\\.py",
+    ".*test_.*\\.py",
+    "build/.*",
+    "dist/.*",
+    "__pycache__/.*",
+    ".*\\.pyc",
+]
+
+# Per-module options
+[[tool.mypy.overrides]]
+module = "tkinter.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "PyInstaller.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "sys.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "os.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pathlib.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "subprocess.*"
+ignore_missing_imports = true
