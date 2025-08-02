@@ -5,7 +5,7 @@ This module contains method used when the user edits the diagram.
 import re
 import tkinter as tk
 from tkinter import font, messagebox
-from typing import Any
+from typing import Any, Optional
 
 import canvas_modify_bindings
 import condition_action_handling
@@ -38,7 +38,7 @@ _windows_x_coordinate_old: int = 0
 _windows_y_coordinate_old: int = 0
 fontsize: float = 10.0
 label_fontsize: float = 8.0
-state_name_font: font.Font | None = None
+state_name_font: Optional[font.Font] = None
 
 
 def store_mouse_position(event) -> None:  # used by delete().
@@ -125,9 +125,9 @@ def delete() -> None:
                     global_actions_handling.state_actions_default_number = 0
                     main_window.state_action_default_button.config(state=tk.NORMAL)
                 elif tag.startswith("state_action"):
-                    ref: Any = state_action_handling.MyText.mytext_dict[item_id[0]]
-                    del custom_text.CustomText.read_variables_of_all_windows[ref.text_id]
-                    del custom_text.CustomText.written_variables_of_all_windows[ref.text_id]
+                    state_action_ref: Any = state_action_handling.MyText.mytext_dict[item_id[0]]
+                    del custom_text.CustomText.read_variables_of_all_windows[state_action_ref.text_id]
+                    del custom_text.CustomText.written_variables_of_all_windows[state_action_ref.text_id]
                     main_window.canvas.delete(tag)  # delete window
                 elif tag.endswith("_comment"):
                     main_window.canvas.delete(tag)  # delete window
@@ -136,25 +136,25 @@ def delete() -> None:
                         tag.replace("_comment", ""), tag + "_line_end"
                     )  # delete at state: "state"<integer>"_comment_line_end"
                 elif tag.startswith("condition_action"):
-                    ref: Any = condition_action_handling.ConditionAction.dictionary[item_id[0]]
-                    del custom_text.CustomText.read_variables_of_all_windows[ref.condition_id]
-                    del custom_text.CustomText.written_variables_of_all_windows[ref.condition_id]
-                    del custom_text.CustomText.read_variables_of_all_windows[ref.action_id]
-                    del custom_text.CustomText.written_variables_of_all_windows[ref.action_id]
+                    condition_action_ref: Any = condition_action_handling.ConditionAction.dictionary[item_id[0]]
+                    del custom_text.CustomText.read_variables_of_all_windows[condition_action_ref.condition_id]
+                    del custom_text.CustomText.written_variables_of_all_windows[condition_action_ref.condition_id]
+                    del custom_text.CustomText.read_variables_of_all_windows[condition_action_ref.action_id]
+                    del custom_text.CustomText.written_variables_of_all_windows[condition_action_ref.action_id]
                     main_window.canvas.delete(tag)  # delete window
                 elif tag == "global_actions1":
-                    ref: Any = global_actions.GlobalActions.dictionary[item_id[0]]
-                    del custom_text.CustomText.read_variables_of_all_windows[ref.text_before_id]
-                    del custom_text.CustomText.written_variables_of_all_windows[ref.text_before_id]
-                    del custom_text.CustomText.read_variables_of_all_windows[ref.text_after_id]
-                    del custom_text.CustomText.written_variables_of_all_windows[ref.text_after_id]
+                    global_action_ref: Any = global_actions.GlobalActions.dictionary[item_id[0]]
+                    del custom_text.CustomText.read_variables_of_all_windows[global_action_ref.text_before_id]
+                    del custom_text.CustomText.written_variables_of_all_windows[global_action_ref.text_before_id]
+                    del custom_text.CustomText.read_variables_of_all_windows[global_action_ref.text_after_id]
+                    del custom_text.CustomText.written_variables_of_all_windows[global_action_ref.text_after_id]
                     main_window.canvas.delete(tag)  # delete window
                     global_actions_handling.global_actions_clocked_number = 0
                     main_window.global_action_clocked_button.config(state=tk.NORMAL)
                 elif tag == "global_actions_combinatorial1":
-                    ref: Any = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[item_id[0]]
-                    del custom_text.CustomText.read_variables_of_all_windows[ref.text_id]
-                    del custom_text.CustomText.written_variables_of_all_windows[ref.text_id]
+                    global_action_combinatorial_ref: Any = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[item_id[0]]
+                    del custom_text.CustomText.read_variables_of_all_windows[global_action_combinatorial_ref.text_id]
+                    del custom_text.CustomText.written_variables_of_all_windows[global_action_combinatorial_ref.text_id]
                     main_window.canvas.delete(tag)  # delete window
                     global_actions_handling.global_actions_combinatorial_number = 0
                     main_window.global_action_combinatorial_button.config(state=tk.NORMAL)
@@ -521,7 +521,7 @@ def _scroll_canvas_to_show_the_zoom_center(zoom_center, zoom_factor) -> None:
 
 def _adapt_scroll_bars(factor) -> None:
     scrollregion_strings = main_window.canvas.cget("scrollregion").split()
-    scrollregion_scaled = [int(float(x) * factor) for x in scrollregion_strings]
+    scrollregion_scaled = tuple(int(float(x) * factor) for x in scrollregion_strings)
     main_window.canvas.configure(scrollregion=scrollregion_scaled)
 
 
@@ -529,9 +529,9 @@ def _adapt_global_size_variables(factor) -> None:
     global state_radius
     global priority_distance
     global reset_entry_size
-    state_radius = factor * state_radius  # publish new state radius
-    priority_distance = factor * priority_distance
-    reset_entry_size = factor * reset_entry_size
+    state_radius = float(factor * state_radius)  # publish new state radius
+    priority_distance = float(factor * priority_distance)
+    reset_entry_size = float(factor * reset_entry_size)
     _modify_font_sizes_of_all_canvas_items(factor)
 
 
@@ -567,7 +567,8 @@ def _modify_font_sizes_of_all_canvas_items(factor) -> None:
     fontsize *= factor
     label_fontsize *= factor
     used_label_fontsize = max(label_fontsize, 1)
-    state_name_font.configure(size=int(fontsize))
+    if state_name_font is not None:
+        state_name_font.configure(size=int(fontsize))
     canvas_ids = main_window.canvas.find_all()
     for i in canvas_ids:
         if main_window.canvas.type(i) == "window":
