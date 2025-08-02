@@ -4,7 +4,7 @@ This module handles the transitions in the diagram.
 
 import math
 import tkinter as tk
-from typing import Optional, Union
+from typing import Optional
 
 import canvas_editing
 import canvas_modify_bindings
@@ -460,7 +460,7 @@ def transition_start(event) -> None:
                     lambda event, tid=transition_id: show_menu(event, tid),  # type: ignore[misc]
                 )
                 main_window.root.unbind_all("<Escape>")
-                transition_draw_funcid = main_window.canvas.bind(
+                transition_draw_funcid: str = main_window.canvas.bind(
                     "<Motion>",
                     lambda event, tid=transition_id: _transition_draw(event, tid),  # type: ignore[misc]
                     add=True,
@@ -470,7 +470,7 @@ def transition_start(event) -> None:
                     lambda event,
                     tid=transition_id,
                     cid=canvas_id,
-                    tdf=transition_draw_funcid: _handle_next_added_transition_point(event, tid, cid, tdf),  # type: ignore[misc]
+                    tdf=transition_draw_funcid: _handle_next_added_transition_point(event, tid, cid, tdf),
                 )
                 main_window.root.bind_all(
                     "<Escape  >",
@@ -479,7 +479,7 @@ def transition_start(event) -> None:
                     tdf=transition_draw_funcid,
                     tows=tag_of_object_where_transition_starts: _abort_inserting_transition(
                         tid, tdf, tows, "transition" + str(transition_number) + "_start"
-                    ),  # type: ignore[misc]
+                    ),
                 )
 
 
@@ -750,7 +750,7 @@ def edit_priority(event, transition_tag) -> None:
         "<Escape>",
         lambda event, transition_tag=transition_tag, text_box=text_box, old_text=old_text: _abort_edit_text(
             transition_tag, text_box, old_text
-        ),  # type: ignore[misc]
+        ),
     )
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
     main_window.canvas.create_window(float(event_x), float(event_y), window=text_box, tags="entry-window")
@@ -767,7 +767,7 @@ def _update_priority(transition_tag, text_box) -> None:
     main_window.canvas.tag_raise(transition_tag + "priority", transition_tag + "rectangle")
     undo_handling.design_has_changed()
     main_window.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
-    main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())  # type: ignore[misc]
+    main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
 
 
 def _abort_edit_text(transition_tag, text_box, old_text) -> None:
@@ -777,7 +777,7 @@ def _abort_edit_text(transition_tag, text_box, old_text) -> None:
     main_window.canvas.tag_raise(transition_tag + "rectangle", transition_tag)
     main_window.canvas.tag_raise(transition_tag + "priority", transition_tag + "rectangle")
     main_window.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
-    main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())  # type: ignore[misc]
+    main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
 
 
 def show_menu(event, transition_id) -> None:
@@ -799,9 +799,9 @@ def show_menu(event, transition_id) -> None:
         listbox=listbox,
         menu_x=event_x,
         menu_y=event_y,
-        transition_id=transition_id: _evaluate_menu(event, window, listbox, menu_x, menu_y, transition_id),  # type: ignore[misc]
+        transition_id=transition_id: _evaluate_menu(event, window, listbox, menu_x, menu_y, transition_id),
     )
-    listbox.bind("<Leave>", lambda event, window=window, listbox=listbox: _close_menu(event, window, listbox))  # type: ignore[misc]
+    listbox.bind("<Leave>", lambda event, window=window, listbox=listbox: _close_menu(event, window, listbox))
 
 
 def _evaluate_menu(event, window, listbox, menu_x, menu_y, transition_id) -> None:
