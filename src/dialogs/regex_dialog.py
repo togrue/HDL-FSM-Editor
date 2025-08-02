@@ -6,7 +6,7 @@ import re
 import tkinter as tk
 from dataclasses import dataclass
 from tkinter import simpledialog, ttk
-from typing import Union, Optional
+from typing import Optional, Union
 
 
 @dataclass
