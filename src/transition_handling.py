@@ -17,8 +17,8 @@ import vector_handling
 from widgets.OptionMenu import OptionMenu
 
 transition_number = 0
-_difference_x = 0
-_difference_y = 0
+_difference_x: float = 0.0
+_difference_y: float = 0.0
 
 
 def move_to(event_x, event_y, transition_id, point, first, move_list, last) -> None:
@@ -44,8 +44,8 @@ def move_to(event_x, event_y, transition_id, point, first, move_list, last) -> N
                 return
             _difference_x, _difference_y = -event_x + point_to_move[0], -event_y + point_to_move[1]
     else:
-        _difference_x = 0
-        _difference_y = 0
+        _difference_x = 0.0
+        _difference_y = 0.0
     # Keep the distance between event and anchor point constant:
     event_x, event_y = event_x + _difference_x, event_y + _difference_y
     if last is True:

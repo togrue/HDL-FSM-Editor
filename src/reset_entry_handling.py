@@ -10,8 +10,8 @@ import main_window
 import undo_handling
 
 reset_entry_number = 0
-_difference_x = 0
-_difference_y = 0
+_difference_x: float = 0.0
+_difference_y: float = 0.0
 
 
 def insert_reset_entry(event) -> None:

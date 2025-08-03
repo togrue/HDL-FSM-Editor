@@ -54,7 +54,7 @@ def move_do(event, move_list, first) -> None:
                 ref = condition_action_handling.ConditionAction.dictionary[item_id]
             ref.move_to(event_x, event_y, first, last)
         else:
-            print("move: Fatal, unknown canvas type", "|" + item_type + "|")
+            print("move: Fatal, unknown canvas type", "|" + str(item_type) + "|")
 
 
 def _state_is_moved_to_near_to_state_or_connector(move_list, event_x, event_y) -> bool:

@@ -17,8 +17,8 @@ from dialogs.color_changer import ColorChanger
 from widgets.OptionMenu import OptionMenu
 
 state_number = 0  # Defaultvalue, will be increased with every new state.
-difference_x = 0
-difference_y = 0
+difference_x: float = 0.0
+difference_y: float = 0.0
 
 
 def move_to(event_x, event_y, state_id, first, last) -> None:

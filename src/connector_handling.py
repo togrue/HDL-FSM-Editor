@@ -8,8 +8,8 @@ import main_window
 import undo_handling
 
 connector_number = 0
-difference_x = 0
-difference_y = 0
+difference_x: float = 0.0
+difference_y: float = 0.0
 
 
 def insert_connector(event) -> None:
