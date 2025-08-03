@@ -39,18 +39,19 @@ def move_do(event, move_list, first) -> None:
         elif item_type == "rectangle":
             connector_handling.move_to(event_x, event_y, item_id, first, last)
         elif item_type == "window":
+            ref: Any
             if item_id in state_action_handling.MyText.mytext_dict:
-                ref: Any = state_action_handling.MyText.mytext_dict[item_id]
+                ref = state_action_handling.MyText.mytext_dict[item_id]
             elif item_id in state_comment.StateComment.dictionary:
-                ref: Any = state_comment.StateComment.dictionary[item_id]
+                ref = state_comment.StateComment.dictionary[item_id]
             elif item_id in state_actions_default.StateActionsDefault.dictionary:
-                ref: Any = state_actions_default.StateActionsDefault.dictionary[item_id]
+                ref = state_actions_default.StateActionsDefault.dictionary[item_id]
             elif item_id in global_actions.GlobalActions.dictionary:
-                ref: Any = global_actions.GlobalActions.dictionary[item_id]
+                ref = global_actions.GlobalActions.dictionary[item_id]
             elif item_id in global_actions_combinatorial.GlobalActionsCombinatorial.dictionary:
-                ref: Any = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[item_id]
+                ref = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[item_id]
             else:
-                ref: Any = condition_action_handling.ConditionAction.dictionary[item_id]
+                ref = condition_action_handling.ConditionAction.dictionary[item_id]
             ref.move_to(event_x, event_y, first, last)
         else:
             print("move: Fatal, unknown canvas type", "|" + item_type + "|")

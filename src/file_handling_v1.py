@@ -57,6 +57,8 @@ def open_v1_file_with_name(read_filename) -> None:
     # Read the design from the file:
     with open(read_filename, encoding="utf-8") as fileobject:
         for line in fileobject:
+            tags: tuple[str, ...]
+
             if line.startswith("modulename|"):
                 main_window.module_name.set(line[11:-1])
             elif line.startswith("language|"):
@@ -214,7 +216,7 @@ def open_v1_file_with_name(read_filename) -> None:
             elif line.startswith("state|"):
                 rest_of_line = _remove_keyword_from_line(line, "state|")
                 coords = []
-                tags: tuple[str, ...] = ()
+                tags = ()
                 entries = rest_of_line.split()
                 for e in entries:
                     try:
@@ -241,7 +243,7 @@ def open_v1_file_with_name(read_filename) -> None:
             elif line.startswith("polygon|"):
                 rest_of_line = _remove_keyword_from_line(line, "polygon|")
                 coords = []
-                tags: tuple[str, ...] = ()
+                tags = ()
                 entries = rest_of_line.split()
                 for e in entries:
                     try:
@@ -262,7 +264,7 @@ def open_v1_file_with_name(read_filename) -> None:
                 )
             elif line.startswith("text|"):
                 rest_of_line = _remove_keyword_from_line(line, "text|")
-                tags: tuple[str, ...] = ()
+                tags = ()
                 entries = rest_of_line.split()
                 coords = []
                 coords.append(float(entries[0]))
@@ -291,7 +293,7 @@ def open_v1_file_with_name(read_filename) -> None:
             elif line.startswith("line|"):
                 rest_of_line = _remove_keyword_from_line(line, "line|")
                 coords = []
-                tags: tuple[str, ...] = ()
+                tags = ()
                 entries = rest_of_line.split()
                 for e in entries:
                     try:
@@ -328,7 +330,7 @@ def open_v1_file_with_name(read_filename) -> None:
             elif line.startswith("rectangle|"):  # Used as connector or as priority entry.
                 rest_of_line = _remove_keyword_from_line(line, "rectangle|")
                 coords = []
-                tags: tuple[str, ...] = ()
+                tags = ()
                 entries = rest_of_line.split()
                 for e in entries:
                     try:
@@ -346,7 +348,7 @@ def open_v1_file_with_name(read_filename) -> None:
                 rest_of_line = _remove_keyword_from_line(line, "window_state_action_block|")
                 text = _get_data(rest_of_line, fileobject)
                 coords = []
-                tags: tuple[str, ...] = ()
+                tags = ()
                 last_line = fileobject.readline()
                 entries = last_line.split()
                 for e in entries:
@@ -373,7 +375,7 @@ def open_v1_file_with_name(read_filename) -> None:
                 next_line = fileobject.readline()
                 action = _get_data(next_line, fileobject)
                 coords = []
-                tags: tuple[str, ...] = ()
+                tags = ()
                 last_line = fileobject.readline()
                 entries = last_line.split()
                 for e in entries:
@@ -418,7 +420,7 @@ def open_v1_file_with_name(read_filename) -> None:
                 next_line = fileobject.readline()
                 text_after = _get_data(next_line, fileobject)
                 coords = []
-                tags: tuple[str, ...] = ()
+                tags = ()
                 last_line = fileobject.readline()
                 entries = last_line.split()
                 for e in entries:
