@@ -36,7 +36,7 @@ def create_module_logic(file_name: str, file_line_number: int, state_tag_list_so
         hdl_generation_library.create_reset_condition_and_reset_action()
     )
     if reset_condition is None:
-        return  # No further actions make sense, as always a reset condition must exist.
+        raise GenerationError("Error", "No reset condition found. A reset condition must be set!")
 
     architecture += (
         "    always @(posedge "

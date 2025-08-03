@@ -6,6 +6,7 @@ import codegen.hdl_generation_architecture_state_actions as hdl_generation_archi
 import codegen.hdl_generation_architecture_state_sequence as hdl_generation_architecture_state_sequence
 import codegen.hdl_generation_library as hdl_generation_library
 import main_window
+from codegen.exceptions import GenerationError
 from link_dictionary import link_dict
 
 
@@ -74,8 +75,10 @@ def create_architecture(file_name: str, file_line_number: int, state_tag_list_so
     [reset_condition, reset_action, reference_to_reset_condition_custom_text, reference_to_reset_action_custom_text] = (
         hdl_generation_library.create_reset_condition_and_reset_action()
     )
+    # Todo: The checking is kind of duplicated!
+    # It should be part of the fsm_validation.
     if reset_condition is None:
-        return  # No further actions make sense, as always a reset condition must exist.
+        raise GenerationError("Error", "No reset condition found. A reset condition must be set!")
     if reset_condition.count("\n") == 0:
         architecture += "        if " + reset_condition + " then\n"
     else:

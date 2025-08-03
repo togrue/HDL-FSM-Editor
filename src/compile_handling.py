@@ -94,7 +94,7 @@ def _replace_variables(command_array: list[str]) -> Optional[list[str]]:
                     'The compile command uses $file, but the "2 files mode" is selected,\
 so only $file1 and $file2 are allowed.',
                 )
-                return
+                return None
             language = main_window.language.get()
             if language == "VHDL":
                 extension = ".vhd"
@@ -105,7 +105,7 @@ so only $file1 and $file2 are allowed.',
             file_name = main_window.generate_path_value.get() + "/" + main_window.module_name.get() + extension
             if not exists(file_name):
                 messagebox.showerror("Error", "Compile is not possible, HDL file " + file_name + " does not exist.")
-                return
+                return None
             command_array_new.append(file_name)
         elif entry == "$file1":
             if main_window.select_file_number_text.get() == 1:
@@ -113,11 +113,11 @@ so only $file1 and $file2 are allowed.',
                     "Error",
                     'The compile command uses $file1, but the "1 files mode" is selected, so only $file is allowed).',
                 )
-                return
+                return None
             file_name1 = main_window.generate_path_value.get() + "/" + main_window.module_name.get() + "_e.vhd"
             if not exists(file_name1):
                 messagebox.showerror("Error", "Compile is not possible, as HDL file" + file_name1 + " does not exist.")
-                return
+                return None
             command_array_new.append(file_name1)
         elif entry == "$file2":
             if main_window.select_file_number_text.get() == 1:
@@ -125,11 +125,11 @@ so only $file1 and $file2 are allowed.',
                     "Error",
                     'The compile command uses $file2, but the "1 files mode" is selected, so only $file is allowed).',
                 )
-                return
+                return None
             file_name2 = main_window.generate_path_value.get() + "/" + main_window.module_name.get() + "_fsm.vhd"
             if not exists(file_name2):
                 messagebox.showerror("Error", "Compile is not possible, as HDL file" + file_name2 + " does not exist.")
-                return
+                return None
             command_array_new.append(file_name2)
         elif entry == "$name":
             command_array_new.append(main_window.module_name.get())
