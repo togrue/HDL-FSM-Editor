@@ -1228,7 +1228,7 @@ def _update_hdl_tab_if_necessary() -> None:
                     update_ref = update_hdl_tab.UpdateHdlTab(
                         language.get(),
                         select_file_number_text.get(),
-                        file_handling.filename,
+                        project_manager.current_file,
                         generate_path_value.get(),
                         module_name.get(),
                     )
@@ -1246,7 +1246,7 @@ def _update_hdl_tab_if_necessary() -> None:
                     update_ref = update_hdl_tab.UpdateHdlTab(
                         language.get(),
                         select_file_number_text.get(),
-                        file_handling.filename,
+                        project_manager.current_file,
                         generate_path_value.get(),
                         module_name.get(),
                     )
