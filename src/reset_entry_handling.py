@@ -35,13 +35,13 @@ def _create_reset_entry(canvas_grid_coordinates_of_the_event) -> None:
     reset_entry_polygon = _create_polygon_shape_for_reset_entry()
     reset_entry_polygon = _move_reset_entry_polygon_to_event(canvas_grid_coordinates_of_the_event, reset_entry_polygon)
     polygon_id = main_window.canvas.create_polygon(
-        *reset_entry_polygon, fill="red", outline="orange", tag="reset_entry"
+        reset_entry_polygon, fill="red", outline="orange", tags="reset_entry"
     )
     main_window.canvas.create_text(
         canvas_grid_coordinates_of_the_event[0] - 4 * canvas_editing.reset_entry_size / 5,
         canvas_grid_coordinates_of_the_event[1],
         text="Reset",
-        tag="reset_text",
+        tags="reset_text",
         font=canvas_editing.state_name_font,
     )
     main_window.canvas.tag_bind(

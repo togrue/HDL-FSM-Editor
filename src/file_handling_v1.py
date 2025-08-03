@@ -342,7 +342,7 @@ def open_v1_file_with_name(read_filename) -> None:
                 for t in tags:
                     if t.startswith("connector"):
                         rectangle_color = constants.CONNECTOR_COLOR
-                canvas_id = main_window.canvas.create_rectangle(coords, tag=tags, fill=rectangle_color)
+                canvas_id = main_window.canvas.create_rectangle(coords, fill=rectangle_color, tags=tags)
                 main_window.canvas.tag_raise(canvas_id)  # priority rectangles are always in "foreground"
             elif line.startswith("window_state_action_block|"):
                 rest_of_line = _remove_keyword_from_line(line, "window_state_action_block|")

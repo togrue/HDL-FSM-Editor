@@ -85,7 +85,7 @@ class GlobalActions:
         self.text_after_id.grid(row=3, column=0, sticky=(tk.E, tk.W, tk.S))
         self.difference_x = 0
         self.difference_y = 0
-        self.move_rectangle = None
+        self.move_rectangle: Optional[int] = None
 
         # Create canvas window for frame and text:
         self.window_id = main_window.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
@@ -120,7 +120,7 @@ class GlobalActions:
         polygon_coords.append(bbox_coords[3] + 3)
         # It is "fill=<color> used instead of "width=3, outline=<color> as then the 4 edges are sharp and not round:
         self.move_rectangle = main_window.canvas.create_polygon(
-            polygon_coords, width=1, fill="PaleGreen2", tag="polygon_for_move"
+            polygon_coords, width=1, fill="PaleGreen2", tags="polygon_for_move"
         )
         main_window.canvas.tag_bind(
             self.move_rectangle, "<Leave>", lambda event: main_window.canvas.delete(self.move_rectangle)

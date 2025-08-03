@@ -186,7 +186,7 @@ class ConditionAction:
         polygon_coords.append(bbox_coords[3] + 3)
         # It is "fill="blue" used instead of "width=3, outline="blue" as then the 4 edges are sharp and not round:
         self.move_rectangle = main_window.canvas.create_polygon(
-            polygon_coords, width=1, fill="blue", tag="polygon_for_move"
+            polygon_coords, width=1.0, fill="blue", tags="polygon_for_move"
         )
         main_window.canvas.tag_bind(self.move_rectangle, "<Leave>", self.delete_polygon)
         if self.window_enter_func_id is not None:

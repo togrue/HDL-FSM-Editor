@@ -60,15 +60,15 @@ def _move_initialization_overlapping(event, event_x, event_y) -> None:
         move_handling.move_do(event, move_list, first=True)
 
         # Create a binding for the now following movements of the mouse and for finishing the moving:
+        # Must be "added", as store_mouse_position is already bound to "Motion".
         move_do_funcid = main_window.canvas.bind(
-            "<Motion>", lambda event, move_list=move_list: move_handling.move_do(event, move_list, first=False), add="+"
-        )  # Must be "added", as store_mouse_position is already bound to "Motion".
+            "<Motion>", lambda event: move_handling.move_do(event, move_list, first=False), add="+"
+        )
+        # move_finish must unbind move_do from "Motion", so it needs the function id.
         main_window.canvas.bind(
             "<ButtonRelease-1>",
-            lambda event, move_list=move_list, move_do_funcid=move_do_funcid: move_handling_finish.move_finish(
-                event, move_list, move_do_funcid
-            ),
-        )  # move_finish must unbind move_do from "Motion", so it needs the function id.
+            lambda event: move_handling_finish.move_finish(event, move_list, move_do_funcid)
+        )
 
         # From Button-1 the callback "move_initialization()" must be removed, because the user will
         # use Button-1 a second time, when move_finish() did not accept the location of the ButtonRelease-1 and this

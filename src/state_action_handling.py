@@ -82,7 +82,7 @@ class MyText:
         polygon_coords.append(bbox_coords[3] + 3)
         # It is "fill=<color> used instead of "width=3, outline=<color> as then the 4 edges are sharp and not round:
         self.move_rectangle = main_window.canvas.create_polygon(
-            polygon_coords, width=1, fill="blue", tag="polygon_for_move"
+            polygon_coords, width=1, fill="blue", tags="polygon_for_move"
         )
         main_window.canvas.tag_bind(
             self.move_rectangle, "<Leave>", lambda event: main_window.canvas.delete(self.move_rectangle)
@@ -105,7 +105,7 @@ class MyText:
             (state_coords[2] + state_coords[0]) / 2,
             (state_coords[3] + state_coords[1]) / 2,
             dash=(2, 2),
-            tag=("connection" + str(MyText.mytext_id), "connected_to_" + state_tags[0]),
+            tags=("connection" + str(MyText.mytext_id), "connected_to_" + state_tags[0]),
         )
         main_window.canvas.tag_bind(self.line_id, "<Enter>", lambda event, self=self: self.activate_line())
         main_window.canvas.tag_bind(self.line_id, "<Leave>", lambda event, self=self: self.deactivate_line())

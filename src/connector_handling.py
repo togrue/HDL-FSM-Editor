@@ -32,7 +32,7 @@ def insert_connector(event) -> None:
         event_x + canvas_editing.state_radius / 4,
         event_y + canvas_editing.state_radius / 4,
         fill=constants.CONNECTOR_COLOR,
-        tag="connector" + str(connector_number),
+        tags=f"connector{connector_number}"
     )
     main_window.canvas.tag_bind(
         connector_id, "<Enter>", lambda event, id=connector_id: main_window.canvas.itemconfig(id, width=2)
