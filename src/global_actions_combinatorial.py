@@ -21,7 +21,7 @@ class GlobalActionsCombinatorial:
     dictionary: dict[int, "GlobalActionsCombinatorial"] = {}
 
     def __init__(self, menu_x, menu_y, height, width, padding) -> None:
-        self.text_content : Optional[str] = None
+        self.text_content: Optional[str] = None
         self.frame_id = ttk.Frame(
             main_window.canvas, relief=tk.FLAT, padding=padding, style="GlobalActionsWindow.TFrame"
         )
@@ -53,8 +53,8 @@ class GlobalActionsCombinatorial:
             "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
         )
 
-        self.label.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E))
-        self.text_id.grid(row=1, column=0, sticky=(tk.E, tk.W))
+        self.label.grid(row=0, column=0, sticky="nwe")
+        self.text_id.grid(row=1, column=0, sticky="ew")
 
         self.difference_x = 0
         self.difference_y = 0

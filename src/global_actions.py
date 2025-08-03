@@ -79,10 +79,10 @@ class GlobalActions:
             "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
         )
 
-        self.label_before.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E))
-        self.text_before_id.grid(row=1, column=0, sticky=(tk.E, tk.W))
-        self.label_after.grid(row=2, column=0, sticky=(tk.E, tk.W))
-        self.text_after_id.grid(row=3, column=0, sticky=(tk.E, tk.W, tk.S))
+        self.label_before.grid(row=0, column=0, sticky="nwe")
+        self.text_before_id.grid(row=1, column=0, sticky="ew")
+        self.label_after.grid(row=2, column=0, sticky="ew")
+        self.text_after_id.grid(row=3, column=0, sticky="swe")
         self.difference_x = 0
         self.difference_y = 0
         self.move_rectangle: Optional[int] = None

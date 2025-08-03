@@ -66,8 +66,8 @@ class MyText:
             self.window_id, "<Enter>", lambda event: self.__draw_polygon_around_window()
         )  # See description in condition_action_handling.py.
         MyText.mytext_dict[self.window_id] = self
-        self.label_id.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E))
-        self.text_id.grid(column=0, row=1, sticky=(tk.S, tk.W, tk.E))
+        self.label_id.grid(column=0, row=0, sticky="nwe")
+        self.text_id.grid(column=0, row=1, sticky="swe")
 
     def __draw_polygon_around_window(self) -> None:
         bbox_coords = main_window.canvas.bbox(self.window_id)
