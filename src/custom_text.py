@@ -33,19 +33,18 @@ class CustomText(tk.Text):
         self.tk.call("rename", self._w, self._orig)
         self.tk.createcommand(self._w, self._proxy)
         self.bind("<Tab>", lambda event: self.replace_tabs_by_blanks())
-        self.bind(
-            "<Control-e>", lambda event: self.edit_in_external_editor()
-        )  # Overwrites the default control-e = "move cursor to end of line"
-        self.bind(
-            "<Control-o>", lambda event: self._open()
-        )  # Overwrites the default control-o = "insert a new line", needed for opening a new file.
-        # After pressing the key 2 things happen:
+        # Overwrites the default control-e = "move cursor to end of line":
+        self.bind("<Control-e>", lambda event: self.edit_in_external_editor())
+        # Overwrites the default control-o = "insert a new line", needed for opening a new file:
+        self.bind("<Control-o>", lambda event: self._open())
+        # After pressing a key 2 things happen:
         # 1. The new character is inserted in the text.
         # 2. format() is started
-        # But as inserting the character takes a while, format() will still find the old text, so it must be delayed until the character was inserted:
+        # But as inserting the character takes a while, format() will still find the old text,
+        # so it must be delayed until the character was inserted:
         self.bind(
             "<Key>", lambda event: self.format_after_idle()
-        )  # This binding will be overwritten for the CustomText objects in Interface/internals tab.
+        )  # This binding will be overwritten for the CustomText objects in Interface/Internals tab.
         self.bind("<Button-1>", lambda event: self.tag_delete("highlight"))
         self.signals_list = []
         self.constants_list = []
@@ -60,7 +59,8 @@ class CustomText(tk.Text):
 
     def _open(self) -> str:
         file_handling.open_file()
-        return "break"  # Prevent a second call of open_file() by bind_all binding (which is located in entry 4 of the bind-list).
+        # Prevent a second call of open_file() by bind_all binding (which is located in entry 4 of the bind-list):
+        return "break"
 
     def _proxy(self, command, *args) -> None:
         cmd = (self._orig, command) + args
@@ -265,6 +265,8 @@ class CustomText(tk.Text):
         text = self.get("1.0", tk.END + "- 1 chars")
         text = hdl_generation_library.convert_hdl_lines_into_a_searchable_string(text)
         text = self.__remove_keywords(text)
+        if main_window.language.get() == "VHDL":
+            text = re.sub(r"\..*?\s", " ", text)  # remove all record-element-names from their signal/variable names
         if self.text_type == "condition":
             text = self.__remove_condition_keywords(text)
             CustomText.read_variables_of_all_windows[self] = text.split()
@@ -274,13 +276,24 @@ class CustomText(tk.Text):
             text = self.__add_read_variables_from_case_constructs_to_read_variables_of_all_windows(text)
             text = self.__add_read_variables_from_assignments_to_read_variables_of_all_windows(text)
             text = self.__add_read_variables_from_always_statements_to_read_variables_of_all_windows(text)
+            # Remove duplicates:
+            CustomText.read_variables_of_all_windows[self] = list(set(CustomText.read_variables_of_all_windows[self]))
             text = re.sub(
-                " when | when$|^when |^when$", "", text, flags=re.I
-            )  # remove remaining "when" of a "case"-statement (left hand side).
+                # remove remaining "when" of a "case"-statement (left hand side):
+                " when | when$|^when |^when$",
+                "",
+                text,
+                flags=re.I,
+            )
             text = re.sub(
-                " else | else$|^else |^else$", "", text, flags=re.I
-            )  # remove remaining "else" of an if-clause (left hand side).
-            CustomText.written_variables_of_all_windows[self] = text.split()
+                # remove remaining "else" of an if-clause (left hand side):
+                " else | else$|^else |^else$",
+                "",
+                text,
+                flags=re.I,
+            )
+            # Store the remaining variable names and remove duplicates from the list:
+            CustomText.written_variables_of_all_windows[self] = list(set(text.split()))
             # When the ";" is missing, then the right hand side with "<=" could not be found and erased.
             # So remove "<=" and ":=" from these lists:
             if "<=" in CustomText.read_variables_of_all_windows[self]:
@@ -311,6 +324,9 @@ class CustomText(tk.Text):
             "\\(",
             "\\)",
             "\\+",
+            "\\*",
+            "true",
+            "false",
             "-",
             "/",
             "%",
@@ -322,6 +338,8 @@ class CustomText(tk.Text):
             '[^\\s]"[0-9,a-f,A-F]+"',  # something like X"1234"
         ):
             text = re.sub(keyword, "  ", text, flags=re.I)  # Keep the blanks the keyword is surrounded by.
+        for keyword in constants.VHDL_KEYWORDS["datatype"]:
+            text = re.sub(" " + keyword + " ", "  ", text, flags=re.I)  # Keep the blanks the keyword is surrounded by.
         return text
 
     def __remove_keywords_from_verilog(self, text):
@@ -458,21 +476,18 @@ class CustomText(tk.Text):
         while True:  # Collect all right hand sides and remove them from text.
             match = re.search(right_hand_side_search_pattern, text, flags=re.IGNORECASE)
             if match:
+                # remove not only the match but also complete ":=" or "<=":
                 if match.start() - 1 == match.end():
                     break
-                text = (
-                    text[: match.start() - 1] + text[match.end() :]
-                )  # remove not only the match but also complete ":=" or "<=".
+                text = text[: match.start() - 1] + text[match.end() :]
                 hit = match.group(0)[+1:-1]
                 hit = re.sub(",", "", hit)  # Remove "," of a "with .. select" statement.
-                hit = re.sub(
-                    " when | when$|^when |^when$", "", hit, flags=re.I
-                )  # remove remaining "when" of a "with .. select"-statement (right hand side).
-                hit = re.sub(
-                    " else | else$|^else |^else$", "", hit, flags=re.I
-                )  # remove remaining "else" of an "when .. else"-clause (right hand side).
+                # remove remaining "when" of a "with .. select"-statement (right hand side):
+                hit = re.sub(" when | when$|^when |^when$", "", hit, flags=re.I)
+                # remove remaining "else" of an "when .. else"-clause (right hand side).
+                hit = re.sub(" else | else$|^else |^else$", "", hit, flags=re.I)
                 hit = re.sub(" ' ", "", hit, flags=re.I)  # remove remaining "ticks" of VHDL attributes
-                CustomText.read_variables_of_all_windows[self] += hit.split()
+                CustomText.read_variables_of_all_windows[self] += list(set(hit.split()))  # remove duplicates from list
             else:
                 break
         return text
