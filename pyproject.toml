@@ -72,7 +72,7 @@ strict_equality = false
 disable_error_code = ["misc"]
 
 # Python version
-python_version = "3.9"
+python_version = "3.13"
 
 # Show error codes
 show_error_codes = true
