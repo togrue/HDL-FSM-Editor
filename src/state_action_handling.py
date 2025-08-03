@@ -4,6 +4,7 @@ Handles the state action of a single state.
 
 import tkinter as tk
 from tkinter import ttk
+from typing import Optional
 
 import canvas_editing
 import custom_text
@@ -24,9 +25,9 @@ class MyText:
             MyText.mytext_id += 1
         self.difference_x = 0
         self.difference_y = 0
-        self.move_rectangle = None
-        self.line_id = None
-        self.text_content = None
+        self.move_rectangle: Optional[int] = None
+        self.line_id: Optional[int] = None
+        self.text_content: Optional[str] = None
         # Create frame:
         self.frame_id = ttk.Frame(
             main_window.canvas, relief=tk.FLAT, padding=padding, style="StateActionsWindow.TFrame"

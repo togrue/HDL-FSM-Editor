@@ -22,6 +22,7 @@ That is the reason, why the polygon must always also be removed at event 4.
 
 import tkinter as tk
 from tkinter import ttk
+from typing import Optional
 
 import canvas_editing
 import custom_text
@@ -40,14 +41,14 @@ class ConditionAction:
             ConditionAction.conditionaction_id += 1
         self.difference_x = 0
         self.difference_y = 0
-        self.line_id: int | None = None
-        self.line_coords: list[float] | None = None
-        self.canvas_enter_func_id: str | None = None
+        self.line_id: Optional[int] = None
+        self.line_coords: Optional[list[float]] = None
+        self.canvas_enter_func_id: Optional[str] = None
         self.window_enter_func_id: str = ""
         self.debug_events = False
-        self.action_text: str | None = None
-        self.condition_text: str | None = None
-        self.move_rectangle: int | None = None
+        self.action_text: Optional[str] = None
+        self.condition_text: Optional[str] = None
+        self.move_rectangle: Optional[int] = None
         # Create frame:
         self.frame_id = ttk.Frame(main_window.canvas, relief=tk.FLAT, padding=padding, style="Window.TFrame")
         self.condition_action_enter_func_id = self.frame_id.bind("<Enter>", lambda event: self.enter_box())
@@ -212,7 +213,7 @@ class ConditionAction:
             print("event 4: canvas-enter: shrink-box")
         if self.canvas_enter_func_id is not None:
             main_window.canvas.unbind("<Enter>", self.canvas_enter_func_id)
-            self.canvas_enter_func_id: str | None = None
+            self.canvas_enter_func_id = None
         self.shrink_box()
         self.window_enter_func_id = str(
             main_window.canvas.tag_bind(self.window_id, "<Enter>", lambda event: self.__draw_polygon_around_window())

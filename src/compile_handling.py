@@ -10,6 +10,7 @@ import tkinter as tk
 from datetime import datetime
 from os.path import exists
 from tkinter import messagebox
+from typing import Optional
 
 import main_window
 from constants import GuiTab
@@ -81,7 +82,7 @@ def _get_command_list() -> list[str]:
     return command_string.split(";")
 
 
-def _replace_variables(command_array: list[str]) -> list[str] | None:
+def _replace_variables(command_array: list[str]) -> Optional[list[str]]:
     command_array_new = []
     for entry in command_array:
         if entry == "$file":

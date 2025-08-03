@@ -4,6 +4,7 @@ Handles the combinatorial default actions for all states.
 
 import tkinter as tk
 from tkinter import ttk
+from typing import Optional
 
 import canvas_editing
 import canvas_modify_bindings
@@ -20,7 +21,7 @@ class StateActionsDefault:
     dictionary: dict[int, "StateActionsDefault"] = {}
 
     def __init__(self, menu_x, menu_y, height, width, padding) -> None:
-        self.text_content: str | None = None
+        self.text_content: Optional[str] = None
         self.frame_id = ttk.Frame(
             main_window.canvas, relief=tk.FLAT, padding=padding, style="StateActionsWindow.TFrame"
         )  # , borderwidth=10)
@@ -58,7 +59,7 @@ class StateActionsDefault:
 
         self.difference_x = 0
         self.difference_y = 0
-        self.move_rectangle: int | None = None
+        self.move_rectangle: Optional[int] = None
 
         # Create canvas window for frame and text:
         self.window_id = main_window.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)

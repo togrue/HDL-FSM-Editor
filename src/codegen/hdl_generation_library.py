@@ -4,7 +4,7 @@ This module contains methods used at HDL generation.
 
 import re
 import tkinter as tk
-from typing import Any
+from typing import Any, Optional, Union
 
 import canvas_editing
 import condition_action_handling
@@ -102,11 +102,11 @@ def _get_reset_transition_tag() -> str:
 
 def _get_transition_target_condition_action(
     transition_tag,
-) -> tuple[str, str, str, condition_action_handling.ConditionAction | str]:
+) -> tuple[str, str, str, Union[condition_action_handling.ConditionAction, str]]:
     tags = main_window.canvas.gettags(transition_tag)
     transition_condition = ""
     transition_action = ""
-    condition_action_reference: condition_action_handling.ConditionAction | str = ""
+    condition_action_reference: Union[condition_action_handling.ConditionAction, str] = ""
     transition_target = ""
     for tag in tags:
         if tag.startswith("going_to_state"):
@@ -129,7 +129,7 @@ def _get_transition_target_condition_action(
 
 def _get_condition_action_reference_of_transition(
     transition_tag: str,
-) -> condition_action_handling.ConditionAction | None:
+) -> Optional[condition_action_handling.ConditionAction]:
     tags = main_window.canvas.gettags(transition_tag)
     for tag in tags:
         if tag.startswith("ca_connection"):  # Complete tag: ca_connection<n>_end
@@ -784,7 +784,7 @@ def _get_transition_action(condition_action_reference):
     return condition_action_reference.action_id.get("1.0", tk.END + "-1 chars")  # without "return" at the end
 
 
-def create_global_actions_before() -> tuple[str, str] | tuple:
+def create_global_actions_before() -> tuple[str, str]:
     if global_actions_handling.global_actions_clocked_number == 1:
         canvas_item_id = main_window.canvas.find_withtag("global_actions1")
         ref = global_actions.GlobalActions.dictionary[canvas_item_id[0]]
@@ -792,7 +792,7 @@ def create_global_actions_before() -> tuple[str, str] | tuple:
     return "", ""
 
 
-def create_global_actions_after() -> tuple[str, str] | tuple:
+def create_global_actions_after() -> tuple[str, str]:
     if global_actions_handling.global_actions_clocked_number == 1:
         canvas_item_id = main_window.canvas.find_withtag("global_actions1")
         ref = global_actions.GlobalActions.dictionary[canvas_item_id[0]]
@@ -800,7 +800,7 @@ def create_global_actions_after() -> tuple[str, str] | tuple:
     return "", ""
 
 
-def create_concurrent_actions() -> tuple[str, str] | tuple:
+def create_concurrent_actions() -> tuple[str, str]:
     if global_actions_handling.global_actions_combinatorial_number == 1:
         canvas_item_id = main_window.canvas.find_withtag("global_actions_combinatorial1")
         ref = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[canvas_item_id[0]]

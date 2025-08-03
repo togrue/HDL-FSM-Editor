@@ -5,6 +5,7 @@ as the text boxes are Canvas-Windows, for which the Canvas binding is not valid.
 """
 
 import tkinter as tk
+from typing import Optional
 
 import canvas_editing
 import main_window
@@ -149,7 +150,7 @@ def _create_move_list(items_near_mouse_click_location, event_x, event_y) -> list
     return move_list
 
 
-def _create_move_list_entry_if_a_diagram_object_is_moved(items_near_mouse_click_location) -> list | None:
+def _create_move_list_entry_if_a_diagram_object_is_moved(items_near_mouse_click_location) -> Optional[list]:
     move_list_entry = None
     for item_id in items_near_mouse_click_location:
         tags_of_item_id = main_window.canvas.gettags(item_id)
@@ -227,7 +228,7 @@ def _find_the_item_id_of_the_line(items_near_mouse_click_location) -> None:
     return None
 
 
-def _search_for_the_tags_of_a_transition(line_id) -> tuple | None:
+def _search_for_the_tags_of_a_transition(line_id) -> Optional[tuple]:
     line_tags = main_window.canvas.gettags(line_id)
     for tag in line_tags:
         if tag.startswith("transition"):

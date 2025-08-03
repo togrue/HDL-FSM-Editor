@@ -4,6 +4,7 @@ This class handles "state-comments".
 
 import tkinter as tk
 from tkinter import ttk
+from typing import Optional
 
 import canvas_editing
 import custom_text
@@ -72,8 +73,8 @@ class StateComment:
         self.text_id.grid(column=0, row=1, sticky=f"{tk.S}{tk.W}{tk.E}")
         self.difference_x: float = 0.0
         self.difference_y: float = 0.0
-        self.move_rectangle: int | None = None
-        self.line_id: int | None = None
+        self.move_rectangle: Optional[int] = None
+        self.line_id: Optional[int] = None
         self.line_coords: list[float] = []
 
     def update_text(self) -> None:

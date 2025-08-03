@@ -4,6 +4,7 @@ Handles the global actions window in the diagram.
 
 import tkinter as tk
 from tkinter import ttk
+from typing import Optional
 
 import canvas_editing
 import canvas_modify_bindings
@@ -24,8 +25,8 @@ class GlobalActions:
         self.frame_id = ttk.Frame(
             main_window.canvas, relief=tk.FLAT, padding=padding, style="GlobalActionsWindow.TFrame"
         )
-        self.text_before_content: str | None = None
-        self.text_after_content: str | None = None
+        self.text_before_content: Optional[str] = None
+        self.text_after_content: Optional[str] = None
         self.frame_id.bind("<Enter>", lambda event, self=self: self.activate())
         self.frame_id.bind("<Leave>", lambda event, self=self: self.deactivate())
         # Create label object inside frame:
