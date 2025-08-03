@@ -147,10 +147,10 @@ class ConditionAction:
         self.condition_text = self.condition_id.get("1.0", tk.END)
 
     def show_complete_box(self) -> None:
-        self.condition_label.grid(row=0, column=0, sticky=(tk.W, tk.E))
-        self.condition_id.grid(row=1, column=0, sticky=(tk.W, tk.E))
-        self.action_label.grid(row=2, column=0, sticky=(tk.W, tk.E))
-        self.action_id.grid(row=3, column=0, sticky=(tk.W, tk.E))
+        self.condition_label.grid(row=0, column=0, sticky="we")
+        self.condition_id.grid(row=1, column=0, sticky="we")
+        self.action_label.grid(row=2, column=0, sticky="we")
+        self.action_id.grid(row=3, column=0, sticky="we")
 
     def tag(self, connected_to_reset_entry) -> None:
         if connected_to_reset_entry is True:

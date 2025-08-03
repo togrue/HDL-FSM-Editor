@@ -290,11 +290,9 @@ def create_menu_bar() -> None:
     file_menu_button.grid(row=0, column=0)
     hdl_menu_button.grid(row=0, column=1)
     tool_title.grid(row=0, column=2)
-    search_frame.grid(row=0, column=3)  # , sticky=tk.E)
-    info_menu_button.grid(row=0, column=4)  # , sticky=tk.E)
+    search_frame.grid(row=0, column=3)
+    info_menu_button.grid(row=0, column=4)
     menue_frame.columnconfigure(2, weight=1)
-    # menue_frame.columnconfigure(3, weight=1)
-    # menue_frame.columnconfigure(4, weight=1)
 
     # Bindings of the menus:
     root.bind_all("<Control-o>", lambda event: file_handling.open_file())
@@ -350,8 +348,8 @@ def create_control_notebook_tab() -> None:
     module_name.set("")
     module_name_label = ttk.Label(control_frame, text="Module-Name:", padding=5)
     _module_name_entry = ttk.Entry(control_frame, width=23, textvariable=module_name)
-    module_name_label.grid(row=0, column=0, sticky=tk.W)
-    _module_name_entry.grid(row=0, column=1, sticky=tk.W)
+    module_name_label.grid(row=0, column=0, sticky="w")
+    _module_name_entry.grid(row=0, column=1, sticky="w")
     _module_name_entry.select_clear()
 
     language = tk.StringVar()
@@ -361,15 +359,15 @@ def create_control_notebook_tab() -> None:
         control_frame, textvariable=language, values=("VHDL", "Verilog", "SystemVerilog"), state="readonly"
     )
     language_combobox.bind("<<ComboboxSelected>>", lambda event: switch_language_mode())
-    language_label.grid(row=1, column=0, sticky=tk.W)
-    language_combobox.grid(row=1, column=1, sticky=tk.W)
+    language_label.grid(row=1, column=0, sticky="w")
+    language_combobox.grid(row=1, column=1, sticky="w")
 
     generate_path_value = tk.StringVar(value="")
     generate_path_value.trace_add("write", _show_path_has_changed)
     generate_path_label = ttk.Label(control_frame, text="Directory for generated HDL:", padding=5)
     generate_path_entry = ttk.Entry(control_frame, textvariable=generate_path_value, width=80)
     generate_path_button = ttk.Button(control_frame, text="Select...", command=_set_path, style="Path.TButton")
-    generate_path_label.grid(row=2, column=0, sticky=tk.W)
+    generate_path_label.grid(row=2, column=0, sticky="w")
     generate_path_entry.grid(row=2, column=1, sticky="ew")
     generate_path_button.grid(row=2, column=2, sticky="ew")
     control_frame.columnconfigure((2, 0), weight=0)
@@ -378,8 +376,8 @@ def create_control_notebook_tab() -> None:
 
     _select_file_number_label = ttk.Label(control_frame, text="Select for generation:", padding=5)
     _select_file_number_frame = ttk.Frame(control_frame)
-    _select_file_number_label.grid(row=3, column=0, sticky=tk.W)
-    _select_file_number_frame.grid(row=3, column=1, sticky=(tk.W, tk.E))
+    _select_file_number_label.grid(row=3, column=0, sticky="w")
+    _select_file_number_frame.grid(row=3, column=1, sticky="we")
     control_frame.columnconfigure((3, 0), weight=0)
     control_frame.columnconfigure((3, 1), weight=1)
 
@@ -395,10 +393,10 @@ def create_control_notebook_tab() -> None:
     include_timestamp_in_output.trace_add("write", lambda *args: undo_handling.update_window_title())
     include_timestamp_checkbox = ttk.Checkbutton(_select_file_number_frame, variable=include_timestamp_in_output)
     include_timestamp_label = ttk.Label(_select_file_number_frame, text="Include timestamp in generated HDL files")
-    select_file_number_radio_button1.grid(row=0, column=1, sticky=tk.W)
-    select_file_number_radio_button2.grid(row=0, column=2, sticky=tk.W)
-    include_timestamp_checkbox.grid(row=0, column=2, sticky=tk.E)
-    include_timestamp_label.grid(row=0, column=3, sticky=tk.E)
+    select_file_number_radio_button1.grid(row=0, column=1, sticky="w")
+    select_file_number_radio_button2.grid(row=0, column=2, sticky="w")
+    include_timestamp_checkbox.grid(row=0, column=2, sticky="e")
+    include_timestamp_label.grid(row=0, column=3, sticky="e")
     _select_file_number_frame.columnconfigure((0, 0), weight=0)
     _select_file_number_frame.columnconfigure((0, 1), weight=0)
     _select_file_number_frame.columnconfigure((0, 2), weight=1)
@@ -409,22 +407,22 @@ def create_control_notebook_tab() -> None:
     reset_signal_name_label = ttk.Label(control_frame, text="Name of asynchronous reset input port:", padding=5)
     reset_signal_name_entry = ttk.Entry(control_frame, width=23, textvariable=reset_signal_name)
     reset_signal_name_entry.bind("<Key>", lambda event: undo_handling.update_window_title())
-    reset_signal_name_label.grid(row=4, column=0, sticky=tk.W)
-    reset_signal_name_entry.grid(row=4, column=1, sticky=tk.W)
+    reset_signal_name_label.grid(row=4, column=0, sticky="w")
+    reset_signal_name_entry.grid(row=4, column=1, sticky="w")
 
     clock_signal_name = tk.StringVar()
     clock_signal_name.set("")
     clock_signal_name_label = ttk.Label(control_frame, text="Name of clock input port:", padding=5)
     _clock_signal_name_entry = ttk.Entry(control_frame, width=23, textvariable=clock_signal_name)
     _clock_signal_name_entry.bind("<Key>", lambda event: undo_handling.update_window_title())
-    clock_signal_name_label.grid(row=5, column=0, sticky=tk.W)
-    _clock_signal_name_entry.grid(row=5, column=1, sticky=tk.W)
+    clock_signal_name_label.grid(row=5, column=0, sticky="w")
+    _clock_signal_name_entry.grid(row=5, column=1, sticky="w")
 
     compile_cmd = tk.StringVar()
     compile_cmd.set("ghdl -a $file1 $file2; ghdl -e $name; ghdl -r $name")
     compile_cmd_label = ttk.Label(control_frame, text="Compile command:", padding=5)
     compile_cmd_entry = ttk.Entry(control_frame, width=23, textvariable=compile_cmd)
-    compile_cmd_label.grid(row=6, column=0, sticky=tk.W)
+    compile_cmd_label.grid(row=6, column=0, sticky="w")
     compile_cmd_entry.grid(row=6, column=1, sticky="ew")
     control_frame.columnconfigure((6, 0), weight=0)
     control_frame.columnconfigure((6, 1), weight=1)
@@ -435,7 +433,7 @@ def create_control_notebook_tab() -> None:
 = File with Entity and Architecture\n$name\t= Module Name",
         padding=5,
     )
-    _compile_cmd_docu.grid(row=7, column=1, sticky=tk.W)
+    _compile_cmd_docu.grid(row=7, column=1, sticky="w")
     control_frame.columnconfigure((7, 0), weight=0)
     control_frame.columnconfigure((7, 1), weight=1)
 
@@ -443,7 +441,7 @@ def create_control_notebook_tab() -> None:
     edit_cmd.set("C:/Program Files/Notepad++/notepad++.exe -nosession -multiInst")
     edit_cmd_label = ttk.Label(control_frame, text="Edit command (executed by Ctrl+e):", padding=5)
     edit_cmd_entry = ttk.Entry(control_frame, width=23, textvariable=edit_cmd)
-    edit_cmd_label.grid(row=8, column=0, sticky=tk.W)
+    edit_cmd_label.grid(row=8, column=0, sticky="w")
     edit_cmd_entry.grid(row=8, column=1, sticky="ew")
     control_frame.columnconfigure((8, 0), weight=0)
     control_frame.columnconfigure((8, 1), weight=1)
@@ -457,9 +455,9 @@ def create_control_notebook_tab() -> None:
     )
     additional_sources_entry = ttk.Entry(control_frame, textvariable=additional_sources_value, width=80)
     additional_sources_button = ttk.Button(control_frame, text="Select...", command=__add_path, style="Path.TButton")
-    additional_sources_label.grid(row=9, column=0, sticky=tk.W)
-    additional_sources_entry.grid(row=9, column=1, sticky=(tk.W, tk.E))
-    additional_sources_button.grid(row=9, column=2, sticky=(tk.W, tk.E))
+    additional_sources_label.grid(row=9, column=0, sticky="w")
+    additional_sources_entry.grid(row=9, column=1, sticky="ew")
+    additional_sources_button.grid(row=9, column=2, sticky="ew")
     control_frame.columnconfigure((9, 0), weight=0)
     control_frame.columnconfigure((9, 1), weight=1)
     control_frame.columnconfigure((9, 2), weight=0)
@@ -471,7 +469,7 @@ def create_control_notebook_tab() -> None:
     working_directory_button = ttk.Button(
         control_frame, text="Select...", command=_set_working_directory, style="Path.TButton"
     )
-    working_directory_label.grid(row=10, column=0, sticky=tk.W)
+    working_directory_label.grid(row=10, column=0, sticky="w")
     working_directory_entry.grid(row=10, column=1, sticky="ew")
     working_directory_button.grid(row=10, column=2, sticky="ew")
     control_frame.columnconfigure((10, 0), weight=0)
@@ -485,14 +483,14 @@ def create_control_notebook_tab() -> None:
     diagram_background_color_button = ttk.Button(
         control_frame, text="Choose color...", command=choose_bg_color, style="Path.TButton"
     )
-    diagram_background_color_label.grid(row=11, column=0, sticky=tk.W)
+    diagram_background_color_label.grid(row=11, column=0, sticky="w")
     diagram_background_color_entry.grid(row=11, column=1, sticky="ew")
     diagram_background_color_button.grid(row=11, column=2, sticky="ew")
     control_frame.columnconfigure((11, 0), weight=0)
     control_frame.columnconfigure((11, 1), weight=1)
     control_frame.columnconfigure((11, 2), weight=0)
     _diagram_background_color_error = ttk.Label(control_frame, text="", padding=5)
-    _diagram_background_color_error.grid(row=12, column=1, sticky=tk.W)
+    _diagram_background_color_error.grid(row=12, column=1, sticky="w")
     control_frame.columnconfigure((12, 0), weight=0)
     control_frame.columnconfigure((12, 1), weight=1)
     control_frame.columnconfigure((12, 2), weight=0)
@@ -557,7 +555,7 @@ def create_interface_notebook_tab() -> None:
     )
     interface_package_text.config(yscrollcommand=_interface_package_scroll.set)
     _interface_package_label.grid(row=0, column=0, sticky="wns")  # "W" nötig, damit Text links bleibt
-    interface_package_info.grid(row=0, column=0, sticky=tk.E)
+    interface_package_info.grid(row=0, column=0, sticky="e")
     interface_package_text.grid(row=1, column=0, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
     _interface_package_scroll.grid(row=1, column=1, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_interface.add(_interface_package_frame, weight=1)
@@ -581,7 +579,7 @@ def create_interface_notebook_tab() -> None:
     )
     interface_generics_text.config(yscrollcommand=interface_generics_scroll.set)
     _interface_generics_label.grid(row=0, column=0, sticky="wns")
-    interface_generics_info.grid(row=0, column=0, sticky=tk.E)
+    interface_generics_info.grid(row=0, column=0, sticky="e")
     interface_generics_text.grid(row=1, column=0, sticky="nsew")
     interface_generics_scroll.grid(row=1, column=1, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_interface.add(interface_generics_frame, weight=1)
@@ -606,8 +604,8 @@ def create_interface_notebook_tab() -> None:
         interface_ports_frame, orient=tk.VERTICAL, cursor="arrow", command=interface_ports_text.yview
     )
     interface_ports_text.config(yscrollcommand=interface_ports_scroll.set)
-    _interface_ports_label.grid(row=0, column=0, sticky=tk.W)
-    interface_ports_info.grid(row=0, column=0, sticky=tk.E)
+    _interface_ports_label.grid(row=0, column=0, sticky="w")
+    interface_ports_info.grid(row=0, column=0, sticky="e")
     interface_ports_text.grid(row=1, column=0, sticky="nsew")
     interface_ports_scroll.grid(row=1, column=1, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_interface.add(interface_ports_frame, weight=1)
@@ -645,8 +643,8 @@ def create_internals_notebook_tab() -> None:
         _internals_package_frame, orient=tk.VERTICAL, cursor="arrow", command=internals_package_text.yview
     )
     internals_package_text.config(yscrollcommand=_internals_package_scroll.set)
-    _internals_package_label.grid(row=0, column=0, sticky=tk.W)  # "W" nötig, damit Text links bleibt
-    interface_package_info.grid(row=0, column=0, sticky=tk.E)
+    _internals_package_label.grid(row=0, column=0, sticky="w")  # "W" nötig, damit Text links bleibt
+    interface_package_info.grid(row=0, column=0, sticky="e")
     internals_package_text.grid(row=1, column=0, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
     _internals_package_scroll.grid(row=1, column=1, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_internals.add(_internals_package_frame, weight=1)
@@ -676,8 +674,8 @@ def create_internals_notebook_tab() -> None:
         internals_architecture_frame, orient=tk.VERTICAL, cursor="arrow", command=internals_architecture_text.yview
     )
     internals_architecture_text.config(yscrollcommand=internals_architecture_scroll.set)
-    _internals_architecture_label.grid(row=0, column=0, sticky=tk.W)
-    interface_architecture_info.grid(row=0, column=0, sticky=tk.E)
+    _internals_architecture_label.grid(row=0, column=0, sticky="w")
+    interface_architecture_info.grid(row=0, column=0, sticky="e")
     internals_architecture_text.grid(row=1, column=0, sticky="nsew")
     internals_architecture_scroll.grid(
         row=1, column=1, sticky="nsew"
@@ -715,8 +713,8 @@ def create_internals_notebook_tab() -> None:
         command=internals_process_clocked_text.yview,
     )
     internals_process_clocked_text.config(yscrollcommand=internals_process_clocked_scroll.set)
-    _internals_process_clocked_label.grid(row=0, column=0, sticky=tk.W)
-    interface_process_clocked_info.grid(row=0, column=0, sticky=tk.E)
+    _internals_process_clocked_label.grid(row=0, column=0, sticky="w")
+    interface_process_clocked_info.grid(row=0, column=0, sticky="e")
     internals_process_clocked_text.grid(row=1, column=0, sticky="nsew")
     internals_process_clocked_scroll.grid(
         row=1, column=1, sticky="nsew"
@@ -753,8 +751,8 @@ def create_internals_notebook_tab() -> None:
         command=internals_process_combinatorial_text.yview,
     )
     internals_process_combinatorial_text.config(yscrollcommand=internals_process_combinatorial_scroll.set)
-    _internals_process_combinatorial_label.grid(row=0, column=0, sticky=tk.W)
-    interface_process_combinatorial_info.grid(row=0, column=0, sticky=tk.E)
+    _internals_process_combinatorial_label.grid(row=0, column=0, sticky="w")
+    interface_process_combinatorial_info.grid(row=0, column=0, sticky="e")
     internals_process_combinatorial_text.grid(row=1, column=0, sticky="nsew")
     internals_process_combinatorial_scroll.grid(
         row=1, column=1, sticky="nsew"
@@ -843,7 +841,7 @@ def create_diagram_notebook_tab() -> None:
     reset_entry_button.grid(row=0, column=3)
     action_frame.grid(row=0, column=4)
     undo_redo_frame.grid(row=0, column=5)
-    view_all_button.grid(row=0, column=6, sticky=tk.E)
+    view_all_button.grid(row=0, column=6, sticky="e")
     view_area_button.grid(row=0, column=7)
     plus_button.grid(row=0, column=8)
     minus_button.grid(row=0, column=9)
@@ -954,13 +952,13 @@ def create_log_notebook_tab() -> None:
     log_frame_text.config(state=tk.DISABLED)
 
     log_frame_clear_button = ttk.Button(log_frame_button_frame, takefocus=False, text="Clear", style="Find.TButton")
-    log_frame_clear_button.grid(row=0, column=0, sticky=tk.W)
+    log_frame_clear_button.grid(row=0, column=0, sticky="w")
     log_frame_clear_button.bind("<Button-1>", _clear_log_tab)
 
     log_frame_regex_button = ttk.Button(
         log_frame_button_frame, takefocus=False, text="Define Regex for Hyperlinks", style="Find.TButton"
     )
-    log_frame_regex_button.grid(row=0, column=1, sticky=tk.W)
+    log_frame_regex_button.grid(row=0, column=1, sticky="w")
     log_frame_regex_button.config(command=_edit_regex)
 
     log_frame_text_scroll = ttk.Scrollbar(log_frame, orient=tk.VERTICAL, cursor="arrow", command=log_frame_text.yview)
@@ -1139,8 +1137,8 @@ def switch_language_mode() -> None:
         keywords = constants.VHDL_KEYWORDS
         # enable 2 files mode
         select_file_number_text.set(2)
-        _select_file_number_label.grid(row=3, column=0, sticky=tk.W)
-        _select_file_number_frame.grid(row=3, column=1, sticky=(tk.W, tk.E))
+        _select_file_number_label.grid(row=3, column=0, sticky="w")
+        _select_file_number_frame.grid(row=3, column=1, sticky="we")
         # Interface: Adapt documentation for generics and ports
         paned_window_interface.insert(0, _interface_package_frame, weight=1)
         _interface_generics_label.config(text="Generics:")

@@ -87,10 +87,10 @@ class GlobalActions:
             "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
         )
 
-        self.label_before.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E))
-        self.text_before_id.grid(row=1, column=0, sticky=(tk.E, tk.W))
-        self.label_after.grid(row=2, column=0, sticky=(tk.E, tk.W))
-        self.text_after_id.grid(row=3, column=0, sticky=(tk.E, tk.W, tk.S))
+        self.label_before.grid(row=0, column=0, sticky="nwe")
+        self.text_before_id.grid(row=1, column=0, sticky="ew")
+        self.label_after.grid(row=2, column=0, sticky="ew")
+        self.text_after_id.grid(row=3, column=0, sticky="swe")
 
         # Create canvas window for frame and text:
         self.window_id = main_window.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)

@@ -59,8 +59,8 @@ class GlobalActionsCombinatorial:
             "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
         )
 
-        self.label.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E))
-        self.text_id.grid(row=1, column=0, sticky=(tk.E, tk.W))
+        self.label.grid(row=0, column=0, sticky="nwe")
+        self.text_id.grid(row=1, column=0, sticky="ew")
 
         # Create canvas window for frame and text:
         self.window_id = main_window.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)

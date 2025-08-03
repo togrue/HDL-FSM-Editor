@@ -62,9 +62,8 @@ class MyText:
         self.text_id.bind(
             "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
         )
-
-        self.label_id.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E))
-        self.text_id.grid(column=0, row=1, sticky=(tk.S, tk.W, tk.E))
+        self.label_id.grid(column=0, row=0, sticky="nwe")
+        self.text_id.grid(column=0, row=1, sticky="swe")
 
         # Create canvas window for frame and text:
         self.window_id = main_window.canvas.create_window(menu_x + 100, menu_y, window=self.frame_id, anchor=tk.W)

@@ -56,8 +56,8 @@ class StateActionsDefault:
             "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
         )
 
-        self.label.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E))
-        self.text_id.grid(row=1, column=0, sticky=(tk.E, tk.W))
+        self.label.grid(row=0, column=0, sticky="nwe")
+        self.text_id.grid(row=1, column=0, sticky="ew")
 
         self.difference_x = 0
         self.difference_y = 0
