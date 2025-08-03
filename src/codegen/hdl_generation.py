@@ -114,10 +114,6 @@ def _copy_hdl_into_generated_hdl_tab(hdl, file_name, file_name_architecture) -> 
     )
     main_window.hdl_frame_text.config(state=tk.DISABLED)
     # Bring the notebook tab with the hdl into the foreground:
-    # notebook_ids = main_window.notebook.tabs()
-    # for id in notebook_ids:
-    #     if main_window.notebook.tab(id, option="text")==GuiTab.HDL.value:
-    #         main_window.notebook.select(id)
     main_window.show_tab(GuiTab.GENERATED_HDL)
 
 

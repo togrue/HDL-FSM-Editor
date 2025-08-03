@@ -500,7 +500,7 @@ def create_control_notebook_tab() -> None:
     control_frame.columnconfigure((13, 1), weight=1)
     control_frame.columnconfigure((13, 2), weight=0)
 
-    notebook.add(control_frame, sticky="nsew", text=GuiTab.CONTROL.value)
+    notebook.add(control_frame, sticky="nsew", text=str(GuiTab.CONTROL))
 
 
 def _set_path() -> None:
@@ -612,7 +612,7 @@ def create_interface_notebook_tab() -> None:
     interface_ports_scroll.grid(row=1, column=1, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_interface.add(interface_ports_frame, weight=1)
 
-    notebook.add(paned_window_interface, sticky="nsew", text=GuiTab.INTERFACE.value)
+    notebook.add(paned_window_interface, sticky="nsew", text=str(GuiTab.INTERFACE))
 
 
 def create_internals_notebook_tab() -> None:
@@ -753,7 +753,7 @@ def create_internals_notebook_tab() -> None:
     )  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_internals.add(internals_process_combinatorial_frame, weight=1)
 
-    notebook.add(paned_window_internals, sticky="nsew", text=GuiTab.INTERNALS.value)
+    notebook.add(paned_window_internals, sticky="nsew", text=str(GuiTab.INTERNALS))
 
 
 def create_diagram_notebook_tab() -> None:
@@ -769,7 +769,7 @@ def create_diagram_notebook_tab() -> None:
     diagram_frame.grid()
     diagram_frame.columnconfigure(0, weight=1)  # tkinter method (grid_columnconfigure is tcl method)
     diagram_frame.rowconfigure(0, weight=1)
-    notebook.add(diagram_frame, sticky="nsew", text=GuiTab.DIAGRAM.value)
+    notebook.add(diagram_frame, sticky="nsew", text=str(GuiTab.DIAGRAM))
 
     # Create the elements of the drawing area:
     h = ttk.Scrollbar(diagram_frame, orient=tk.HORIZONTAL, cursor="arrow", style="Horizontal.TScrollbar")
@@ -928,7 +928,7 @@ def create_hdl_notebook_tab() -> None:
 
     hdl_frame_text.bind("<Motion>", _cursor_move_hdl_tab)
 
-    notebook.add(hdl_frame, sticky="nsew", text=GuiTab.GENERATED_HDL.value)
+    notebook.add(hdl_frame, sticky="nsew", text=str(GuiTab.GENERATED_HDL))
 
 
 def create_log_notebook_tab() -> None:
@@ -961,7 +961,7 @@ def create_log_notebook_tab() -> None:
 
     log_frame_text.bind("<Motion>", _cursor_move_log_tab)
 
-    notebook.add(log_frame, sticky="nsew", text=GuiTab.COMPILE_MSG.value)
+    notebook.add(log_frame, sticky="nsew", text=str(GuiTab.COMPILE_MSG))
     _debug_active = tk.IntVar()
     _debug_active.set(1)  # 1: inactive, 2: active
 
