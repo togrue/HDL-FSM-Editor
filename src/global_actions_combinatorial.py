@@ -4,6 +4,7 @@ Class for combinatorial actions independent from the state machine
 
 import tkinter as tk
 from tkinter import ttk
+from typing import Optional
 
 import canvas_editing
 import canvas_modify_bindings
@@ -20,7 +21,7 @@ class GlobalActionsCombinatorial:
     dictionary: dict[int, "GlobalActionsCombinatorial"] = {}
 
     def __init__(self, menu_x, menu_y, height, width, padding) -> None:
-        self.text_content = None
+        self.text_content : Optional[str] = None
         self.frame_id = ttk.Frame(
             main_window.canvas, relief=tk.FLAT, padding=padding, style="GlobalActionsWindow.TFrame"
         )

@@ -454,12 +454,12 @@ def open_v1_file_with_name(read_filename) -> None:
                         coords.append(v)
                     except ValueError:
                         tags = tags + (e,)
-                action_ref = global_actions_combinatorial.GlobalActionsCombinatorial(
+                global_action_ref = global_actions_combinatorial.GlobalActionsCombinatorial(
                     coords[0], coords[1], height=1, width=8, padding=1
                 )
-                action_ref.text_id.insert("1.0", text)
-                action_ref.text_id.format()
-                main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
+                global_action_ref.text_id.insert("1.0", text)
+                global_action_ref.text_id.format()
+                main_window.canvas.itemconfigure(global_action_ref.window_id, tag=tags)
             elif line.startswith("window_state_actions_default|"):
                 rest_of_line = _remove_keyword_from_line(line, "window_state_actions_default|")
                 text = _get_data(rest_of_line, fileobject)
@@ -473,12 +473,12 @@ def open_v1_file_with_name(read_filename) -> None:
                         coords.append(v)
                     except ValueError:
                         tags = tags + (e,)
-                action_ref = state_actions_default.StateActionsDefault(
+                state_action_default_ref = state_actions_default.StateActionsDefault(
                     coords[0], coords[1], height=1, width=8, padding=1
                 )
-                action_ref.text_id.insert("1.0", text)
-                action_ref.text_id.format()
-                main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
+                state_action_default_ref.text_id.insert("1.0", text)
+                state_action_default_ref.text_id.format()
+                main_window.canvas.itemconfigure(state_action_default_ref.window_id, tag=tags)
     undo_handling.stack = []
     undo_handling.stack_write_pointer = 0
     undo_handling.design_has_changed()  # Initialize the stack with the read design.

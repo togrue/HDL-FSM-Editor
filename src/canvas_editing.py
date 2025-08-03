@@ -454,7 +454,7 @@ def zoom_wheel(event) -> None:
     # One "felt step" at the mouse wheel gives this value:
     # Windows: delta=+/-120 ; MacOS: delta=+/-1 ; Linux: delta=0
     # num: attribute of the the mouse wheel under Linux  ("scroll-up=5" and "scroll-down=4").
-    factor = 1
+    factor : float = 1.0
     if event.num == 5 or event.delta < 0:  # scroll down
         factor = 1 / 1.1
     elif event.num == 4 or event.delta >= 0:  # scroll up
@@ -874,7 +874,7 @@ def _search_in_canvas_text(item, search_pattern, replace, replace_pattern) -> in
 
 
 def _search_in_text_fields_of_a_tab(
-    tab: GuiTab, kind, search_pattern, interface_text_fields, replace, replace_pattern
+    tab: str, kind, search_pattern, interface_text_fields, replace, replace_pattern
 ) -> int:
     count = tk.IntVar()
     number_of_hits = 0
@@ -921,7 +921,7 @@ def _search_in_text_fields_of_a_tab(
     return number_of_hits
 
 
-def _move_in_foreground(tab: GuiTab) -> None:
+def _move_in_foreground(tab: str) -> None:
     notebook_ids = main_window.notebook.tabs()
     for notebook_id in notebook_ids:
         if main_window.notebook.tab(notebook_id, option="text") == tab.value:

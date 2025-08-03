@@ -707,12 +707,12 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         coords = definition[0]
         text = definition[1]
         tags = definition[2]
-        action_ref = state_action_handling.MyText(
+        state_action_ref = state_action_handling.MyText(
             coords[0] - 100, coords[1], height=1, width=8, padding=1, increment=False
         )
-        action_ref.text_id.insert("1.0", text)
-        action_ref.text_id.format()
-        main_window.canvas.itemconfigure(action_ref.window_id, tags=tags)
+        state_action_ref.text_id.insert("1.0", text)
+        state_action_ref.text_id.format()
+        main_window.canvas.itemconfigure(state_action_ref.window_id, tags=tags)
 
     # Load state comments
     for definition in design_dictionary.get("window_state_comment", []):
@@ -773,19 +773,19 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         coords = definition[0]
         text = definition[1]
         tags = definition[2]
-        action_ref = global_actions_combinatorial.GlobalActionsCombinatorial(
+        global_action_ref = global_actions_combinatorial.GlobalActionsCombinatorial(
             coords[0], coords[1], height=1, width=8, padding=1
         )
-        action_ref.text_id.insert("1.0", text)
-        action_ref.text_id.format()
-        main_window.canvas.itemconfigure(action_ref.window_id, tags=tags)
+        global_action_ref.text_id.insert("1.0", text)
+        global_action_ref.text_id.format()
+        main_window.canvas.itemconfigure(global_action_ref.window_id, tags=tags)
 
     # Load state actions default
     for definition in design_dictionary["window_state_actions_default"]:
         coords = definition[0]
         text = definition[1]
         tags = definition[2]
-        action_ref = state_actions_default.StateActionsDefault(coords[0], coords[1], height=1, width=8, padding=1)
-        action_ref.text_id.insert("1.0", text)
-        action_ref.text_id.format()
-        main_window.canvas.itemconfigure(action_ref.window_id, tags=tags)
+        state_action_default_ref = state_actions_default.StateActionsDefault(coords[0], coords[1], height=1, width=8, padding=1)
+        state_action_default_ref.text_id.insert("1.0", text)
+        state_action_default_ref.text_id.format()
+        main_window.canvas.itemconfigure(state_action_default_ref.window_id, tags=tags)
