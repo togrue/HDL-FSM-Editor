@@ -249,13 +249,12 @@ def _find_the_item_id_of_the_line(items_near_mouse_click_location) -> None:
     return None
 
 
-def _search_for_the_tags_of_a_transition(line_id) -> tuple | None:
+def _search_for_the_tags_of_a_transition(line_id: int) -> tuple[str, ...]:
     line_tags = main_window.canvas.gettags(line_id)
     for tag in line_tags:
         if tag.startswith("transition"):
             return line_tags
-        else:
-            return ()
+    return ()
 
 
 def _remove_tags_and_hide_priority(line_id, transition_tag, transition_tags, moving_point) -> None:
