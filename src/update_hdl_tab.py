@@ -26,6 +26,7 @@ class UpdateHdlTab:
             hdlfilename_architecture = None
         # Compare modification time of HDL file against modification_time of design file (.hse):
         main_window.hdl_frame_text.config(state=tk.NORMAL)
+        main_window.hdl_frame_text.delete("1.0", tk.END)
         main_window.hdl_frame_text.insert("1.0", "")
         main_window.hdl_frame_text.config(state=tk.DISABLED)
         hdl = ""
