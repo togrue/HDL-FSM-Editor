@@ -868,6 +868,7 @@ def convert_hdl_lines_into_a_searchable_string(text):
     separated = surround_character_by_blanks("'", separated)
     separated = surround_character_by_blanks("+", separated)
     separated = surround_character_by_blanks("-", separated)
+    separated = surround_character_by_blanks("*", separated)
     separated = re.sub("<  =", "<=", separated)  # restore this operator (assignment or comparison)
     separated = re.sub(">  =", ">=", separated)  # restore this operator (comparison)
     separated = re.sub("=  >", "=>", separated)  # restore this operator (when selector in VHDL)
@@ -881,7 +882,7 @@ def convert_hdl_lines_into_a_searchable_string(text):
 
 
 def surround_character_by_blanks(character, all_port_declarations_without_comments):
-    if character in ("(", ")", "+"):
+    if character in ("(", ")", "+", "*"):
         search_character = "\\" + character  # Add the escape-character
     else:
         search_character = character
