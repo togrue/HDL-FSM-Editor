@@ -1204,7 +1204,7 @@ def _show_path_has_changed(*_) -> None:
 
 
 def show_tab(tab: GuiTab) -> None:
-    assert isinstance(tab, GuiTab), f"tab must be a GuiTab, but is {type(tab)}"
+    assert isinstance(tab, GuiTab), f"Tab must be a GuiTab, but is {type(tab)}"
 
     notebook_ids = notebook.tabs()
     for tab_id in notebook_ids:
