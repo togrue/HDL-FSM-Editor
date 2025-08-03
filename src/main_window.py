@@ -86,8 +86,8 @@ regex_file_line_number_quote: str = "\\2"
 _regex_error_happened: bool = False
 _line_number_under_pointer_log_tab: int = 0
 _line_number_under_pointer_hdl_tab: int = 0
-_func_id_jump1: str | None
-_func_id_jump2: str | None
+_func_id_jump1: str | None = None
+_func_id_jump2: str | None = None
 size_of_file1_line_number: int = 0
 size_of_file2_line_number: int = 0
 _func_id_jump: str | None = None
@@ -107,22 +107,30 @@ redo_button: ttk.Button
 date_of_hdl_file_shown_in_hdl_tab: float = 0.0
 date_of_hdl_file2_shown_in_hdl_tab: float = 0.0
 include_timestamp_in_output: tk.BooleanVar
+_check_version_result: str = ""
+_read_message_result: str = ""
 
 keywords: dict[str, list[str]] = constants.VHDL_KEYWORDS
 
 
 def read_message() -> None:
+    global _read_message_result
     try:
         source = urllib.request.urlopen("http://www.hdl-fsm-editor.de/message.txt")
         message = source.read()
-        print(message.decode())
+        _read_message_result = message.decode()
+        # print(message.decode())
     except urllib.error.URLError:
-        print("No message was found.")
+        _read_message_result = "No message was found."
+        # print("No message was found.")
     except ConnectionRefusedError:
-        pass
+        # pass
+        _read_message_result = ""
+    print(_read_message_result)
 
 
 def check_version() -> None:
+    global _check_version_result
     try:
         print("Checking for a newer version ...")
         source = urllib.request.urlopen("http://www.hdl-fsm-editor.de/index.php")
@@ -133,11 +141,14 @@ def check_version() -> None:
         new_version = new_version[:end_index]
         new_version = re.sub(" ", "", new_version)
         if new_version != "Version" + _VERSION:
-            print("Please update to the new version of HDL-FSM-Editor available at http://www.hdl-fsm-editor.de")
+            _check_version_result = (
+                "Please update to the new version of HDL-FSM-Editor available at http://www.hdl-fsm-editor.de"
+            )
         else:
-            print("Your version of HDL-FSM-Editor is up to date.")
+            _check_version_result = "Your version of HDL-FSM-Editor is up to date."
     except urllib.error.URLError:
-        print("HDL-FSM-Editor version could not be checked, as you are offline.")
+        _check_version_result = "HDL-FSM-Editor version could not be checked, as you are offline."
+    print(_check_version_result)
 
 
 def show_window() -> None:
@@ -938,6 +949,10 @@ def create_log_notebook_tab() -> None:
     notebook.add(log_frame, sticky="nsew", text=GuiTab.COMPILE_MSG.value)
     _debug_active = tk.IntVar()
     _debug_active.set(1)  # 1: inactive, 2: active
+
+    log_frame_text.config(state=tk.NORMAL)
+    log_frame_text.insert("1.0", header_string + "\n" + _check_version_result + "\n" + _read_message_result + "\n")
+    log_frame_text.config(state=tk.NORMAL)
 
 
 def _clear_log_tab(_) -> None:
