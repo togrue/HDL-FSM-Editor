@@ -172,8 +172,9 @@ def save_in_file_new(save_filename) -> None:  # Called at saving and at every de
             json.dump(design_dictionary, fileobject, indent=4, default=str, ensure_ascii=False)
         if not save_filename.endswith(".tmp") and os.path.isfile(f"{project_manager.previous_file}.tmp"):
             os.remove(f"{project_manager.previous_file}.tmp")
-    except Exception as _:
+    except Exception as e:
         messagebox.showerror("Error in HDL-FSM-Editor", f"Writing to file {save_filename} caused exception ")
+        print(e)
     if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
         messagebox.showerror("Error", "The database is corrupt.\nDo not use the written file.\nSee details at STDOUT.")
 
