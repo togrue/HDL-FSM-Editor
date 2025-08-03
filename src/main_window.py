@@ -104,8 +104,6 @@ _internals_package_frame: ttk.Frame
 sash_positions: dict[str, dict[int, int]] = {"interface_tab": {}, "internals_tab": {}}
 undo_button: ttk.Button
 redo_button: ttk.Button
-_trace_id_generate_path_value: str
-_trace_id_working_directory_value: str
 date_of_hdl_file_shown_in_hdl_tab: float = 0.0
 date_of_hdl_file2_shown_in_hdl_tab: float = 0.0
 include_timestamp_in_output: tk.BooleanVar
