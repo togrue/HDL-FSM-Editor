@@ -84,9 +84,9 @@ class MyText:
         self.move_rectangle = main_window.canvas.create_polygon(
             polygon_coords, width=1, fill="blue", tags="polygon_for_move"
         )
-        main_window.canvas.tag_bind(
-            self.move_rectangle, "<Leave>", lambda event: main_window.canvas.delete(self.move_rectangle)
-        )
+        # make a captured local copy, so that move_rect gets the same id in the lambda function.
+        move_rect = self.move_rectangle
+        main_window.canvas.tag_bind(move_rect, "<Leave>", lambda event: main_window.canvas.delete(move_rect))
 
     def tag(self) -> None:
         main_window.canvas.itemconfigure(
@@ -128,12 +128,15 @@ class MyText:
             undo_handling.design_has_changed()
 
     def activate_line(self) -> None:
+        assert self.line_id is not None
         main_window.canvas.itemconfigure(self.line_id, width=3)  # increase the width of the line around the box
 
     def deactivate_line(self) -> None:
+        assert self.line_id is not None
         main_window.canvas.itemconfigure(self.line_id, width=1)  # decrease the width of the line around the box
 
     def move_to(self, event_x, event_y, first, last) -> None:
+        assert self.move_rectangle is not None
         main_window.canvas.delete(self.move_rectangle)
         self.frame_id.configure(padding=1)  # decrease the width of the line around the box
         if first:

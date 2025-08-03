@@ -37,6 +37,8 @@ def _create_reset_entry(canvas_grid_coordinates_of_the_event) -> None:
     polygon_id = main_window.canvas.create_polygon(
         reset_entry_polygon, fill="red", outline="orange", tags="reset_entry"
     )
+
+    assert canvas_editing.state_name_font is not None, "The font must have been set before calling this function."
     main_window.canvas.create_text(
         canvas_grid_coordinates_of_the_event[0] - 4 * canvas_editing.reset_entry_size / 5,
         canvas_grid_coordinates_of_the_event[1],

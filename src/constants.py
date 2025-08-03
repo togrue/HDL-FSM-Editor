@@ -440,7 +440,7 @@ STATE_COLOR = "cyan"
 
 
 try:
-    from enum import StrEnum  # type: ignore
+    from enum import StrEnum
 
 except ImportError:
     from enum import Enum

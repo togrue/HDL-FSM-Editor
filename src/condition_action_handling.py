@@ -196,6 +196,7 @@ class ConditionAction:
     def delete_polygon(self, event):
         if self.debug_events is True:
             print("event 3: leave-polygon: delete polygon")
+        assert self.move_rectangle is not None
         main_window.canvas.delete(self.move_rectangle)
 
     def enter_box(self) -> None:
@@ -218,6 +219,7 @@ class ConditionAction:
         self.window_enter_func_id = str(
             main_window.canvas.tag_bind(self.window_id, "<Enter>", lambda event: self.__draw_polygon_around_window())
         )
+        assert self.move_rectangle is not None
         main_window.canvas.delete(self.move_rectangle)
 
     def shrink_box(self) -> None:

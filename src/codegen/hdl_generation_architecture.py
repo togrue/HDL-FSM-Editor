@@ -10,7 +10,7 @@ from codegen.exceptions import GenerationError
 from link_dictionary import link_dict
 
 
-def create_architecture(file_name: str, file_line_number: int, state_tag_list_sorted: list[str]) -> tuple[str, int]:
+def create_architecture(file_name: str, file_line_number: int, state_tag_list_sorted: list[str]) -> str:
     architecture = ""
 
     package_statements = hdl_generation_library.get_text_from_text_widget(main_window.internals_package_text)

@@ -84,9 +84,9 @@ class GlobalActionsCombinatorial:
         self.move_rectangle = main_window.canvas.create_polygon(
             polygon_coords, width=1, fill="PaleGreen2", tags="polygon_for_move"
         )
-        main_window.canvas.tag_bind(
-            self.move_rectangle, "<Leave>", lambda event: main_window.canvas.delete(self.move_rectangle)
-        )
+        # make a captured local copy, so that move_rect gets the same id in the lambda function.
+        move_rect = self.move_rectangle
+        main_window.canvas.tag_bind(move_rect, "<Leave>", lambda event: main_window.canvas.delete(move_rect))
 
     def update_text(self):
         # Update self.text_content, so that the <Leave>-check in deactivate() does not signal a design-change and
@@ -109,6 +109,7 @@ class GlobalActionsCombinatorial:
             undo_handling.design_has_changed()
 
     def move_to(self, event_x, event_y, first, last) -> None:
+        assert self.move_rectangle is not None
         main_window.canvas.delete(self.move_rectangle)
         self.frame_id.configure(padding=1)  # decrease the width of the line around the box
         if first:

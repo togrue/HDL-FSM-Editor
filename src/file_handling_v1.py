@@ -272,6 +272,9 @@ def open_v1_file_with_name(read_filename) -> None:
                 text = entries[2]
                 for e in entries[3:]:
                     tags = tags + (e,)
+                assert canvas_editing.state_name_font is not None, (
+                    "The font must have been set before calling this function."
+                )
                 text_id = main_window.canvas.create_text(
                     coords, text=text, tags=tags, font=canvas_editing.state_name_font
                 )

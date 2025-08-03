@@ -454,7 +454,7 @@ def zoom_wheel(event) -> None:
     # One "felt step" at the mouse wheel gives this value:
     # Windows: delta=+/-120 ; MacOS: delta=+/-1 ; Linux: delta=0
     # num: attribute of the the mouse wheel under Linux  ("scroll-up=5" and "scroll-down=4").
-    factor : float = 1.0
+    factor: float = 1.0
     if event.num == 5 or event.delta < 0:  # scroll down
         factor = 1 / 1.1
     elif event.num == 4 or event.delta >= 0:  # scroll up
@@ -523,7 +523,7 @@ def _scroll_canvas_to_show_the_zoom_center(zoom_center, zoom_factor) -> None:
 
 def _adapt_scroll_bars(factor) -> None:
     scrollregion_strings = main_window.canvas.cget("scrollregion").split()
-    scrollregion_scaled = tuple(int(float(x) * factor) for x in scrollregion_strings)
+    scrollregion_scaled = tuple(float(x) * factor for x in scrollregion_strings)
     main_window.canvas.configure(scrollregion=scrollregion_scaled)
 
 
@@ -921,7 +921,7 @@ def _search_in_text_fields_of_a_tab(
     return number_of_hits
 
 
-def _move_in_foreground(tab: str) -> None:
+def _move_in_foreground(tab: GuiTab) -> None:
     notebook_ids = main_window.notebook.tabs()
     for notebook_id in notebook_ids:
         if main_window.notebook.tab(notebook_id, option="text") == tab.value:

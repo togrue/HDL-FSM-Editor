@@ -66,8 +66,7 @@ def _move_initialization_overlapping(event, event_x, event_y) -> None:
         )
         # move_finish must unbind move_do from "Motion", so it needs the function id.
         main_window.canvas.bind(
-            "<ButtonRelease-1>",
-            lambda event: move_handling_finish.move_finish(event, move_list, move_do_funcid)
+            "<ButtonRelease-1>", lambda event: move_handling_finish.move_finish(event, move_list, move_do_funcid)
         )
 
         # From Button-1 the callback "move_initialization()" must be removed, because the user will
@@ -195,6 +194,7 @@ def _add_lines_connected_to_the_diagram_object_to_the_list(move_list) -> None:
         if to_be_moved_point_of_connected_line != "":
             # tag_of_connected_line identifies a single object.
             # So the method find_withtag() returns always a list of length 1:
+            assert tag_of_connected_line is not None
             id_of_connected_line = main_window.canvas.find_withtag(tag_of_connected_line)[0]
             move_list.append([id_of_connected_line, to_be_moved_point_of_connected_line])
             transition_handling.extend_transition_to_state_middle_points(tag_of_connected_line)
@@ -221,7 +221,7 @@ def _add_items_for_moving_a_single_line_point_to_the_list(
                 _remove_tags_and_hide_priority(line_id, tag, transition_tags, moving_point)
 
 
-def _find_the_item_id_of_the_line(items_near_mouse_click_location) -> None:
+def _find_the_item_id_of_the_line(items_near_mouse_click_location) -> Optional[int]:
     for item_id in items_near_mouse_click_location:
         if main_window.canvas.type(item_id) == "line" and "grid_line" not in main_window.canvas.gettags(item_id):
             return item_id
