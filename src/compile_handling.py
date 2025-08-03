@@ -132,25 +132,27 @@ def _replace_variables(command_array) -> list | None:
     return command_array_new
 
 
-def _insert_line_in_log(text) -> None:
+def _insert_line_in_log(line) -> None:
     if main_window.language.get() == "VHDL":
+        # search for compiler-message with ":<line-number>:<column-number>:":
         regex_message_find = main_window.regex_message_find_for_vhdl
     else:
         regex_message_find = main_window.regex_message_find_for_verilog
     try:
-        match_object_of_message = re.match(regex_message_find, text)
+        match_object_of_message = re.match(regex_message_find, line)
     except re.error as e:
         print("Error in HDL-FSM-Editor by regular expression", repr(e))
         return
 
-    text_low = text.lower()
+    line_low = line.lower()
     main_window.log_frame_text.config(state=tk.NORMAL)
-    if match_object_of_message is not None or "error" in text_low or "warning" in text_low:
-        if main_window.language.get() == "VHDL" and "report note" in text_low:
-            main_window.log_frame_text.insert(tk.END, text, ("message_green"))
+    if match_object_of_message is not None or "error" in line_low or "warning" in line_low:
+        # Add line together with color-tag to the text:
+        if main_window.language.get() == "VHDL" and "report note" in line_low:
+            main_window.log_frame_text.insert(tk.END, line, ("message_green"))
         else:
-            main_window.log_frame_text.insert(tk.END, text, ("message_red"))
+            main_window.log_frame_text.insert(tk.END, line, ("message_red"))
     else:
-        main_window.log_frame_text.insert(tk.END, text)
+        main_window.log_frame_text.insert(tk.END, line)
     main_window.log_frame_text.config(state=tk.DISABLED)
     main_window.log_frame_text.see(tk.END)
