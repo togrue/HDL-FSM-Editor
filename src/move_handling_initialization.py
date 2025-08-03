@@ -233,8 +233,8 @@ def _search_for_the_tags_of_a_transition(line_id) -> Optional[tuple]:
     for tag in line_tags:
         if tag.startswith("transition"):
             return line_tags
-        else:
-            return None
+
+    return None
 
 
 def _remove_tags_and_hide_priority(line_id, transition_tag, transition_tags, moving_point) -> None:
