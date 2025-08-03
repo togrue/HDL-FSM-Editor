@@ -10,6 +10,8 @@ Clone the repository and run:
 python src/main.py
 ```
 
+There are pre-built executables available on the [website](http://www.hdl-fsm-editor.de).
+
 ## Development
 
 ### Setup
