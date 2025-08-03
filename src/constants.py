@@ -440,18 +440,16 @@ STATE_COLOR = "cyan"
 
 
 try:
-    from enum import StrEnum
+    from enum import StrEnum  # type: ignore
 
 except ImportError:
     from enum import Enum
 
     # StrEnum was added in Python 3.11.
     # So we use this compatibility class for Python 3.10 and lower.
-    class _StrEnum(str, Enum):
+    class StrEnum(str, Enum):  # type: ignore[no-redef]
         def __str__(self):
             return self.value
-
-    StrEnum = _StrEnum  # type: ignore
 
 
 class GuiTab(StrEnum):
