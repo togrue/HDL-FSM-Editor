@@ -797,28 +797,28 @@ def _get_transition_action(condition_action_reference):
     return condition_action_reference.action_id.get("1.0", tk.END + "-1 chars")  # without "return" at the end
 
 
-def create_global_actions_before() -> tuple[CustomText, str]:
+def create_global_actions_before() -> Optional[tuple[CustomText, str]]:
     if global_actions_handling.global_actions_clocked_number == 1:
         canvas_item_id = main_window.canvas.find_withtag("global_actions1")
         ref = global_actions.GlobalActions.dictionary[canvas_item_id[0]]
         return ref.text_before_id, ref.text_before_id.get("1.0", tk.END)
-    return "", ""
+    return None
 
 
-def create_global_actions_after() -> tuple[CustomText, str]:
+def create_global_actions_after() -> Optional[tuple[CustomText, str]]:
     if global_actions_handling.global_actions_clocked_number == 1:
         canvas_item_id = main_window.canvas.find_withtag("global_actions1")
         ref = global_actions.GlobalActions.dictionary[canvas_item_id[0]]
         return ref.text_after_id, ref.text_after_id.get("1.0", tk.END)
-    return "", ""
+    return None
 
 
-def create_concurrent_actions() -> tuple[CustomText, str]:
+def create_concurrent_actions() -> Optional[tuple[CustomText, str]]:
     if global_actions_handling.global_actions_combinatorial_number == 1:
         canvas_item_id = main_window.canvas.find_withtag("global_actions_combinatorial1")
         ref = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[canvas_item_id[0]]
         return ref.text_id, ref.text_id.get("1.0", tk.END)
-    return "", ""
+    return None
 
 
 def remove_comments_and_returns(hdl_text) -> str:

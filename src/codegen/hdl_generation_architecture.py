@@ -117,10 +117,9 @@ def create_architecture(file_name: str, file_line_number: int, state_tag_list_so
     link_dict().add(file_name, file_line_number, "Control-Tab", 1, "reset_and_clock_signal_name")
     file_line_number += 1
 
-    reference_to_global_actions_before_custom_text, global_actions_before = (
-        hdl_generation_library.create_global_actions_before()
-    )
-    if global_actions_before != "":
+    _res = hdl_generation_library.create_global_actions_before()
+    if _res:
+        reference_to_global_actions_before_custom_text, global_actions_before = _res
         global_actions_before = "-- Global Actions before:\n" + global_actions_before
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, global_actions_before)
         # global_actions_before starts always with "-- Global Actions before:", which is not a line entered by the user,
@@ -149,10 +148,9 @@ def create_architecture(file_name: str, file_line_number: int, state_tag_list_so
     architecture += "            end case;\n"
     file_line_number += 1
 
-    reference_to_global_actions_after_custom_text, global_actions_after = (
-        hdl_generation_library.create_global_actions_after()
-    )
-    if global_actions_after != "":
+    _res = hdl_generation_library.create_global_actions_after()
+    if _res:
+        reference_to_global_actions_after_custom_text, global_actions_after = _res
         global_actions_after = "-- Global Actions after:\n" + global_actions_after
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, global_actions_after)
         # global_actions_before starts always with "-- Global Actions after:", which is not a line entered by the user,
@@ -176,8 +174,9 @@ def create_architecture(file_name: str, file_line_number: int, state_tag_list_so
     )
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_actions_process)
 
-    reference_to_concurrent_actions_custom_text, concurrent_actions = hdl_generation_library.create_concurrent_actions()
-    if concurrent_actions != "":
+    _res = hdl_generation_library.create_concurrent_actions()
+    if _res:
+        reference_to_concurrent_actions_custom_text, concurrent_actions = _res
         concurrent_actions = "-- Global Actions combinatorial:\n" + concurrent_actions
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, concurrent_actions)
         # concurrent_actions starts always with "-- Global Actions combinatorial:", which is not a line entered by
