@@ -447,22 +447,22 @@ def transition_start(event) -> None:
                 main_window.canvas.tag_bind(
                     transition_id,
                     "<Enter>",
-                    lambda event, tid=transition_id: main_window.canvas.itemconfig(tid, width=3),  # type: ignore[misc]
+                    lambda event, tid=transition_id: main_window.canvas.itemconfig(tid, width=3),
                 )
                 main_window.canvas.tag_bind(
                     transition_id,
                     "<Leave>",
-                    lambda event, tid=transition_id: main_window.canvas.itemconfig(tid, width=1),  # type: ignore[misc]
+                    lambda event, tid=transition_id: main_window.canvas.itemconfig(tid, width=1),
                 )
                 main_window.canvas.tag_bind(
                     transition_id,
                     "<Button-3>",
-                    lambda event, tid=transition_id: show_menu(event, tid),  # type: ignore[misc]
+                    lambda event, tid=transition_id: show_menu(event, tid),
                 )
                 main_window.root.unbind_all("<Escape>")
                 transition_draw_funcid: str = main_window.canvas.bind(
                     "<Motion>",
-                    lambda event, tid=transition_id: _transition_draw(event, tid),  # type: ignore[misc]
+                    lambda event, tid=transition_id: _transition_draw(event, tid),
                     add=True,
                 )
                 main_window.canvas.bind(
@@ -708,7 +708,7 @@ def _add_priority_rectangle_to_the_new_transition(transition_coords, start_state
     main_window.canvas.tag_bind(
         tag_of_new_transition + "priority",
         "<Double-Button-1>",
-        lambda event, transition_tag=tag_of_new_transition: edit_priority(event, transition_tag),  # type: ignore[misc]
+        lambda event, transition_tag=tag_of_new_transition: edit_priority(event, transition_tag),
     )
 
 
@@ -744,7 +744,7 @@ def edit_priority(event, transition_tag) -> None:
     text_box.select_range(0, tk.END)
     text_box.bind(
         "<Return>",
-        lambda event, transition_tag=transition_tag, text_box=text_box: _update_priority(transition_tag, text_box),  # type: ignore[misc]
+        lambda event, transition_tag=transition_tag, text_box=text_box: _update_priority(transition_tag, text_box),
     )
     text_box.bind(
         "<Escape>",
