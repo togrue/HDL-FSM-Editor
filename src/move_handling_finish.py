@@ -128,6 +128,9 @@ def _update_the_tags_of_the_transition(item_ids_at_moving_end_location, transiti
                     transition_tag + "_start", target_id
                 )  # update tags of the start object of the transition.
                 if condition_action_tag != "":
+                    assert isinstance(ref, condition_action_handling.ConditionAction), (
+                        "ref is not a ConditionAction object"
+                    )
                     if target_tag == "reset_entry":
                         main_window.canvas.addtag_withtag("connected_to_reset_transition", condition_action_tag)
                         ref.change_descriptor_to("Transition actions (asynchronous):")

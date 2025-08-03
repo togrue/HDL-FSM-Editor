@@ -32,9 +32,9 @@ class CustomText(tk.Text):
         tk.Text.__init__(self, *args, **kwargs)
         self.text_type = text_type
         # create a proxy for the underlying widget
-        self._orig = self._w + "_orig"
-        self.tk.call("rename", self._w, self._orig)
-        self.tk.createcommand(self._w, self._proxy)
+        self._orig = str(self) + "_orig"
+        self.tk.call("rename", str(self), self._orig)
+        self.tk.createcommand(str(self), self._proxy)
         self.bind("<Tab>", lambda event: self.replace_tabs_by_blanks())
         # Overwrites the default control-e = "move cursor to end of line":
         self.bind("<Control-e>", lambda event: self.edit_in_external_editor())

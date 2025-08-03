@@ -605,6 +605,7 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
         )
         transition_condition_is_a_comment = _check_if_condition_is_a_comment(transition_condition)
         if transition_action != "" or transition_condition_is_a_comment:
+            assert isinstance(condition_action_reference, condition_action_handling.ConditionAction)
             if transition_action != "":
                 if transition_condition_is_a_comment:
                     if not transition_condition.endswith("\n"):
@@ -645,7 +646,9 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
                         "condition": transition_condition,
                         "target": transition_target,
                         "condition_level": condition_level,
-                        "condition_action_reference": condition_action_reference.condition_id,
+                        "condition_action_reference": condition_action_reference.condition_id
+                        if isinstance(condition_action_reference, condition_action_handling.ConditionAction)
+                        else condition_action_reference,
                     }
                 )
                 condition_level_new = condition_level + 1
@@ -674,7 +677,9 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
                         "condition": transition_condition,
                         "target": transition_target,
                         "condition_level": condition_level,
-                        "condition_action_reference": condition_action_reference.condition_id,
+                        "condition_action_reference": condition_action_reference.condition_id
+                        if isinstance(condition_action_reference, condition_action_handling.ConditionAction)
+                        else condition_action_reference,
                     }
                 )
             else:
@@ -777,10 +782,17 @@ def _check_for_equal_priorities(transition_tags_and_priority_sorted, state_tag) 
 
 
 def _get_transition_condition(condition_action_reference):
+    assert isinstance(condition_action_reference, condition_action_handling.ConditionAction), (
+        "condition_action_reference is not a ConditionAction object"
+    )
     return condition_action_reference.condition_id.get("1.0", tk.END + "-1 chars")  # without "return" at the end
 
 
 def _get_transition_action(condition_action_reference):
+    assert isinstance(condition_action_reference, condition_action_handling.ConditionAction), (
+        "condition_action_reference is not a ConditionAction object"
+    )
+
     return condition_action_reference.action_id.get("1.0", tk.END + "-1 chars")  # without "return" at the end
 
 

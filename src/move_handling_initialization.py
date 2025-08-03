@@ -209,7 +209,7 @@ def _add_items_for_moving_a_single_line_point_to_the_list(
     transition_tags = _search_for_the_tags_of_a_transition(
         line_id
     )  # A line can represent a "transition" or a "connection" (connections are ignored here).
-    if transition_tags != ():
+    if transition_tags is not None:
         moving_point = transition_handling.get_point_to_move(line_id, event_x, event_y)
         for tag in transition_tags:
             if tag.startswith("transition"):
@@ -234,7 +234,7 @@ def _search_for_the_tags_of_a_transition(line_id) -> Optional[tuple]:
         if tag.startswith("transition"):
             return line_tags
         else:
-            return ()
+            return None
 
 
 def _remove_tags_and_hide_priority(line_id, transition_tag, transition_tags, moving_point) -> None:

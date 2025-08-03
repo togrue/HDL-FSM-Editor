@@ -62,6 +62,8 @@ def _execute(command) -> bool:
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
         )
+        assert process.stdout is not None
+
         for line in process.stdout:  # Terminates when process.stdout is closed.
             if line != "\n":  # VHDL report-statements cause empty lines which mess up the protocol.
                 _insert_line_in_log(line)
