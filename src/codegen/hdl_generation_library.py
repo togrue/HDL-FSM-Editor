@@ -4,7 +4,7 @@ This module contains methods used at HDL generation.
 
 import re
 import tkinter as tk
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, List, Dict
 
 import canvas_editing
 import condition_action_handling
@@ -161,9 +161,11 @@ def extract_transition_specifications_from_the_graph(state_tag_list_sorted) -> l
             canvas_id_of_comment_text_widget = None
             state_comments = ""
         condition_level = 0
-        moved_actions = []
-        trace = []  # Is temporarily used when a path from a state to a target state passes connectors.
-        trace_array = []
+        moved_actions: List[Dict[str, Any]] = []
+        # Is temporarily used when a path from a state to a target state passes connectors.
+        trace: List[Dict[str, Any]] = []
+        trace_array: List[List[Dict[str, Any]]] = []
+
         # Each entry of trace_array shall describe a path from this state to a target state (target state is always
         # also this state).
         # The entries of trace_array are ordered regarding their priority in the HDL, the first entry has the
@@ -214,8 +216,8 @@ def _optimize_transition_specifications(transition_specifications) -> None:
                 != 1
             ):
                 # There is more than 1 branch for the if_identifier.
-                moved_actions = []
-                moved_target = []  # will get only 1 entry
+                moved_actions: List[Dict[str, Any]] = []
+                moved_target: List[Dict[str, Any]] = []  # will get only 1 entry
                 for action_target_dict in action_target_array[state_name][if_identifier]:
                     for action in action_target_dict["actions"]:
                         if _action_is_present_in_each_branch(action, state_name, if_identifier, action_target_array):
@@ -288,7 +290,7 @@ def _create_action_and_branch_array_for_each_if_construct(transition_specificati
     # The return dictionary branchnumber_array contains for each state a dictionary
     # with transition_specification["if_identifier"] as key,
     # where the value is the number of branches the "if" has.
-    action_target_array_of_state = {}
+    action_target_array_of_state: Dict[int, List[Dict[str, Any]]] = {}
     branchnumber_array_of_state = {}
     action_target_array = {}
     branchnumber_array = {}
