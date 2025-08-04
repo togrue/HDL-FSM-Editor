@@ -128,9 +128,6 @@ def _clear_design() -> bool:
     main_window.hdl_frame_text.config(state=tk.NORMAL)
     main_window.hdl_frame_text.delete("1.0", tk.END)
     main_window.hdl_frame_text.config(state=tk.DISABLED)
-    main_window.log_frame_text.config(state=tk.NORMAL)
-    main_window.log_frame_text.delete("1.0", tk.END)
-    main_window.log_frame_text.config(state=tk.DISABLED)
     main_window.canvas.delete("all")
     state_handling.state_number = 0
     transition_handling.transition_number = 0

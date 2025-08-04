@@ -24,9 +24,7 @@ class CustomText(tk.Text):
 
     def __init__(self, *args, text_type, **kwargs) -> None:
         """A text widget that report on internal widget commands"""
-        tk.Text.__init__(
-            self, *args, **kwargs
-        )  # does not help: pady=5, pagdy is used to make sure that the undserscore line "_" is always visible at most font sizes.
+        tk.Text.__init__(self, *args, **kwargs)
         self.text_type = text_type
         # create a proxy for the underlying widget
         self._orig = self._w + "_orig"
@@ -100,7 +98,8 @@ class CustomText(tk.Text):
         self.format()
 
     def format_after_idle(self) -> None:
-        self.after_idle(self.format)
+        if self.text_type != "log":
+            self.after_idle(self.format)
 
     def format(self) -> None:
         text = self.get("1.0", tk.END)
