@@ -21,7 +21,7 @@ class GlobalActions:
     global_actions_number: int = 1
     dictionary: dict[int, "GlobalActions"] = {}
 
-    def __init__(self, menu_x, menu_y, height, width, padding) -> None:
+    def __init__(self, menu_x: float, menu_y: float, height: int, width: int, padding: int) -> None:
         self.frame_id = ttk.Frame(
             main_window.canvas, relief=tk.FLAT, padding=padding, style="GlobalActionsWindow.TFrame"
         )
@@ -95,13 +95,13 @@ class GlobalActions:
         GlobalActions.dictionary[self.window_id] = self
         canvas_modify_bindings.switch_to_move_mode()
 
-    def update_before(self):
+    def update_before(self) -> None:
         # Update self.text_before_content, so that the <Leave>-check in deactivate() does not signal a design-change and
         # that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
         # To ensure this, save_in_file_new() waits for idle.
         self.text_before_content = self.text_before_id.get("1.0", tk.END)
 
-    def update_after(self):
+    def update_after(self) -> None:
         # Update self.text_after_content, so that the <Leave>-check in deactivate() does not signal a design-change and
         # that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
         # To ensure this, save_in_file_new() waits for idle.
@@ -146,7 +146,7 @@ class GlobalActions:
         if self.text_after_id.get("1.0", tk.END) != self.text_after_content:
             undo_handling.design_has_changed()
 
-    def move_to(self, event_x, event_y, first, last) -> None:
+    def move_to(self, event_x: float, event_y: float, first: bool, last: bool) -> None:
         assert self.move_rectangle is not None
         main_window.canvas.delete(self.move_rectangle)
         self.frame_id.configure(padding=1)  # Set the width of the line around the box
