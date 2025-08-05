@@ -94,7 +94,8 @@ def _create_hdl(config, header, write_to_file) -> None:
         architecture = hdl_generation_module.create_module_logic(file_name, file_line_number, state_tag_list_sorted)
     if architecture is None:
         return  # No further actions required, because when writing to a file, always an architecture must exist.
-    # write_hdl_file must be called even if hdl is not needed, as write_hdl_file sets last_line_number_of_file1, which is read by Linking.
+    # write_hdl_file must be called even if hdl is not needed, as write_hdl_file sets last_line_number_of_file1,
+    # which is read by Linking:
     hdl = _write_hdl_file(config, write_to_file, header, entity, architecture, file_name, file_name_architecture)
     if write_to_file is True:
         _copy_hdl_into_generated_hdl_tab(hdl, file_name, file_name_architecture)

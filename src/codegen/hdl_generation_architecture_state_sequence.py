@@ -113,7 +113,7 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                     number_of_comment_lines = entry["moved_condition_lines"]
                     comment_list = comment_and_action_lines[0:number_of_comment_lines]
                     action_list = comment_and_action_lines[number_of_comment_lines:]
-                    for index, single_comment in enumerate(comment_list):
+                    for single_comment in comment_list:
                         vhdl.append(" " * 4 + single_comment + "\n")
                         ignore_control_for_vhdl_indent.append(False)
                     link_dict().add(
@@ -126,11 +126,12 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                     file_line_number += index + 1
                 else:
                     action_list = entry["moved_action"].split("\n")
-                for index, single_action in enumerate(action_list):
+                for single_action in action_list:
                     vhdl.append(" " * 4 + single_action + "\n")
                     single_action_raw = re.sub("^ *", "", single_action)
                     if single_action_raw.startswith("if") or single_action_raw.startswith("end if"):
-                        # Because this control-statement was inserted by the user it must be handled as action at the indent process later.
+                        # Because this control-statement was inserted by the user it must be
+                        # handled as action at the indent process later.
                         ignore_control_for_vhdl_indent.append(True)
                     else:
                         ignore_control_for_vhdl_indent.append(False)
@@ -274,7 +275,7 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                     number_of_comment_lines = entry["moved_condition_lines"]
                     comment_list = comment_and_action_lines[0:number_of_comment_lines]
                     action_list = comment_and_action_lines[number_of_comment_lines:]
-                    for index, single_comment in enumerate(comment_list):
+                    for single_comment in comment_list:
                         verilog.append(" " * 4 + single_comment + "\n")
                         ignore_control_for_verilog_indent.append(False)
                     link_dict().add(
@@ -287,11 +288,12 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                     file_line_number += index + 1
                 else:
                     action_list = entry["moved_action"].split("\n")
-                for index, single_action in enumerate(action_list):
+                for single_action in action_list:
                     verilog.append(" " * 4 + single_action + "\n")
                     single_action_raw = re.sub("^ *", "", single_action)
                     if single_action_raw.startswith("if") or single_action_raw.startswith("end"):
-                        # Because this control-statement was inserted by the user it must be handled as action at the indent process later.
+                        # Because this control-statement was inserted by the user it must be
+                        # handled as action at the indent process later.
                         ignore_control_for_verilog_indent.append(True)
                     else:
                         ignore_control_for_verilog_indent.append(False)

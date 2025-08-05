@@ -97,7 +97,9 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> N
     file_line_number += number_of_new_lines
 
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, reset_action)
-    file_line_number += 1  # reset_action starts always with "state <=", which is not a line entered by the user, and therefore cannot be linked.
+    # reset_action starts always with "state <=", which is not a line entered by the user,
+    # and therefore cannot be linked:
+    file_line_number += 1
     number_of_new_lines = reset_action.count("\n") - 1
     link_dict().add(
         file_name,
@@ -118,7 +120,9 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> N
     if global_actions_before != "":
         global_actions_before = "-- Global Actions before:\n" + global_actions_before
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, global_actions_before)
-        file_line_number += 1  # global_actions_before starts always with "-- Global Actions before:", which is not a line entered by the user, and therefore cannot be linked.
+        # global_actions_before starts always with "-- Global Actions before:", which is not a line entered by the user,
+        # and therefore cannot be linked:
+        file_line_number += 1
         number_of_new_lines = global_actions_before.count("\n") - 1
         link_dict().add(
             file_name,
@@ -148,7 +152,9 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> N
     if global_actions_after != "":
         global_actions_after = "-- Global Actions after:\n" + global_actions_after
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, global_actions_after)
-        file_line_number += 1  # global_actions_before starts always with "-- Global Actions after:", which is not a line entered by the user, and therefore cannot be linked.
+        # global_actions_before starts always with "-- Global Actions after:", which is not a line entered by the user,
+        # and therefore cannot be linked:
+        file_line_number += 1
         number_of_new_lines = global_actions_after.count("\n") - 1
         link_dict().add(
             file_name,
@@ -171,7 +177,9 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> N
     if concurrent_actions != "":
         concurrent_actions = "-- Global Actions combinatorial:\n" + concurrent_actions
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, concurrent_actions)
-        file_line_number += 1  # concurrent_actions starts always with "-- Global Actions combinatorial:", which is not a line entered by the user, and therefore cannot be linked.
+        # concurrent_actions starts always with "-- Global Actions combinatorial:", which is not a line entered by
+        # the user, and therefore cannot be linked:
+        file_line_number += 1
         number_of_new_lines = concurrent_actions.count("\n") - 1
         link_dict().add(
             file_name,

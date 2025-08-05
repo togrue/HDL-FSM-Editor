@@ -158,8 +158,10 @@ def extract_transition_specifications_from_the_graph(state_tag_list_sorted) -> l
         moved_actions = []
         trace = []  # Is temporarily used when a path from a state to a target state passes connectors.
         trace_array = []
-        # Each entry of trace_array shall describe a path from this state to a target state (target state is always also this state).
-        # The entries of trace_array are ordered regarding their priority in the HDL, the first entry has the highest priority.
+        # Each entry of trace_array shall describe a path from this state to a target state (target state is always
+        # also this state).
+        # The entries of trace_array are ordered regarding their priority in the HDL, the first entry has the
+        # highest priority.
         # Each entry is a ordered list of dictionaries.
         # The order of the dictionaries is defined by the order in which the HDL lines must be generated.
         # Each dictionary contains all information to create one or several HDL lines.
@@ -175,7 +177,8 @@ def extract_transition_specifications_from_the_graph(state_tag_list_sorted) -> l
             }
         )
         # The separated paths of trace_array are merged together by adding "else" commands,
-        # so if the first trace depends on an "if", then the inserted "else" path of the first trace contains the second trace and so on:
+        # so if the first trace depends on an "if", then the inserted "else" path of the first trace
+        # contains the second trace and so on:
         transition_specifications += _merge_trace_array(trace_array)
     _optimize_transition_specifications(transition_specifications)
     return transition_specifications
@@ -195,50 +198,48 @@ def _optimize_transition_specifications(transition_specifications) -> None:
     index_of_if_in_transition_specifications = 0
     for state_name, action_target_if_dictionary in action_target_array.items():
         for if_identifier in action_target_if_dictionary:
-            if if_identifier != 0:  # if_identifier==0 means this is an entry caused by a "when"-command.
-                if (
-                    len(
-                        action_target_array[state_name][if_identifier]
-                    )  # This is the number of different actions&targets which exist for the if_identifier.
-                    == branchnumber_array[state_name][
-                        if_identifier
-                    ]  # This is the number of branches which exist for the if_identifier.
-                    != 1
-                ):  # There is more than 1 branch for the if_identifier.
-                    moved_actions = []
-                    moved_target = []  # will get only 1 entry
-                    for action_target_dict in action_target_array[state_name][if_identifier]:
-                        for action in action_target_dict["actions"]:
-                            if _action_is_present_in_each_branch(
-                                action, state_name, if_identifier, action_target_array
-                            ):
-                                index_of_if_in_transition_specifications = _remove_action_from_branches(
-                                    transition_specifications, state_name, if_identifier, action, moved_actions
-                                )
-                                changes_were_implemented = True
-                        target = action_target_dict["target"]
-                        if target != "" and _target_is_present_in_each_branch(
-                            target, state_name, if_identifier, action_target_array
-                        ):
-                            index_of_if_in_transition_specifications = _remove_target_from_branches(
-                                transition_specifications, state_name, if_identifier, target, moved_target
+            if (
+                # if_identifier==0 means this is an entry caused by a "when"-command:
+                if_identifier != 0
+                # This is the number of different actions&targets which exist for the if_identifier:
+                and len(action_target_array[state_name][if_identifier])
+                # This is the number of branches which exist for the if_identifier:
+                == branchnumber_array[state_name][if_identifier]
+                != 1
+            ):
+                # There is more than 1 branch for the if_identifier.
+                moved_actions = []
+                moved_target = []  # will get only 1 entry
+                for action_target_dict in action_target_array[state_name][if_identifier]:
+                    for action in action_target_dict["actions"]:
+                        if _action_is_present_in_each_branch(action, state_name, if_identifier, action_target_array):
+                            index_of_if_in_transition_specifications = _remove_action_from_branches(
+                                transition_specifications, state_name, if_identifier, action, moved_actions
                             )
                             changes_were_implemented = True
-                    if moved_actions or moved_target:
-                        target = "" if not moved_target else moved_target[0]
-                        # Insert a new entry into the list of transition_specifications:
-                        transition_specifications[
-                            index_of_if_in_transition_specifications:index_of_if_in_transition_specifications
-                        ] = [
-                            {
-                                "state_name": state_name,
-                                "command": "action",
-                                "condition": "",
-                                "actions": moved_actions,
-                                "target": target,
-                                "if_identifier": if_identifier - 1,
-                            }
-                        ]
+                    target = action_target_dict["target"]
+                    if target != "" and _target_is_present_in_each_branch(
+                        target, state_name, if_identifier, action_target_array
+                    ):
+                        index_of_if_in_transition_specifications = _remove_target_from_branches(
+                            transition_specifications, state_name, if_identifier, target, moved_target
+                        )
+                        changes_were_implemented = True
+                if moved_actions or moved_target:
+                    target = "" if not moved_target else moved_target[0]
+                    # Insert a new entry into the list of transition_specifications:
+                    transition_specifications[
+                        index_of_if_in_transition_specifications:index_of_if_in_transition_specifications
+                    ] = [
+                        {
+                            "state_name": state_name,
+                            "command": "action",
+                            "condition": "",
+                            "actions": moved_actions,
+                            "target": target,
+                            "if_identifier": if_identifier - 1,
+                        }
+                    ]
     if changes_were_implemented:
         _optimize_transition_specifications(transition_specifications)
     return
@@ -274,10 +275,12 @@ def _expand_transition_specifications_by_if_identifier(transition_specifications
 
 
 def _create_action_and_branch_array_for_each_if_construct(transition_specifications) -> tuple[dict, dict]:
-    # The return dictionary action_target_array[state_name][if_identifier][0..n] is an dictionary with the keys "actions" and "target".
+    # The return dictionary action_target_array[state_name][if_identifier][0..n] is an
+    # dictionary with the keys "actions" and "target".
     # The key "actions" stores a list of actions which are executed in this branch.
     # The key "target" stores the target state of this branch.
-    # The return dictionary branchnumber_array contains for each state a dictionary with transition_specification["if_identifier"] as key,
+    # The return dictionary branchnumber_array contains for each state a dictionary
+    # with transition_specification["if_identifier"] as key,
     # where the value is the number of branches the "if" has.
     action_target_array_of_state = {}
     branchnumber_array_of_state = {}
@@ -296,11 +299,11 @@ def _create_action_and_branch_array_for_each_if_construct(transition_specificati
             if_identifier = transition_specification["if_identifier"]
             if if_identifier not in action_target_array_of_state:
                 action_target_array_of_state[if_identifier] = []
+            # Create a copy because later on the list transition_specification["actions"] is modified and
+            # would modify if_array also:
             copy_of_actions = []
             for entry in transition_specification["actions"]:
-                copy_of_actions.append(
-                    entry
-                )  # Create a copy because later on the list transition_specification["actions"] is modified and would modify if_array also.
+                copy_of_actions.append(entry)
             action_target_array_of_state[if_identifier].append(
                 {"actions": copy_of_actions, "target": transition_specification["target"]}
             )
@@ -336,8 +339,8 @@ def _remove_action_from_branches(transition_specifications, state_name, if_ident
                 if action in transition_specification["actions"]:
                     # This creates problems:
                     # transition_specification["actions"].remove(action)
-                    # The reason is, that when the entry "action" is removed from the list, also in another transition_specification["actions"]
-                    # a entry disappears, if it is identical to action.
+                    # The reason is, that when the entry "action" is removed from the list, also in
+                    # another transition_specification["actions"] a entry disappears, if it is identical to action.
                     # The solution is to create a new list:
                     transition_specification["actions"] = [
                         x for x in transition_specification["actions"] if x != action
@@ -356,11 +359,10 @@ def _remove_target_from_branches(transition_specifications, state_name, if_ident
         ):
             if transition_specification["command"] == "if":
                 index_of_if_in_transition_specifications = index
-            elif transition_specification["command"] == "action":
-                if target == transition_specification["target"]:
-                    transition_specification["target"] = ""
-                    if target not in moved_target:
-                        moved_target.append(target)
+            elif transition_specification["command"] == "action" and target == transition_specification["target"]:
+                transition_specification["target"] = ""
+                if target not in moved_target:
+                    moved_target.append(target)
     return index_of_if_in_transition_specifications
 
 
@@ -379,7 +381,8 @@ def _check_for_wrong_priorities(trace_array) -> None:
         #  {'state_name': 'filled', 'command': 'if'    , 'condition': 'read_address=write_address', ...
         #  {'state_name': 'filled', 'command': 'action', 'condition': ''                          , ...]
         # All the conditions of a trace together determine, if the action is executed.
-        # If a next trace starts with the same conditions, then this next trace is obsolete, as it will never be reached.
+        # If a next trace starts with the same conditions, then this next trace is obsolete,
+        # as it will never be reached.
         # This is checked here:
         condition_sequence = []
         for trace_dict in trace:
@@ -428,12 +431,14 @@ def _merge_trace_array(trace_array) -> list:
                 raise GenerationError(
                     "Warning",
                     [
-                        f"There is a transition starting at state {trace[0]['state_name']} which has no condition but does not have the lowest priority,",
-                        "therefore the generated HDL may be corrupted.",
+                        f"There is a transition starting at state {trace[0]['state_name']} which has no condition but",
+                        " does not have the lowest priority, therefore the generated HDL may be corrupted.",
                     ],
                 )
         else:
-            if trace:  # An empty trace may happen, when the transition with lowest priority has no condition and action (and has a connector?!).
+            # An empty trace may happen, when the transition with lowest priority has
+            # no condition and action (and has a connector?!).
+            if trace:
                 first_command_of_trace = trace[0]["command"] + trace[0]["condition"]
                 first_command_of_next_trace = (
                     traces_of_a_state_reversed[trace_index + 1][0]["command"]
@@ -447,8 +452,8 @@ def _merge_trace_array(trace_array) -> list:
                     raise GenerationError(
                         "Warning",
                         [
-                            f"There is a transition starting at state {trace[0]['state_name']} which has no condition but does not have the lowest priority,",
-                            "therefore the generated HDL may be corrupted.",
+                            f"There is a transition starting at state {trace[0]['state_name']} which has no condition",
+                            " but does not have the lowest priority, therefore the generated HDL may be corrupted.",
                         ],
                     )
                 if trace[0]["command"] == "action":
@@ -577,8 +582,8 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
             raise GenerationError(
                 "Warning",
                 [
-                    f"There is a connector reached from state {trace[0]['state_name']} which has no outgoing transition,",
-                    "therefore the generated HDL may be corrupted.",
+                    f"There is a connector reached from state {trace[0]['state_name']} which",
+                    " has no outgoing transition, therefore the generated HDL may be corrupted.",
                 ],
             )
         else:
@@ -593,7 +598,6 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
         transition_target, transition_condition, transition_action, condition_action_reference = (
             _get_transition_target_condition_action(transition_tag)
         )
-        # print("transition_target, transition_condition, transition_action", transition_target, '|' + transition_condition + '|', '|'+transition_action+'|')
         transition_condition_is_a_comment = _check_if_condition_is_a_comment(transition_condition)
         if transition_action != "" or transition_condition_is_a_comment:
             if transition_action != "":
@@ -811,9 +815,9 @@ def remove_comments_and_returns(hdl_text) -> str:
             line_without_comment = re.sub("//.*$", "", line)
         else:
             line_without_comment = re.sub("--.*$", "", line)
-        text += (
-            " " + line_without_comment
-        )  # Add " " at the beginning of the line. Then it is possible to search for keywords surrounded by blanks also at the beginning of text.
+        # Add " " at the beginning of the line. Then it is possible to search for keywords
+        # surrounded by blanks also at the beginning of text:
+        text += " " + line_without_comment
     text += " "  # Add " " at the end, so that keywords at the end are also sourrounded by blanks.
     return text
 
@@ -882,10 +886,8 @@ def convert_hdl_lines_into_a_searchable_string(text):
 
 
 def surround_character_by_blanks(character, all_port_declarations_without_comments):
-    if character in ("(", ")", "+", "*"):
-        search_character = "\\" + character  # Add the escape-character
-    else:
-        search_character = character
+    # Add the escape character if necessary:
+    search_character = "\\" + character if character in ("(", ")", "+", "*") else character
     return re.sub(search_character, " " + character + " ", all_port_declarations_without_comments)
 
 

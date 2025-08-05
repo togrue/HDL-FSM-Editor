@@ -1,4 +1,7 @@
-# from tkinter import *
+"""
+module for generating the logic inside a Verilog design.
+"""
+
 import math
 import re
 
