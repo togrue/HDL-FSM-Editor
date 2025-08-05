@@ -20,7 +20,7 @@ class MyText:
     mytext_id: int = 0
     mytext_dict: dict[int, "MyText"] = {}
 
-    def __init__(self, menu_x, menu_y, height, width, padding, increment) -> None:
+    def __init__(self, menu_x: float, menu_y: float, height: int, width: int, padding: int, increment: bool) -> None:
         if increment is True:
             MyText.mytext_id += 1
         self.difference_x = 0
@@ -94,7 +94,7 @@ class MyText:
             tag=("state_action" + str(MyText.mytext_id), "connection" + str(MyText.mytext_id) + "_start"),
         )
 
-    def connect_to_state(self, menu_x, menu_y, state_id) -> None:
+    def connect_to_state(self, menu_x: float, menu_y: float, state_id: str) -> None:
         # Draw a line from the state to the action block which is added to the state:
         state_coords = main_window.canvas.coords(state_id)
         main_window.canvas.addtag_withtag("connection" + str(MyText.mytext_id) + "_end", state_id)
@@ -135,7 +135,7 @@ class MyText:
         assert self.line_id is not None
         main_window.canvas.itemconfigure(self.line_id, width=1)  # decrease the width of the line around the box
 
-    def move_to(self, event_x, event_y, first, last) -> None:
+    def move_to(self, event_x: float, event_y: float, first: bool, last: bool) -> None:
         assert self.move_rectangle is not None
         main_window.canvas.delete(self.move_rectangle)
         self.frame_id.configure(padding=1)  # decrease the width of the line around the box

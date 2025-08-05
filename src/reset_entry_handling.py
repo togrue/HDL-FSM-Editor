@@ -14,7 +14,7 @@ _difference_x: float = 0.0
 _difference_y: float = 0.0
 
 
-def insert_reset_entry(event) -> None:
+def insert_reset_entry(event: tk.Event) -> None:
     global reset_entry_number
     if reset_entry_number == 0:  # Only 1 reset entry is allowed.
         reset_entry_number += 1
@@ -24,14 +24,14 @@ def insert_reset_entry(event) -> None:
         canvas_modify_bindings.switch_to_move_mode()
 
 
-def _insert_reset_entry_in_canvas(event) -> None:
+def _insert_reset_entry_in_canvas(event: tk.Event) -> None:
     canvas_grid_coordinates_of_the_event = (
         canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(event)
     )
     _create_reset_entry(canvas_grid_coordinates_of_the_event)
 
 
-def _create_reset_entry(canvas_grid_coordinates_of_the_event) -> None:
+def _create_reset_entry(canvas_grid_coordinates_of_the_event: list[float]) -> None:
     reset_entry_polygon = _create_polygon_shape_for_reset_entry()
     reset_entry_polygon = _move_reset_entry_polygon_to_event(canvas_grid_coordinates_of_the_event, reset_entry_polygon)
     polygon_id = main_window.canvas.create_polygon(
@@ -70,14 +70,14 @@ def _create_polygon_shape_for_reset_entry() -> list[list]:
     return [upper_left_corner, upper_right_corner, point_corner, lower_right_corner, lower_left_corner]
 
 
-def _move_reset_entry_polygon_to_event(canvas_grid_coordinates_of_the_event, reset_entry_polygon):
+def _move_reset_entry_polygon_to_event(canvas_grid_coordinates_of_the_event: list[float], reset_entry_polygon: list[list[float]]) -> list[list[float]]:
     for p in reset_entry_polygon:
         p[0] += canvas_grid_coordinates_of_the_event[0]
         p[1] += canvas_grid_coordinates_of_the_event[1]
     return reset_entry_polygon
 
 
-def move_to(event_x, event_y, polygon_id, first, last) -> None:
+def move_to(event_x: float, event_y: float, polygon_id: int, first: bool, last: bool) -> None:
     global _difference_x, _difference_y
     if first is True:
         # Calculate the difference between the "anchor" point and the event:
@@ -107,7 +107,7 @@ def move_to(event_x, event_y, polygon_id, first, last) -> None:
     _move_polygon_in_canvas(polygon_id, new_coords, new_center)
 
 
-def _determine_width_of_the_polygon(polygon_id):
+def _determine_width_of_the_polygon(polygon_id: int) -> float:
     polygon_coords = main_window.canvas.coords(polygon_id)
     return polygon_coords[2] - polygon_coords[0]
 

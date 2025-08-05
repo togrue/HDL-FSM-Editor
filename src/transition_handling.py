@@ -21,7 +21,9 @@ _difference_x: float = 0.0
 _difference_y: float = 0.0
 
 
-def move_to(event_x: float, event_y: float, transition_id: int, point: str, first: bool, move_list: list, last: bool) -> None:
+def move_to(
+    event_x: float, event_y: float, transition_id: int, point: str, first: bool, move_list: list, last: bool
+) -> None:
     global _difference_x, _difference_y
     if main_window.canvas.type(move_list[0][0]) == "line" and (move_list[0][1] in ("start", "end")):
         middle_of_line_is_moved = False
