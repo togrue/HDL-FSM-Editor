@@ -21,7 +21,7 @@ _difference_x: float = 0.0
 _difference_y: float = 0.0
 
 
-def move_to(event_x, event_y, transition_id, point, first, move_list, last) -> None:
+def move_to(event_x: float, event_y: float, transition_id: int, point: str, first: bool, move_list: list, last: bool) -> None:
     global _difference_x, _difference_y
     if main_window.canvas.type(move_list[0][0]) == "line" and (move_list[0][1] in ("start", "end")):
         middle_of_line_is_moved = False
@@ -882,6 +882,6 @@ def _evaluate_menu(
         undo_handling.design_has_changed()  # It must be waited until the window for the menu is deleted.
 
 
-def _close_menu(event, window, listbox) -> None:
+def _close_menu(event: tk.Event, window: int, listbox: tk.Listbox) -> None:
     listbox.destroy()
     main_window.canvas.delete(window)

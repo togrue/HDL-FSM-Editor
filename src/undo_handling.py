@@ -256,7 +256,7 @@ def _get_complete_design_as_text_object() -> str:
     return design
 
 
-def _get_coords(canvas_id) -> str:
+def _get_coords(canvas_id: int) -> str:
     coords = main_window.canvas.coords(canvas_id)
     coords_string = ""
     for c in coords:
