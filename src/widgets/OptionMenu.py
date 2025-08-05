@@ -6,7 +6,7 @@ import tkinter as tk
 
 
 class OptionMenu(tk.Listbox):
-    def __init__(self, master: tk.Tk, items: list[str], *args, **kwargs) -> None:
+    def __init__(self, master: tk.Widget, items: list[str], *args, **kwargs) -> None:
         tk.Listbox.__init__(self, master, exportselection=False, background="grey", *args, **kwargs)
 
         for item in items:

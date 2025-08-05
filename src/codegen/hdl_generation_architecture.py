@@ -198,7 +198,7 @@ def create_architecture(file_name: str, file_line_number: int, state_tag_list_so
 
 
 def _create_type_definition_for_the_state_signal(state_tag_list_sorted: list[str]) -> str:
-    list_of_all_state_names = [
+    list_of_all_state_names: list[str] = [
         main_window.canvas.itemcget(state_tag + "_name", "text") for state_tag in state_tag_list_sorted
     ]
     if list_of_all_state_names != []:
