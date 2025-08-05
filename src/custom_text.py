@@ -28,7 +28,7 @@ class CustomText(tk.Text):
     read_variables_of_all_windows: dict["CustomText", list[str]] = {}
     written_variables_of_all_windows: dict["CustomText", list[str]] = {}
 
-    def __init__(self, *args, text_type: str, **kwargs) -> None:
+    def __init__(self, *args: Any, text_type: str, **kwargs: Any) -> None:
         """A text widget that report on internal widget commands"""
         tk.Text.__init__(self, *args, **kwargs)
         self.text_type = text_type

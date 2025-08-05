@@ -3,10 +3,11 @@ Creates a menu.
 """
 
 import tkinter as tk
+from typing import Any
 
 
 class OptionMenu(tk.Listbox):
-    def __init__(self, master: tk.Widget, items: list[str], *args, **kwargs) -> None:
+    def __init__(self, master: tk.Widget, items: list[str], *args: Any, **kwargs: Any) -> None:
         tk.Listbox.__init__(self, master, exportselection=False, background="grey", *args, **kwargs)
 
         for item in items:
