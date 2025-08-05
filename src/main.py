@@ -102,9 +102,9 @@ def _main() -> None:
     """Main entry point for HDL-FSM-Editor."""
     print(main_window.header_string)
 
-    _parse_and_process_arguments()
-
     _setup_application_ui()
+
+    _parse_and_process_arguments()
 
     main_window.show_window()
     main_window.root.mainloop()

@@ -108,13 +108,11 @@ date_of_hdl_file_shown_in_hdl_tab: float = 0.0
 date_of_hdl_file2_shown_in_hdl_tab: float = 0.0
 include_timestamp_in_output: tk.BooleanVar
 _check_version_result: str = ""
-_read_message_result: str = ""
 
 keywords: dict[str, list[str]] = constants.VHDL_KEYWORDS
 
 
 def read_message() -> None:
-    global _read_message_result
     try:
         source = urllib.request.urlopen("http://www.hdl-fsm-editor.de/message.txt")
         message = source.read()
@@ -127,6 +125,13 @@ def read_message() -> None:
         # pass
         _read_message_result = ""
     print(_read_message_result)
+    _copy_message_into_log_tab(_read_message_result)
+
+
+def _copy_message_into_log_tab(_read_message_result) -> None:
+    log_frame_text.config(state=tk.NORMAL)
+    log_frame_text.insert("1.0", header_string + "\n" + _check_version_result + "\n" + _read_message_result + "\n")
+    log_frame_text.config(state=tk.NORMAL)
 
 
 def check_version() -> None:
@@ -950,10 +955,6 @@ def create_log_notebook_tab() -> None:
     notebook.add(log_frame, sticky="nsew", text=GuiTab.COMPILE_MSG.value)
     _debug_active = tk.IntVar()
     _debug_active.set(1)  # 1: inactive, 2: active
-
-    log_frame_text.config(state=tk.NORMAL)
-    log_frame_text.insert("1.0", header_string + "\n" + _check_version_result + "\n" + _read_message_result + "\n")
-    log_frame_text.config(state=tk.NORMAL)
 
 
 def _clear_log_tab(_) -> None:
