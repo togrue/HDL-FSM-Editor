@@ -55,13 +55,13 @@ def _state_actions_contain_only_null_for_each_state(state_action_list: list[list
 
 
 def _create_state_action_process_for_vhdl(
-    file_name,
-    file_line_number,
-    state_action_list,
-    default_state_actions,
-    all_possible_sensitivity_entries,
-    variable_declarations,
-) -> tuple:
+    file_name: str,
+    file_line_number: int,
+    state_action_list: list[str],
+    default_state_actions: str,
+    all_possible_sensitivity_entries: list[str],
+    variable_declarations: str,
+) -> tuple[str, int]:
     state_action_process = "p_state_actions: process "
     state_action_process += (
         _create_sensitivity_list(state_action_list, default_state_actions, all_possible_sensitivity_entries) + "\n"
@@ -118,13 +118,13 @@ def _create_state_action_process_for_vhdl(
 
 
 def _create_state_action_process_for_verilog(
-    file_name,
-    file_line_number,
-    state_action_list,
-    default_state_actions,
+    file_name: str,
+    file_line_number: int,
+    state_action_list: list[str],
+    default_state_actions: str,
     all_possible_sensitivity_entries,
     variable_declarations,
-) -> tuple:
+) -> tuple[str, int]:
     state_action_process = "always @"
     state_action_process += _create_sensitivity_list(
         state_action_list, default_state_actions, all_possible_sensitivity_entries
@@ -190,7 +190,7 @@ def _create_state_action_process_for_verilog(
     return state_action_process, file_line_number
 
 
-def _create_a_list_with_all_possible_sensitivity_entries() -> list:
+def _create_a_list_with_all_possible_sensitivity_entries() -> list[str]:
     all_port_declarations = main_window.interface_ports_text.get("1.0", tk.END).lower()
     readable_ports_list = get_all_readable_ports(all_port_declarations, check=True)
     all_signal_declarations = main_window.internals_architecture_text.get("1.0", tk.END).lower()
@@ -199,7 +199,7 @@ def _create_a_list_with_all_possible_sensitivity_entries() -> list:
     return signals_list
 
 
-def _create_state_action_list(state_tag_list_sorted):
+def _create_state_action_list(state_tag_list_sorted: list[str]) -> list[list[str]]:
     state_action_list = []
     for state_tag in state_tag_list_sorted:
         state_action = "null;\n"
@@ -220,7 +220,9 @@ def _create_state_action_list(state_tag_list_sorted):
     return state_action_list
 
 
-def _create_sensitivity_list(state_action_list, default_state_actions, all_possible_sensitivity_entries) -> str:
+def _create_sensitivity_list(
+    state_action_list: list[list[str]], default_state_actions: str, all_possible_sensitivity_entries: list[str]
+) -> str:
     sensitivity_list = "("
     default_state_actions_separated = hdl_generation_library.convert_hdl_lines_into_a_searchable_string(
         default_state_actions

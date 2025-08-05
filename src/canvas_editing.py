@@ -427,11 +427,11 @@ def _decrement_font_size_if_window_is_too_wide() -> None:
         main_window.canvas.after_idle(_decrement_font_size_if_window_is_too_wide)
 
 
-def _determine_center_of_rectangle(rectangle_coords) -> list:
+def _determine_center_of_rectangle(rectangle_coords: list[float]) -> list[float]:
     return [(rectangle_coords[0] + rectangle_coords[2]) / 2, (rectangle_coords[1] + rectangle_coords[3]) / 2]
 
 
-def _move_canvas_point_from_to(complete_center, visible_center) -> None:
+def _move_canvas_point_from_to(complete_center: list[float], visible_center: list[float]) -> None:
     main_window.canvas.scan_mark(int(complete_center[0]), int(complete_center[1]))
     main_window.canvas.scan_dragto(int(visible_center[0]), int(visible_center[1]), gain=1)
 
@@ -876,7 +876,7 @@ def _search_in_canvas_text(item: int, search_pattern: str, replace: bool, replac
 
 
 def _search_in_text_fields_of_a_tab(
-    tab: GuiTab, kind, search_pattern, interface_text_fields, replace, replace_pattern
+    tab: GuiTab, kind: str, search_pattern: str, interface_text_fields: list[tk.Text], replace: bool, replace_pattern: str
 ) -> int:
     count = tk.IntVar()
     number_of_hits = 0
@@ -930,7 +930,7 @@ def _move_in_foreground(tab: GuiTab) -> None:
             main_window.notebook.select(notebook_id)
 
 
-def __show_menu(zoom_coords) -> None:
+def __show_menu(zoom_coords: list[float]) -> None:
     canvas_menue_entries_list_with_hide = ["Change background color", "Hide grid"]
     canvas_menue_entries_list_with_show = ["Change background color", "Show grid"]
     if main_window.show_grid is True:
@@ -951,7 +951,7 @@ def __show_menu(zoom_coords) -> None:
     menu.bind("<Leave>", lambda event: __close_menu(menue_window, menu))
 
 
-def __evaluate_menu(menue_window, menu) -> None:
+def __evaluate_menu(menue_window: int, menu: OptionMenu) -> None:
     selected_entry = menu.get(menu.curselection()[0])
     if "Change background color" in selected_entry:
         main_window.choose_bg_color()
@@ -964,6 +964,6 @@ def __evaluate_menu(menue_window, menu) -> None:
     __close_menu(menue_window, menu)
 
 
-def __close_menu(menue_window, menu) -> None:
+def __close_menu(menue_window: int, menu: OptionMenu) -> None:
     menu.destroy()
     main_window.canvas.delete(menue_window)

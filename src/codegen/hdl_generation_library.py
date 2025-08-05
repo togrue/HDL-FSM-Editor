@@ -4,7 +4,7 @@ This module contains methods used at HDL generation.
 
 import re
 import tkinter as tk
-from typing import Any, Optional, Union, List, Dict
+from typing import Any, Dict, List, Optional, Union
 
 import canvas_editing
 import condition_action_handling
@@ -876,7 +876,7 @@ def _remove_verilog_block_comments(hdl_text):
     return re.sub("/\\*.*\\*/", "", hdl_text, flags=re.DOTALL)
 
 
-def convert_hdl_lines_into_a_searchable_string(text):
+def convert_hdl_lines_into_a_searchable_string(text: str) -> str:
     without_comments = remove_comments_and_returns(text)
     separated = surround_character_by_blanks(";", without_comments)
     separated = surround_character_by_blanks("(", separated)

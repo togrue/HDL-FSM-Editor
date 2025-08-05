@@ -75,7 +75,9 @@ def _determine_edge_length_of_the_rectangle(rectangle_id: int) -> float:
     return edge_length
 
 
-def _calculate_new_upper_left_corner_of_the_rectangle(event_x: float, event_y: float, edge_length: float) -> list[float]:
+def _calculate_new_upper_left_corner_of_the_rectangle(
+    event_x: float, event_y: float, edge_length: float
+) -> list[float]:
     return [event_x - edge_length / 2, event_y - edge_length / 2]
 
 
