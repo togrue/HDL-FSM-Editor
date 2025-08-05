@@ -84,7 +84,7 @@ class LinkDictionary:
         """Check if a link exists for the given file and line."""
         return file_name in self.link_dict and file_line_number in self.link_dict[file_name]
 
-    def jump_to_source(self, selected_file, file_line_number) -> None:
+    def jump_to_source(self, selected_file: str, file_line_number: int) -> None:
         # print("jump_to_source", selected_file, file_line_number)
         tab_to_show = self.link_dict[selected_file][file_line_number]["tab_name"]
         widget = self.link_dict[selected_file][file_line_number]["widget_reference"]
@@ -94,7 +94,7 @@ class LinkDictionary:
         main_window.show_tab(tab_to_show)
         widget.highlight_item(hdl_item_type, object_identifier, number_of_line)
 
-    def jump_to_hdl(self, selected_file, file_line_number) -> None:
+    def jump_to_hdl(self, selected_file: str, file_line_number: int) -> None:
         if main_window.select_file_number_text.get() == 2:
             gen_config = GenerationConfig.from_main_window()
             file_name_architecture = gen_config.get_architecture_file()
@@ -106,7 +106,7 @@ class LinkDictionary:
         main_window.hdl_frame_text.focus_set()
         main_window.hdl_frame_text.config(state="disabled")
 
-    def clear_link_dict(self, file_name) -> None:
+    def clear_link_dict(self, file_name: str) -> None:
         if file_name in self.link_dict:
             # print("clear_link_dict: file_name =", file_name)
             self.link_dict.pop(file_name)
@@ -115,7 +115,7 @@ class LinkDictionary:
 _link_dictionary: Optional[LinkDictionary] = None
 
 
-def init_link_dict(root) -> None:
+def init_link_dict(root: tk.Widget) -> None:
     global _link_dictionary
     _link_dictionary = LinkDictionary(root)
 

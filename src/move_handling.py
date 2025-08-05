@@ -94,7 +94,7 @@ def _state_is_moved_to_near_to_state_or_connector(move_list: list, event_x: floa
     return False
 
 
-def _connector_moved_too_close_to_other_object(move_list, event_x, event_y) -> bool:
+def _connector_moved_too_close_to_other_object(move_list: list, event_x: float, event_y: float) -> bool:
     for entry in move_list:
         moved_item_id = entry[0]
         if (
