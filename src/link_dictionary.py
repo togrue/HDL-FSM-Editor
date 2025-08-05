@@ -29,7 +29,7 @@ class LinkDictionary:
      the generated HDL to the graphical source of the line.
     """
 
-    def __init__(self, root) -> None:
+    def __init__(self, root: tk.Widget) -> None:
         self.root = root
         self.link_dict: dict[str, dict[int, dict[str, Any]]] = {}
 

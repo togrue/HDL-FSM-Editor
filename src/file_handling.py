@@ -32,7 +32,7 @@ from constants import GuiTab
 from project_manager import project_manager
 
 
-def ask_save_unsaved_changes(title) -> str:
+def ask_save_unsaved_changes(title: str) -> str:
     """
     Ask user what to do with unsaved changes.
     Returns: 'save', 'discard', or 'cancel'
@@ -165,7 +165,7 @@ def _clear_design() -> bool:
 ########################################################################################################################
 
 
-def save_in_file_new(save_filename) -> None:  # Called at saving and at every design change (writing to .tmp-file)
+def save_in_file_new(save_filename: str) -> None:  # Called at saving and at every design change (writing to .tmp-file)
     design_dictionary = _save_design_to_dict()
     try:
         with open(save_filename, "w", encoding="utf-8") as fileobject:

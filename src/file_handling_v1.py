@@ -42,7 +42,7 @@ HIGHLIGHT_TAG_FONT_SIZE = 10
 DASH_PATTERN = (2, 2)
 
 
-def open_v1_file_with_name(read_filename) -> None:
+def open_v1_file_with_name(read_filename: str) -> None:
     """
     Opens and loads a version 1 HDL-FSM-Editor file.
     Version 1 files use a text-based format with line-by-line parsing.
@@ -491,12 +491,12 @@ def open_v1_file_with_name(read_filename) -> None:
     canvas_editing.view_all()
 
 
-def _remove_keyword_from_line(line, keyword):
+def _remove_keyword_from_line(line: str, keyword: str) -> str:
     """Remove keyword prefix from line."""
     return line[len(keyword) :]
 
 
-def _get_data(rest_of_line, fileobject):
+def _get_data(rest_of_line: str, fileobject) -> str:
     """Extract data from version 1 file format."""
     length_of_data = _get_length_info_from_line(rest_of_line)
     first_data = _remove_length_info(rest_of_line)
@@ -504,17 +504,17 @@ def _get_data(rest_of_line, fileobject):
     return data
 
 
-def _get_length_info_from_line(rest_of_line) -> int:
+def _get_length_info_from_line(rest_of_line: str) -> int:
     """Extract length information from line."""
     return int(re.sub(r"\|.*", "", rest_of_line))
 
 
-def _remove_length_info(rest_of_line):
+def _remove_length_info(rest_of_line: str) -> str:
     """Remove length information from line."""
     return re.sub(r".*\|", "", rest_of_line)
 
 
-def _get_remaining_data(fileobject, length_of_data, first_data):
+def _get_remaining_data(fileobject, length_of_data: int, first_data: str) -> str:
     """Get remaining data based on length information."""
     data = first_data
     while len(data) < length_of_data:
