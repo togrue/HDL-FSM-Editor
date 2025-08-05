@@ -70,7 +70,9 @@ def _create_polygon_shape_for_reset_entry() -> list[list]:
     return [upper_left_corner, upper_right_corner, point_corner, lower_right_corner, lower_left_corner]
 
 
-def _move_reset_entry_polygon_to_event(canvas_grid_coordinates_of_the_event: list[float], reset_entry_polygon: list[list[float]]) -> list[list[float]]:
+def _move_reset_entry_polygon_to_event(
+    canvas_grid_coordinates_of_the_event: list[float], reset_entry_polygon: list[list[float]]
+) -> list[list[float]]:
     for p in reset_entry_polygon:
         p[0] += canvas_grid_coordinates_of_the_event[0]
         p[1] += canvas_grid_coordinates_of_the_event[1]
@@ -112,31 +114,31 @@ def _determine_width_of_the_polygon(polygon_id: int) -> float:
     return polygon_coords[2] - polygon_coords[0]
 
 
-def _determine_height_of_the_polygon(polygon_id):
+def _determine_height_of_the_polygon(polygon_id: int) -> float:
     polygon_coords = main_window.canvas.coords(polygon_id)
     return polygon_coords[9] - polygon_coords[1]
 
 
-def _calculate_new_upper_left_corner_of_the_polygon(event_x, event_y, width, height) -> list:
+def _calculate_new_upper_left_corner_of_the_polygon(event_x: float, event_y: float, width: float, height: float) -> list[float]:
     return [event_x - 13 * width / 10, event_y - height / 2]
 
 
-def _calculate_new_upper_right_corner_of_the_polygon(event_x, event_y, width, height) -> list:
+def _calculate_new_upper_right_corner_of_the_polygon(event_x: float, event_y: float, width: float, height: float) -> list[float]:
     return [event_x - 3 * width / 10, event_y - height / 2]
 
 
-def _calculate_new_lower_right_corner_of_the_polygon(event_x, event_y, width, height) -> list:
+def _calculate_new_lower_right_corner_of_the_polygon(event_x: float, event_y: float, width: float, height: float) -> list[float]:
     return [event_x - 3 * width / 10, event_y + height / 2]
 
 
-def _calculate_new_lower_left_corner_of_the_polygon(event_x, event_y, width, height) -> list:
+def _calculate_new_lower_left_corner_of_the_polygon(event_x: float, event_y: float, width: float, height: float) -> list[float]:
     return [event_x - 13 * width / 10, event_y + height / 2]
 
 
-def _calculate_new_center_of_the_polygon(event_x, event_y, width) -> list:
+def _calculate_new_center_of_the_polygon(event_x: float, event_y: float, width: float) -> list[float]:
     return [event_x - 4 * width / 5, event_y]
 
 
-def _move_polygon_in_canvas(polygon_id, new_coords, new_center) -> None:
+def _move_polygon_in_canvas(polygon_id: int, new_coords: list[float], new_center: list[float]) -> None:
     main_window.canvas.coords(polygon_id, *new_coords)
     main_window.canvas.coords("reset_text", *new_center)
