@@ -36,7 +36,16 @@ class ConditionAction:
     conditionaction_id: int = 0
     dictionary: dict[int, "ConditionAction"] = {}
 
-    def __init__(self, menu_x, menu_y, connected_to_reset_entry, height, width, padding, increment) -> None:
+    def __init__(
+        self,
+        menu_x: float,
+        menu_y: float,
+        connected_to_reset_entry: bool,
+        height: int,
+        width: int,
+        padding: int,
+        increment: bool,
+    ) -> None:
         if increment is True:
             ConditionAction.conditionaction_id += 1
         self.difference_x = 0
@@ -113,13 +122,13 @@ class ConditionAction:
         # Create dictionary for translating the canvas-id of the canvas-window into a reference to this object:
         ConditionAction.dictionary[self.window_id] = self
 
-    def update_action(self):
+    def update_action(self) -> None:
         # Update self.action_text, so that the <Leave>-check in deactivate() does not signal a design-change and
         # that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
         # To ensure this, save_in_file_new() waits for idle.
         self.action_text = str(self.action_id.get("1.0", tk.END))
 
-    def update_condition(self):
+    def update_condition(self) -> None:
         # Update self.condition_text, so that the <Leave>-check in deactivate() does not signal a design-change and
         # that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
         # To ensure this, save_in_file_new() waits for idle.
@@ -131,7 +140,7 @@ class ConditionAction:
         self.action_label.grid(row=2, column=0, sticky="we")
         self.action_id.grid(row=3, column=0, sticky="we")
 
-    def tag(self, connected_to_reset_entry) -> None:
+    def tag(self, connected_to_reset_entry: bool) -> None:
         if connected_to_reset_entry is True:
             tag = [
                 "condition_action" + str(ConditionAction.conditionaction_id),
@@ -145,12 +154,12 @@ class ConditionAction:
             ]
         main_window.canvas.itemconfigure(self.window_id, tag=tag)
 
-    def change_descriptor_to(self, text) -> None:
+    def change_descriptor_to(self, text: str) -> None:
         self.action_label.config(
             text=text
         )  # Used for switching between "asynchronous" and "synchron" (clocked) transition.
 
-    def draw_line(self, transition_id, menu_x, menu_y) -> None:
+    def draw_line(self, transition_id: int, menu_x: float, menu_y: float) -> None:
         # Draw a line from the transition start point to the condition_action block which is added to the transition:
         transition_coords = main_window.canvas.coords(transition_id)
         transition_tags = main_window.canvas.gettags(transition_id)
@@ -193,7 +202,7 @@ class ConditionAction:
             main_window.canvas.tag_unbind(self.window_id, "<Enter>", self.window_enter_func_id)
             self.window_enter_func_id = ""
 
-    def delete_polygon(self, event):
+    def delete_polygon(self, event: tk.Event) -> None:
         if self.debug_events is True:
             print("event 3: leave-polygon: delete polygon")
         assert self.move_rectangle is not None
@@ -208,7 +217,7 @@ class ConditionAction:
         self.register_all_widgets_at_grid()
         self.canvas_enter_func_id = str(main_window.canvas.bind("<Enter>", self.leave_box))
 
-    def leave_box(self, event):
+    def leave_box(self, event: tk.Event) -> None:
         self.frame_id.configure(padding=1)
         if self.debug_events is True:
             print("event 4: canvas-enter: shrink-box")
@@ -236,7 +245,7 @@ class ConditionAction:
             self.action_label.grid_forget()
             self.action_id.grid_forget()
 
-    def move_to(self, event_x, event_y, first, last) -> None:
+    def move_to(self, event_x: float, event_y: float, first: bool, last: bool) -> None:
         # During moving there might be no polygon-leave-event (which deletes the polygon),
         # so for delete it hear for clean graphics.
         if self.move_rectangle is not None:

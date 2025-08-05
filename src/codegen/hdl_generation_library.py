@@ -102,7 +102,7 @@ def _get_reset_transition_tag() -> str:
 
 
 def _get_transition_target_condition_action(
-    transition_tag,
+    transition_tag: str,
 ) -> tuple[str, str, str, Union[condition_action_handling.ConditionAction, str]]:
     tags = main_window.canvas.gettags(transition_tag)
     transition_condition = ""

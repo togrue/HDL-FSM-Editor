@@ -47,7 +47,7 @@ def compile_hdl() -> None:
     main_window.log_frame_text.config(state=tk.DISABLED)
 
 
-def _execute(command) -> bool:
+def _execute(command: str) -> bool:
     command_array = shlex.split(command)  # Does not split quoted sub-strings with blanks.
     command_array_new = _replace_variables(command_array)
     if command_array_new is None:
@@ -138,7 +138,7 @@ so only $file1 and $file2 are allowed.',
     return command_array_new
 
 
-def _insert_line_in_log(line) -> None:
+def _insert_line_in_log(line: str) -> None:
     if main_window.language.get() == "VHDL":
         # search for compiler-message with ":<line-number>:<column-number>:":
         regex_message_find = main_window.regex_message_find_for_vhdl

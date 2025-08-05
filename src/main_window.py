@@ -11,7 +11,7 @@ import urllib.request
 from pathlib import Path
 from tkinter import messagebox, ttk
 from tkinter.filedialog import askdirectory, askopenfilename
-from typing import Union
+from typing import Any, Union
 
 import canvas_editing
 import canvas_modify_bindings
@@ -317,7 +317,7 @@ def create_menu_bar() -> None:
     root.bind_all("<Control-F>", lambda event: _capslock_warning("F"))
 
 
-def _capslock_warning(character):
+def _capslock_warning(character: str):
     messagebox.showwarning(
         "Warning in HDL-FSM-Editor",
         "The character " + character + " is not bound to any action.\nPerhaps Capslock is active?",
@@ -879,13 +879,13 @@ def create_diagram_notebook_tab() -> None:
     grid_drawer = grid_drawing.GridDraw(canvas)
 
 
-def __scroll_xview(*args) -> None:
+def __scroll_xview(*args: Any) -> None:
     grid_drawer.remove_grid()
     canvas.xview(*args)
     grid_drawer.draw_grid()
 
 
-def __scroll_yview(*args) -> None:
+def __scroll_yview(*args: Any) -> None:
     grid_drawer.remove_grid()
     canvas.yview(*args)
     grid_drawer.draw_grid()
@@ -972,7 +972,7 @@ def _clear_log_tab(_) -> None:
     log_frame_text.config(state=tk.DISABLED)
 
 
-def _edit_regex(*_) -> None:
+def _edit_regex(*_: Any) -> None:
     """Open the regex configuration dialog and update settings if confirmed."""
     global \
         regex_message_find_for_vhdl, \
@@ -1009,7 +1009,7 @@ def _edit_regex(*_) -> None:
         _regex_error_happened = False
 
 
-def _cursor_move_hdl_tab(*_) -> None:
+def _cursor_move_hdl_tab(*_: Any) -> None:
     global _line_number_under_pointer_hdl_tab, _func_id_jump
     if hdl_frame_text.get("1.0", tk.END + "- 1 char") == "":
         return
@@ -1045,7 +1045,7 @@ def _cursor_move_hdl_tab(*_) -> None:
         _line_number_under_pointer_hdl_tab = line_number
 
 
-def _cursor_move_log_tab(*_) -> None:
+def _cursor_move_log_tab(*_: Any) -> None:
     global _func_id_jump1, _func_id_jump2, _regex_error_happened, _line_number_under_pointer_log_tab
     if log_frame_text.get("1.0", tk.END + "- 1 char") == "":
         return
@@ -1199,7 +1199,7 @@ def _handle_key_at_declarations(custom_text_ref: custom_text.CustomText) -> None
     custom_text_ref.after_idle(custom_text_ref.update_highlighting)
 
 
-def _show_path_has_changed(*_) -> None:
+def _show_path_has_changed(*_: Any) -> None:
     undo_handling.design_has_changed()
 
 

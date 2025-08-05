@@ -41,7 +41,7 @@ label_fontsize: float = 8.0
 state_name_font: Optional[font.Font] = None
 
 
-def store_mouse_position(event) -> None:  # used by delete().
+def store_mouse_position(event: tk.Event) -> None:  # used by delete().
     global canvas_x_coordinate, canvas_y_coordinate
     global _windows_x_coordinate, _windows_y_coordinate
     global _windows_x_coordinate_old, _windows_y_coordinate_old
@@ -58,13 +58,13 @@ def create_font_for_state_names() -> None:  # Called once by create_diagram_note
     state_name_font.configure(size=int(fontsize))
 
 
-def translate_window_event_coordinates_in_rounded_canvas_coordinates(event) -> list[float]:
+def translate_window_event_coordinates_in_rounded_canvas_coordinates(event: tk.Event) -> list[float]:
     canvas_grid_x_coordinate = main_window.canvas.canvasx(event.x, gridspacing=state_radius)
     canvas_grid_y_coordinate = main_window.canvas.canvasy(event.y, gridspacing=state_radius)
     return [canvas_grid_x_coordinate, canvas_grid_y_coordinate]
 
 
-def translate_window_event_coordinates_in_exact_canvas_coordinates(event) -> list[float]:
+def translate_window_event_coordinates_in_exact_canvas_coordinates(event: tk.Event) -> list[float]:
     canvas_grid_x_coordinate, canvas_grid_y_coordinate = (
         main_window.canvas.canvasx(event.x),
         main_window.canvas.canvasy(event.y),
@@ -294,7 +294,7 @@ def delete() -> None:
         undo_handling.design_has_changed()
 
 
-def adapt_visibility_of_priority_rectangles_at_state(start_state) -> None:
+def adapt_visibility_of_priority_rectangles_at_state(start_state: str) -> None:
     tags_of_start_state = main_window.canvas.gettags(start_state)
     number_of_outgoing_transitions = 0
     tag_of_outgoing_transition = ""
@@ -307,7 +307,7 @@ def adapt_visibility_of_priority_rectangles_at_state(start_state) -> None:
         main_window.canvas.itemconfigure(tag_of_outgoing_transition + "priority", state=tk.HIDDEN)
 
 
-def start_view_rectangle(event) -> None:
+def start_view_rectangle(event: tk.Event) -> None:
     [event_x, event_y] = translate_window_event_coordinates_in_exact_canvas_coordinates(event)
     rectangle_id = main_window.canvas.create_rectangle(event_x, event_y, event_x, event_y, dash=(3, 5))
     main_window.canvas.tag_raise(rectangle_id, "all")
@@ -316,14 +316,14 @@ def start_view_rectangle(event) -> None:
     main_window.canvas.bind("<ButtonRelease-3>", lambda event: _view_area_by_button3(rectangle_id))
 
 
-def _draw_view_rectangle(event, rectangle_id) -> None:  # Called by Motion-event.
+def _draw_view_rectangle(event: tk.Event, rectangle_id: int) -> None:  # Called by Motion-event.
     [event_x, event_y] = translate_window_event_coordinates_in_exact_canvas_coordinates(event)
     rectangle_coords = main_window.canvas.coords(rectangle_id)
     if event_x > rectangle_coords[0] and event_y > rectangle_coords[1]:
         main_window.canvas.coords(rectangle_id, rectangle_coords[0], rectangle_coords[1], event_x, event_y)
 
 
-def _view_area_by_button3(rectangle_id) -> None:
+def _view_area_by_button3(rectangle_id: int) -> None:
     rectangle_coords = main_window.canvas.coords(rectangle_id)
     if rectangle_coords[0] != rectangle_coords[2] and rectangle_coords[1] != rectangle_coords[3]:
         _view_area(rectangle_id)
@@ -348,7 +348,7 @@ def _view_area_by_button3(rectangle_id) -> None:
 
 
 def _view_area(
-    rectangle_id,
+    rectangle_id: int,
 ) -> None:  # Called by Button-1("view area"-button)/Button-3(view area per right mouse-button)-Release-Event.
     main_window.grid_drawer.remove_grid()
     complete_rectangle = main_window.canvas.coords(rectangle_id)
@@ -374,7 +374,7 @@ def view_all() -> None:
     )  # "after_idle" is needed because view_rectangle calls decrement_font_size_if_window_is_too_wide after idle.
 
 
-def view_rectangle(complete_rectangle, check_fit) -> None:
+def view_rectangle(complete_rectangle: list[float], check_fit: bool) -> None:
     if complete_rectangle[2] - complete_rectangle[0] != 0 and complete_rectangle[3] - complete_rectangle[1] != 0:
         visible_rectangle = [
             main_window.canvas.canvasx(0),
@@ -436,7 +436,7 @@ def _move_canvas_point_from_to(complete_center, visible_center) -> None:
     main_window.canvas.scan_dragto(int(visible_center[0]), int(visible_center[1]), gain=1)
 
 
-def _calculate_zoom_factor(complete_rectangle, visible_rectangle):
+def _calculate_zoom_factor(complete_rectangle: list[float], visible_rectangle: list[float]) -> float:
     complete_width = complete_rectangle[2] - complete_rectangle[0]
     complete_height = complete_rectangle[3] - complete_rectangle[1]
     visible_width = visible_rectangle[2] - visible_rectangle[0]
@@ -447,7 +447,7 @@ def _calculate_zoom_factor(complete_rectangle, visible_rectangle):
     return factor
 
 
-def zoom_wheel(event) -> None:
+def zoom_wheel(event: tk.Event) -> None:
     main_window.canvas.grid_remove()  # Make the grid invisible, but remember all options for the the next grid() call.
     main_window.grid_drawer.remove_grid()
     # event.delta: attribute of the mouse wheel under Windows and MacOs.
@@ -498,7 +498,7 @@ def zoom_minus() -> None:
     main_window.canvas.grid()
 
 
-def _canvas_zoom(zoom_center, zoom_factor) -> None:
+def _canvas_zoom(zoom_center: list[float], zoom_factor: float) -> None:
     # Modify factor, so that fontsize is always an integer:
     fontsize_rounded_down = int(fontsize * zoom_factor)
     if zoom_factor > 1 and fontsize_rounded_down == fontsize:
@@ -513,7 +513,7 @@ def _canvas_zoom(zoom_center, zoom_factor) -> None:
         _adapt_global_size_variables(zoom_factor)
 
 
-def _scroll_canvas_to_show_the_zoom_center(zoom_center, zoom_factor) -> None:
+def _scroll_canvas_to_show_the_zoom_center(zoom_center: list[float], zoom_factor: float) -> None:
     new_position_of_zoom_center = [coord * zoom_factor for coord in zoom_center]
     main_window.canvas.scan_mark(
         int(new_position_of_zoom_center[0]), int(new_position_of_zoom_center[1])
@@ -521,13 +521,13 @@ def _scroll_canvas_to_show_the_zoom_center(zoom_center, zoom_factor) -> None:
     main_window.canvas.scan_dragto(int(zoom_center[0]), int(zoom_center[1]), gain=1)
 
 
-def _adapt_scroll_bars(factor) -> None:
+def _adapt_scroll_bars(factor: float) -> None:
     scrollregion_strings = main_window.canvas.cget("scrollregion").split()
     scrollregion_scaled = tuple(float(x) * factor for x in scrollregion_strings)
     main_window.canvas.configure(scrollregion=scrollregion_scaled)
 
 
-def _adapt_global_size_variables(factor) -> None:
+def _adapt_global_size_variables(factor: float) -> None:
     global state_radius
     global priority_distance
     global reset_entry_size
@@ -537,20 +537,20 @@ def _adapt_global_size_variables(factor) -> None:
     _modify_font_sizes_of_all_canvas_items(factor)
 
 
-def scroll_start(event) -> None:
+def scroll_start(event: tk.Event) -> None:
     main_window.grid_drawer.remove_grid()
     main_window.canvas.scan_mark(int(event.x), int(event.y))
 
 
-def scroll_move(event) -> None:
+def scroll_move(event: tk.Event) -> None:
     main_window.canvas.scan_dragto(int(event.x), int(event.y), gain=1)
 
 
-def scroll_end(event) -> None:
+def scroll_end(event: tk.Event) -> None:
     main_window.grid_drawer.draw_grid()
 
 
-def scroll_wheel(event) -> None:
+def scroll_wheel(event: tk.Event) -> None:
     main_window.grid_drawer.remove_grid()
     main_window.canvas.scan_mark(int(event.x), int(event.y))
     delta_y = 0
@@ -562,7 +562,7 @@ def scroll_wheel(event) -> None:
     main_window.grid_drawer.draw_grid()
 
 
-def _modify_font_sizes_of_all_canvas_items(factor) -> None:
+def _modify_font_sizes_of_all_canvas_items(factor: float) -> None:
     global fontsize
     global label_fontsize
     global state_name_font
@@ -664,7 +664,7 @@ def get_visible_center_as_string() -> str:
     return visible_center_string
 
 
-def shift_visible_center_to_window_center(new_visible_center_string) -> None:
+def shift_visible_center_to_window_center(new_visible_center_string: str) -> None:
     new_visible_center = []
     new_visible_center_string_array = new_visible_center_string.split()
     for entry in new_visible_center_string_array:
@@ -679,7 +679,7 @@ def shift_visible_center_to_window_center(new_visible_center_string) -> None:
     _move_canvas_point_from_to(new_visible_center, actual_visible_center)
 
 
-def find(search_string, replace_string, replace) -> None:
+def find(search_string: str, replace_string: str, replace: bool) -> None:
     # search_in_canvas_text() uses <string>.find() and re.findall() and re.sub().
     # All other search-methods use text_widget.search() for find and replace.
     # In order to have identical behaviour, in search_in_canvas_text() the search_string/replace_string are "escaped".
@@ -767,7 +767,7 @@ def find(search_string, replace_string, replace) -> None:
             messagebox.showinfo("HDL-FSM-Editor", "Number of hits = " + str(number_of_hits_all))
 
 
-def _get_text_ids_of_canvas_window(item) -> list:
+def _get_text_ids_of_canvas_window(item: int) -> list:
     text_ids = []
     if item in state_action_handling.MyText.mytext_dict:
         text_ids.append(state_action_handling.MyText.mytext_dict[item].text_id)
@@ -787,7 +787,7 @@ def _get_text_ids_of_canvas_window(item) -> list:
 
 
 def _search_in_text_fields_of_canvas_window(
-    search_pattern, canvas_window, text_ids_of_actions, replace, replace_pattern
+    search_pattern: str, canvas_window: int, text_ids_of_actions: list[int], replace: bool, replace_pattern: str
 ) -> int:
     number_of_hits_all = 0
     count = tk.IntVar()
@@ -800,7 +800,9 @@ def _search_in_text_fields_of_canvas_window(
     return number_of_hits_all
 
 
-def _search_in_text_widget(text_id, search_pattern, count, canvas_window, replace, replace_pattern) -> int:
+def _search_in_text_widget(
+    text_id: tk.Text, search_pattern: str, count: tk.IntVar, canvas_window: int, replace: bool, replace_pattern: str
+) -> int:
     start = "1.0"
     number_of_hits = 0
     while True:
@@ -836,7 +838,7 @@ def _search_in_text_widget(text_id, search_pattern, count, canvas_window, replac
     return number_of_hits
 
 
-def _search_in_canvas_text(item, search_pattern, replace, replace_pattern) -> int:
+def _search_in_canvas_text(item: int, search_pattern: str, replace: bool, replace_pattern: str) -> int:
     text = main_window.canvas.itemcget(item, "text")
     start = 0
     number_of_hits = 0
