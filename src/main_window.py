@@ -410,7 +410,8 @@ def create_control_notebook_tab() -> None:
 
     _compile_cmd_docu = ttk.Label(
         control_frame,
-        text="Variables for compile command:\n$file1\t= Entity-File\n$file2\t= Architecture-File\n$file\t= File with Entity and Architecture\n$name\t= Module Name",
+        text="Variables for compile command:\n$file1\t= Entity-File\n$file2\t= Architecture-File\n$file\t\
+= File with Entity and Architecture\n$name\t= Module Name",
         padding=5,
     )
     _compile_cmd_docu.grid(row=7, column=1, sticky=tk.W)
@@ -1135,7 +1136,8 @@ def switch_language_mode() -> None:
         # Modify compile command:
         compile_cmd.set("ghdl -a $file1 $file2; ghdl -e $name; ghdl -r $name")
         _compile_cmd_docu.config(
-            text="Variables for compile command:\n$file1\t= Entity-File\n$file2\t= Architecture-File\n$file\t= File with Entity and Architecture\n$name\t= Entity Name"
+            text="Variables for compile command:\n$file1\t= Entity-File\n$file2\t= Architecture-File\n$file\t\
+= File with Entity and Architecture\n$name\t= Entity Name"
         )
     else:  # "Verilog" or "SystemVerilog"
         keywords = constants.VERILOG_KEYWORDS
@@ -1156,7 +1158,7 @@ def switch_language_mode() -> None:
             text="Local Variable Declarations for clocked always process (not supported by all Verilog compilers):"
         )
         _internals_process_combinatorial_label.config(
-            text="Local Variable Declarations for combinatorial always process (not supported by all Verilog compilers):"
+            text="Local Variable Declarations for combinatorial always process(not supported by all Verilog compilers):"
         )
         # Modify compile command:
         if new_language == "Verilog":
@@ -1214,6 +1216,7 @@ def _update_hdl_tab_if_necessary() -> None:
                 hdlfilename2 = generate_path_value.get() + "/" + module_name.get() + "_fsm.vhd"
         else:  # verilog
             hdlfilename = generate_path_value.get() + "/" + module_name.get() + ".v"
+            hdlfilename2 = ""
         if os.path.isfile(hdlfilename) and date_of_hdl_file_shown_in_hdl_tab < os.path.getmtime(hdlfilename):
             answer = messagebox.askquestion(
                 "Warning in HDL-FSM-Editor",

@@ -295,7 +295,8 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             main_window.notebook.select(notebook_id)
     # Read the design from the stack:
     design = stack[stack_write_pointer]
-    # Convert the string stored in "design" into a list (bit provide a return at each line end, to have the same format as when reading from a file):
+    # Convert the string stored in "design" into a list (but provide a return at each line end,
+    # to have the same format as when reading from a file):
     lines_without_return = design.split("\n")
     lines = []
     for line in lines_without_return:

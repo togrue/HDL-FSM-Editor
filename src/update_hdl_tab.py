@@ -11,6 +11,10 @@ import main_window
 
 
 class UpdateHdlTab:
+    """
+    Copies the generated HDL into the HDL-tab if the HDL is younger than the hfe-file.
+    """
+
     def __init__(self, language, number_of_files, readfile, generate_path, module_name) -> None:
         self.date_of_hdl_file = 0.0  # Default-Value, used when hdl-file not exists.
         self.date_of_hdl_file2 = 0.0  # Default-Value, used when hdl-file not exists.

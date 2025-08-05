@@ -1,5 +1,6 @@
 """
-This module contains all methods to change the binding of the left mouse-button for inserting the different graphical objects.
+This module contains all methods to change the binding of the left mouse-button for
+inserting the different graphical objects.
 """
 
 import canvas_editing

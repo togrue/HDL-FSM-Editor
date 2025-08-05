@@ -1,4 +1,6 @@
-""" """
+"""
+This module implements all methods executes the compile command stored in the Control-tab.
+"""
 
 import os
 import re
@@ -86,7 +88,8 @@ def _replace_variables(command_array) -> list | None:
             if main_window.select_file_number_text.get() == 2:
                 messagebox.showerror(
                     "Error",
-                    'The compile command uses $file, but the "2 files mode" is selected, so only $file1 and $file2 are allowed.',
+                    'The compile command uses $file, but the "2 files mode" is selected,\
+so only $file1 and $file2 are allowed.',
                 )
                 return
             language = main_window.language.get()

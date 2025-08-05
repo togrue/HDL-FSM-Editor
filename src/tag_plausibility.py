@@ -8,6 +8,10 @@ import main_window
 
 
 class TagPlausibility:
+    """
+    This class checks the tags of all graphical elements if they fit together.
+    """
+
     def __init__(self) -> None:
         state_dict_list = []
         state_action_dict_list = []
@@ -105,7 +109,8 @@ class TagPlausibility:
                         break  # A "connector"-rectangle was found
                 if not rectangle_was_identified:
                     print(
-                        "Fatal in TagPlausibility-Checks: a rectangle could not be identified, because it has these unknown tags:",
+                        "Fatal in TagPlausibility-Checks: a rectangle could not be identified,"
+                        + " because it has these unknown tags:",
                         rectangle_tags,
                     )
             elif main_window.canvas.type(canvas_item) == "line" and "grid_line" in main_window.canvas.gettags(
@@ -136,7 +141,8 @@ class TagPlausibility:
                         break
                 if not line_was_identified:
                     print(
-                        "Fatal in TagPlausibility-Checks: a line could not be identified, because it has these unknown tags:",
+                        "Fatal in TagPlausibility-Checks: a line could not be identified,"
+                        + " because it has these unknown tags:",
                         line_tags,
                     )
             elif main_window.canvas.type(canvas_item) == "text":
@@ -156,7 +162,8 @@ class TagPlausibility:
                         break
                 if not text_was_identified:
                     print(
-                        "Fatal in TagPlausibility-Checks: a text could not be identified, because it has these unknown tags:",
+                        "Fatal in TagPlausibility-Checks: a text could not be identified,"
+                        + " because it has these unknown tags:",
                         text_tags,
                     )
             elif main_window.canvas.type(canvas_item) == "window":
@@ -180,7 +187,8 @@ class TagPlausibility:
                         ca_window_dict_list.append(self.__create_ca_window_dict(canvas_item))
                 if not window_was_identified:
                     print(
-                        "Fatal in TagPlausibility-Checks: a Canvas window was found, which could not be identified by its tags:",
+                        "Fatal in TagPlausibility-Checks: a Canvas window was found,"
+                        + " which could not be identified by its tags:",
                         window_tags,
                     )
             else:
@@ -241,13 +249,16 @@ class TagPlausibility:
         # state_dict = {"state_identifier"           : "state"<integer>,
         #               "state_outgoing_transitions" : ["transition"<integer>,"transition"<integer>,...],
         #               "state_incoming_transitions" : ["transition"<integer>,"transition"<integer>,...],
-        #               "state_action_line"          : ["connection"<integer>,          ], <-- Optional entry with an array of length 1, if everything is okay
-        #               "state_comment_line"         : ["state"<integer>"_comment_line",]} <-- Optional entry with an array of length 1, if everything is okay
+        #               "state_action_line"          : ["connection"<integer>,          ], <-- Optional entry with an
+        #                                                                    array of length 1, if everything is okay
+        #               "state_comment_line"         : ["state"<integer>"_comment_line",]} <-- Optional entry with an
+        #                                                                    array of length 1, if everything is okay
         for state_dict in state_dict_list:
             if "state_identifier" not in state_dict:
                 self.tag_status_is_okay = False
                 print(
-                    'Fatal in TagPlausibility-Checks: a state was found which does not have a tag which starts with the string "state".'
+                    "Fatal in TagPlausibility-Checks: a state was found which does not have a tag,"
+                    + ' which starts with the string "state".'
                 )
             elif state_dict["state_identifier"] not in shown_state_name_dict:
                 self.tag_status_is_okay = False
@@ -262,14 +273,16 @@ class TagPlausibility:
                 if not transition_identifier.startswith("transition"):
                     self.tag_status_is_okay = False
                     print(
-                        'Fatal in TagPlausibility-Checks: an outgoing transition-identifier from a state was found which does not start with the string "transition":',
+                        "Fatal in TagPlausibility-Checks: an outgoing transition-identifier from a state was"
+                        + ' found which does not start with the string "transition":',
                         transition_identifier,
                     )
             for transition_identifier in state_dict["state_incoming_transitions"]:
                 if not transition_identifier.startswith("transition"):
                     self.tag_status_is_okay = False
                     print(
-                        'Fatal in TagPlausibility-Checks: an incoming transition-identifier to a state was found which does not start with the string "transition":',
+                        "Fatal in TagPlausibility-Checks: an incoming transition-identifier to a state was"
+                        + ' found which does not start with the string "transition":',
                         transition_identifier,
                     )
             if "state_action_line" in state_dict:
@@ -278,7 +291,8 @@ class TagPlausibility:
                 elif len(state_dict["state_action_line"]) > 1:
                     self.tag_status_is_okay = False
                     print(
-                        "Fatal in TagPlausibility-Checks: a state was found which has more than 1 connected state-action-line."
+                        "Fatal in TagPlausibility-Checks: a state was found which has more"
+                        + " than 1 connected state-action-line."
                     )
                 else:
                     number_of_good_hits = 0
@@ -295,7 +309,8 @@ class TagPlausibility:
                     elif number_of_good_hits > 1:
                         self.tag_status_is_okay = False
                         print(
-                            "Fatal in TagPlausibility-Checks: a state-action-line was found, but more than 1 attached state action was found."
+                            "Fatal in TagPlausibility-Checks: a state-action-line was found,"
+                            + " but more than 1 attached state action was found."
                         )
             if "state_comment_line" in state_dict:
                 if len(state_dict["state_comment_line"]) == 0:
@@ -303,7 +318,8 @@ class TagPlausibility:
                 elif len(state_dict["state_comment_line"]) > 1:
                     self.tag_status_is_okay = False
                     print(
-                        "Fatal in TagPlausibility-Checks: a state was found which has more than 1 connected state-comment-line."
+                        "Fatal in TagPlausibility-Checks: a state was found,"
+                        + " which has more than 1 connected state-comment-line."
                     )
                 else:
                     number_of_good_hits = 0
@@ -313,12 +329,14 @@ class TagPlausibility:
                     if number_of_good_hits == 0:
                         self.tag_status_is_okay = False
                         print(
-                            "Fatal in TagPlausibility-Checks: a state-comment-line was found, but no attached state comment was found."
+                            "Fatal in TagPlausibility-Checks: a state-comment-line was found,"
+                            + " but no attached state comment was found."
                         )
                     elif number_of_good_hits > 1:
                         self.tag_status_is_okay = False
                         print(
-                            "Fatal in TagPlausibility-Checks: a state-comment-line was found, but more than 1 attached state comment was found."
+                            "Fatal in TagPlausibility-Checks: a state-comment-line was found,"
+                            + " but more than 1 attached state comment was found."
                         )
 
     def __create_state_action_dict(self, canvas_item) -> dict:
@@ -352,12 +370,14 @@ class TagPlausibility:
             if "state_action_identifier" not in state_action_dict:
                 self.tag_status_is_okay = False
                 print(
-                    "Fatal in TagPlausibility-Checks: a state-action was found which does not have a state-action-identifier-tag"
+                    "Fatal in TagPlausibility-Checks: a state-action was found, "
+                    + " which does not have a state-action-identifier-tag"
                 )
             if "state_action_line_identifier" not in state_action_dict:
                 self.tag_status_is_okay = False
                 print(
-                    "Fatal in TagPlausibility-Checks: a state-action was found which does not have a state-action-line-identifier-tag"
+                    "Fatal in TagPlausibility-Checks: a state-action was found, "
+                    + " which does not have a state-action-line-identifier-tag"
                 )
 
     def __create_state_action_line_dict(self, canvas_item) -> dict:
@@ -391,12 +411,14 @@ class TagPlausibility:
             if "state_action_line_identifier" not in state_action_line_dict:
                 self.tag_status_is_okay = False
                 print(
-                    "Fatal in TagPlausibility-Checks: a state-action-line was found which does not have a state-action-line-identifier-tag"
+                    "Fatal in TagPlausibility-Checks: a state-action-line was found, "
+                    + " which does not have a state-action-line-identifier-tag"
                 )
             if "state_identifier" not in state_action_line_dict:
                 self.tag_status_is_okay = False
                 print(
-                    "Fatal in TagPlausibility-Checks: a state-action-line was found which does not have a state-identifier-tag"
+                    "Fatal in TagPlausibility-Checks: a state-action-line was found, "
+                    + " which does not have a state-identifier-tag"
                 )
 
     def __create_state_comment_dict(self, canvas_item) -> dict:
@@ -426,12 +448,14 @@ class TagPlausibility:
             if "state_comment_identifier" not in state_comment_dict:
                 self.tag_status_is_okay = False
                 print(
-                    "Fatal in TagPlausibility-Checks: a state-comment was found which does not have a state-comment-identifier-tag"
+                    "Fatal in TagPlausibility-Checks: a state-comment was found, "
+                    + " which does not have a state-comment-identifier-tag"
                 )
             if "state_comment_line_identifier" not in state_comment_dict:
                 self.tag_status_is_okay = False
                 print(
-                    "Fatal in TagPlausibility-Checks: a state-comment was found which does not have a state-comment-line-identifier-tag"
+                    "Fatal in TagPlausibility-Checks: a state-comment was found, "
+                    + " which does not have a state-comment-line-identifier-tag"
                 )
 
     def __create_state_comment_line_dict(self, canvas_item) -> dict:
@@ -460,7 +484,8 @@ class TagPlausibility:
             if "state_comment_line_identifier" not in state_comment_line_dict:
                 self.tag_status_is_okay = False
                 print(
-                    "Fatal in TagPlausibility-Checks: a state-comment-line was found which does not have a state-comment-line-identifier-tag"
+                    "Fatal in TagPlausibility-Checks: a state-comment-line was found,"
+                    + " which does not have a state-comment-line-identifier-tag"
                 )
 
     def __create_transition_dict(self, canvas_item) -> dict:
@@ -509,22 +534,26 @@ class TagPlausibility:
             if "transition_identifier" not in transition_dict:
                 self.tag_status_is_okay = False
                 print(
-                    'Fatal in TagPlausibility-Checks: a transition was found which does not have a tag which starts with the string "transition".'
+                    "Fatal in TagPlausibility-Checks: a transition was found,"
+                    + ' which does not have a tag which starts with the string "transition".'
                 )
             elif transition_dict["transition_identifier"] not in transition_priority_dict:
                 self.tag_status_is_okay = False
                 print(
-                    "Fatal in TagPlausibility-Checks: a transition was found which does not have a text-box which shows the priority."
+                    "Fatal in TagPlausibility-Checks: a transition was found,"
+                    + " which does not have a text-box which shows the priority."
                 )
             if "transition_start_state" not in transition_dict:
                 self.tag_status_is_okay = False
                 print(
-                    'Fatal in TagPlausibility-Checks: a transition was found which does not have a "transition_start_state" tag.'
+                    "Fatal in TagPlausibility-Checks: a transition was found,"
+                    + ' which does not have a "transition_start_state" tag.'
                 )
             if "transition_end_state" not in transition_dict:
                 self.tag_status_is_okay = False
                 print(
-                    'Fatal in TagPlausibility-Checks: a transition was found which does not have a "transition_end_state" tag.'
+                    "Fatal in TagPlausibility-Checks: a transition was found,"
+                    + ' which does not have a "transition_end_state" tag.'
                 )
 
     def __create_connector_dict(self, canvas_item) -> dict:
@@ -555,7 +584,8 @@ class TagPlausibility:
             if "connector_identifier" not in connector_dict:
                 self.tag_status_is_okay = False
                 print(
-                    'Fatal in TagPlausibility-Checks: a connector was found which does not have a tag which starts with the string "connector".'
+                    "Fatal in TagPlausibility-Checks: a connector was found,"
+                    + ' which does not have a tag which starts with the string "connector".'
                 )
             # The keys "connector_outgoing_transitions" and "connector_incoming_transitions" exist always.
             # Both lists are allowed to be empty (in this case the HDL generation creates a warning).
@@ -563,14 +593,16 @@ class TagPlausibility:
                 if not transition_identifier.startswith("transition"):
                     self.tag_status_is_okay = False
                     print(
-                        'Fatal in TagPlausibility-Checks: an outgoing transition-identifier from a connector was found which does not start with the string "transition":',
+                        "Fatal in TagPlausibility-Checks: an outgoing transition-identifier from a connector was"
+                        + ' found which does not start with the string "transition":',
                         transition_identifier,
                     )
             for transition_identifier in connector_dict["connector_incoming_transitions"]:
                 if not transition_identifier.startswith("transition"):
                     self.tag_status_is_okay = False
                     print(
-                        'Fatal in TagPlausibility-Checks: an incoming transition-identifier to a connector was found which does not start with the string "transition":',
+                        "Fatal in TagPlausibility-Checks: an incoming transition-identifier to a connector was"
+                        + ' found which does not start with the string "transition":',
                         transition_identifier,
                     )
 
@@ -607,7 +639,8 @@ class TagPlausibility:
             if "ca_window_identifier" not in ca_window_dict:
                 self.tag_status_is_okay = False
                 print(
-                    "Fatal in TagPlausibility-Checks: a condition-action-window was found which does not have a window-identifier-tag"
+                    "Fatal in TagPlausibility-Checks: a condition-action-window was found,"
+                    + " which does not have a window-identifier-tag"
                 )
             else:
                 condition_action_number_from_window_identifier = re.sub(
@@ -617,25 +650,28 @@ class TagPlausibility:
             if "ca_connection_identifier" not in ca_window_dict:
                 self.tag_status_is_okay = False
                 print(
-                    "Fatal in TagPlausibility-Checks: a condition-action-window was found which does not have an identifier tag for the anchor-line"
+                    "Fatal in TagPlausibility-Checks: a condition-action-window was found,"
+                    + " which does not have an identifier tag for the anchor-line"
                 )
             else:
                 condition_action_number_from_anchor_line_identifier = re.sub(
                     "ca_connection", "", ca_window_dict["ca_connection_identifier"]
                 )
                 identifier_number2_exists = True
-            if identifier_number1_exists and identifier_number2_exists:
-                if (
+            if (
+                identifier_number1_exists
+                and identifier_number2_exists
+                and condition_action_number_from_window_identifier
+                != condition_action_number_from_anchor_line_identifier
+            ):
+                self.tag_status_is_okay = False
+                print(
+                    "Fatal in TagPlausibility-Checks: the identifier-numbers derived from the condition-action window"
+                    + " and from the anchor-line differ:",
                     condition_action_number_from_window_identifier
-                    != condition_action_number_from_anchor_line_identifier
-                ):
-                    self.tag_status_is_okay = False
-                    print(
-                        "Fatal in TagPlausibility-Checks: the identifier-numbers derived from the condition-action window and from the anchor-line differ:",
-                        condition_action_number_from_window_identifier
-                        + "!="
-                        + condition_action_number_from_anchor_line_identifier,
-                    )
+                    + "!="
+                    + condition_action_number_from_anchor_line_identifier,
+                )
 
     def __create_ca_anchor_line_dict(self, canvas_item) -> dict:
         ca_anchor_line_dict = {}
@@ -661,12 +697,14 @@ class TagPlausibility:
             if "ca_connection_identifier" not in ca_anchor_line_dict:
                 self.tag_status_is_okay = False
                 print(
-                    "Fatal in TagPlausibility-Checks: a condition-action-line was found which does not have a condition-action-line-identifier-tag"
+                    "Fatal in TagPlausibility-Checks: a condition-action-line was found,"
+                    + " which does not have a condition-action-line-identifier-tag"
                 )
             if "connected_to_transition" not in ca_anchor_line_dict:
                 self.tag_status_is_okay = False
                 print(
-                    "Fatal in TagPlausibility-Checks: a condition-action-line was found which does not have a transition-identifier-tag"
+                    "Fatal in TagPlausibility-Checks: a condition-action-line was found,"
+                    + " which does not have a transition-identifier-tag"
                 )
 
     def __create_entry_in_shown_state_name_dict(self, canvas_item, shown_state_name_dict) -> None:
@@ -757,7 +795,8 @@ class TagPlausibility:
                         break
                 if state_name != "":
                     print(
-                        "Fatal in TagPlausibility-Checks: a transition was found whose start-state does not have this transition as outgoing transition."
+                        "Fatal in TagPlausibility-Checks: a transition was found whose start-state does not have"
+                        + " this transition as outgoing transition."
                     )
                     print(
                         "The transition starts at state",
@@ -767,17 +806,20 @@ class TagPlausibility:
                     print("Please reenter the transition.")
                 else:
                     print(
-                        "Fatal in TagPlausibility-Checks: a transition was found whose start-connector does not have this transition as outgoing transition."
+                        "Fatal in TagPlausibility-Checks: a transition was found whose start-connector does not have"
+                        + " this transition as outgoing transition."
                     )
             elif number_of_good_hits > 1:
                 self.tag_status_is_okay = False
                 print(
-                    "Fatal in TagPlausibility-Checks: a transition was found which is defined as outgoing transition at several states or connectors."
+                    "Fatal in TagPlausibility-Checks: a transition was found which is defined as outgoing"
+                    + "transition at several states or connectors."
                 )
             if number_of_bad_hits > 0:
                 self.tag_status_is_okay = False
                 print(
-                    "Fatal in TagPlausibility-Checks: a transition was found which starts at a state/connector which is not defined as its start-state."
+                    "Fatal in TagPlausibility-Checks: a transition was found which starts at a state/connector"
+                    + "which is not defined as its start-state."
                 )
             # Check if an outgoing transition only ends at the specified end-point:
             transition_end_state_identifier = transition_dict["transition_end_state"]
@@ -806,27 +848,31 @@ class TagPlausibility:
                         break
                 if state_name != "":
                     print(
-                        "Fatal in TagPlausibility-Checks: a transition was found whose target-state does not have this transition as incoming transition."
+                        "Fatal in TagPlausibility-Checks: a transition was found whose target-state does not have"
+                        + " this transition as incoming transition."
                     )
                     print(
                         "The transition ends at state",
                         state_name,
-                        "but is not in the list of incoming transitions of this state.",
+                        " but is not in the list of incoming transitions of this state.",
                     )
                     print("Please reenter the transition.")
                 else:
                     print(
-                        "Fatal in TagPlausibility-Checks: a transition was found whose end-connector does not have this transition as incoming transition."
+                        "Fatal in TagPlausibility-Checks: a transition was found whose end-connector does not have"
+                        + " this transition as incoming transition."
                     )
             elif number_of_good_hits > 1:
                 self.tag_status_is_okay = False
                 print(
-                    "Fatal in TagPlausibility-Checks: a transition was found which is defined as incoming transition at several states or connectors."
+                    "Fatal in TagPlausibility-Checks: a transition was found which is defined as incoming transition"
+                    + " at several states or connectors."
                 )
             if number_of_bad_hits > 0:
                 self.tag_status_is_okay = False
                 print(
-                    "Fatal in TagPlausibility-Checks: a transition was found which ends at a state/connector which is not defined as its target-state."
+                    "Fatal in TagPlausibility-Checks: a transition was found which ends at a state/connector which"
+                    + " is not defined as its target-state."
                 )
             # For an attached condition-action-identifier there must a condition-action-anchor line exist:
             if "ca_connection_identifier" in transition_dict:
@@ -837,17 +883,20 @@ class TagPlausibility:
                         number_of_good_hits += 1
                 if number_of_good_hits == 0:
                     print(
-                        "Fatal in TagPlausibility-Checks: a transition was found which a condition_action-anchor-line attached, but there is no such line."
+                        "Fatal in TagPlausibility-Checks: a transition was found which a condition_action-anchor-line"
+                        + " attached, but there is no such line."
                     )
                 elif number_of_good_hits > 1:
                     print(
-                        "Fatal in TagPlausibility-Checks: a transition was found which a condition_action-anchor-line attached, but more than 1 line exist."
+                        "Fatal in TagPlausibility-Checks: a transition was found which a condition_action-anchor-line"
+                        + " attached, but more than 1 line exist."
                     )
 
     def __check_states_and_connectors(
         self, state_dict_list, transition_dict_list, shown_state_name_dict, connector_dict_list
     ) -> None:
-        # As the transitions are checked first by __check_transitions, here only each defined transition must be searched.
+        # As the transitions are checked first by __check_transitions,
+        # here only each defined transition must be searched.
         for state_dict in state_dict_list:  # Check each state.
             for outgoing_transition in state_dict["state_outgoing_transitions"]:  # Check each outgoing transition
                 found_transition = False
@@ -891,7 +940,8 @@ class TagPlausibility:
                         + connector_dict["connector_identifier"]
                         + " has the outgoing transition "
                         + outgoing_transition
-                        + ", which does not exist in the list of transitions.\nThis outgoing transition was removed from the database."
+                        + ", which does not exist in the list of transitions.\n"
+                        + "This outgoing transition was removed from the database."
                     )
             for incoming_transition in connector_dict[
                 "connector_incoming_transitions"
@@ -903,7 +953,8 @@ class TagPlausibility:
                 if not found_transition:
                     self.tag_status_is_okay = False
                     print(
-                        "Fatal in TagPlausibility-Checks: a connector has an incoming transition, which does not exist in the list of transitions."
+                        "Fatal in TagPlausibility-Checks: a connector has an incoming transition,"
+                        + " which does not exist in the list of transitions."
                     )
 
     def __check_ca_windows(self, ca_window_dict_list, ca_anchor_line_dict_list, transition_dict_list) -> None:
@@ -920,12 +971,14 @@ class TagPlausibility:
             if number_of_good_hits == 0:
                 self.tag_status_is_okay = False
                 print(
-                    "Fatal in TagPlausibility-Checks: a condition-action-window was found which does not have an anchor-line."
+                    "Fatal in TagPlausibility-Checks: a condition-action-window was found,"
+                    + " which does not have an anchor-line."
                 )
             elif number_of_good_hits > 1:
                 self.tag_status_is_okay = False
                 print(
-                    "Fatal in TagPlausibility-Checks: a condition-action-window was found which has more than 1 anchor-line."
+                    "Fatal in TagPlausibility-Checks: a condition-action-window was found,"
+                    + " which has more than 1 anchor-line."
                 )
         for ca_anchor_line_dict in ca_anchor_line_dict_list:
             ca_connection_identifier = ca_anchor_line_dict["ca_connection_identifier"]
@@ -941,15 +994,16 @@ class TagPlausibility:
                     if transition_dict["ca_connection_identifier"] != ca_connection_identifier:
                         self.tag_status_is_okay = False
                         print(
-                            "Fatal in TagPlausibility-Checks: a transition and a condition-action-line differ about the ca_connection_identifier."
+                            "Fatal in TagPlausibility-Checks: a transition and a condition-action-line differ"
+                            + " about the ca_connection_identifier."
                         )
                     break
             if (
                 number_of_connected_condition_action_windows == 0
                 and number_of_transitions_the_anchor_line_is_attached_to == 0
             ):
-                # This problem was caused by an old version of HDL-FSM-Editor: When a state was removed, then a connected
-                # transition with a condition-action-window was also removed.
+                # This problem was caused by an old version of HDL-FSM-Editor: When a state was removed, then a
+                # connected transition with a condition-action-window was also removed.
                 # But the anchor-line of the condition-action-window stayed in the database.
                 # Such "lost" lines are removed here without any message:
                 main_window.canvas.delete(ca_connection_identifier)
@@ -964,7 +1018,8 @@ class TagPlausibility:
                 elif number_of_connected_condition_action_windows > 1:
                     self.tag_status_is_okay = False
                     print(
-                        "Fatal in TagPlausibility-Checks: a condition-action-line was found which is connected to more than 1 condition-action-window."
+                        "Fatal in TagPlausibility-Checks: a condition-action-line was found,"
+                        + " which is connected to more than 1 condition-action-window."
                     )
                 if number_of_transitions_the_anchor_line_is_attached_to == 0:
                     self.tag_status_is_okay = False
@@ -989,7 +1044,8 @@ class TagPlausibility:
         # state_dict = {"state_identifier"           : "state"<integer>,
         #               "state_outgoing_transitions" : ["transition"<integer>,"transition"<integer>,...],
         #               "state_incoming_transitions" : ["transition"<integer>,"transition"<integer>,...],
-        #               "state_action_line"          : ["connection"<integer>,]} <-- Optional entry with an array of length 1, if everything is okay
+        #               "state_action_line"          : ["connection"<integer>,]} <-- Optional entry with an array of
+        #                                                                            length 1, if everything is okay
         for state_action_line_dict in state_action_line_dict_list:
             connection_identifier = state_action_line_dict["state_action_line_identifier"]
             number_of_good_hits = 0
@@ -1002,7 +1058,8 @@ class TagPlausibility:
             elif number_of_good_hits > 1:
                 self.tag_status_is_okay = False
                 print(
-                    "Fatal in TagPlausibility-Checks: a state-action-line does have more than 1 corresponding state-action"
+                    "Fatal in TagPlausibility-Checks: a state-action-line does have"
+                    + " more than 1 corresponding state-action"
                 )
             number_of_good_hits = 0
             for state_dict in state_dict_list:

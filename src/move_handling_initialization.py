@@ -40,19 +40,22 @@ def _move_initialization_overlapping(event, event_x, event_y) -> None:
     # All following entries are objects, which are "connected" to the object of the first entry and must also be moved.
     # These items can be moved:
     # reset_entry, state, transition, connector, state_action_window, condition_action_window, global_action windows.
-    # When a transitions is moved, then its connection-line to a condition_action_window is adapted after the moving (as the line is not visible during moving).
-    # For each item a "move_to" function exists, which moves all elements of the item (for example at a transition: line, priority-rectangle,
-    # priority-text, but not the connection-line to a condition_action_window).
+    # When a transitions is moved, then its connection-line to a condition_action_window is adapted after the
+    # moving (as the line is not visible during moving).
+    # For each item a "move_to" function exists, which moves all elements of the item (for example at a
+    # transition: line, priority-rectangle, priority-text, but not the connection-line to a condition_action_window).
     # Each entry consists out of 2 or 3 values (stored in a list):
     # The first value is always the canvas-item-id.
     # The second value is only different from "" at transitions:
-    # There the point of the line which has to bemoved is stored as a string: 'start', 'next_to_start', 'next_to_end', 'end'.
+    # There the point of the line which has to bemoved is stored as a string:
+    # 'start', 'next_to_start', 'next_to_end', 'end'.
     # The third value is the tag of the transition to which the moved condition_action belongs.
 
     if move_list:
         # It is needed, because move_finish accesses always move_list[0].
 
-        # Give the user a feedback, that an object was picked up for moving, by moving the objects of the moving list immediately to the actual position of the mouse:
+        # Give the user a feedback, that an object was picked up for moving, by moving the objects of the
+        # moving list immediately to the actual position of the mouse:
         move_handling.move_do(event, move_list, first=True)
 
         # Create a binding for the now following movements of the mouse and for finishing the moving:
@@ -66,16 +69,17 @@ def _move_initialization_overlapping(event, event_x, event_y) -> None:
             ),
         )  # move_finish must unbind move_do from "Motion", so it needs the function id.
 
-        # From Button-1 the callback "move_initialization()" must be removed, because the user will use Button-1 a second time,
-        # when move_finish() did not accept the location of the ButtonRelease-1 and this second time shall not start a new moving:
+        # From Button-1 the callback "move_initialization()" must be removed, because the user will
+        # use Button-1 a second time, when move_finish() did not accept the location of the ButtonRelease-1 and this
+        # second time shall not start a new moving:
         main_window.canvas.unbind("<Button-1>")
 
 
 def _create_a_list_of_overlapping_items_near_the_mouse_click_location(event_x, event_y) -> list:
     # As soon as a mouse click happens inside a canvas-window item, this click does not call move_initialization,
     # as there is no binding inside the canvas-window for this event. If there would be a binding,
-    # it would return event coordinates from inside the window, which cannot be easily converted into canvas coordinates,
-    # as the window does not know its own location. So here a bigger overlapping area must be used,
+    # it would return event coordinates from inside the window, which cannot be easily converted into canvas
+    # coordinates, as the window does not know its own location. So here a bigger overlapping area must be used,
     # so that the user can click beneath the window and catch it.
     list_of_overlapping_items = []
     overlapping_items = main_window.canvas.find_overlapping(
@@ -162,11 +166,14 @@ def _create_move_list_entry_if_a_diagram_object_is_moved(items_near_mouse_click_
                     or tag.startswith("global_actions_combinatorial")
                     or tag.startswith("connector")
                 ):
-                    # The move_list_entry must contain item_ids (and not tags), as only the item_id can later be used as a key for a dictionary.
+                    # The move_list_entry must contain item_ids (and not tags), as only the item_id can
+                    # later be used as a key for a dictionary.
+                    # The empty second entry is needed, as later on it will be accessed in
+                    # move_handling.move_do without checking if its exists:
                     move_list_entry = [
                         item_id,
                         "",
-                    ]  # The empty second entry is needed, as later on it will be accessed in move_handling.move_do without checking if its exists.
+                    ]
                     return move_list_entry
     return move_list_entry
 
@@ -185,7 +192,8 @@ def _add_lines_connected_to_the_diagram_object_to_the_list(move_list) -> None:
             tag_of_connected_line = tag[:-4]  # transition<n>, state<n>_comment_line, connection<n>, ca_connection<n>
             to_be_moved_point_of_connected_line = "end"
         if to_be_moved_point_of_connected_line != "":
-            # tag_of_connected_line identifies a single object. So the method find_withtag() returns always a list of length 1:
+            # tag_of_connected_line identifies a single object.
+            # So the method find_withtag() returns always a list of length 1:
             id_of_connected_line = main_window.canvas.find_withtag(tag_of_connected_line)[0]
             move_list.append([id_of_connected_line, to_be_moved_point_of_connected_line])
             transition_handling.extend_transition_to_state_middle_points(tag_of_connected_line)
@@ -205,9 +213,9 @@ def _add_items_for_moving_a_single_line_point_to_the_list(
         for tag in transition_tags:
             if tag.startswith("transition"):
                 id_of_transition = main_window.canvas.find_withtag(tag)[0]
-                move_list.append(
-                    [id_of_transition, moving_point]
-                )  # moving point is one of: "start", "next_to_start", "next_to_end", "end" as at maximum 4 points are supported
+                # moving point is one of: "start", "next_to_start", "next_to_end", "end" as
+                # at maximum 4 points are supported:
+                move_list.append([id_of_transition, moving_point])
                 transition_handling.extend_transition_to_state_middle_points(tag)
                 _remove_tags_and_hide_priority(line_id, tag, transition_tags, moving_point)
 

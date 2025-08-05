@@ -12,6 +12,10 @@ import undo_handling
 
 
 class StateComment:
+    """
+    This class handles "state-comments".
+    """
+
     dictionary = {}
 
     def __init__(

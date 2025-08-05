@@ -12,6 +12,10 @@ import undo_handling
 
 
 class MyText:
+    """
+    Handles the state action of a single state.
+    """
+
     mytext_id = 0
     mytext_dict = {}
 

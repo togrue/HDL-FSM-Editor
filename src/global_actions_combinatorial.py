@@ -13,6 +13,10 @@ import undo_handling
 
 
 class GlobalActionsCombinatorial:
+    """
+    Class for combinatorial actions independent from the state machine
+    """
+
     dictionary = {}
 
     def __init__(self, menu_x, menu_y, height, width, padding) -> None:

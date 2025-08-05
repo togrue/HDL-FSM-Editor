@@ -27,7 +27,6 @@ def recreate_keyword_list_of_unused_signals() -> None:
             main_window.keywords["not_read"].append(input_port)
     # print('main_window.keywords["not_read"] 1 =', main_window.keywords["not_read"])
     # Check if each output is written (remove written outputs from list, if a declaration exists):
-    # print("main_window.interface_ports_text.writable_ports_list =", main_window.interface_ports_text.writable_ports_list)
     for output in main_window.interface_ports_text.writable_ports_list:
         if output in written_variables:
             written_variables = [value for value in written_variables if value != output]

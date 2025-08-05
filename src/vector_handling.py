@@ -1,3 +1,7 @@
+"""
+Methods for handling the form of transitions
+"""
+
 import math
 
 
@@ -25,8 +29,8 @@ def try_to_convert_into_straight_line(coords) -> list:
     vector_list = _calculate_vectors_from_line_point_to_next_line_point(coords)
     cos_phi_list = _calculate_cos_phi_values_between_vectors(vector_list)
     eliminate_points = True
-    for i in range(len(cos_phi_list)):
-        if cos_phi_list[i] < 0.97:
+    for cos_phi in cos_phi_list:
+        if cos_phi < 0.97:
             eliminate_points = False
     if eliminate_points:
         return [coords[0], coords[1], coords[-2], coords[-1]]

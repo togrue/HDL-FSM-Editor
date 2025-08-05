@@ -150,7 +150,9 @@ def _update_the_tags_of_the_transition(item_ids_at_moving_end_location, transiti
 
 
 def _shorten_all_moved_transitions_to_the_state_borders(move_list) -> None:
-    done = []  # prevent transitions to be shortened twice (would happen at transitions that point from a state to the same state back).
+    # Prevent transitions to be shortened twice (would happen at transitions that point from
+    # a state to the same state back) by writing a done-list:
+    done = []
     for move_list_entry in move_list:
         # print("move_list_entry =", move_list_entry)
         if move_list_entry[1] in ["start", "next_to_start", "next_to_end", "end"] and move_list_entry[0] not in done:
@@ -204,7 +206,6 @@ def _a_line_is_moved_to_a_window(item_ids_at_moving_end_location) -> bool:
 
 def _a_line_is_moved_to_a_priority_rectangle(item_ids_at_moving_end_location) -> bool:
     for target in item_ids_at_moving_end_location:
-        # if main_window.canvas.type(target)=="rectangle" and main_window.canvas.gettags(target)[0].endswith("rectangle"):
         if main_window.canvas.type(target) == "rectangle" and main_window.canvas.gettags(target)[0].startswith(
             "transition"
         ):
@@ -231,7 +232,6 @@ def _a_point_of_a_line_is_moved_illegally_to_a_reset_entry(item_ids_at_moving_en
                 if move_list_entry[1] == "end" and main_window.canvas.gettags(move_list_entry[0])[0].startswith(
                     "transition"
                 ):
-                    # print("a_point_of_a_line_is_moved_illegally_to_a_reset_entry: user tried to connect end point of a transition to a reset entry.")
                     return True
                 elif move_list_entry[1] == "start":
                     reset_entry_tags = main_window.canvas.gettags(target)
@@ -240,10 +240,8 @@ def _a_point_of_a_line_is_moved_illegally_to_a_reset_entry(item_ids_at_moving_en
                             connected_transition_tag = reset_entry_tag[0:-6]
                             moved_transition_tags = main_window.canvas.gettags(move_list_entry[0])
                             for tag in moved_transition_tags:
-                                if tag.startswith("transition"):
-                                    if connected_transition_tag != tag:
-                                        # print("user tried to connect start point of a transition to a already connected reset entry.")
-                                        return True
+                                if tag.startswith("transition") and connected_transition_tag != tag:
+                                    return True
     return False
 
 

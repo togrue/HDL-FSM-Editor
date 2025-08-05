@@ -7,6 +7,10 @@ import main_window
 
 
 class GridDraw:
+    """
+    This class draws a grid into the canvas.
+    """
+
     def __init__(self, canvas) -> None:
         self.canvas = canvas
 

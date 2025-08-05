@@ -120,8 +120,8 @@ if __name__ == "__main__":
 # "state<n>"                      : Unique identifier for the circle, which represents the state.
 # "transition<n>_start"           : The transition "transition<n>" starts at this state.
 # "transition<n>_end"             : The transition "transition<n>" ends at this state.
-# "connection<n>_end"             : The connection "connection<n>" (a dashed line) assigns a state action block to this state.
-# "state<n>_comment_line_end"     : The line "state<n>_comment_line" (a dashed line) connects a state comment block to this state.
+# "connection<n>_end"             : The connection "connection<n>" (a dashed line) assigns a state action block.
+# "state<n>_comment_line_end"     : The line "state<n>_comment_line" (a dashed line) connects a state comment block.
 #
 # Tags of the string inside each state circle:
 # "state<n>_name"                 : identifier for the text object, which stores the state name.
@@ -138,7 +138,7 @@ if __name__ == "__main__":
 # "going_to_state<n>"             : Information, at which state the transition ends.
 # "going_to_connector<n>"         : Information, at which state the transition ends.
 # "coming_from_reset_entry"       : Information, that the transition starts at the reset_entry object.
-# "ca_connection<n>_end"          : The connection "ca_connection<n>" (a dashed line) assigns a condition&action-block to this transition.
+# "ca_connection<n>_end"          : The connection "ca_connection<n>" (a dashed line) assigns a condition&action-block.
 #
 # Tags of the transition priority rectangle(blue square located at each transition line):
 # "transition<n>rectangle"        : Unique identifier for the square.
@@ -156,12 +156,12 @@ if __name__ == "__main__":
 #
 # Tags of a state action block (text window with blue background):
 # "state_action<n>"               : Unique identifier for the window
-# "connection<n>_start"           : The connection "connection<n>" (a dashed line) assigns the state action block to a state.
+# "connection<n>_start"           : The connection "connection<n>" (dashed) assigns the state action block to a state.
 #
 # Tags of a condition&action block (text window with grey background):
 # "condition_action<n>"           : Unique identifier for the window
-# "ca_connection<n>_anchor"       : The connection "ca_connection<n>" (a dashed line) assigns the condition&action block to a transition.
-# "connected_to_reset_transition" : This condition&action block is a assigned to the transition which is connected to the reset-entry object.
+# "ca_connection<n>_anchor"       : The connection "ca_connection<n>" (a dashed line) assigns the block to a transition.
+# "connected_to_reset_transition" : This block is a assigned to the transition which is connected to the reset-entry.
 #
 # Tags of a reset-entry object (red arrow):
 # "reset_entry"                   : Unique identifier for the reset entry (polygon) object.
@@ -181,7 +181,7 @@ if __name__ == "__main__":
 
 # Tags of a state comment block (text window with blue background in the header):
 # state<n>_comment                : Unique identifier for the window
-# state<n>_comment_line_start     : The line with the identifier state<n>_comment_line connects the state comment block to the state
+# state<n>_comment_line_start     : The line with the identifier state<n>_comment_line connects the block to the state.
 
 # Tags of a state comment line (dashed line in the diagram, which connects a state and its state comment block block):
 # state<n>_comment_line           : Unique identifier for the line

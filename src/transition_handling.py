@@ -77,8 +77,8 @@ def move_to(event_x, event_y, transition_id, point, first, move_list, last) -> N
             main_window.canvas.tag_raise(transition_tag, "grid_line")
     # Move priority rectangle:
     if transition_tag.startswith("transition"):  # There is no priority rectangle at a "connection".
-        # The tag "transition_tag + '_start'" is already removed from the old start state when the transition start-point is moved.
-        # In all other cases the tag exists.
+        # The tag "transition_tag + '_start'" is already removed from the old start state when
+        #  the transition start-point is moved. In all other cases the tag exists.
         # So try to get the coordinates of the start state (there the priority rectangle is positioned):
         start_state_coords = main_window.canvas.coords(transition_tag + "_start")
         if point == "start":
@@ -88,7 +88,8 @@ def move_to(event_x, event_y, transition_id, point, first, move_list, last) -> N
                 start_state_radius = 0
             else:  #  State with connected transition is moved.
                 start_state_radius = abs(start_state_coords[2] - start_state_coords[0]) / 2
-            # Calculates the position of the priority rectangle by shortening the vector from the event (= first point of transition) to the second point of the transition.
+            # Calculates the position of the priority rectangle by shortening the vector from the
+            # event (= first point of transition) to the second point of the transition.
             [priority_middle_x, priority_middle_y, _, _] = vector_handling.shorten_vector(
                 start_state_radius + canvas_editing.priority_distance,
                 event_x,
@@ -100,9 +101,11 @@ def move_to(event_x, event_y, transition_id, point, first, move_list, last) -> N
                 0,
             )
         else:
-            # Calculates the position of the priority rectangle by shortening the first point of transition to the second point of the transition.
+            # Calculates the position of the priority rectangle by shortening the first point of the
+            # transition to the second point of the transition.
             start_state_radius = abs(start_state_coords[2] - start_state_coords[0]) / 2
-            # Because the transition is already extended to the start-state middle, the length of the vector must be shortened additionally by the start state radius,
+            # Because the transition is already extended to the start-state middle, the length of the
+            # vector must be shortened additionally by the start state radius,
             # to keep the priority outside of the start-state.
             [priority_middle_x, priority_middle_y, _, _] = vector_handling.shorten_vector(
                 start_state_radius + canvas_editing.priority_distance,
@@ -237,14 +240,16 @@ def get_point_to_move(item_id, event_x, event_y) -> str:
         # if   distance_event_to_point[0]<distance_to_neighbour[0]/4:
         #     return "start"
         # if distance_event_to_point[0]<distance_to_neighbour[0]*3/4:
-        #     main_window.canvas.coords(item_id, *transition_coords[0:2], event_x, event_y, *transition_coords[2:6]) # insert new point into transition
+        #     # insert new point into transition:
+        #     main_window.canvas.coords(item_id, *transition_coords[0:2], event_x, event_y, *transition_coords[2:6])
         #     return "next_to_start"
         # if distance_event_to_point[0]<distance_to_neighbour[0]:
         #     return "next_to_start"
         # if distance_event_to_point[1]<distance_to_neighbour[1]/4:
         #     return "next_to_start"
         # if distance_event_to_point[1]<distance_to_neighbour[1]*3/4:
-        #     main_window.canvas.coords(item_id, *transition_coords[0:4], event_x, event_y, *transition_coords[4:6]) # insert new point into transition
+        #     # insert new point into transition:
+        #     main_window.canvas.coords(item_id, *transition_coords[0:4], event_x, event_y, *transition_coords[4:6])
         #     return "next_to_end"
         # return 'end'
         return_value = ""
@@ -836,7 +841,8 @@ def _evaluate_menu(event, window, listbox, menu_x, menu_y, transition_id) -> Non
             start_state_radius, new_coords[0], new_coords[1], end_state_radius, new_coords[2], new_coords[3], 1, 1
         )
         main_window.canvas.coords(transition_id, new_coords)
-        # Calculates the position of the priority rectangle by shortening the distance between the first point of transition and the second point of the transition.
+        # Calculates the position of the priority rectangle by shortening the distance between the first point of
+        # the transition and the second point of the transition.
         [priority_middle_x, priority_middle_y, _, _] = vector_handling.shorten_vector(
             canvas_editing.priority_distance, new_coords[0], new_coords[1], 0, new_coords[2], new_coords[3], 1, 0
         )

@@ -23,6 +23,11 @@ from constants import GuiTab
 
 
 class LinkDictionary:
+    """
+    The LinkDictionary shall carry all information which are needed to create hyperlinks from each line in
+     the generated HDL to the graphical source of the line.
+    """
+
     def __init__(self, root) -> None:
         self.root = root
         self.link_dict = {}

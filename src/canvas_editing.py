@@ -72,7 +72,8 @@ def translate_window_event_coordinates_in_exact_canvas_coordinates(event) -> lis
 
 
 def delete() -> None:
-    # The event coordinates cannot be used, as the event is caused by pressing the delete-button and the delete-button "coordinates" are useless.
+    # The event coordinates cannot be used, as the event is caused by pressing the delete-button
+    # and the delete-button "coordinates" are useless.
     # When moving the mouse into a window-canvas-item the mouse position in the canvas can not
     # detected anymore (only the mouse position in the window can be detected now).
     # So the last mouse position outside the window-canvas-item is the only available information.
@@ -382,9 +383,9 @@ def view_rectangle(complete_rectangle, check_fit) -> None:
         too_big = False
         actual_rectangle = main_window.canvas.bbox("all")
         for coord in actual_rectangle:
-            if (
-                abs(coord) * factor > 100000
-            ):  # The Canvas which is used, has a scrollregion +/-100000, so here this limit is checked (unclear if really necessary).
+            # The Canvas which is used, has a scrollregion +/-100000, so here this limit
+            # is checked (unclear if really necessary):
+            if abs(coord) * factor > 100000:
                 too_big = True
         if too_big is False:
             complete_center = _determine_center_of_rectangle(complete_rectangle)
@@ -444,7 +445,7 @@ def _calculate_zoom_factor(complete_rectangle, visible_rectangle):
 
 
 def zoom_wheel(event) -> None:
-    main_window.canvas.grid_remove()  # Make the canvas invisible, but remember all options for the the next grid() call.
+    main_window.canvas.grid_remove()  # Make the grid invisible, but remember all options for the the next grid() call.
     main_window.grid_drawer.remove_grid()
     # event.delta: attribute of the mouse wheel under Windows and MacOs.
     # One "felt step" at the mouse wheel gives this value:
@@ -677,7 +678,7 @@ def shift_visible_center_to_window_center(new_visible_center_string) -> None:
 def find(search_string, replace_string, replace) -> None:
     # search_in_canvas_text() uses <string>.find() and re.findall() and re.sub().
     # All other search-methods use text_widget.search() for find and replace.
-    # In order to have identical behaviour, in search_in_canvas_text() the search_string and replace_string are "escaped".
+    # In order to have identical behaviour, in search_in_canvas_text() the search_string/replace_string are "escaped".
     search_pattern = search_string.get()
     if search_pattern == "":
         messagebox.showinfo("HDL-FSM-Editor", "Search is aborted as you search for an empty string.")

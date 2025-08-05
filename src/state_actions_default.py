@@ -13,6 +13,10 @@ import undo_handling
 
 
 class StateActionsDefault:
+    """
+    Handles the combinatorial default actions for all states.
+    """
+
     dictionary = {}
 
     def __init__(self, menu_x, menu_y, height, width, padding) -> None:

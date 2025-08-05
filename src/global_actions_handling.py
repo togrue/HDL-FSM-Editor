@@ -1,4 +1,8 @@
-from tkinter import *
+"""
+All methods to handle the global actions block in the diagram.
+"""
+
+import tkinter as tk
 
 import canvas_editing
 import global_actions
@@ -15,7 +19,7 @@ state_actions_default_number = 0
 def insert_global_actions_clocked(event) -> None:
     global global_actions_clocked_number
     if global_actions_clocked_number == 0:  # Only 1 global action is allowed.
-        main_window.global_action_clocked_button.config(state=DISABLED)
+        main_window.global_action_clocked_button.config(state=tk.DISABLED)
         global_actions_clocked_number += 1
         _insert_global_actions_clocked_in_canvas(event)
         undo_handling.design_has_changed()
@@ -38,7 +42,7 @@ def _create_global_actions_clocked(canvas_grid_coordinates_of_the_event) -> None
 def insert_global_actions_combinatorial(event) -> None:
     global global_actions_combinatorial_number
     if global_actions_combinatorial_number == 0:  # Only 1 global action is allowed.
-        main_window.global_action_combinatorial_button.config(state=DISABLED)
+        main_window.global_action_combinatorial_button.config(state=tk.DISABLED)
         global_actions_combinatorial_number += 1
         _insert_global_actions_combinatorial_in_canvas(event)
         undo_handling.design_has_changed()
@@ -61,7 +65,7 @@ def _create_global_actions_combinatorial(canvas_grid_coordinates_of_the_event) -
 def insert_state_actions_default(event) -> None:
     global state_actions_default_number
     if state_actions_default_number == 0:  # Only 1 global action is allowed.
-        main_window.state_action_default_button.config(state=DISABLED)
+        main_window.state_action_default_button.config(state=tk.DISABLED)
         state_actions_default_number += 1
         _insert_state_actions_default_in_canvas(event)
         undo_handling.design_has_changed()

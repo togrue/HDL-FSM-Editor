@@ -161,7 +161,7 @@ def _clear_design() -> bool:
     return True
 
 
-#########################################################################################################################################
+########################################################################################################################
 
 
 def save_in_file_new(save_filename) -> None:  # Called at saving and at every design change (writing to .tmp-file)
@@ -499,7 +499,6 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
             < 0.9 * main_window.paned_window_interface.winfo_height()
         ):
             for key, value in design_dictionary["sash_positions"]["interface_tab"].items():
-                # main_window.paned_window_interface.sashpos(key, value) # Works only if new position does not outrange actual position.
                 if (
                     main_window.paned_window_interface.sashpos(0) != 0
                     and main_window.paned_window_interface.sashpos(0) != 1
@@ -515,7 +514,6 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
             < 0.9 * main_window.paned_window_internals.winfo_height()
         ):
             for key, value in design_dictionary["sash_positions"]["internals_tab"].items():
-                # main_window.paned_window_internals.sashpos(key, value) # Works only if new position does not outrange actual position.
                 if (
                     main_window.paned_window_internals.sashpos(0) != 0
                     and main_window.paned_window_internals.sashpos(0) != 1

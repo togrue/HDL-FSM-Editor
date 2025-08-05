@@ -30,6 +30,8 @@ import undo_handling
 
 
 class ConditionAction:
+    """This class handles the condition&action box which can be activated for each transition."""
+
     conditionaction_id = 0
     dictionary = {}
 
@@ -230,9 +232,9 @@ class ConditionAction:
             self.action_id.grid_forget()
 
     def move_to(self, event_x, event_y, first, last) -> None:
-        main_window.canvas.delete(
-            self.move_rectangle
-        )  # During moving there might be no polygon-leave-event (which deletes the polygon), so for delete it hear for clean graphics.
+        # During moving there might be no polygon-leave-event (which deletes the polygon),
+        # so delete it here for clean graphics:
+        main_window.canvas.delete(self.move_rectangle)
         if last is True:
             self.frame_id.configure(padding=1)  # decrease the width of the line around the box
         if first is True:

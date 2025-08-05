@@ -13,6 +13,10 @@ import undo_handling
 
 
 class GlobalActions:
+    """
+    Handles the global actions window in the diagram.
+    """
+
     global_actions_number = 1
     dictionary = {}
 

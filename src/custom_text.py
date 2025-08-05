@@ -1,5 +1,5 @@
 """
-This code was copied (and extended) from https://stackoverflow.com/questions/40617515/python-tkinter-text-modified-callback
+The code was copied and extended from https://stackoverflow.com/questions/40617515/python-tkinter-text-modified-callback
 """
 
 import os
@@ -19,6 +19,11 @@ import main_window
 
 
 class CustomText(tk.Text):
+    """
+    This code was copied and extended from:
+    https://stackoverflow.com/questions/40617515/python-tkinter-text-modified-callback
+    """
+
     read_variables_of_all_windows = {}
     written_variables_of_all_windows = {}
 
@@ -401,7 +406,10 @@ class CustomText(tk.Text):
 
     def __add_read_variables_from_conditions_to_read_variables_of_all_windows(self, text):
         if main_window.language.get() == "VHDL":
-            condition_search_pattern = "^if\\s+[^;]*?\\s+then| if\\s+[^;]*?\\s+then|elsif\\s+[^;]*?\\s+then|^when\\s+[^;]*?\\s+else| when\\s+[^;]*?\\s+else"
+            condition_search_pattern = (
+                "^if\\s+[^;]*?\\s+then| if\\s+[^;]*?\\s+then|elsif\\s+[^;]*?\\s+then|"
+                + "^when\\s+[^;]*?\\s+else| when\\s+[^;]*?\\s+else"
+            )
         else:
             condition_search_pattern = "^if\\s+[^;]*?\\s+begin| if\\s+[^;]*?\\s+begin"  # Verilog
         all_conditions = []
