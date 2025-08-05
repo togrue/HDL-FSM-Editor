@@ -6,6 +6,7 @@ Version 1 files use a text-based format with line-by-line parsing.
 import os
 import re
 import tkinter as tk
+from typing import TextIO
 
 import canvas_editing
 import condition_action_handling
@@ -496,7 +497,7 @@ def _remove_keyword_from_line(line: str, keyword: str) -> str:
     return line[len(keyword) :]
 
 
-def _get_data(rest_of_line: str, fileobject) -> str:
+def _get_data(rest_of_line: str, fileobject: TextIO) -> str:
     """Extract data from version 1 file format."""
     length_of_data = _get_length_info_from_line(rest_of_line)
     first_data = _remove_length_info(rest_of_line)
@@ -514,7 +515,7 @@ def _remove_length_info(rest_of_line: str) -> str:
     return re.sub(r".*\|", "", rest_of_line)
 
 
-def _get_remaining_data(fileobject, length_of_data: int, first_data: str) -> str:
+def _get_remaining_data(fileobject: TextIO, length_of_data: int, first_data: str) -> str:
     """Get remaining data based on length information."""
     data = first_data
     while len(data) < length_of_data:

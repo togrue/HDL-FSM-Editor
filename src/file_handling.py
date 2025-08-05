@@ -339,7 +339,7 @@ def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
                 print("file_handling: Fatal, unknown dictionary key ", i)
 
 
-def open_file_with_name_new(read_filename) -> None:
+def open_file_with_name_new(read_filename: str) -> None:
     replaced_read_filename = read_filename
     if os.path.isfile(f"{read_filename}.tmp"):
         answer = messagebox.askyesno(
