@@ -15,7 +15,7 @@ import undo_handling
 import vector_handling
 
 
-def move_finish(event, move_list, move_do_funcid) -> None:
+def move_finish(event: tk.Event, move_list: list, move_do_funcid: str) -> None:
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
 
     item_ids_at_moving_end_location = _get_item_ids_at_moving_end_location(event_x, event_y, move_list)
@@ -51,7 +51,7 @@ def move_finish(event, move_list, move_do_funcid) -> None:
     undo_handling.design_has_changed()
 
 
-def _get_item_ids_at_moving_end_location(event_x, event_y, move_list) -> list:
+def _get_item_ids_at_moving_end_location(event_x: float, event_y: float, move_list: list) -> list[int]:
     move_items = []
     for move_entry in move_list:
         move_items.append(move_entry[0])
@@ -65,11 +65,13 @@ def _get_item_ids_at_moving_end_location(event_x, event_y, move_list) -> list:
     return item_ids_at_moving_end_location
 
 
-def _check_if_only_transition_start_or_end_point_is_moved(move_list) -> bool:
+def _check_if_only_transition_start_or_end_point_is_moved(move_list: list) -> bool:
     return main_window.canvas.type(move_list[0][0]) == "line" and move_list[0][1] in ["start", "end"]
 
 
-def _moving_of_transition_start_or_end_point_ends_at_illegal_place(item_ids_at_moving_end_location, move_list) -> bool:
+def _moving_of_transition_start_or_end_point_ends_at_illegal_place(
+    item_ids_at_moving_end_location: list[int], move_list: list
+) -> bool:
     if _a_line_is_moved_to_a_window(item_ids_at_moving_end_location):
         return True
     if _a_line_is_moved_to_a_priority_rectangle(item_ids_at_moving_end_location):
@@ -84,7 +86,7 @@ def _moving_of_transition_start_or_end_point_ends_at_illegal_place(item_ids_at_m
 
 
 def _move_the_line_to_the_center_of_the_target(
-    item_ids_at_moving_end_location, transition_id, transition_point, move_list
+    item_ids_at_moving_end_location: list[int], transition_id: int, transition_point: str, move_list: list
 ) -> None:
     for target in item_ids_at_moving_end_location:
         target_coords = main_window.canvas.coords(target)
@@ -103,7 +105,9 @@ def _move_the_line_to_the_center_of_the_target(
 
 
 # def move_to(event_x, event_y, transition_id, point, first, move_list, last):
-def _update_the_tags_of_the_transition(item_ids_at_moving_end_location, transition_id, transition_point) -> None:
+def _update_the_tags_of_the_transition(
+    item_ids_at_moving_end_location: list[int], transition_id: int, transition_point: str
+) -> None:
     transition_tags = main_window.canvas.gettags(transition_id)
     transition_tag = ""
     condition_action_tag = ""
@@ -152,7 +156,7 @@ def _update_the_tags_of_the_transition(item_ids_at_moving_end_location, transiti
                 )  # update tags of the end state of the transition.
 
 
-def _shorten_all_moved_transitions_to_the_state_borders(move_list) -> None:
+def _shorten_all_moved_transitions_to_the_state_borders(move_list: list) -> None:
     # Prevent transitions to be shortened twice (would happen at transitions that point from
     # a state to the same state back) by writing a done-list:
     done = []
@@ -173,7 +177,7 @@ def _shorten_all_moved_transitions_to_the_state_borders(move_list) -> None:
                 done.append(move_list_entry[0])
 
 
-def _move_all_ca_connection_end_points_to_the_new_transition_start_points(move_list) -> None:
+def _move_all_ca_connection_end_points_to_the_new_transition_start_points(move_list: list) -> None:
     for move_list_entry in move_list:
         if (
             main_window.canvas.type(move_list_entry[0]) == "line"
@@ -193,7 +197,7 @@ def _move_all_ca_connection_end_points_to_the_new_transition_start_points(move_l
                     )
 
 
-def _hide_the_connection_line_of_moved_condition_action_window(move_list) -> None:
+def _hide_the_connection_line_of_moved_condition_action_window(move_list: list) -> None:
     for move_list_entry in move_list:
         if main_window.canvas.type(move_list_entry[0]) == "window":
             tags = main_window.canvas.gettags(move_list_entry[0])
@@ -203,7 +207,7 @@ def _hide_the_connection_line_of_moved_condition_action_window(move_list) -> Non
                     ref.hide_line()
 
 
-def _a_line_is_moved_to_a_window(item_ids_at_moving_end_location) -> bool:
+def _a_line_is_moved_to_a_window(item_ids_at_moving_end_location: list[int]) -> bool:
     return any(main_window.canvas.type(target) == "window" for target in item_ids_at_moving_end_location)
 
 

@@ -201,7 +201,7 @@ def _add_lines_connected_to_the_diagram_object_to_the_list(move_list: list) -> N
 
 
 def _add_items_for_moving_a_single_line_point_to_the_list(
-    move_list, items_near_mouse_click_location, event_x, event_y
+    move_list: list, items_near_mouse_click_location: list[int], event_x: float, event_y: float
 ) -> None:
     line_id = _find_the_item_id_of_the_line(items_near_mouse_click_location)
     if line_id is None:
@@ -221,14 +221,14 @@ def _add_items_for_moving_a_single_line_point_to_the_list(
                 _remove_tags_and_hide_priority(line_id, tag, transition_tags, moving_point)
 
 
-def _find_the_item_id_of_the_line(items_near_mouse_click_location) -> Optional[int]:
+def _find_the_item_id_of_the_line(items_near_mouse_click_location: list[int]) -> Optional[int]:
     for item_id in items_near_mouse_click_location:
         if main_window.canvas.type(item_id) == "line" and "grid_line" not in main_window.canvas.gettags(item_id):
             return item_id
     return None
 
 
-def _search_for_the_tags_of_a_transition(line_id) -> Optional[tuple]:
+def _search_for_the_tags_of_a_transition(line_id: int) -> Optional[tuple]:
     line_tags = main_window.canvas.gettags(line_id)
     for tag in line_tags:
         if tag.startswith("transition"):
@@ -237,7 +237,7 @@ def _search_for_the_tags_of_a_transition(line_id) -> Optional[tuple]:
     return None
 
 
-def _remove_tags_and_hide_priority(line_id, transition_tag, transition_tags, moving_point) -> None:
+def _remove_tags_and_hide_priority(line_id: int, transition_tag: str, transition_tags: tuple, moving_point: str) -> None:
     for tag in transition_tags:
         if moving_point == "start" and tag.startswith("coming_from_"):
             main_window.canvas.dtag(line_id, tag)  # delete the "coming_from_" tag from the line

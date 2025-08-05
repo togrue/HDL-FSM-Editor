@@ -119,19 +119,27 @@ def _determine_height_of_the_polygon(polygon_id: int) -> float:
     return polygon_coords[9] - polygon_coords[1]
 
 
-def _calculate_new_upper_left_corner_of_the_polygon(event_x: float, event_y: float, width: float, height: float) -> list[float]:
+def _calculate_new_upper_left_corner_of_the_polygon(
+    event_x: float, event_y: float, width: float, height: float
+) -> list[float]:
     return [event_x - 13 * width / 10, event_y - height / 2]
 
 
-def _calculate_new_upper_right_corner_of_the_polygon(event_x: float, event_y: float, width: float, height: float) -> list[float]:
+def _calculate_new_upper_right_corner_of_the_polygon(
+    event_x: float, event_y: float, width: float, height: float
+) -> list[float]:
     return [event_x - 3 * width / 10, event_y - height / 2]
 
 
-def _calculate_new_lower_right_corner_of_the_polygon(event_x: float, event_y: float, width: float, height: float) -> list[float]:
+def _calculate_new_lower_right_corner_of_the_polygon(
+    event_x: float, event_y: float, width: float, height: float
+) -> list[float]:
     return [event_x - 3 * width / 10, event_y + height / 2]
 
 
-def _calculate_new_lower_left_corner_of_the_polygon(event_x: float, event_y: float, width: float, height: float) -> list[float]:
+def _calculate_new_lower_left_corner_of_the_polygon(
+    event_x: float, event_y: float, width: float, height: float
+) -> list[float]:
     return [event_x - 13 * width / 10, event_y + height / 2]
 
 
