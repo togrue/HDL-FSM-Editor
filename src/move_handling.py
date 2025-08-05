@@ -4,6 +4,8 @@ This module contains a method to decide which graphical object must be moved.
 
 from typing import Any
 
+import tkinter as tk
+
 import canvas_editing
 import condition_action_handling
 import connector_handling
@@ -19,7 +21,7 @@ import state_handling
 import transition_handling
 
 
-def move_do(event, move_list, first) -> None:
+def move_do(event: tk.Event, move_list: list, first: bool) -> None:
     last = bool(event.type == "5")
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
     if _state_is_moved_to_near_to_state_or_connector(move_list, event_x, event_y):
@@ -57,7 +59,7 @@ def move_do(event, move_list, first) -> None:
             print("move: Fatal, unknown canvas type", "|" + str(item_type) + "|")
 
 
-def _state_is_moved_to_near_to_state_or_connector(move_list, event_x, event_y) -> bool:
+def _state_is_moved_to_near_to_state_or_connector(move_list: list, event_x: float, event_y: float) -> bool:
     for entry in move_list:
         moved_item_id = entry[0]
         if main_window.canvas.type(moved_item_id) == "oval":

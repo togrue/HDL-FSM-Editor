@@ -237,7 +237,9 @@ def _search_for_the_tags_of_a_transition(line_id: int) -> Optional[tuple]:
     return None
 
 
-def _remove_tags_and_hide_priority(line_id: int, transition_tag: str, transition_tags: tuple, moving_point: str) -> None:
+def _remove_tags_and_hide_priority(
+    line_id: int, transition_tag: str, transition_tags: tuple, moving_point: str
+) -> None:
     for tag in transition_tags:
         if moving_point == "start" and tag.startswith("coming_from_"):
             main_window.canvas.dtag(line_id, tag)  # delete the "coming_from_" tag from the line

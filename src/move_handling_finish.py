@@ -211,7 +211,7 @@ def _a_line_is_moved_to_a_window(item_ids_at_moving_end_location: list[int]) -> 
     return any(main_window.canvas.type(target) == "window" for target in item_ids_at_moving_end_location)
 
 
-def _a_line_is_moved_to_a_priority_rectangle(item_ids_at_moving_end_location) -> bool:
+def _a_line_is_moved_to_a_priority_rectangle(item_ids_at_moving_end_location: list[int]) -> bool:
     for target in item_ids_at_moving_end_location:
         if main_window.canvas.type(target) == "rectangle" and main_window.canvas.gettags(target)[0].startswith(
             "transition"
@@ -220,7 +220,7 @@ def _a_line_is_moved_to_a_priority_rectangle(item_ids_at_moving_end_location) ->
     return False
 
 
-def _a_line_start_or_end_point_is_moved_to_a_line(item_ids_at_moving_end_location) -> bool:
+def _a_line_start_or_end_point_is_moved_to_a_line(item_ids_at_moving_end_location: list[int]) -> bool:
     target_is_a_line = True
     for target in item_ids_at_moving_end_location:
         if main_window.canvas.type(target) in ["oval", "rectangle", "polygon"]:
@@ -232,7 +232,7 @@ def _a_line_start_or_end_point_is_moved_to_a_line(item_ids_at_moving_end_locatio
     return False
 
 
-def _a_point_of_a_line_is_moved_illegally_to_a_reset_entry(item_ids_at_moving_end_location, move_list) -> bool:
+def _a_point_of_a_line_is_moved_illegally_to_a_reset_entry(item_ids_at_moving_end_location: list[int], move_list: list) -> bool:
     for target in item_ids_at_moving_end_location:
         if main_window.canvas.type(target) == "polygon":
             for move_list_entry in move_list:
@@ -252,11 +252,11 @@ def _a_point_of_a_line_is_moved_illegally_to_a_reset_entry(item_ids_at_moving_en
     return False
 
 
-def _start_or_end_of_a_line_was_moved_to_free_space(item_ids_at_moving_end_location) -> bool:
+def _start_or_end_of_a_line_was_moved_to_free_space(item_ids_at_moving_end_location: list[int]) -> bool:
     return item_ids_at_moving_end_location == []
 
 
-def _transition_connects_reset_entry_and_connector(item_ids_at_moving_end_location, move_list) -> bool:
+def _transition_connects_reset_entry_and_connector(item_ids_at_moving_end_location: list[int], move_list: list) -> bool:
     for target in item_ids_at_moving_end_location:
         if main_window.canvas.type(target) == "rectangle":
             for move_list_entry in move_list:
