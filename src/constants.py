@@ -448,8 +448,8 @@ except ImportError:
     # StrEnum was added in Python 3.11.
     # So we use this compatibility class for Python 3.10 and lower.
     class StrEnum(str, Enum):  # type: ignore[no-redef]
-        def __str__(self):
-            return self.value
+        def __str__(self) -> str:
+            return str(self.value)
 
 
 class GuiTab(StrEnum):

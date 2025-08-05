@@ -14,7 +14,9 @@ from link_dictionary import link_dict
 from .exceptions import GenerationError
 
 
-def create_state_action_process(file_name, file_line_number, state_tag_list_sorted) -> tuple:
+def create_state_action_process(
+    file_name: str, file_line_number: int, state_tag_list_sorted: list[str]
+) -> tuple[str, int]:
     default_state_actions = _get_default_state_actions()
     state_action_list = _create_state_action_list(
         state_tag_list_sorted
@@ -48,7 +50,7 @@ def create_state_action_process(file_name, file_line_number, state_tag_list_sort
     return state_action_process, file_line_number
 
 
-def _state_actions_contain_only_null_for_each_state(state_action_list) -> bool:
+def _state_actions_contain_only_null_for_each_state(state_action_list: list[list[str]]) -> bool:
     return all(entry[1] == "null;\n" for entry in state_action_list)
 
 

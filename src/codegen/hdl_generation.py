@@ -25,7 +25,7 @@ from .list_separation_check import ListSeparationCheck
 last_line_number_of_file1 = 0
 
 
-def run_hdl_generation(write_to_file, is_script_mode: bool = False) -> bool:
+def run_hdl_generation(write_to_file: bool, is_script_mode: bool = False) -> bool:
     config = GenerationConfig.from_main_window()
     success = False
     try:
@@ -102,7 +102,7 @@ def _create_hdl(config, header, write_to_file) -> None:
 
 
 # TODO: This should not be here!
-def _copy_hdl_into_generated_hdl_tab(hdl, file_name, file_name_architecture) -> None:
+def _copy_hdl_into_generated_hdl_tab(hdl: str, file_name: str, file_name_architecture: str) -> None:
     main_window.date_of_hdl_file_shown_in_hdl_tab = os.path.getmtime(file_name)
     if file_name_architecture != "":
         main_window.date_of_hdl_file2_shown_in_hdl_tab = os.path.getmtime(file_name_architecture)
@@ -117,7 +117,7 @@ def _copy_hdl_into_generated_hdl_tab(hdl, file_name, file_name_architecture) -> 
     main_window.show_tab(GuiTab.GENERATED_HDL)
 
 
-def _create_entity(config, file_name, file_line_number) -> tuple:
+def _create_entity(config: GenerationConfig, file_name: str, file_line_number: int) -> tuple[str, int]:
     entity = ""
 
     package_statements = hdl_generation_library.get_text_from_text_widget(main_window.interface_package_text)
@@ -184,7 +184,7 @@ def _create_entity(config, file_name, file_line_number) -> tuple:
     return entity, file_line_number
 
 
-def _create_module_ports(config, file_name, file_line_number) -> tuple:
+def _create_module_ports(config: GenerationConfig, file_name: str, file_line_number: int) -> tuple[str, int]:
     module = ""
     file_line_number = 3  # Line 1 = Filename, Line 2 = Header
     module += "module " + config.module_name + "\n"
@@ -229,7 +229,15 @@ def _create_module_ports(config, file_name, file_line_number) -> tuple:
     return module, file_line_number
 
 
-def _write_hdl_file(config, write_to_file, header, entity, architecture, path_name, path_name_architecture) -> str:
+def _write_hdl_file(
+    config: GenerationConfig,
+    write_to_file: bool,
+    header: str,
+    entity: str,
+    architecture: str,
+    path_name: str,
+    path_name_architecture: str,
+) -> str:
     global last_line_number_of_file1
     _, name_of_file = os.path.split(path_name)
     if config.select_file_number == 1:
@@ -275,7 +283,7 @@ def _write_hdl_file(config, write_to_file, header, entity, architecture, path_na
     return content_with_numbers
 
 
-def _get_file_names(config) -> tuple:
+def _get_file_names(config: GenerationConfig) -> tuple[str, str]:
     # For Verilog and SystemVerilog, always generate single files regardless of number_of_files setting
     if config.language in ["Verilog", "SystemVerilog"]:
         file_type = ".v" if config.language == "Verilog" else ".sv"
@@ -292,7 +300,7 @@ def _get_file_names(config) -> tuple:
     return file_name, file_name_architecture
 
 
-def _add_line_numbers(text) -> str:
+def _add_line_numbers(text: str) -> str:
     text_lines = text.split("\n")
     text_length_as_string = str(len(text_lines))
     number_of_needed_digits_as_string = str(len(text_length_as_string))
@@ -302,9 +310,9 @@ def _add_line_numbers(text) -> str:
     return content_with_numbers
 
 
-def _create_sorted_state_tag_list():
-    state_tag_dict_with_prio = {}
-    state_tag_list = []
+def _create_sorted_state_tag_list() -> list[str]:
+    state_tag_dict_with_prio: dict[int, str] = {}
+    state_tag_list: list[str] = []
     reg_ex_for_state_tag = re.compile("^state[0-9]+$")
     for canvas_id in main_window.canvas.find_all():
         for tag in main_window.canvas.gettags(canvas_id):

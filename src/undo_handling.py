@@ -100,7 +100,7 @@ def _remove_stack_entries_from_write_pointer_to_the_end_of_the_stack() -> None:
 
 # TODO: This should be the same as saving to a file.
 # Maybe including some extra information as the zoom level.
-def _get_complete_design_as_text_object():
+def _get_complete_design_as_text_object() -> str:
     design = ""
     design += "modulename|" + main_window.module_name.get() + "\n"
     design += "language|" + main_window.language.get() + "\n"
@@ -264,7 +264,7 @@ def _get_coords(canvas_id) -> str:
     return coords_string
 
 
-def _get_tags(canvas_id) -> str:
+def _get_tags(canvas_id: int) -> str:
     tags = main_window.canvas.gettags(canvas_id)
     tags_string = ""
     for t in tags:
@@ -273,7 +273,7 @@ def _get_tags(canvas_id) -> str:
     return tags_string
 
 
-def _get_fill_color(canvas_id):
+def _get_fill_color(canvas_id: int) -> str:
     color = main_window.canvas.itemcget(canvas_id, "fill")
     return "fill=" + color + " "
 
@@ -706,26 +706,26 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
     main_window.grid_drawer.draw_grid()
 
 
-def _remove_keyword_from_line(line, keyword):
+def _remove_keyword_from_line(line: str, keyword: str) -> str:
     return line[len(keyword) :]
 
 
-def _get_data(rest_of_line, lines):
+def _get_data(rest_of_line: str, lines: list[str]) -> str:
     length_of_data = _get_length_info_from_line(rest_of_line)
     first_data = _remove_length_info(rest_of_line)
     data = _get_remaining_data(lines, length_of_data, first_data)
     return data
 
 
-def _get_length_info_from_line(rest_of_line) -> int:
+def _get_length_info_from_line(rest_of_line: str) -> int:
     return int(re.sub(r"\|.*", "", rest_of_line))
 
 
-def _remove_length_info(rest_of_line):
+def _remove_length_info(rest_of_line: str) -> str:
     return re.sub(r".*\|", "", rest_of_line)
 
 
-def _get_remaining_data(lines, length_of_data, first_data):
+def _get_remaining_data(lines: list[str], length_of_data: int, first_data: str) -> str:
     global _line_index
     data = first_data
     while len(data) < length_of_data:

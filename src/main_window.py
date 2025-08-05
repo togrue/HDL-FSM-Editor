@@ -509,7 +509,7 @@ def _set_path() -> None:
         generate_path_value.set(path)
 
 
-def __add_path():
+def __add_path() -> None:
     old_entry = additional_sources_value.get()
     if old_entry != "":
         old_entries = old_entry.split(",")
@@ -1178,23 +1178,23 @@ def switch_language_mode() -> None:
         _compile_cmd_docu.config(text="Variables for compile command:\n$file\t= Module-File\n$name\t= Module Name")
 
 
-def _handle_key(event, custom_text_ref) -> None:
+def _handle_key(event: tk.Event, custom_text_ref: custom_text.CustomText) -> None:
     custom_text_ref.after_idle(
         custom_text_ref.update_highlight_tags, canvas_editing.fontsize, ["control", "datatype", "function", "comment"]
     )
 
 
-def _handle_key_at_ports(custom_text_ref) -> None:
+def _handle_key_at_ports(custom_text_ref: custom_text.CustomText) -> None:
     custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_ports_list)
     custom_text_ref.after_idle(custom_text_ref.update_highlighting)
 
 
-def _handle_key_at_generics(custom_text_ref) -> None:
+def _handle_key_at_generics(custom_text_ref: custom_text.CustomText) -> None:
     custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_generics_list)
     custom_text_ref.after_idle(custom_text_ref.update_highlighting)
 
 
-def _handle_key_at_declarations(custom_text_ref) -> None:
+def _handle_key_at_declarations(custom_text_ref: custom_text.CustomText) -> None:
     custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_signals_list)
     custom_text_ref.after_idle(custom_text_ref.update_highlighting)
 
@@ -1300,7 +1300,7 @@ def choose_bg_color() -> None:
         diagram_background_color.set(new_color)
 
 
-def __resize_event_interface_tab_frames(event) -> None:
+def __resize_event_interface_tab_frames(event: tk.Event) -> None:
     global sash_positions
     if "interface_tab" not in sash_positions:
         sash_positions["interface_tab"] = {}
@@ -1309,7 +1309,7 @@ def __resize_event_interface_tab_frames(event) -> None:
         sash_positions["interface_tab"][1] = paned_window_interface.sashpos(1)
 
 
-def __resize_event_internals_tab_frames(event) -> None:
+def __resize_event_internals_tab_frames(event: tk.Event) -> None:
     global sash_positions
     if "internals_tab" not in sash_positions:
         sash_positions["internals_tab"] = {}
