@@ -4,7 +4,6 @@ All methods needed for the state action process in VHDL or Verilog
 
 import re
 import tkinter as tk
-from typing import Any
 
 import codegen.hdl_generation_library as hdl_generation_library
 import main_window
