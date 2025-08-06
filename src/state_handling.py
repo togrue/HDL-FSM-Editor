@@ -56,9 +56,9 @@ def _determine_the_tag_of_the_state_name(state_id: int) -> str:
             return tag + "_name"
 
 
-def _determine_the_radius_of_the_state(state_id: int) -> int:
+def _determine_the_radius_of_the_state(state_id: int) -> float:
     state_coords = main_window.canvas.coords(state_id)
-    return (state_coords[2] - state_coords[0]) // 2
+    return (state_coords[2] - state_coords[0]) / 2
 
 
 def get_canvas_id_of_state_name(state_id: int) -> int:
