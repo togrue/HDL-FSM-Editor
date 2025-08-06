@@ -18,7 +18,7 @@ from custom_text import CustomText
 from .exceptions import GenerationError
 
 
-def indent_text_by_the_given_number_of_tabs(number_of_tabs, text) -> str:
+def indent_text_by_the_given_number_of_tabs(number_of_tabs: int, text: str) -> str:
     keep_newline_at_each_line_end = True
     list_of_lines = text.splitlines(keep_newline_at_each_line_end)
     result_string = ""
@@ -29,14 +29,14 @@ def indent_text_by_the_given_number_of_tabs(number_of_tabs, text) -> str:
     return result_string
 
 
-def get_text_from_text_widget(wiget_id) -> str:
+def get_text_from_text_widget(wiget_id: CustomText) -> str:
     text = wiget_id.get("1.0", tk.END)
     if text != "\n":
         return text
     return ""
 
 
-def _get_target_state_name(all_reset_transition_tags):
+def _get_target_state_name(all_reset_transition_tags: list[str]) -> str:
     target_state_tag = ""
     for t in all_reset_transition_tags:
         if t.startswith("going_to_state"):
@@ -46,7 +46,7 @@ def _get_target_state_name(all_reset_transition_tags):
 
 
 # TODO: Might be unused right now.
-def _get_target_tag_of_transition(transition_tag):
+def _get_target_tag_of_transition(transition_tag: str) -> str:
     transition_tags = main_window.canvas.gettags(transition_tag)
     for transition_tag in transition_tags:
         if transition_tag.startswith("going_to_"):
@@ -57,7 +57,7 @@ def _get_target_tag_of_transition(transition_tag):
     return ""  # Should never happen.
 
 
-def create_reset_condition_and_reset_action() -> list:
+def create_reset_condition_and_reset_action() -> list[Union[str, CustomText]]:
     reset_transition_tag = _get_reset_transition_tag()
     ref = _get_condition_action_reference_of_transition(reset_transition_tag)
     if ref is None:
@@ -144,7 +144,7 @@ def _get_condition_action_reference_of_transition(
     return None
 
 
-def extract_transition_specifications_from_the_graph(state_tag_list_sorted) -> list:
+def extract_transition_specifications_from_the_graph(state_tag_list_sorted: list[str]) -> list[Dict[str, Any]]:
     transition_specifications = []
     for state_tag in state_tag_list_sorted:
         state_name = main_window.canvas.itemcget(state_tag + "_name", "text")
@@ -192,7 +192,7 @@ def extract_transition_specifications_from_the_graph(state_tag_list_sorted) -> l
     return transition_specifications
 
 
-def _optimize_transition_specifications(transition_specifications) -> None:
+def _optimize_transition_specifications(transition_specifications: list[Dict[str, Any]]) -> None:
     # Add an unique if-identifier to each transition_specification of the transition_specifications.
     # At each if, the identifier is incremented, at each end-if it is decremented.
     # Also add to each end-if transition specification the number of branches of this ending if-construct:
@@ -253,7 +253,7 @@ def _optimize_transition_specifications(transition_specifications) -> None:
     return
 
 
-def _expand_transition_specifications_by_if_identifier(transition_specifications) -> None:
+def _expand_transition_specifications_by_if_identifier(transition_specifications: list[Dict[str, Any]]) -> None:
     if_identifier = 0
     if_identifier_max = 0
     for transition_specification in transition_specifications:
@@ -282,7 +282,9 @@ def _expand_transition_specifications_by_if_identifier(transition_specifications
             transition_specification["if_identifier"] = stack_of_if_identifier[-1]
 
 
-def _create_action_and_branch_array_for_each_if_construct(transition_specifications) -> tuple[dict, dict]:
+def _create_action_and_branch_array_for_each_if_construct(
+    transition_specifications: list[Dict[str, Any]],
+) -> tuple[Dict[str, Any], Dict[str, Any]]:
     # The return dictionary action_target_array[state_name][if_identifier][0..n] is an
     # dictionary with the keys "actions" and "target".
     # The key "actions" stores a list of actions which are executed in this branch.

@@ -176,7 +176,7 @@ def create_module_logic(file_name: str, file_line_number: int, state_tag_list_so
     return architecture
 
 
-def _create_signal_declaration_for_the_state_variable(state_tag_list_sorted) -> str:
+def _create_signal_declaration_for_the_state_variable(state_tag_list_sorted: list[str]) -> str:
     list_of_all_state_names = [
         main_window.canvas.itemcget(state_tag + "_name", "text") for state_tag in state_tag_list_sorted
     ]
@@ -200,7 +200,7 @@ def _create_signal_declaration_for_the_state_variable(state_tag_list_sorted) -> 
     return signal_declaration
 
 
-def _indent_identically(character, actual_list) -> list:
+def _indent_identically(character: str, actual_list: list[str]) -> list[str]:
     actual_list = [
         re.sub("[ ]*" + character, character, decl, count=1) for decl in actual_list
     ]  # Blanks for the character will be adapted und must first be removed here.
@@ -217,7 +217,7 @@ def _indent_identically(character, actual_list) -> list:
     return new_list
 
 
-def _get_reset_edge(reset_condition) -> str:
+def _get_reset_edge(reset_condition: str) -> str:
     reset_condition_mod = hdl_generation_library.remove_comments_and_returns(reset_condition)
     reset_condition_mod = re.sub("\\s", "", reset_condition_mod)  # remove blanks
     if reset_condition_mod.endswith("1'b0"):

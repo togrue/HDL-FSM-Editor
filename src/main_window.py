@@ -317,7 +317,7 @@ def create_menu_bar() -> None:
     root.bind_all("<Control-F>", lambda event: _capslock_warning("F"))
 
 
-def _capslock_warning(character: str):
+def _capslock_warning(character: str) -> None:
     messagebox.showwarning(
         "Warning in HDL-FSM-Editor",
         "The character " + character + " is not bound to any action.\nPerhaps Capslock is active?",
@@ -891,7 +891,7 @@ def __scroll_yview(*args: Any) -> None:
     grid_drawer.draw_grid()
 
 
-def __check_for_window_resize(_) -> None:
+def __check_for_window_resize(_: Any) -> None:
     grid_drawer.remove_grid()
     grid_drawer.draw_grid()
 
@@ -966,7 +966,7 @@ def create_log_notebook_tab() -> None:
     _debug_active.set(1)  # 1: inactive, 2: active
 
 
-def _clear_log_tab(_) -> None:
+def _clear_log_tab(_: Any) -> None:
     log_frame_text.config(state=tk.NORMAL)
     log_frame_text.delete("1.0", tk.END)
     log_frame_text.config(state=tk.DISABLED)
