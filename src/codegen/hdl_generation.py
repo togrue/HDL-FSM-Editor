@@ -69,7 +69,7 @@ def _generate_hdl(config: GenerationConfig, write_to_file: bool) -> None:
     _create_hdl(config, header, write_to_file)
 
 
-def _create_hdl(config, header, write_to_file) -> None:
+def _create_hdl(config: GenerationConfig, header: str, write_to_file: bool) -> None:
     file_name, file_name_architecture = _get_file_names(config)
 
     link_dict().clear_link_dict(file_name)

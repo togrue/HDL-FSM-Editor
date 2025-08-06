@@ -4,6 +4,7 @@ All methods needed for the state action process in VHDL or Verilog
 
 import re
 import tkinter as tk
+from typing import Any
 
 import codegen.hdl_generation_library as hdl_generation_library
 import main_window
@@ -122,8 +123,8 @@ def _create_state_action_process_for_verilog(
     file_line_number: int,
     state_action_list: list[str],
     default_state_actions: str,
-    all_possible_sensitivity_entries,
-    variable_declarations,
+    all_possible_sensitivity_entries: list[str],
+    variable_declarations: str,
 ) -> tuple[str, int]:
     state_action_process = "always @"
     state_action_process += _create_sensitivity_list(
@@ -241,7 +242,7 @@ def _create_sensitivity_list(
     return sensitivity_list
 
 
-def _remove_left_hand_sides(state_action):
+def _remove_left_hand_sides(state_action: str) -> str:
     # Insert ";" for the search pattern later:
     state_action = ";" + state_action
     state_action = re.sub(" begin ", " ; ", state_action, flags=re.I)
@@ -262,7 +263,7 @@ def _get_default_state_actions() -> str:
         return comment + " Default State Actions:\n" + ref.text_id.get("1.0", tk.END)
 
 
-def _create_when_entry(state_action):
+def _create_when_entry(state_action: list[str]) -> str:
     if main_window.language.get() == "VHDL":
         when_entry = "when " + state_action[0] + "=>\n"
         when_entry += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_action[1])
@@ -277,7 +278,7 @@ def _create_when_entry(state_action):
     return when_entry
 
 
-def get_all_readable_ports(all_port_declarations, check) -> list:
+def get_all_readable_ports(all_port_declarations: str, check: bool) -> list[str]:
     port_declaration_list = _create_list_of_declarations(all_port_declarations)
     readable_port_list = []
     for declaration in port_declaration_list:
@@ -290,7 +291,7 @@ def get_all_readable_ports(all_port_declarations, check) -> list:
     return readable_port_list
 
 
-def get_all_writable_ports(all_port_declarations) -> list:
+def get_all_writable_ports(all_port_declarations: str) -> list[str]:
     port_declaration_list = _create_list_of_declarations(all_port_declarations)
     writeable_port_list = []
     for declaration in port_declaration_list:
@@ -301,7 +302,7 @@ def get_all_writable_ports(all_port_declarations) -> list:
     return writeable_port_list
 
 
-def _create_list_of_declarations(all_declarations):
+def _create_list_of_declarations(all_declarations: str) -> list[str]:
     all_declarations_without_comments = hdl_generation_library.remove_comments_and_returns(all_declarations)
     all_declarations_separated = hdl_generation_library.surround_character_by_blanks(
         ":", all_declarations_without_comments
@@ -310,7 +311,7 @@ def _create_list_of_declarations(all_declarations):
     return all_declarations_separated.split(split_char)
 
 
-def get_all_port_types(all_port_declarations) -> list:
+def get_all_port_types(all_port_declarations: str) -> list[str]:
     port_declaration_list = _create_list_of_declarations(all_port_declarations)
     port_types_list = []
     for declaration in port_declaration_list:
@@ -328,7 +329,7 @@ def get_all_port_types(all_port_declarations) -> list:
     return port_types_list
 
 
-def get_all_generic_names(all_generic_declarations) -> list:
+def get_all_generic_names(all_generic_declarations: str) -> list[str]:
     generic_declaration_list = _create_list_of_declarations(all_generic_declarations)
     generic_name_list = []
     for declaration in generic_declaration_list:
@@ -344,7 +345,7 @@ def get_all_generic_names(all_generic_declarations) -> list:
     return generic_name_list
 
 
-def _get_all_readable_port_names(declaration, check) -> str:
+def _get_all_readable_port_names(declaration: str, check: bool) -> str:
     port_names = ""
     if " in " in declaration and main_window.language.get() == "VHDL":
         if ":" not in declaration:
@@ -369,7 +370,7 @@ def _get_all_readable_port_names(declaration, check) -> str:
     return port_names_without_blanks
 
 
-def _get_all_writable_port_names(declaration) -> str:
+def _get_all_writable_port_names(declaration: str) -> str:
     port_names = ""
     if " out " in declaration and main_window.language.get() == "VHDL":
         if ":" in declaration:
@@ -387,7 +388,7 @@ def _get_all_writable_port_names(declaration) -> str:
     return port_names_without_blanks
 
 
-def _get_all_signals(all_signal_declarations) -> list:
+def _get_all_signals(all_signal_declarations: str) -> list[str]:
     all_signal_declarations_without_comments = hdl_generation_library.remove_comments_and_returns(
         all_signal_declarations
     )
@@ -446,14 +447,14 @@ def _get_all_signals(all_signal_declarations) -> list:
     return signals_list
 
 
-def _add_blank_at_the_beginning_of_each_line(signal_declaration_list) -> list:
+def _add_blank_at_the_beginning_of_each_line(signal_declaration_list: list[str]) -> list[str]:
     signal_declaration_list_extended = []
     for d in signal_declaration_list:
         signal_declaration_list_extended.append(re.sub("^", " ", d))
     return signal_declaration_list_extended
 
 
-def _get_the_signal_names(declaration):
+def _get_the_signal_names(declaration: str) -> list[str]:
     signal_names = re.sub(":.*", "", declaration)
     signal_names_alone = re.sub(" signal ", "", signal_names, flags=re.I)
     signal_names_without_blanks = re.sub(" ", "", signal_names_alone)

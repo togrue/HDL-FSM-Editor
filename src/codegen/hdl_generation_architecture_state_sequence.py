@@ -4,11 +4,12 @@ The methods create only the HDL for the state sequence.
 """
 
 import re
+from typing import Any, Dict
 
 from link_dictionary import link_dict
 
 
-def create_vhdl_for_the_state_sequence(transition_specifications, file_name, file_line_number) -> tuple:
+def create_vhdl_for_the_state_sequence(transition_specifications: list[Dict[str, Any]], file_name: str, file_line_number: int) -> tuple[list[str], list[bool], int]:
     vhdl = []
     ignore_control_for_vhdl_indent = []
     for index, transition_specification in enumerate(transition_specifications):
@@ -166,7 +167,7 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
     return vhdl_indented, file_line_number
 
 
-def create_verilog_for_the_state_sequence(transition_specifications, file_name, file_line_number) -> tuple:
+def create_verilog_for_the_state_sequence(transition_specifications: list[Dict[str, Any]], file_name: str, file_line_number: int) -> tuple[list[str], list[bool], int]:
     verilog = []
     ignore_control_for_verilog_indent = []
     for index, transition_specification in enumerate(transition_specifications):
