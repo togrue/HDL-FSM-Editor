@@ -54,7 +54,7 @@ def _create_reset_entry(canvas_grid_coordinates_of_the_event: list[float]) -> No
     )
 
 
-def _create_polygon_shape_for_reset_entry() -> list[list]:
+def _create_polygon_shape_for_reset_entry() -> list[tuple[float, float]]:
     # upper_left_corner  = [-20,-12]
     # upper_right_corner = [+20,-12]
     # point_corner       = [+32, 0]   connect-point for transition
@@ -62,21 +62,20 @@ def _create_polygon_shape_for_reset_entry() -> list[list]:
     # lower_left_corner  = [-20,+12]
     size = canvas_editing.reset_entry_size
     # Coordinates when the mouse-pointer is at point_corner of the polygon:
-    upper_left_corner = [-size / 2 - 4 * size / 5, -3 * size / 10]
-    upper_right_corner = [+size / 2 - 4 * size / 5, -3 * size / 10]
-    point_corner = [0, 0]
-    lower_right_corner = [+size / 2 - 4 * size / 5, +3 * size / 10]
-    lower_left_corner = [-size / 2 - 4 * size / 5, +3 * size / 10]
+    upper_left_corner = (-size / 2 - 4 * size / 5, -3 * size / 10)
+    upper_right_corner = (+size / 2 - 4 * size / 5, -3 * size / 10)
+    point_corner = (0, 0)
+    lower_right_corner = (+size / 2 - 4 * size / 5, +3 * size / 10)
+    lower_left_corner = (-size / 2 - 4 * size / 5, +3 * size / 10)
     return [upper_left_corner, upper_right_corner, point_corner, lower_right_corner, lower_left_corner]
 
 
 def _move_reset_entry_polygon_to_event(
-    canvas_grid_coordinates_of_the_event: list[float], reset_entry_polygon: list[list[float]]
-) -> list[list[float]]:
-    for p in reset_entry_polygon:
-        p[0] += canvas_grid_coordinates_of_the_event[0]
-        p[1] += canvas_grid_coordinates_of_the_event[1]
-    return reset_entry_polygon
+    canvas_grid_coordinates_of_the_event: list[float], reset_entry_polygon: list[tuple[float, float]]
+) -> list[tuple[float, float]]:
+    # Move the polygon to the event coordinates.
+    offset_x, offset_y = canvas_grid_coordinates_of_the_event
+    return [(x + offset_x, y + offset_y) for x, y in reset_entry_polygon]
 
 
 def move_to(event_x: float, event_y: float, polygon_id: int, first: bool, last: bool) -> None:

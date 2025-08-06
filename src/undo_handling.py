@@ -275,6 +275,7 @@ def _get_tags(canvas_id: int) -> str:
 
 def _get_fill_color(canvas_id: int) -> str:
     color = main_window.canvas.itemcget(canvas_id, "fill")
+    assert isinstance(color, str)
     return "fill=" + color + " "
 
 

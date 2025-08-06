@@ -54,6 +54,7 @@ def _determine_the_tag_of_the_state_name(state_id: int) -> str:
     for tag in tags:
         if tag.startswith("state") and not tag.endswith("_comment_line_end"):
             return tag + "_name"
+    return ""
 
 
 def _determine_the_radius_of_the_state(state_id: int) -> float:
@@ -126,7 +127,7 @@ def show_menu(event: tk.Event, state_id: int) -> None:
 
 
 def _evaluate_menu(
-    event: tk.Event, window: tk.Widget, listbox: tk.Listbox, menu_x: float, menu_y: float, state_id: int
+    event: tk.Event, window: int, listbox: tk.Listbox, menu_x: float, menu_y: float, state_id: int
 ) -> None:
     selected_entry = listbox.get(listbox.curselection())
     listbox.destroy()
@@ -160,7 +161,7 @@ def _evaluate_menu(
         undo_handling.design_has_changed()
 
 
-def _close_menu(window: tk.Widget, listbox: tk.Listbox) -> None:
+def _close_menu(window: int, listbox: tk.Listbox) -> None:
     listbox.destroy()
     main_window.canvas.delete(window)
 

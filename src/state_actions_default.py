@@ -57,8 +57,8 @@ class StateActionsDefault:
         self.label.grid(row=0, column=0, sticky=f"{tk.N}{tk.W}{tk.E}")
         self.text_id.grid(row=1, column=0, sticky=f"{tk.E}{tk.W}")
 
-        self.difference_x = 0
-        self.difference_y = 0
+        self.difference_x = 0.0
+        self.difference_y = 0.0
         self.move_rectangle: Optional[int] = None
 
         # Create canvas window for frame and text:

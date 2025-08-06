@@ -531,7 +531,7 @@ def _handle_next_added_transition_point(
         undo_handling.design_has_changed()
 
 
-def _check_if_transition_ends_at_connector(end_state_canvas_id: int) -> bool:
+def _check_if_transition_ends_at_connector(end_state_canvas_id: int | None) -> bool:
     if end_state_canvas_id is not None:
         end_state_tags = main_window.canvas.gettags(end_state_canvas_id)
         for tag in end_state_tags:
@@ -811,7 +811,7 @@ def show_menu(event: tk.Event, transition_id: int) -> None:
 
 
 def _evaluate_menu(
-    event: tk.Event, window: tk.Widget, listbox: tk.Listbox, menu_x: float, menu_y: float, transition_id: int
+    event: tk.Event, window: int, listbox: tk.Listbox, menu_x: float, menu_y: float, transition_id: int
 ) -> None:
     design_was_changed = False
     selected_entry = listbox.get(listbox.curselection())

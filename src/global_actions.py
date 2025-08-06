@@ -83,8 +83,8 @@ class GlobalActions:
         self.text_before_id.grid(row=1, column=0, sticky="ew")
         self.label_after.grid(row=2, column=0, sticky="ew")
         self.text_after_id.grid(row=3, column=0, sticky="swe")
-        self.difference_x = 0
-        self.difference_y = 0
+        self.difference_x = 0.0
+        self.difference_y = 0.0
         self.move_rectangle: Optional[int] = None
 
         # Create canvas window for frame and text:

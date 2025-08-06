@@ -294,7 +294,7 @@ def delete() -> None:
         undo_handling.design_has_changed()
 
 
-def adapt_visibility_of_priority_rectangles_at_state(start_state: str) -> None:
+def adapt_visibility_of_priority_rectangles_at_state(start_state: int) -> None:
     tags_of_start_state = main_window.canvas.gettags(start_state)
     number_of_outgoing_transitions = 0
     tag_of_outgoing_transition = ""

@@ -260,7 +260,7 @@ def create_menu_bar() -> None:
     search_button = ttk.Button(
         search_frame,
         text="Find",
-        command=lambda: canvas_editing.find(search_string, replace_string, replace=False),
+        command=lambda: canvas_editing.find(str(search_string), str(replace_string), replace=False),
         style="Find.TButton",
     )
     search_string_entry = ttk.Entry(search_frame, width=23, textvariable=search_string)

@@ -23,8 +23,8 @@ class MyText:
     def __init__(self, menu_x: float, menu_y: float, height: int, width: int, padding: int, increment: bool) -> None:
         if increment is True:
             MyText.mytext_id += 1
-        self.difference_x = 0
-        self.difference_y = 0
+        self.difference_x = 0.0
+        self.difference_y = 0.0
         self.move_rectangle: Optional[int] = None
         self.line_id: Optional[int] = None
         self.text_content: Optional[str] = None
@@ -94,7 +94,7 @@ class MyText:
             tag=("state_action" + str(MyText.mytext_id), "connection" + str(MyText.mytext_id) + "_start"),
         )
 
-    def connect_to_state(self, menu_x: float, menu_y: float, state_id: str) -> None:
+    def connect_to_state(self, menu_x: float, menu_y: float, state_id: int) -> None:
         # Draw a line from the state to the action block which is added to the state:
         state_coords = main_window.canvas.coords(state_id)
         main_window.canvas.addtag_withtag("connection" + str(MyText.mytext_id) + "_end", state_id)
