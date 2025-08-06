@@ -876,7 +876,12 @@ def _search_in_canvas_text(item: int, search_pattern: str, replace: bool, replac
 
 
 def _search_in_text_fields_of_a_tab(
-    tab: GuiTab, kind: str, search_pattern: str, interface_text_fields: list[tk.Text], replace: bool, replace_pattern: str
+    tab: GuiTab,
+    kind: str,
+    search_pattern: str,
+    interface_text_fields: list[tk.Text],
+    replace: bool,
+    replace_pattern: str,
 ) -> int:
     count = tk.IntVar()
     number_of_hits = 0
