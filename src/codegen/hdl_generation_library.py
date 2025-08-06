@@ -329,14 +329,22 @@ def _create_action_and_branch_array_for_each_if_construct(
     return action_target_array, branchnumber_array
 
 
-def _action_is_present_in_each_branch(action, state_name, if_identifier, action_target_array) -> bool:
+def _action_is_present_in_each_branch(
+    action: str, state_name: str, if_identifier: int, action_target_array: Dict[str, Any]
+) -> bool:
     for action_target_dict_check in action_target_array[state_name][if_identifier]:
         if action not in action_target_dict_check["actions"]:
             return False
     return True
 
 
-def _remove_action_from_branches(transition_specifications, state_name, if_identifier, action, moved_actions) -> int:
+def _remove_action_from_branches(
+    transition_specifications: list[Dict[str, Any]],
+    state_name: str,
+    if_identifier: int,
+    action: str,
+    moved_actions: List[Dict[str, Any]],
+) -> int:
     index_of_if_in_transition_specifications = 0
     for index, transition_specification in enumerate(transition_specifications):
         if (
@@ -360,7 +368,13 @@ def _remove_action_from_branches(transition_specifications, state_name, if_ident
     return index_of_if_in_transition_specifications
 
 
-def _remove_target_from_branches(transition_specifications, state_name, if_identifier, target, moved_target) -> int:
+def _remove_target_from_branches(
+    transition_specifications: list[Dict[str, Any]],
+    state_name: str,
+    if_identifier: int,
+    target: str,
+    moved_target: List[Dict[str, Any]],
+) -> int:
     index_of_if_in_transition_specifications = 0
     for index, transition_specification in enumerate(transition_specifications):
         if (
@@ -376,14 +390,16 @@ def _remove_target_from_branches(transition_specifications, state_name, if_ident
     return index_of_if_in_transition_specifications
 
 
-def _target_is_present_in_each_branch(target, state_name, if_identifier, action_target_array) -> bool:
+def _target_is_present_in_each_branch(
+    target: str, state_name: str, if_identifier: int, action_target_array: Dict[str, Any]
+) -> bool:
     for action_target_dict_check in action_target_array[state_name][if_identifier]:
         if target != action_target_dict_check["target"]:
             return False
     return True
 
 
-def _check_for_wrong_priorities(trace_array) -> None:
+def _check_for_wrong_priorities(trace_array: List[List[Dict[str, Any]]]) -> None:
     condition_array = []
     for trace in trace_array:
         # Each trace starts like this:
@@ -428,7 +444,7 @@ def _check_for_wrong_priorities(trace_array) -> None:
                 )
 
 
-def _merge_trace_array(trace_array) -> list:
+def _merge_trace_array(trace_array: List[List[Dict[str, Any]]]) -> list[Dict[str, Any]]:
     _check_for_wrong_priorities(trace_array)
     traces_of_a_state_reversed = list(reversed(trace_array))  # Start with the trace, which has lowest priority.
     for trace_index, trace in enumerate(traces_of_a_state_reversed):
@@ -542,7 +558,7 @@ def _merge_trace_array(trace_array) -> list:
     return transition_specifications
 
 
-def _get_a_list_of_all_state_tags():
+def _get_a_list_of_all_state_tags() -> list[str]:
     state_tag_list = []
     reg_ex_for_state_tag = re.compile("^state[0-9]+$")
     all_canvas_items = main_window.canvas.find_all()
@@ -554,7 +570,7 @@ def _get_a_list_of_all_state_tags():
     return sorted(state_tag_list)
 
 
-def _sort_list_of_all_state_tags(list_of_all_state_tags):
+def _sort_list_of_all_state_tags(list_of_all_state_tags: list[str]) -> list[str]:
     state_tag_dict_with_prio = {}
     state_tag_list = []
     sorted_list_of_all_state_tags = []
@@ -579,12 +595,12 @@ def _sort_list_of_all_state_tags(list_of_all_state_tags):
 
 
 def _extract_conditions_for_all_outgoing_transitions_of_the_state(
-    state_name,
-    start_point,
-    moved_actions,
-    condition_level,
-    trace,
-    trace_array,  # initialized by trace_array = []
+    state_name: str,
+    start_point: str,
+    moved_actions: List[Dict[str, Any]],
+    condition_level: int,
+    trace: List[Dict[str, Any]],
+    trace_array: List[List[Dict[str, Any]]],  # initialized by trace_array = []
 ) -> None:
     outgoing_transition_tags = _get_all_outgoing_transitions_in_priority_order(start_point)
     if not outgoing_transition_tags and start_point.startswith("connector"):
@@ -728,14 +744,14 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
             trace_array.append(trace_new)
 
 
-def _check_if_condition_is_a_comment(transition_condition) -> bool:
+def _check_if_condition_is_a_comment(transition_condition: str) -> bool:
     if transition_condition == "" or transition_condition.isspace():
         return False
     transition_condition_without_comments = remove_comments_and_returns(transition_condition)
     return bool(transition_condition_without_comments == "" or transition_condition_without_comments.isspace())
 
 
-def _get_all_outgoing_transitions_in_priority_order(state_tag) -> list:
+def _get_all_outgoing_transitions_in_priority_order(state_tag: str) -> list[str]:
     transition_tags_and_priority = _create_outgoing_transition_list_with_priority_information(state_tag)
     transition_tags_and_priority_sorted = sorted(transition_tags_and_priority, key=lambda entry: entry[1])
     _check_for_equal_priorities(transition_tags_and_priority_sorted, state_tag)
@@ -743,7 +759,7 @@ def _get_all_outgoing_transitions_in_priority_order(state_tag) -> list:
     return transition_tags_in_priority_order
 
 
-def _create_outgoing_transition_list_with_priority_information(state_tag) -> list:
+def _create_outgoing_transition_list_with_priority_information(state_tag: str) -> list[tuple[str, int]]:
     all_tags_of_the_state = main_window.canvas.gettags(state_tag)
     transition_tag_and_priority = []
     for tag in all_tags_of_the_state:
@@ -755,14 +771,14 @@ def _create_outgoing_transition_list_with_priority_information(state_tag) -> lis
     return transition_tag_and_priority
 
 
-def _remove_priority_information(transition_tag_and_priority_sorted) -> list:
+def _remove_priority_information(transition_tag_and_priority_sorted: list[tuple[str, int]]) -> list[str]:
     transition_tags_in_priority_order = []
     for transition_tag_and_priority in transition_tag_and_priority_sorted:
         transition_tags_in_priority_order.append(transition_tag_and_priority[0])
     return transition_tags_in_priority_order
 
 
-def _check_for_equal_priorities(transition_tags_and_priority_sorted, state_tag) -> None:
+def _check_for_equal_priorities(transition_tags_and_priority_sorted: list[tuple[str, int]], state_tag: str) -> None:
     for n in range(len(transition_tags_and_priority_sorted) - 1):
         if transition_tags_and_priority_sorted[n][1] == transition_tags_and_priority_sorted[n + 1][1]:
             object_coords = main_window.canvas.coords(state_tag)
@@ -786,14 +802,14 @@ def _check_for_equal_priorities(transition_tags_and_priority_sorted, state_tag) 
             )
 
 
-def _get_transition_condition(condition_action_reference):
+def _get_transition_condition(condition_action_reference: condition_action_handling.ConditionAction) -> str:
     assert isinstance(condition_action_reference, condition_action_handling.ConditionAction), (
         "condition_action_reference is not a ConditionAction object"
     )
     return condition_action_reference.condition_id.get("1.0", tk.END + "-1 chars")  # without "return" at the end
 
 
-def _get_transition_action(condition_action_reference):
+def _get_transition_action(condition_action_reference: condition_action_handling.ConditionAction) -> str:
     assert isinstance(condition_action_reference, condition_action_handling.ConditionAction), (
         "condition_action_reference is not a ConditionAction object"
     )
@@ -825,7 +841,7 @@ def create_concurrent_actions() -> Optional[tuple[CustomText, str]]:
     return None
 
 
-def remove_comments_and_returns(hdl_text) -> str:
+def remove_comments_and_returns(hdl_text: str) -> str:
     if main_window.language.get() == "VHDL":
         hdl_text = remove_vhdl_block_comments(hdl_text)
     else:
@@ -844,21 +860,21 @@ def remove_comments_and_returns(hdl_text) -> str:
     return text
 
 
-def remove_functions(hdl_text):
+def remove_functions(hdl_text: str) -> str:
     text = re.sub(
         r"(^|\s+)function\s+.*end(\s+function\s*;|function)", "", hdl_text
     )  # Regular expression for VHDL and Verilog function declaration
     return text
 
 
-def remove_type_declarations(hdl_text):
+def remove_type_declarations(hdl_text: str) -> str:
     text = re.sub(
         r"(^|\s+)type\s+\w+\s+is\s+.*;", "", hdl_text
     )  # Regular expression for VHDL and Verilog function declaration
     return text
 
 
-def remove_vhdl_block_comments(list_string):
+def remove_vhdl_block_comments(list_string: str) -> str:
     # block comments are replaced by blanks, so all remaining text holds its position.
     while True:
         match_object = re.search(r"/\*.*?\*/", list_string, flags=re.DOTALL)
@@ -874,7 +890,7 @@ def remove_vhdl_block_comments(list_string):
     return list_string
 
 
-def _remove_verilog_block_comments(hdl_text):
+def _remove_verilog_block_comments(hdl_text: str) -> str:
     return re.sub("/\\*.*\\*/", "", hdl_text, flags=re.DOTALL)
 
 
@@ -907,13 +923,13 @@ def convert_hdl_lines_into_a_searchable_string(text: str) -> str:
     return separated
 
 
-def surround_character_by_blanks(character, all_port_declarations_without_comments):
+def surround_character_by_blanks(character: str, all_port_declarations_without_comments: str) -> str:
     # Add the escape character if necessary:
     search_character = "\\" + character if character in ("(", ")", "+", "*") else character
     return re.sub(search_character, " " + character + " ", all_port_declarations_without_comments)
 
 
-def get_all_declared_signal_names(all_signal_declarations) -> list:
+def get_all_declared_signal_names(all_signal_declarations: str) -> list[str]:
     all_signal_declarations = remove_comments_and_returns(all_signal_declarations)
     all_signal_declarations = remove_functions(all_signal_declarations)
     all_signal_declarations = remove_type_declarations(all_signal_declarations)
@@ -930,7 +946,7 @@ def get_all_declared_signal_names(all_signal_declarations) -> list:
     return signal_list
 
 
-def get_all_declared_constant_names(all_signal_declarations) -> list:
+def get_all_declared_constant_names(all_signal_declarations: str) -> list[str]:
     all_signal_declarations_without_comments = remove_comments_and_returns(all_signal_declarations)
     all_signal_declarations_separated = surround_character_by_blanks(
         ":", all_signal_declarations_without_comments
@@ -946,7 +962,7 @@ def get_all_declared_constant_names(all_signal_declarations) -> list:
     return constant_list
 
 
-def _get_all_signal_names(declaration):
+def _get_all_signal_names(declaration: str) -> list[str]:
     signal_names = ""
     if " signal " in declaration and main_window.language.get() == "VHDL":
         if ":" in declaration:
@@ -965,7 +981,7 @@ def _get_all_signal_names(declaration):
     return signal_names_without_blanks
 
 
-def _get_all_constant_names(declaration):
+def _get_all_constant_names(declaration: str) -> list[str]:
     constant_names = ""
     if " constant " in declaration and main_window.language.get() == "VHDL" and ":" in declaration:
         constant_names = re.sub(":.*", "", declaration)
