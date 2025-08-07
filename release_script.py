@@ -201,11 +201,19 @@ def build_executable() -> Path:
     if spec_path.exists():
         spec_path.unlink()
 
-    # Check if icon file exists
-    icon_path = Path("rsc/hfe_icon.ico")
-    if not icon_path.exists():
-        print(f"❌ Error: Icon file not found at {icon_path}")
-        sys.exit(1)
+    # Determine if we are on windows or linux
+    is_windows = sys.platform.startswith("win")
+
+    os_dependent_args: list[str] = []
+
+    if is_windows:
+        os_dependent_args.append("--add-data")
+        os_dependent_args.append("rsc/hfe_icon.ico;rsc")
+        os_dependent_args.append("--icon")
+        os_dependent_args.append("rsc/hfe_icon.ico")
+    else:
+        os_dependent_args.append("--add-data=rsc/hfe_icon.png:rsc")
+        os_dependent_args.append("--icon=rsc/hfe_icon.png")
 
     # Build executable with icon
     cmd = [
@@ -214,10 +222,7 @@ def build_executable() -> Path:
         "pyinstaller",
         "--onefile",
         "--windowed",
-        "--icon",
-        str(icon_path),
-        "--add-data",
-        f"{icon_path};rsc",
+        *os_dependent_args,
         "src/main.py",
         "--name",
         "HDL-FSM-Editor",
@@ -230,7 +235,9 @@ def build_executable() -> Path:
         sys.exit(1)
 
     # Verify executable was created
-    executable_path = dist_path / "HDL-FSM-Editor.exe"
+    exe_extension = ".exe" if is_windows else ""
+    executable_path = dist_path / f"HDL-FSM-Editor{exe_extension}"
+
     if not executable_path.exists():
         print("❌ Error: Executable was not created")
         sys.exit(1)
