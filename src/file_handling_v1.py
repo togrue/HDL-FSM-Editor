@@ -459,7 +459,7 @@ def open_v1_file_with_name(read_filename: str) -> None:
                     except ValueError:
                         tags = tags + (e,)
                 global_action_ref = global_actions_combinatorial.GlobalActionsCombinatorial(
-                    coords[0], coords[1], height=1, width=8, padding=1
+                    main_window.canvas, coords[0], coords[1], height=1, width=8, padding=1
                 )
                 global_action_ref.text_id.insert("1.0", text)
                 global_action_ref.text_id.format()
