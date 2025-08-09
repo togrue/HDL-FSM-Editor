@@ -9,7 +9,6 @@ from typing import Optional
 import canvas_editing
 import canvas_modify_bindings
 import custom_text
-import main_window
 import move_handling_canvas_window
 import undo_handling
 
@@ -22,13 +21,14 @@ class GlobalActions:
     global_actions_number: int = 1
     dictionary: dict[int, "GlobalActions"] = {}
 
-    def __init__(self, menu_x: float, menu_y: float, height: int, width: int, padding: int) -> None:
+    def __init__(self, canvas: tk.Canvas, menu_x: float, menu_y: float, height: int, width: int, padding: int) -> None:
         self.text_before_content: Optional[str] = None
         self.text_after_content: Optional[str] = None
         self.difference_x: float = 0.0
         self.difference_y: float = 0.0
+        self.canvas = canvas
         self.frame_id = ttk.Frame(
-            main_window.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="GlobalActionsWindow.TFrame"
+            self.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="GlobalActionsWindow.TFrame"
         )
         self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
         self.frame_id.bind("<Leave>", lambda event: self.deactivate_frame())
@@ -79,13 +79,13 @@ class GlobalActions:
         self.text_after_id.bind("<Control-g>", lambda event: self.update_after())
         self.text_before_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
         self.text_after_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-        self.text_before_id.bind("<FocusIn>", lambda event: main_window.canvas.unbind_all("<Delete>"))
+        self.text_before_id.bind("<FocusIn>", lambda event: self.canvas.unbind_all("<Delete>"))
         self.text_before_id.bind(
-            "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+            "<FocusOut>", lambda event: self.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
         )
-        self.text_after_id.bind("<FocusIn>", lambda event: main_window.canvas.unbind_all("<Delete>"))
+        self.text_after_id.bind("<FocusIn>", lambda event: self.canvas.unbind_all("<Delete>"))
         self.text_after_id.bind(
-            "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+            "<FocusOut>", lambda event: self.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
         )
 
         self.label_before.grid(row=0, column=0, sticky="nwe")
@@ -94,7 +94,7 @@ class GlobalActions:
         self.text_after_id.grid(row=3, column=0, sticky="swe")
 
         # Create canvas window for frame and text:
-        self.window_id = main_window.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
+        self.window_id = self.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
 
         self.frame_id.bind(
             "<Button-1>",
@@ -135,9 +135,7 @@ class GlobalActions:
         self.text_after_content = self.text_after_id.get("1.0", tk.END)
 
     def tag(self) -> None:
-        main_window.canvas.itemconfigure(
-            self.window_id, tag="global_actions" + str(GlobalActions.global_actions_number)
-        )
+        self.canvas.itemconfigure(self.window_id, tag="global_actions" + str(GlobalActions.global_actions_number))
 
     def activate_frame(self) -> None:
         self.activate_window()
@@ -165,8 +163,8 @@ class GlobalActions:
     def move_to(self, event_x: float, event_y: float, first: bool) -> None:
         if first:
             # Calculate the difference between the "anchor" point and the event:
-            coords = main_window.canvas.coords(self.window_id)
+            coords = self.canvas.coords(self.window_id)
             self.difference_x, self.difference_y = -event_x + coords[0], -event_y + coords[1]
         # Keep the distance between event and anchor point constant:
         event_x, event_y = event_x + self.difference_x, event_y + self.difference_y
-        main_window.canvas.coords(self.window_id, event_x, event_y)
+        self.canvas.coords(self.window_id, event_x, event_y)

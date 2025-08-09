@@ -751,7 +751,9 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         text_before = definition[1]
         text_after = definition[2]
         tags = definition[3]
-        global_actions_ref = global_actions.GlobalActions(coords[0], coords[1], height=1, width=8, padding=1)
+        global_actions_ref = global_actions.GlobalActions(
+            main_window.canvas, coords[0], coords[1], height=1, width=8, padding=1
+        )
         main_window.canvas.itemconfigure(global_actions_ref.window_id, tags=tags)
         global_actions_ref.text_before_id.text_before_content = text_before + "\n"
         global_actions_ref.text_before_id.insert("1.0", text_before)

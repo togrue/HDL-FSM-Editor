@@ -567,7 +567,9 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                     coords.append(v)
                 except ValueError:
                     tags.append(e)
-            global_actions_ref = global_actions.GlobalActions(coords[0], coords[1], height=1, width=8, padding=1)
+            global_actions_ref = global_actions.GlobalActions(
+                main_window.canvas, coords[0], coords[1], height=1, width=8, padding=1
+            )
             global_actions_ref.text_before_id.insert("1.0", text_before)
             global_actions_ref.text_before_id.format()
             global_actions_ref.text_after_id.insert("1.0", text_after)
