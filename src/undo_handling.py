@@ -502,7 +502,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                 except ValueError:
                     action_tags = action_tags + (e,)
             action_ref: state_action_handling.MyText = state_action_handling.MyText(
-                coords[0] - 100, coords[1], height=1, width=8, padding=1, increment=False
+                main_window.canvas, coords[0] - 100, coords[1], height=1, width=8, padding=1, increment=False
             )
             action_ref.text_id.insert("1.0", text)
             action_ref.text_id.format()

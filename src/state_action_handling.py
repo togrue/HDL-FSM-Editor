@@ -8,7 +8,6 @@ from typing import Optional
 
 import canvas_editing
 import custom_text
-import main_window
 import undo_handling
 
 
@@ -20,7 +19,9 @@ class MyText:
     mytext_id: int = 0
     mytext_dict: dict[int, "MyText"] = {}
 
-    def __init__(self, menu_x: float, menu_y: float, height: int, width: int, padding: int, increment: bool) -> None:
+    def __init__(
+        self, canvas: tk.Canvas, menu_x: float, menu_y: float, height: int, width: int, padding: int, increment: bool
+    ) -> None:
         if increment is True:
             MyText.mytext_id += 1
         self.difference_x = 0.0
@@ -29,9 +30,8 @@ class MyText:
         self.line_id: Optional[int] = None
         self.text_content: Optional[str] = None
         # Create frame:
-        self.frame_id = ttk.Frame(
-            main_window.canvas, relief=tk.FLAT, padding=padding, style="StateActionsWindow.TFrame"
-        )
+        self.canvas = canvas
+        self.frame_id = ttk.Frame(self.canvas, relief=tk.FLAT, padding=padding, style="StateActionsWindow.TFrame")
         self.frame_id.bind("<Enter>", lambda event, self=self: self.activate())
         self.frame_id.bind("<Leave>", lambda event, self=self: self.deactivate())
         # Create label object inside frame:
@@ -56,13 +56,13 @@ class MyText:
         self.text_id.bind("<Control-s>", lambda event: self.update_text())
         self.text_id.bind("<Control-g>", lambda event: self.update_text())
         self.text_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-        self.text_id.bind("<FocusIn>", lambda event: main_window.canvas.unbind_all("<Delete>"))
+        self.text_id.bind("<FocusIn>", lambda event: self.canvas.unbind_all("<Delete>"))
         self.text_id.bind(
-            "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+            "<FocusOut>", lambda event: self.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
         )
         # Create canvas window for frame and text:
-        self.window_id = main_window.canvas.create_window(menu_x + 100, menu_y, window=self.frame_id, anchor=tk.W)
-        main_window.canvas.tag_bind(
+        self.window_id = self.canvas.create_window(menu_x + 100, menu_y, window=self.frame_id, anchor=tk.W)
+        self.canvas.tag_bind(
             self.window_id, "<Enter>", lambda event: self.__draw_polygon_around_window()
         )  # See description in condition_action_handling.py.
         MyText.mytext_dict[self.window_id] = self
@@ -70,7 +70,7 @@ class MyText:
         self.text_id.grid(column=0, row=1, sticky="swe")
 
     def __draw_polygon_around_window(self) -> None:
-        bbox_coords = main_window.canvas.bbox(self.window_id)
+        bbox_coords = self.canvas.bbox(self.window_id)
         polygon_coords = []
         polygon_coords.append(bbox_coords[0] - 3)
         polygon_coords.append(bbox_coords[1] - 3)
@@ -81,25 +81,23 @@ class MyText:
         polygon_coords.append(bbox_coords[0] - 3)
         polygon_coords.append(bbox_coords[3] + 3)
         # It is "fill=<color> used instead of "width=3, outline=<color> as then the 4 edges are sharp and not round:
-        self.move_rectangle = main_window.canvas.create_polygon(
-            polygon_coords, width=1, fill="blue", tags="polygon_for_move"
-        )
+        self.move_rectangle = self.canvas.create_polygon(polygon_coords, width=1, fill="blue", tags="polygon_for_move")
         # make a captured local copy, so that move_rect gets the same id in the lambda function.
         move_rect = self.move_rectangle
-        main_window.canvas.tag_bind(move_rect, "<Leave>", lambda event: main_window.canvas.delete(move_rect))
+        self.canvas.tag_bind(move_rect, "<Leave>", lambda event: self.canvas.delete(move_rect))
 
     def tag(self) -> None:
-        main_window.canvas.itemconfigure(
+        self.canvas.itemconfigure(
             self.window_id,
             tag=("state_action" + str(MyText.mytext_id), "connection" + str(MyText.mytext_id) + "_start"),
         )
 
     def connect_to_state(self, menu_x: float, menu_y: float, state_id: int) -> None:
         # Draw a line from the state to the action block which is added to the state:
-        state_coords = main_window.canvas.coords(state_id)
-        main_window.canvas.addtag_withtag("connection" + str(MyText.mytext_id) + "_end", state_id)
-        state_tags = main_window.canvas.gettags(state_id)
-        self.line_id = main_window.canvas.create_line(
+        state_coords = self.canvas.coords(state_id)
+        self.canvas.addtag_withtag("connection" + str(MyText.mytext_id) + "_end", state_id)
+        state_tags = self.canvas.gettags(state_id)
+        self.line_id = self.canvas.create_line(
             menu_x + 100,
             menu_y,
             (state_coords[2] + state_coords[0]) / 2,
@@ -107,9 +105,9 @@ class MyText:
             dash=(2, 2),
             tags=("connection" + str(MyText.mytext_id), "connected_to_" + state_tags[0]),
         )
-        main_window.canvas.tag_bind(self.line_id, "<Enter>", lambda event, self=self: self.activate_line())
-        main_window.canvas.tag_bind(self.line_id, "<Leave>", lambda event, self=self: self.deactivate_line())
-        main_window.canvas.tag_lower(self.line_id, state_id)
+        self.canvas.tag_bind(self.line_id, "<Enter>", lambda event, self=self: self.activate_line())
+        self.canvas.tag_bind(self.line_id, "<Leave>", lambda event, self=self: self.deactivate_line())
+        self.canvas.tag_lower(self.line_id, state_id)
 
     def update_text(self) -> None:
         # Update self.text_content, so that the <Leave>-check in deactivate() does not signal a design-change and
@@ -129,33 +127,33 @@ class MyText:
 
     def activate_line(self) -> None:
         assert self.line_id is not None
-        main_window.canvas.itemconfigure(self.line_id, width=3)  # increase the width of the line around the box
+        self.canvas.itemconfigure(self.line_id, width=3)  # increase the width of the line around the box
 
     def deactivate_line(self) -> None:
         assert self.line_id is not None
-        main_window.canvas.itemconfigure(self.line_id, width=1)  # decrease the width of the line around the box
+        self.canvas.itemconfigure(self.line_id, width=1)  # decrease the width of the line around the box
 
     def move_to(self, event_x: float, event_y: float, first: bool, last: bool) -> None:
         assert self.move_rectangle is not None
-        main_window.canvas.delete(self.move_rectangle)
+        self.canvas.delete(self.move_rectangle)
         self.frame_id.configure(padding=1)  # decrease the width of the line around the box
         if first:
             self.frame_id.configure(padding=4)  # increase the width of the line around the box
             # Calculate the difference between the "anchor" point and the event:
-            coords = main_window.canvas.coords(self.window_id)
+            coords = self.canvas.coords(self.window_id)
             self.difference_x, self.difference_y = -event_x + coords[0], -event_y + coords[1]
         # Keep the distance between event and anchor point constant:
         event_x, event_y = event_x + self.difference_x, event_y + self.difference_y
         # if last==True:
         #     event_x = canvas_editing.state_radius * round(event_x/canvas_editing.state_radius)
         #     event_y = canvas_editing.state_radius * round(event_y/canvas_editing.state_radius)
-        main_window.canvas.coords(self.window_id, event_x, event_y)
+        self.canvas.coords(self.window_id, event_x, event_y)
         # Move the connection line:
-        window_tags = main_window.canvas.gettags(self.window_id)
+        window_tags = self.canvas.gettags(self.window_id)
         for t in window_tags:
             if t.startswith("connection"):
                 line_tag = t[:-6]
-                line_coords = main_window.canvas.coords(line_tag)
+                line_coords = self.canvas.coords(line_tag)
                 line_coords[0] = event_x
                 line_coords[1] = event_y
-                main_window.canvas.coords(line_tag, line_coords)
+                self.canvas.coords(line_tag, line_coords)

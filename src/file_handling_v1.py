@@ -363,6 +363,7 @@ def open_v1_file_with_name(read_filename: str) -> None:
                         tags = tags + (e,)
                 WINDOW_X_OFFSET = 100
                 action_ref = state_action_handling.MyText(
+                    main_window.canvas,
                     coords[0] - WINDOW_X_OFFSET,
                     coords[1],
                     height=TEXT_WIDGET_HEIGHT,
