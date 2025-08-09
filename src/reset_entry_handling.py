@@ -6,7 +6,6 @@ import tkinter as tk
 
 import canvas_editing
 import canvas_modify_bindings
-import main_window
 import undo_handling
 
 reset_entry_number = 0
@@ -18,6 +17,8 @@ def insert_reset_entry(event: tk.Event) -> None:
     global reset_entry_number
     if reset_entry_number == 0:  # Only 1 reset entry is allowed.
         reset_entry_number += 1
+        import main_window
+
         main_window.reset_entry_button.config(state=tk.DISABLED)
         _insert_reset_entry_in_canvas(event)
         undo_handling.design_has_changed()
@@ -44,6 +45,8 @@ def _create_reset_entry(canvas_grid_coordinates_of_the_event: list[float]) -> No
 
 
 def draw_reset_entry(reset_entry_polygon: list[tuple[float, float]], tags: list[str]) -> int:
+    import main_window
+
     polygon_id = main_window.canvas.create_polygon(reset_entry_polygon, fill="red", outline="orange", tags=tags)
     main_window.canvas.tag_bind(
         polygon_id, "<Enter>", lambda event, id=polygon_id: main_window.canvas.itemconfig(id, width=2)
@@ -55,6 +58,8 @@ def draw_reset_entry(reset_entry_polygon: list[tuple[float, float]], tags: list[
 
 
 def draw_reset_entry_text(coord_x: float, coord_y: float, text: str, tags: list[str]) -> int:
+    import main_window
+
     assert canvas_editing.state_name_font is not None
     return main_window.canvas.create_text(
         coord_x,
@@ -92,6 +97,8 @@ def move_to(event_x: float, event_y: float, polygon_id: int, first: bool, last: 
     global _difference_x, _difference_y
     if first is True:
         # Calculate the difference between the "anchor" point and the event:
+        import main_window
+
         coords = main_window.canvas.coords(polygon_id)
         middle_point = [coords[4], coords[5]]
         _difference_x, _difference_y = -event_x + middle_point[0], -event_y + middle_point[1]
@@ -119,11 +126,15 @@ def move_to(event_x: float, event_y: float, polygon_id: int, first: bool, last: 
 
 
 def _determine_width_of_the_polygon(polygon_id: int) -> float:
+    import main_window
+
     polygon_coords = main_window.canvas.coords(polygon_id)
     return polygon_coords[2] - polygon_coords[0]
 
 
 def _determine_height_of_the_polygon(polygon_id: int) -> float:
+    import main_window
+
     polygon_coords = main_window.canvas.coords(polygon_id)
     return polygon_coords[9] - polygon_coords[1]
 
@@ -157,5 +168,7 @@ def _calculate_new_center_of_the_polygon(event_x: float, event_y: float, width: 
 
 
 def _move_polygon_in_canvas(polygon_id: int, new_coords: list[float], new_center: list[float]) -> None:
+    import main_window
+
     main_window.canvas.coords(polygon_id, *new_coords)
     main_window.canvas.coords("reset_text", *new_center)

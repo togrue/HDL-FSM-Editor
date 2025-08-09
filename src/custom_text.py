@@ -17,7 +17,6 @@ import config
 import constants
 import file_handling
 import linting
-import main_window
 
 
 class CustomText(tk.Text):
@@ -83,6 +82,8 @@ class CustomText(tk.Text):
         return "break"  # This prevents the "Tab" to be inserted in the text.
 
     def edit_in_external_editor(self) -> None:
+        import main_window
+
         file_name = "hdl-fsm-editor.tmp.vhd" if main_window.language.get() == "VHDL" else "hdl-fsm-editor.tmp.v"
         with open(file_name, "w") as fileobject:
             fileobject.write(self.get("1.0", tk.END + "- 1 chars"))
@@ -115,9 +116,12 @@ class CustomText(tk.Text):
         self.update_highlighting()
 
     def __update_size_of_text_box(self, text: str) -> None:
+        import main_window
+
         nr_of_lines = 0
         nr_of_characters_in_line = 0
         max_line_length = 0
+
         if self not in [
             main_window.interface_generics_text,
             main_window.interface_package_text,
@@ -145,6 +149,8 @@ class CustomText(tk.Text):
     def update_highlight_tags(self, fontsize: int, keyword_type_list: list[str]) -> None:
         for keyword_type in keyword_type_list:
             self.tag_delete(keyword_type)
+            import main_window
+
             for keyword in main_window.keywords[keyword_type]:
                 if self.text_type == "comment":  # State comment text
                     if keyword == "comment":  # keywords "not_read", "not_written" are ignored.
@@ -239,6 +245,8 @@ class CustomText(tk.Text):
         self.format_after_idle()
 
     def update_declaration_lists(self) -> None:
+        import main_window
+
         if self == main_window.internals_architecture_text:
             self.update_custom_text_class_signals_list()
         elif self == main_window.interface_ports_text:
@@ -252,6 +260,8 @@ class CustomText(tk.Text):
         self.update_highlighting()
 
     def update_custom_text_class_ports_list(self) -> None:
+        import main_window
+
         all_port_declarations = main_window.interface_ports_text.get("1.0", tk.END).lower()
         self.readable_ports_list = hdl_generation_architecture_state_actions.get_all_readable_ports(
             all_port_declarations, check=False
@@ -262,10 +272,14 @@ class CustomText(tk.Text):
         self.port_types_list = hdl_generation_architecture_state_actions.get_all_port_types(all_port_declarations)
 
     def update_custom_text_class_generics_list(self) -> None:
+        import main_window
+
         all_generic_declarations = main_window.interface_generics_text.get("1.0", tk.END).lower()
         self.generics_list = hdl_generation_architecture_state_actions.get_all_generic_names(all_generic_declarations)
 
     def __update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows(self) -> None:
+        import main_window
+
         CustomText.read_variables_of_all_windows[self] = []
         CustomText.written_variables_of_all_windows[self] = []
         text = self.get("1.0", tk.END + "- 1 chars")
@@ -312,6 +326,8 @@ class CustomText(tk.Text):
                 CustomText.written_variables_of_all_windows[self].remove(":=")
 
     def __remove_keywords(self, text: str) -> str:
+        import main_window
+
         if main_window.language.get() == "VHDL":
             text = self.__remove_keywords_from_vhdl(text)
         else:
@@ -367,6 +383,8 @@ class CustomText(tk.Text):
         return text
 
     def __remove_condition_keywords(self, text: str) -> str:
+        import main_window
+
         if main_window.language.get() == "VHDL":
             for keyword in (" = ", " /= ", " < ", " <= ", " > ", " >= "):
                 text = re.sub(keyword, "  ", text, flags=re.I)  # Keep the blanks the keyword is surrounded by.
@@ -386,6 +404,8 @@ class CustomText(tk.Text):
         return text
 
     def __add_read_variables_from_with_select_blocks_to_read_variables_of_all_windows(self, text: str) -> str:
+        import main_window
+
         if main_window.language.get() == "VHDL":
             with_select_search_pattern = "with\\s+.*?\\s+select"
             all_with_selects = []
@@ -407,6 +427,8 @@ class CustomText(tk.Text):
         return text
 
     def __add_read_variables_from_conditions_to_read_variables_of_all_windows(self, text: str) -> str:
+        import main_window
+
         if main_window.language.get() == "VHDL":
             condition_search_pattern = (
                 "^if\\s+[^;]*?\\s+then| if\\s+[^;]*?\\s+then|elsif\\s+[^;]*?\\s+then|"
@@ -455,6 +477,8 @@ class CustomText(tk.Text):
         return text
 
     def __add_read_variables_from_case_constructs_to_read_variables_of_all_windows(self, text: str) -> str:
+        import main_window
+
         if main_window.language.get() == "VHDL":
             case_search_pattern = "^case\\s+.+?\\s+is| case\\s+.+?\\s+is"
         else:
