@@ -393,6 +393,7 @@ def open_v1_file_with_name(read_filename: str) -> None:
                     if t == "connected_to_reset_transition":
                         connected_to_reset_entry = True
                 condition_action_ref = condition_action_handling.ConditionAction(
+                    main_window.canvas,
                     coords[0],
                     coords[1],
                     connected_to_reset_entry,

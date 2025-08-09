@@ -26,7 +26,6 @@ from typing import Optional
 
 import canvas_editing
 import custom_text
-import main_window
 import undo_handling
 
 
@@ -38,6 +37,7 @@ class ConditionAction:
 
     def __init__(
         self,
+        canvas: tk.Canvas,
         menu_x: float,
         menu_y: float,
         connected_to_reset_entry: bool,
@@ -59,7 +59,8 @@ class ConditionAction:
         self.condition_text: Optional[str] = None
         self.move_rectangle: Optional[int] = None
         # Create frame:
-        self.frame_id = ttk.Frame(main_window.canvas, relief=tk.FLAT, padding=padding, style="Window.TFrame")
+        self.canvas = canvas
+        self.frame_id = ttk.Frame(self.canvas, relief=tk.FLAT, padding=padding, style="Window.TFrame")
         self.condition_action_enter_func_id = self.frame_id.bind("<Enter>", lambda event: self.enter_box())
 
         # Create objects inside frame:
@@ -104,19 +105,19 @@ class ConditionAction:
         self.condition_id.bind("<Control-g>", lambda event: self.update_condition())
         self.action_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
         self.condition_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-        self.action_id.bind("<FocusIn>", lambda event: main_window.canvas.unbind_all("<Delete>"))
+        self.action_id.bind("<FocusIn>", lambda event: self.canvas.unbind_all("<Delete>"))
         self.action_id.bind(
-            "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+            "<FocusOut>", lambda event: self.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
         )
-        self.condition_id.bind("<FocusIn>", lambda event: main_window.canvas.unbind_all("<Delete>"))
+        self.condition_id.bind("<FocusIn>", lambda event: self.canvas.unbind_all("<Delete>"))
         self.condition_id.bind(
-            "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+            "<FocusOut>", lambda event: self.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
         )
         # Define layout:
         self.register_all_widgets_at_grid()
         # Create canvas window for the frame:
-        self.window_id = main_window.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
-        self.window_enter_func_id = main_window.canvas.tag_bind(
+        self.window_id = self.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
+        self.window_enter_func_id = self.canvas.tag_bind(
             self.window_id, "<Enter>", lambda event: self.__draw_polygon_around_window()
         )
         # Create dictionary for translating the canvas-id of the canvas-window into a reference to this object:
@@ -152,7 +153,7 @@ class ConditionAction:
                 f"condition_action{ConditionAction.conditionaction_id}",
                 f"ca_connection{ConditionAction.conditionaction_id}_anchor",
             ]
-        main_window.canvas.itemconfigure(self.window_id, tag=tag)
+        self.canvas.itemconfigure(self.window_id, tag=tag)
 
     def change_descriptor_to(self, text: str) -> None:
         self.action_label.config(
@@ -161,9 +162,9 @@ class ConditionAction:
 
     def draw_line(self, transition_id: int, menu_x: float, menu_y: float) -> None:
         # Draw a line from the transition start point to the condition_action block which is added to the transition:
-        transition_coords = main_window.canvas.coords(transition_id)
-        transition_tags = main_window.canvas.gettags(transition_id)
-        self.line_id = main_window.canvas.create_line(
+        transition_coords = self.canvas.coords(transition_id)
+        transition_tags = self.canvas.gettags(transition_id)
+        self.line_id = self.canvas.create_line(
             menu_x,
             menu_y,
             transition_coords[0],
@@ -172,15 +173,15 @@ class ConditionAction:
             state=tk.HIDDEN,
             tags=[f"ca_connection{ConditionAction.conditionaction_id}", f"connected_to_{transition_tags[0]}"],
         )
-        main_window.canvas.addtag_withtag(f"ca_connection{ConditionAction.conditionaction_id}_end", transition_id)
-        main_window.canvas.tag_lower(self.line_id, transition_id)
+        self.canvas.addtag_withtag(f"ca_connection{ConditionAction.conditionaction_id}_end", transition_id)
+        self.canvas.tag_lower(self.line_id, transition_id)
 
     def __draw_polygon_around_window(self) -> None:
         # Instead of a real rectangle, a polygon was used, because then a "leave" binding was possible,
         # when the mouse pointer enters the condition&action block.
         if self.debug_events is True:
             print("event 1: enter-window")
-        bbox_coords = main_window.canvas.bbox(self.window_id)
+        bbox_coords = self.canvas.bbox(self.window_id)
         polygon_coords = []
         polygon_coords.append(bbox_coords[0] - 3)
         polygon_coords.append(bbox_coords[1] - 3)
@@ -191,19 +192,19 @@ class ConditionAction:
         polygon_coords.append(bbox_coords[0] - 3)
         polygon_coords.append(bbox_coords[3] + 3)
         # It is "fill="blue" used instead of "width=3, outline="blue" as then the 4 edges are sharp and not round:
-        self.move_rectangle = main_window.canvas.create_polygon(
+        self.move_rectangle = self.canvas.create_polygon(
             polygon_coords, width=1.0, fill="blue", tags="polygon_for_move"
         )
-        main_window.canvas.tag_bind(self.move_rectangle, "<Leave>", self.delete_polygon)
+        self.canvas.tag_bind(self.move_rectangle, "<Leave>", self.delete_polygon)
         if self.window_enter_func_id is not None:
-            main_window.canvas.tag_unbind(self.window_id, "<Enter>", self.window_enter_func_id)
+            self.canvas.tag_unbind(self.window_id, "<Enter>", self.window_enter_func_id)
             self.window_enter_func_id = ""
 
     def delete_polygon(self, event: tk.Event) -> None:
         if self.debug_events is True:
             print("event 3: leave-polygon: delete polygon")
         assert self.move_rectangle is not None
-        main_window.canvas.delete(self.move_rectangle)
+        self.canvas.delete(self.move_rectangle)
 
     def enter_box(self) -> None:
         self.frame_id.configure(padding=3)  # increase the width of the line around the box
@@ -212,22 +213,22 @@ class ConditionAction:
         self.action_text = self.action_id.get("1.0", tk.END)
         self.condition_text = self.condition_id.get("1.0", tk.END)
         self.register_all_widgets_at_grid()
-        self.canvas_enter_func_id = main_window.canvas.bind("<Enter>", self.leave_box)
+        self.canvas_enter_func_id = self.canvas.bind("<Enter>", self.leave_box)
 
     def leave_box(self, event: tk.Event) -> None:
         self.frame_id.configure(padding=1)
         if self.debug_events is True:
             print("event 4: canvas-enter: shrink-box")
         if self.canvas_enter_func_id is not None:
-            main_window.canvas.unbind("<Enter>", self.canvas_enter_func_id)
+            self.canvas.unbind("<Enter>", self.canvas_enter_func_id)
             self.canvas_enter_func_id = None
         self.shrink_box()
-        self.window_enter_func_id = main_window.canvas.tag_bind(
+        self.window_enter_func_id = self.canvas.tag_bind(
             self.window_id, "<Enter>", lambda event: self.__draw_polygon_around_window()
         )
         # assert self.move_rectangle is not None
         if self.move_rectangle is not None:
-            main_window.canvas.delete(self.move_rectangle)
+            self.canvas.delete(self.move_rectangle)
 
     def shrink_box(self) -> None:
         self.frame_id.focus()  # "unfocus" the Text, when the mouse leaves the text.
@@ -247,35 +248,35 @@ class ConditionAction:
         # During moving there might be no polygon-leave-event (which deletes the polygon),
         # so delete it here for clean graphics.
         assert self.move_rectangle is not None
-        main_window.canvas.delete(self.move_rectangle)
+        self.canvas.delete(self.move_rectangle)
 
         if last is True:
             self.frame_id.configure(padding=1)  # decrease the width of the line around the box
         if first is True:
             self.frame_id.configure(padding=3)  # increase the width of the line around the box
             # Calculate the difference between the "anchor" point and the event:
-            coords = main_window.canvas.coords(self.window_id)
+            coords = self.canvas.coords(self.window_id)
             self.difference_x, self.difference_y = -event_x + coords[0], -event_y + coords[1]
         # Keep the distance between event and anchor point constant:
         event_x, event_y = event_x + self.difference_x, event_y + self.difference_y
         # if last==True:
         #     event_x = canvas_editing.state_radius * round(event_x/canvas_editing.state_radius)
         #     event_y = canvas_editing.state_radius * round(event_y/canvas_editing.state_radius)
-        main_window.canvas.coords(self.window_id, event_x, event_y)
+        self.canvas.coords(self.window_id, event_x, event_y)
         # Move the line which connects the window to the transition:
-        window_tags = main_window.canvas.gettags(self.window_id)
+        window_tags = self.canvas.gettags(self.window_id)
         for tag in window_tags:
             if tag.startswith("ca_connection"):
                 line_tag = tag[:-7]
-                self.line_coords = main_window.canvas.coords(line_tag)
+                self.line_coords = self.canvas.coords(line_tag)
                 self.line_coords[0] = event_x
                 self.line_coords[1] = event_y
-                main_window.canvas.coords(line_tag, self.line_coords)
-                main_window.canvas.itemconfig(line_tag, state=tk.NORMAL)
+                self.canvas.coords(line_tag, self.line_coords)
+                self.canvas.itemconfig(line_tag, state=tk.NORMAL)
 
     def hide_line(self) -> None:
-        window_tags = main_window.canvas.gettags(self.window_id)
+        window_tags = self.canvas.gettags(self.window_id)
         for t in window_tags:
             if t.startswith("ca_connection"):
                 line_tag = t[:-7]
-                main_window.canvas.itemconfig(line_tag, state=tk.HIDDEN)
+                self.canvas.itemconfig(line_tag, state=tk.HIDDEN)
