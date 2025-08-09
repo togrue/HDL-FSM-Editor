@@ -225,8 +225,9 @@ class ConditionAction:
         self.window_enter_func_id = main_window.canvas.tag_bind(
             self.window_id, "<Enter>", lambda event: self.__draw_polygon_around_window()
         )
-        assert self.move_rectangle is not None
-        main_window.canvas.delete(self.move_rectangle)
+        # assert self.move_rectangle is not None
+        if self.move_rectangle is not None:
+            main_window.canvas.delete(self.move_rectangle)
 
     def shrink_box(self) -> None:
         self.frame_id.focus()  # "unfocus" the Text, when the mouse leaves the text.
