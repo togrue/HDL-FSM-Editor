@@ -9,7 +9,6 @@ from typing import Optional
 import canvas_editing
 import canvas_modify_bindings
 import custom_text
-import undo_handling
 
 
 class GlobalActionsCombinatorial:
@@ -45,7 +44,7 @@ class GlobalActionsCombinatorial:
         self.text_id.bind("<Control-Z>", lambda event: self.text_id.redo())
         self.text_id.bind("<Control-s>", lambda event: self.update_text())
         self.text_id.bind("<Control-g>", lambda event: self.update_text())
-        self.text_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
+        self.text_id.bind("<<TextModified>>", lambda event: __import__("undo_handling").update_window_title())
         self.text_id.bind("<FocusIn>", lambda event: self.canvas.unbind_all("<Delete>"))
         self.text_id.bind(
             "<FocusOut>", lambda event: self.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
@@ -104,7 +103,7 @@ class GlobalActionsCombinatorial:
         self.frame_id.focus()  # "unfocus" the Text, when the mouse leaves the text.
         # self.text_id.format()
         if self.text_id.get("1.0", tk.END) != self.text_content:
-            undo_handling.design_has_changed()
+            __import__("undo_handling").design_has_changed()
 
     def move_to(self, event_x: float, event_y: float, first: bool, last: bool) -> None:
         assert self.move_rectangle is not None

@@ -26,7 +26,6 @@ from typing import Optional
 
 import canvas_editing
 import custom_text
-import undo_handling
 
 
 class ConditionAction:
@@ -103,8 +102,8 @@ class ConditionAction:
         self.action_id.bind("<Control-g>", lambda event: self.update_action())
         self.condition_id.bind("<Control-s>", lambda event: self.update_condition())
         self.condition_id.bind("<Control-g>", lambda event: self.update_condition())
-        self.action_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-        self.condition_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
+        self.action_id.bind("<<TextModified>>", lambda event: __import__("undo_handling").update_window_title())
+        self.condition_id.bind("<<TextModified>>", lambda event: __import__("undo_handling").update_window_title())
         self.action_id.bind("<FocusIn>", lambda event: self.canvas.unbind_all("<Delete>"))
         self.action_id.bind(
             "<FocusOut>", lambda event: self.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
@@ -236,7 +235,7 @@ class ConditionAction:
             self.condition_id.get("1.0", tk.END) != self.condition_text
             or self.action_id.get("1.0", tk.END) != self.action_text
         ):
-            undo_handling.design_has_changed()
+            __import__("undo_handling").design_has_changed()
         if self.condition_id.get("1.0", tk.END) == "\n" and self.action_id.get("1.0", tk.END) != "\n":
             self.condition_label.grid_forget()
             self.condition_id.grid_forget()

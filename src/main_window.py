@@ -2,6 +2,8 @@
 This module contains all methods to create the main-window of the HDL-FSM-Editor.
 """
 
+from __future__ import annotations
+
 import os
 import re
 import sys
