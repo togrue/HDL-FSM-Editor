@@ -434,6 +434,7 @@ def open_v1_file_with_name(read_filename: str) -> None:
                     except ValueError:
                         tags = tags + (e,)
                 global_actions_ref = global_actions.GlobalActions(
+                    main_window.canvas,
                     coords[0],
                     coords[1],
                     height=TEXT_WIDGET_HEIGHT,
