@@ -481,7 +481,7 @@ def open_v1_file_with_name(read_filename: str) -> None:
                     except ValueError:
                         tags = tags + (e,)
                 state_action_default_ref = state_actions_default.StateActionsDefault(
-                    coords[0], coords[1], height=1, width=8, padding=1
+                    main_window.canvas, coords[0], coords[1], height=1, width=8, padding=1
                 )
                 state_action_default_ref.text_id.insert("1.0", text)
                 state_action_default_ref.text_id.format()
