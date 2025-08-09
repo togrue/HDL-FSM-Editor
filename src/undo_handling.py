@@ -14,7 +14,6 @@ import file_handling
 import global_actions
 import global_actions_combinatorial
 import global_actions_handling
-import main_window
 import reset_entry_handling
 import state_action_handling
 import state_actions_default
@@ -28,6 +27,8 @@ stack_write_pointer: int = 0
 
 
 def update_window_title() -> None:
+    import main_window
+
     title = main_window.root.title()
     if title == "tk":
         main_window.root.title("unnamed")
@@ -37,6 +38,8 @@ def update_window_title() -> None:
 
 
 def design_has_changed() -> None:
+    import main_window
+
     _add_changes_to_design_stack()
     update_window_title()
     if project_manager.current_file != "" and not main_window.root.title().startswith("unnamed"):
@@ -48,6 +51,8 @@ def undo() -> None:
     global stack_write_pointer
     # As <Control-z> is bound with the bind_all-command to the diagram, this binding must be ignored, when
     # the focus is on a customtext-widget: Then a Control-z must change the text and must not change the diagram.
+    import main_window
+
     focus = str(main_window.canvas.focus_get())
     if "customtext" not in focus and stack_write_pointer > 1:
         # stack_write_pointer points at an empty place in stack.
@@ -73,6 +78,8 @@ def redo() -> None:
     global stack_write_pointer
     # As <Control-Z> is bound with the bind_all-command to the diagram, this binding must be ignored, when
     # the focus is on the customtext-widget: Then a Control-Z must change the text and must not change the diagram.
+    import main_window
+
     focus = str(main_window.canvas.focus_get())
     if "customtext" not in focus and stack_write_pointer < len(stack):
         _set_diagram_to_version_selected_by_stack_pointer()
@@ -89,7 +96,11 @@ def _add_changes_to_design_stack() -> None:
     stack.append(new_design)
     stack_write_pointer += 1
     if stack_write_pointer > 1:
+        import main_window
+
         main_window.undo_button.config(state="enabled")
+    import main_window
+
     main_window.redo_button.config(state="disabled")
 
 
@@ -101,6 +112,8 @@ def _remove_stack_entries_from_write_pointer_to_the_end_of_the_stack() -> None:
 # TODO: This should be the same as saving to a file.
 # Maybe including some extra information as the zoom level.
 def _get_complete_design_as_text_object() -> str:
+    import main_window
+
     design = ""
     design += "modulename|" + main_window.module_name.get() + "\n"
     design += "language|" + main_window.language.get() + "\n"
@@ -257,6 +270,8 @@ def _get_complete_design_as_text_object() -> str:
 
 
 def _get_coords(canvas_id: int) -> str:
+    import main_window
+
     coords = main_window.canvas.coords(canvas_id)
     coords_string = ""
     for c in coords:
@@ -265,6 +280,8 @@ def _get_coords(canvas_id: int) -> str:
 
 
 def _get_tags(canvas_id: int) -> str:
+    import main_window
+
     tags = main_window.canvas.gettags(canvas_id)
     tags_string = ""
     for t in tags:
@@ -274,6 +291,8 @@ def _get_tags(canvas_id: int) -> str:
 
 
 def _get_fill_color(canvas_id: int) -> str:
+    import main_window
+
     color = main_window.canvas.itemcget(canvas_id, "fill")
     assert isinstance(color, str)
     return "fill=" + color + " "
@@ -285,6 +304,8 @@ _line_index = 0
 def _set_diagram_to_version_selected_by_stack_pointer() -> None:
     global _line_index
     # Remove the old design:
+    import main_window
+
     state_action_handling.MyText.mytext_dict = {}
     condition_action_handling.ConditionAction.dictionary = {}
     state_comment.StateComment.dictionary = {}
