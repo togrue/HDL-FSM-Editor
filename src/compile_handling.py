@@ -12,11 +12,13 @@ from os.path import exists
 from tkinter import messagebox
 from typing import Optional
 
-import main_window
 from constants import GuiTab
 
 
 def compile_hdl() -> None:
+    # Local import to avoid import-time cycles
+    import main_window
+
     main_window.show_tab(GuiTab.COMPILE_MSG)
     if main_window.working_directory_value.get() != "" and not main_window.working_directory_value.get().isspace():
         try:
@@ -79,6 +81,8 @@ def _execute(command: str) -> bool:
 
 
 def _get_command_list() -> list[str]:
+    import main_window
+
     command_string_tmp = main_window.compile_cmd.get()
     command_string = command_string_tmp.replace(";", " ; ")
     return command_string.split(";")
@@ -86,6 +90,8 @@ def _get_command_list() -> list[str]:
 
 def _replace_variables(command_array: list[str]) -> Optional[list[str]]:
     command_array_new = []
+    import main_window
+
     for entry in command_array:
         if entry == "$file":
             if main_window.select_file_number_text.get() == 2:
@@ -139,6 +145,8 @@ so only $file1 and $file2 are allowed.',
 
 
 def _insert_line_in_log(line: str) -> None:
+    import main_window
+
     if main_window.language.get() == "VHDL":
         # search for compiler-message with ":<line-number>:<column-number>:":
         regex_message_find = main_window.regex_message_find_for_vhdl

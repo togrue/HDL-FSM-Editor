@@ -4,9 +4,6 @@ This class draws a grid into the canvas.
 
 import tkinter as tk
 
-import canvas_editing
-import main_window
-
 
 class GridDraw:
     """
@@ -20,6 +17,10 @@ class GridDraw:
         self.canvas.delete("grid_line")
 
     def draw_grid(self) -> None:
+        # Local import to avoid import-time cycles
+        import canvas_editing
+        import main_window
+
         if main_window.show_grid is True:
             visible_window = [
                 self.canvas.canvasx(0),
