@@ -9,7 +9,6 @@ from typing import Optional
 
 import canvas_editing
 import custom_text
-import main_window
 import move_handling_canvas_window
 import undo_handling
 
@@ -22,6 +21,7 @@ class ConditionAction:
 
     def __init__(
         self,
+        canvas: tk.Canvas,
         menu_x: float,
         menu_y: float,
         connected_to_reset_entry: bool,
@@ -41,9 +41,8 @@ class ConditionAction:
         self.frame_enter_func_id: Optional[str] = None
         self.canvas_enter_func_id: Optional[str] = None
         # Create frame:
-        self.frame_id = ttk.Frame(
-            main_window.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="Window.TFrame"
-        )
+        self.canvas = canvas
+        self.frame_id = ttk.Frame(self.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="Window.TFrame")
         # The method deactivate_frame() can not be bound to the Frame-leave-Event, because otherwise at moving the
         # cursor exactly at the frame would cause a flickering because of toggling between shrinked and full box.
         # Instead the method deactivate_frame() is bound dynamically to the Canvas-Enter event in activate_frame():
@@ -104,19 +103,19 @@ class ConditionAction:
         self.condition_id.bind("<Control-g>", lambda event: self.update_condition())
         self.action_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
         self.condition_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-        self.action_id.bind("<FocusIn>", lambda event: main_window.canvas.unbind_all("<Delete>"))
+        self.action_id.bind("<FocusIn>", lambda event: self.canvas.unbind_all("<Delete>"))
         self.action_id.bind(
-            "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+            "<FocusOut>", lambda event: self.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
         )
-        self.condition_id.bind("<FocusIn>", lambda event: main_window.canvas.unbind_all("<Delete>"))
+        self.condition_id.bind("<FocusIn>", lambda event: self.canvas.unbind_all("<Delete>"))
         self.condition_id.bind(
-            "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+            "<FocusOut>", lambda event: self.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
         )
         # Define layout:
         self.show_complete_box()
 
         # Create canvas window for the frame:
-        self.window_id = main_window.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
+        self.window_id = self.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
 
         self.frame_id.bind(
             "<Button-1>",
@@ -176,7 +175,7 @@ class ConditionAction:
                 f"condition_action{ConditionAction.conditionaction_id}",
                 f"ca_connection{ConditionAction.conditionaction_id}_anchor",
             ]
-        main_window.canvas.itemconfigure(self.window_id, tag=tag)
+        self.canvas.itemconfigure(self.window_id, tag=tag)
 
     def change_descriptor_to(self, text: str) -> None:
         self.action_label.config(
@@ -185,9 +184,9 @@ class ConditionAction:
 
     def draw_line(self, transition_id: int, menu_x: float, menu_y: float) -> None:
         # Draw a line from the transition start point to the condition_action block which is added to the transition:
-        transition_coords = main_window.canvas.coords(transition_id)
-        transition_tags = main_window.canvas.gettags(transition_id)
-        self.line_id = main_window.canvas.create_line(
+        transition_coords = self.canvas.coords(transition_id)
+        transition_tags = self.canvas.gettags(transition_id)
+        self.line_id = self.canvas.create_line(
             menu_x,
             menu_y,
             transition_coords[0],
@@ -196,8 +195,8 @@ class ConditionAction:
             state=tk.HIDDEN,
             tags=[f"ca_connection{ConditionAction.conditionaction_id}", f"connected_to_{transition_tags[0]}"],
         )
-        main_window.canvas.addtag_withtag(f"ca_connection{ConditionAction.conditionaction_id}_end", transition_id)
-        main_window.canvas.tag_lower(self.line_id, transition_id)
+        self.canvas.addtag_withtag(f"ca_connection{ConditionAction.conditionaction_id}_end", transition_id)
+        self.canvas.tag_lower(self.line_id, transition_id)
 
     def activate_frame(self) -> None:
         self.activate_window()
@@ -205,9 +204,9 @@ class ConditionAction:
         self.action_text = self.action_id.get("1.0", tk.END)
         self.condition_text = self.condition_id.get("1.0", tk.END)
         if self.frame_enter_func_id is not None:
-            main_window.canvas.unbind(self.frame_enter_func_id)
+            self.canvas.unbind(self.frame_enter_func_id)
             self.frame_enter_func_id = None
-        self.canvas_enter_func_id = main_window.canvas.bind("<Enter>", lambda event: self.deactivate_frame())
+        self.canvas_enter_func_id = self.canvas.bind("<Enter>", lambda event: self.deactivate_frame())
 
     def activate_window(self) -> None:
         self.frame_id.configure(borderwidth=1, style="WindowSelected.TFrame")
@@ -217,7 +216,7 @@ class ConditionAction:
     def deactivate_frame(self) -> None:
         self.deactivate_window()
         if self.canvas_enter_func_id is not None:
-            main_window.canvas.unbind("<Enter>", self.canvas_enter_func_id)
+            self.canvas.unbind("<Enter>", self.canvas_enter_func_id)
             self.canvas_enter_func_id = None
         self.frame_enter_func_id = self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
         self.shrink_box()
@@ -244,25 +243,25 @@ class ConditionAction:
     def move_to(self, event_x: float, event_y: float, first: bool) -> None:
         if first is True:
             # Calculate the difference between the "anchor" point and the event:
-            coords = main_window.canvas.coords(self.window_id)
+            coords = self.canvas.coords(self.window_id)
             self.difference_x, self.difference_y = -event_x + coords[0], -event_y + coords[1]
         # Keep the distance between event and anchor point constant:
         event_x, event_y = event_x + self.difference_x, event_y + self.difference_y
-        main_window.canvas.coords(self.window_id, event_x, event_y)
+        self.canvas.coords(self.window_id, event_x, event_y)
         # Move the line which connects the window to the transition:
-        window_tags = main_window.canvas.gettags(self.window_id)
+        window_tags = self.canvas.gettags(self.window_id)
         for tag in window_tags:
             if tag.startswith("ca_connection"):
                 line_tag = tag[:-7]
-                self.line_coords = main_window.canvas.coords(line_tag)
+                self.line_coords = self.canvas.coords(line_tag)
                 self.line_coords[0] = event_x
                 self.line_coords[1] = event_y
-                main_window.canvas.coords(line_tag, self.line_coords)
-                main_window.canvas.itemconfig(line_tag, state=tk.NORMAL)
+                self.canvas.coords(line_tag, self.line_coords)
+                self.canvas.itemconfig(line_tag, state=tk.NORMAL)
 
     def hide_line(self) -> None:
-        window_tags = main_window.canvas.gettags(self.window_id)
+        window_tags = self.canvas.gettags(self.window_id)
         for t in window_tags:
             if t.startswith("ca_connection"):
                 line_tag = t[:-7]
-                main_window.canvas.itemconfig(line_tag, state=tk.HIDDEN)
+                self.canvas.itemconfig(line_tag, state=tk.HIDDEN)

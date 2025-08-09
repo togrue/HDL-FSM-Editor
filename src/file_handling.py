@@ -723,7 +723,14 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
             if t == "connected_to_reset_transition":
                 connected_to_reset_entry = True
         condition_action_ref = condition_action_handling.ConditionAction(
-            coords[0], coords[1], connected_to_reset_entry, height=1, width=8, padding=1, increment=False
+            main_window.canvas,
+            coords[0],
+            coords[1],
+            connected_to_reset_entry,
+            height=1,
+            width=8,
+            padding=1,
+            increment=False,
         )
         main_window.canvas.itemconfigure(condition_action_ref.window_id, tags=tags)
         condition_action_ref.condition_id.condition_text = condition + "\n"

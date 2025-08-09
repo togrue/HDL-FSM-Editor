@@ -532,7 +532,14 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                 if t == "connected_to_reset_transition":
                     connected_to_reset_entry = True
             condition_action_ref = condition_action_handling.ConditionAction(
-                coords[0], coords[1], connected_to_reset_entry, height=1, width=8, padding=1, increment=False
+                main_window.canvas,
+                coords[0],
+                coords[1],
+                connected_to_reset_entry,
+                height=1,
+                width=8,
+                padding=1,
+                increment=False,
             )
             condition_action_ref.condition_id.insert("1.0", condition)
             condition_action_ref.condition_id.format()
