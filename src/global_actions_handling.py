@@ -90,6 +90,11 @@ def _insert_state_actions_default_in_canvas(event: tk.Event) -> None:
 
 def _create_state_actions_default(canvas_grid_coordinates_of_the_event: list[float]) -> None:
     ref = state_actions_default.StateActionsDefault(
-        canvas_grid_coordinates_of_the_event[0], canvas_grid_coordinates_of_the_event[1], height=1, width=8, padding=1
+        main_window.canvas,
+        canvas_grid_coordinates_of_the_event[0],
+        canvas_grid_coordinates_of_the_event[1],
+        height=1,
+        width=8,
+        padding=1,
     )
     ref.tag()
