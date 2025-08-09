@@ -505,7 +505,9 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                     coords.append(v)
                 except ValueError:
                     tags.append(e)
-            comment_ref = state_comment.StateComment(coords[0] - 100, coords[1], height=1, width=8, padding=1)
+            comment_ref = state_comment.StateComment(
+                main_window.canvas, coords[0] - 100, coords[1], height=1, width=8, padding=1
+            )
             comment_ref.text_id.insert("1.0", text)
             comment_ref.text_id.format()
             main_window.canvas.itemconfigure(comment_ref.window_id, tags=tags)

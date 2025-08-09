@@ -704,7 +704,9 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         coords = definition[0]
         text = definition[1]
         tags = definition[2]
-        comment_ref = state_comment.StateComment(coords[0] - 100, coords[1], height=1, width=8, padding=1)
+        comment_ref = state_comment.StateComment(
+            main_window.canvas, coords[0] - 100, coords[1], height=1, width=8, padding=1
+        )
         main_window.canvas.itemconfigure(comment_ref.window_id, tags=tags)
         comment_ref.text_content = text + "\n"
         comment_ref.text_id.insert("1.0", text)

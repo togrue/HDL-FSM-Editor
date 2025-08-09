@@ -213,7 +213,9 @@ def _evaluate_menu(
         for tag in tags:
             if tag.startswith("state"):
                 state_identifier = tag
-                comment_ref = state_comment.StateComment(menu_x, menu_y, height=1, width=8, padding=1)
+                comment_ref = state_comment.StateComment(
+                    main_window.canvas, menu_x, menu_y, height=1, width=8, padding=1
+                )
                 comment_ref.add_line(menu_x, menu_y, state_identifier)
                 comment_ref.tag(state_identifier)
                 undo_handling.design_has_changed()
