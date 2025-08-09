@@ -57,7 +57,12 @@ def _insert_global_actions_combinatorial_in_canvas(event: tk.Event) -> None:
 
 def _create_global_actions_combinatorial(canvas_grid_coordinates_of_the_event: list[float]) -> None:
     ref = global_actions_combinatorial.GlobalActionsCombinatorial(
-        canvas_grid_coordinates_of_the_event[0], canvas_grid_coordinates_of_the_event[1], height=1, width=8, padding=1
+        main_window.canvas,
+        canvas_grid_coordinates_of_the_event[0],
+        canvas_grid_coordinates_of_the_event[1],
+        height=1,
+        width=8,
+        padding=1,
     )
     ref.tag()
 
