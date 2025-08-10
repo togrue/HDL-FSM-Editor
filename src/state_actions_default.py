@@ -4,6 +4,7 @@ Handles the combinatorial default actions for all states.
 
 import tkinter as tk
 from tkinter import ttk
+from typing import Optional
 
 import canvas_editing
 import canvas_modify_bindings
@@ -17,10 +18,10 @@ class StateActionsDefault:
     Handles the combinatorial default actions for all states.
     """
 
-    dictionary = {}
+    dictionary: dict[int, "StateActionsDefault"] = {}
 
-    def __init__(self, menu_x, menu_y, height, width, padding) -> None:
-        self.text_content = None
+    def __init__(self, menu_x: float, menu_y: float, height: int, width: int, padding: int) -> None:
+        self.text_content: Optional[str] = None
         self.frame_id = ttk.Frame(
             main_window.canvas, relief=tk.FLAT, padding=padding, style="StateActionsWindow.TFrame"
         )  # , borderwidth=10)
@@ -56,9 +57,9 @@ class StateActionsDefault:
         self.label.grid(row=0, column=0, sticky="nwe")
         self.text_id.grid(row=1, column=0, sticky="ew")
 
-        self.difference_x = 0
-        self.difference_y = 0
-        self.move_rectangle = None
+        self.difference_x = 0.0
+        self.difference_y = 0.0
+        self.move_rectangle: Optional[int] = None
 
         # Create canvas window for frame and text:
         self.window_id = main_window.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
@@ -81,11 +82,26 @@ class StateActionsDefault:
         polygon_coords.append(bbox_coords[3] + 3)
         # It is "fill=<color> used instead of "width=3, outline=<color> as then the 4 edges are sharp and not round:
         self.move_rectangle = main_window.canvas.create_polygon(
-            polygon_coords, width=1, fill="cyan2", tag="polygon_for_move"
+            polygon_coords[0],
+            polygon_coords[1],
+            polygon_coords[2],
+            polygon_coords[3],
+            polygon_coords[4],
+            polygon_coords[5],
+            polygon_coords[6],
+            polygon_coords[7],
+            width=1,
+            fill="cyan2",
+            tags="polygon_for_move",
         )
-        main_window.canvas.tag_bind(
-            self.move_rectangle, "<Leave>", lambda event: main_window.canvas.delete(self.move_rectangle)
-        )
+        if self.move_rectangle is not None:
+            main_window.canvas.tag_bind(
+                self.move_rectangle,
+                "<Leave>",
+                lambda event: main_window.canvas.delete(self.move_rectangle)
+                if self.move_rectangle is not None
+                else None,
+            )
 
     def tag(self) -> None:
         main_window.canvas.itemconfigure(self.window_id, tag="state_actions_default")
@@ -106,8 +122,9 @@ class StateActionsDefault:
         if self.text_id.get("1.0", tk.END) != self.text_content:
             undo_handling.design_has_changed()
 
-    def move_to(self, event_x, event_y, first, last) -> None:
-        main_window.canvas.delete(self.move_rectangle)
+    def move_to(self, event_x: float, event_y: float, first: bool, last: bool) -> None:
+        if self.move_rectangle is not None:
+            main_window.canvas.delete(self.move_rectangle)
         self.frame_id.configure(padding=1)  # decrease the width of the line around the box
         if first:
             self.frame_id.configure(padding=4)  # increase the width of the line around the box

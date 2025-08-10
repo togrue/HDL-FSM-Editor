@@ -32,7 +32,7 @@ from constants import GuiTab
 from project_manager import project_manager
 
 
-def ask_save_unsaved_changes(title) -> str:
+def ask_save_unsaved_changes(title: str) -> str:
     """
     Ask user what to do with unsaved changes.
     Returns: 'save', 'discard', or 'cancel'
@@ -154,6 +154,7 @@ def _clear_design() -> bool:
     canvas_editing.canvas_y_coordinate = 0
     canvas_editing.fontsize = 10
     canvas_editing.label_fontsize = 8
+    assert canvas_editing.state_name_font is not None
     canvas_editing.state_name_font.configure(size=int(canvas_editing.fontsize))
     main_window.include_timestamp_in_output.set(True)
     main_window.root.title("unnamed")
@@ -164,7 +165,7 @@ def _clear_design() -> bool:
 ########################################################################################################################
 
 
-def save_in_file_new(save_filename) -> None:  # Called at saving and at every design change (writing to .tmp-file)
+def save_in_file_new(save_filename: str) -> None:  # Called at saving and at every design change (writing to .tmp-file)
     design_dictionary = _save_design_to_dict()
     try:
         with open(save_filename, "w", encoding="utf-8") as fileobject:
@@ -179,7 +180,7 @@ def save_in_file_new(save_filename) -> None:  # Called at saving and at every de
 
 
 def _save_design_to_dict() -> dict[str, Any]:
-    design_dictionary = {}
+    design_dictionary: dict[str, Any] = {}
     _save_control_data(design_dictionary)
     _save_interface_data(design_dictionary)
     _save_internals_data(design_dictionary)
@@ -338,7 +339,7 @@ def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
                 print("file_handling: Fatal, unknown dictionary key ", i)
 
 
-def open_file_with_name_new(read_filename) -> None:
+def open_file_with_name_new(read_filename: str) -> None:
     replaced_read_filename = read_filename
     if os.path.isfile(f"{read_filename}.tmp"):
         answer = messagebox.askyesno(
@@ -556,6 +557,7 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
     canvas_editing.reset_entry_size = int(design_dictionary["reset_entry_size"])  # stored as float in dictionary
     canvas_editing.priority_distance = int(design_dictionary["priority_distance"])  # stored as float in dictionary
     canvas_editing.fontsize = design_dictionary["fontsize"]
+    assert canvas_editing.state_name_font is not None
     canvas_editing.state_name_font.configure(size=int(canvas_editing.fontsize))
     canvas_editing.label_fontsize = design_dictionary["label_fontsize"]
     canvas_editing.shift_visible_center_to_window_center(design_dictionary["visible_center"])
@@ -563,11 +565,11 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
 
 def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
     """Load all canvas elements including states, transitions, text, and windows."""
-    transition_ids = []
-    ids_of_rectangles_to_raise = []
-    priority_ids = []
-    hide_priority_rectangle_list = []
-    transition_identifier = ""
+    transition_ids: list[int] = []
+    ids_of_rectangles_to_raise: list[int] = []
+    priority_ids: list[int] = []
+    hide_priority_rectangle_list: list[str] = []
+    transition_identifier: str = ""
 
     # Load states
     for definition in design_dictionary["state"]:
@@ -616,6 +618,7 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
         coords = definition[0]
         tags = definition[1]
         text = definition[2]
+        assert canvas_editing.state_name_font is not None
         text_id = main_window.canvas.create_text(coords, text=text, tags=tags, font=canvas_editing.state_name_font)
         for t in tags:
             if t.startswith("transition"):
@@ -671,7 +674,7 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
                     number_of_outgoing_transitions += 1
             if number_of_outgoing_transitions == 1:
                 hide_priority_rectangle_list.append(transition_identifier)
-        canvas_id = main_window.canvas.create_rectangle(coords, tag=tags, fill=rectangle_color)
+        canvas_id = main_window.canvas.create_rectangle(coords, tags=tags, fill=rectangle_color)
         if rectangle_color == constants.STATE_COLOR:  # priority rectangle
             ids_of_rectangles_to_raise.append(canvas_id)
         else:
@@ -704,12 +707,12 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         coords = definition[0]
         text = definition[1]
         tags = definition[2]
-        action_ref = state_action_handling.MyText(
+        state_action_ref = state_action_handling.MyText(
             coords[0] - 100, coords[1], height=1, width=8, padding=1, increment=False
         )
-        action_ref.text_id.insert("1.0", text)
-        action_ref.text_id.format()
-        main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
+        state_action_ref.text_id.insert("1.0", text)
+        state_action_ref.text_id.format()
+        main_window.canvas.itemconfigure(state_action_ref.window_id, tags=tags)
 
     # Load state comments
     for definition in design_dictionary.get("window_state_comment", []):
@@ -719,7 +722,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         comment_ref = state_comment.StateComment(coords[0] - 100, coords[1], height=1, width=8, padding=1)
         comment_ref.text_id.insert("1.0", text)
         comment_ref.text_id.format()
-        main_window.canvas.itemconfigure(comment_ref.window_id, tag=tags)
+        main_window.canvas.itemconfigure(comment_ref.window_id, tags=tags)
 
     # Load condition action blocks
     for definition in design_dictionary["window_condition_action_block"]:
@@ -750,7 +753,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         ):
             condition_action_ref.action_label.grid_forget()
             condition_action_ref.action_id.grid_forget()
-        main_window.canvas.itemconfigure(condition_action_ref.window_id, tag=tags)
+        main_window.canvas.itemconfigure(condition_action_ref.window_id, tags=tags)
 
     # Load global actions
     for definition in design_dictionary["window_global_actions"]:
@@ -763,26 +766,26 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         global_actions_ref.text_before_id.format()
         global_actions_ref.text_after_id.insert("1.0", text_after)
         global_actions_ref.text_after_id.format()
-        main_window.canvas.itemconfigure(global_actions_ref.window_id, tag=tags)
+        main_window.canvas.itemconfigure(global_actions_ref.window_id, tags=tags)
 
     # Load global actions combinatorial
     for definition in design_dictionary["window_global_actions_combinatorial"]:
         coords = definition[0]
         text = definition[1]
         tags = definition[2]
-        action_ref = global_actions_combinatorial.GlobalActionsCombinatorial(
+        global_action_ref = global_actions_combinatorial.GlobalActionsCombinatorial(
             coords[0], coords[1], height=1, width=8, padding=1
         )
-        action_ref.text_id.insert("1.0", text)
-        action_ref.text_id.format()
-        main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
+        global_action_ref.text_id.insert("1.0", text)
+        global_action_ref.text_id.format()
+        main_window.canvas.itemconfigure(global_action_ref.window_id, tags=tags)
 
     # Load state actions default
     for definition in design_dictionary["window_state_actions_default"]:
         coords = definition[0]
         text = definition[1]
         tags = definition[2]
-        action_ref = state_actions_default.StateActionsDefault(coords[0], coords[1], height=1, width=8, padding=1)
-        action_ref.text_id.insert("1.0", text)
-        action_ref.text_id.format()
-        main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
+        state_action_default_ref = state_actions_default.StateActionsDefault(coords[0], coords[1], height=1, width=8, padding=1)
+        state_action_default_ref.text_id.insert("1.0", text)
+        state_action_default_ref.text_id.format()
+        main_window.canvas.itemconfigure(state_action_default_ref.window_id, tags=tags)

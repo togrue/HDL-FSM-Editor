@@ -6,6 +6,7 @@ Version 1 files use a text-based format with line-by-line parsing.
 import os
 import re
 import tkinter as tk
+from typing import TextIO
 
 import canvas_editing
 import condition_action_handling
@@ -42,7 +43,7 @@ HIGHLIGHT_TAG_FONT_SIZE = 10
 DASH_PATTERN = (2, 2)
 
 
-def open_v1_file_with_name(read_filename) -> None:
+def open_v1_file_with_name(read_filename: str) -> None:
     """
     Opens and loads a version 1 HDL-FSM-Editor file.
     Version 1 files use a text-based format with line-by-line parsing.
@@ -57,6 +58,8 @@ def open_v1_file_with_name(read_filename) -> None:
     # Read the design from the file:
     with open(read_filename, encoding="utf-8") as fileobject:
         for line in fileobject:
+            tags: tuple[str, ...]
+
             if line.startswith("modulename|"):
                 main_window.module_name.set(line[11:-1])
             elif line.startswith("language|"):
@@ -200,6 +203,7 @@ def open_v1_file_with_name(read_filename) -> None:
                 rest_of_line = _remove_keyword_from_line(line, "fontsize|")
                 fontsize = float(rest_of_line)
                 canvas_editing.fontsize = fontsize
+                assert canvas_editing.state_name_font is not None
                 canvas_editing.state_name_font.configure(size=int(fontsize))
             elif line.startswith("label_fontsize|"):
                 rest_of_line = _remove_keyword_from_line(line, "label_fontsize|")
@@ -269,6 +273,9 @@ def open_v1_file_with_name(read_filename) -> None:
                 text = entries[2]
                 for e in entries[3:]:
                     tags = tags + (e,)
+                assert canvas_editing.state_name_font is not None, (
+                    "The font must have been set before calling this function."
+                )
                 text_id = main_window.canvas.create_text(
                     coords, text=text, tags=tags, font=canvas_editing.state_name_font
                 )
@@ -339,7 +346,7 @@ def open_v1_file_with_name(read_filename) -> None:
                 for t in tags:
                     if t.startswith("connector"):
                         rectangle_color = constants.CONNECTOR_COLOR
-                canvas_id = main_window.canvas.create_rectangle(coords, tag=tags, fill=rectangle_color)
+                canvas_id = main_window.canvas.create_rectangle(coords, fill=rectangle_color, tags=tags)
                 main_window.canvas.tag_raise(canvas_id)  # priority rectangles are always in "foreground"
             elif line.startswith("window_state_action_block|"):
                 rest_of_line = _remove_keyword_from_line(line, "window_state_action_block|")
@@ -451,12 +458,12 @@ def open_v1_file_with_name(read_filename) -> None:
                         coords.append(v)
                     except ValueError:
                         tags = tags + (e,)
-                action_ref = global_actions_combinatorial.GlobalActionsCombinatorial(
+                global_action_ref = global_actions_combinatorial.GlobalActionsCombinatorial(
                     coords[0], coords[1], height=1, width=8, padding=1
                 )
-                action_ref.text_id.insert("1.0", text)
-                action_ref.text_id.format()
-                main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
+                global_action_ref.text_id.insert("1.0", text)
+                global_action_ref.text_id.format()
+                main_window.canvas.itemconfigure(global_action_ref.window_id, tag=tags)
             elif line.startswith("window_state_actions_default|"):
                 rest_of_line = _remove_keyword_from_line(line, "window_state_actions_default|")
                 text = _get_data(rest_of_line, fileobject)
@@ -470,12 +477,12 @@ def open_v1_file_with_name(read_filename) -> None:
                         coords.append(v)
                     except ValueError:
                         tags = tags + (e,)
-                action_ref = state_actions_default.StateActionsDefault(
+                state_action_default_ref = state_actions_default.StateActionsDefault(
                     coords[0], coords[1], height=1, width=8, padding=1
                 )
-                action_ref.text_id.insert("1.0", text)
-                action_ref.text_id.format()
-                main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
+                state_action_default_ref.text_id.insert("1.0", text)
+                state_action_default_ref.text_id.format()
+                main_window.canvas.itemconfigure(state_action_default_ref.window_id, tag=tags)
     undo_handling.stack = []
     undo_handling.stack_write_pointer = 0
     undo_handling.design_has_changed()  # Initialize the stack with the read design.
@@ -485,12 +492,12 @@ def open_v1_file_with_name(read_filename) -> None:
     canvas_editing.view_all()
 
 
-def _remove_keyword_from_line(line, keyword):
+def _remove_keyword_from_line(line: str, keyword: str) -> str:
     """Remove keyword prefix from line."""
     return line[len(keyword) :]
 
 
-def _get_data(rest_of_line, fileobject):
+def _get_data(rest_of_line: str, fileobject: TextIO) -> str:
     """Extract data from version 1 file format."""
     length_of_data = _get_length_info_from_line(rest_of_line)
     first_data = _remove_length_info(rest_of_line)
@@ -498,17 +505,17 @@ def _get_data(rest_of_line, fileobject):
     return data
 
 
-def _get_length_info_from_line(rest_of_line) -> int:
+def _get_length_info_from_line(rest_of_line: str) -> int:
     """Extract length information from line."""
     return int(re.sub(r"\|.*", "", rest_of_line))
 
 
-def _remove_length_info(rest_of_line):
+def _remove_length_info(rest_of_line: str) -> str:
     """Remove length information from line."""
     return re.sub(r".*\|", "", rest_of_line)
 
 
-def _get_remaining_data(fileobject, length_of_data, first_data):
+def _get_remaining_data(fileobject: TextIO, length_of_data: int, first_data: str) -> str:
     """Get remaining data based on length information."""
     data = first_data
     while len(data) < length_of_data:

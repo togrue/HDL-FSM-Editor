@@ -4,6 +4,7 @@ Handles the state action of a single state.
 
 import tkinter as tk
 from tkinter import ttk
+from typing import Optional
 
 import canvas_editing
 import custom_text
@@ -16,17 +17,17 @@ class MyText:
     Handles the state action of a single state.
     """
 
-    mytext_id = 0
-    mytext_dict = {}
+    mytext_id: int = 0
+    mytext_dict: dict[int, "MyText"] = {}
 
-    def __init__(self, menu_x, menu_y, height, width, padding, increment) -> None:
+    def __init__(self, menu_x: float, menu_y: float, height: int, width: int, padding: int, increment: bool) -> None:
         if increment is True:
             MyText.mytext_id += 1
-        self.difference_x = 0
-        self.difference_y = 0
-        self.move_rectangle = None
-        self.line_id = None
-        self.text_content = None
+        self.difference_x = 0.0
+        self.difference_y = 0.0
+        self.move_rectangle: Optional[int] = None
+        self.line_id: Optional[int] = None
+        self.text_content: Optional[str] = None
         # Create frame:
         self.frame_id = ttk.Frame(
             main_window.canvas, relief=tk.FLAT, padding=padding, style="StateActionsWindow.TFrame"
@@ -81,11 +82,11 @@ class MyText:
         polygon_coords.append(bbox_coords[3] + 3)
         # It is "fill=<color> used instead of "width=3, outline=<color> as then the 4 edges are sharp and not round:
         self.move_rectangle = main_window.canvas.create_polygon(
-            polygon_coords, width=1, fill="blue", tag="polygon_for_move"
+            polygon_coords, width=1, fill="blue", tags="polygon_for_move"
         )
-        main_window.canvas.tag_bind(
-            self.move_rectangle, "<Leave>", lambda event: main_window.canvas.delete(self.move_rectangle)
-        )
+        # make a captured local copy, so that move_rect gets the same id in the lambda function.
+        move_rect = self.move_rectangle
+        main_window.canvas.tag_bind(move_rect, "<Leave>", lambda event: main_window.canvas.delete(move_rect))
 
     def tag(self) -> None:
         main_window.canvas.itemconfigure(
@@ -93,7 +94,7 @@ class MyText:
             tag=("state_action" + str(MyText.mytext_id), "connection" + str(MyText.mytext_id) + "_start"),
         )
 
-    def connect_to_state(self, menu_x, menu_y, state_id) -> None:
+    def connect_to_state(self, menu_x: float, menu_y: float, state_id: int) -> None:
         # Draw a line from the state to the action block which is added to the state:
         state_coords = main_window.canvas.coords(state_id)
         main_window.canvas.addtag_withtag("connection" + str(MyText.mytext_id) + "_end", state_id)
@@ -104,7 +105,7 @@ class MyText:
             (state_coords[2] + state_coords[0]) / 2,
             (state_coords[3] + state_coords[1]) / 2,
             dash=(2, 2),
-            tag=("connection" + str(MyText.mytext_id), "connected_to_" + state_tags[0]),
+            tags=("connection" + str(MyText.mytext_id), "connected_to_" + state_tags[0]),
         )
         main_window.canvas.tag_bind(self.line_id, "<Enter>", lambda event, self=self: self.activate_line())
         main_window.canvas.tag_bind(self.line_id, "<Leave>", lambda event, self=self: self.deactivate_line())
@@ -127,12 +128,15 @@ class MyText:
             undo_handling.design_has_changed()
 
     def activate_line(self) -> None:
+        assert self.line_id is not None
         main_window.canvas.itemconfigure(self.line_id, width=3)  # increase the width of the line around the box
 
     def deactivate_line(self) -> None:
+        assert self.line_id is not None
         main_window.canvas.itemconfigure(self.line_id, width=1)  # decrease the width of the line around the box
 
-    def move_to(self, event_x, event_y, first, last) -> None:
+    def move_to(self, event_x: float, event_y: float, first: bool, last: bool) -> None:
+        assert self.move_rectangle is not None
         main_window.canvas.delete(self.move_rectangle)
         self.frame_id.configure(padding=1)  # decrease the width of the line around the box
         if first:

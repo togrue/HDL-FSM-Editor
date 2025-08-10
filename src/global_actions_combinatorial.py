@@ -4,6 +4,7 @@ Class for combinatorial actions independent from the state machine
 
 import tkinter as tk
 from tkinter import ttk
+from typing import Optional
 
 import canvas_editing
 import canvas_modify_bindings
@@ -17,10 +18,10 @@ class GlobalActionsCombinatorial:
     Class for combinatorial actions independent from the state machine
     """
 
-    dictionary = {}
+    dictionary: dict[int, "GlobalActionsCombinatorial"] = {}
 
-    def __init__(self, menu_x, menu_y, height, width, padding) -> None:
-        self.text_content = None
+    def __init__(self, menu_x: float, menu_y: float, height: int, width: int, padding: int) -> None:
+        self.text_content: Optional[str] = None
         self.frame_id = ttk.Frame(
             main_window.canvas, relief=tk.FLAT, padding=padding, style="GlobalActionsWindow.TFrame"
         )
@@ -55,9 +56,9 @@ class GlobalActionsCombinatorial:
         self.label.grid(row=0, column=0, sticky="nwe")
         self.text_id.grid(row=1, column=0, sticky="ew")
 
-        self.difference_x = 0
-        self.difference_y = 0
-        self.move_rectangle = None
+        self.difference_x = 0.0
+        self.difference_y = 0.0
+        self.move_rectangle: Optional[int] = None
 
         # Create canvas window for frame and text:
         self.window_id = main_window.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
@@ -81,13 +82,13 @@ class GlobalActionsCombinatorial:
         polygon_coords.append(bbox_coords[3] + 3)
         # It is "fill="blue" used instead of "width=3, outline="blue" as then the 4 edges are sharp and not round:
         self.move_rectangle = main_window.canvas.create_polygon(
-            polygon_coords, width=1, fill="PaleGreen2", tag="polygon_for_move"
+            polygon_coords, width=1, fill="PaleGreen2", tags="polygon_for_move"
         )
-        main_window.canvas.tag_bind(
-            self.move_rectangle, "<Leave>", lambda event: main_window.canvas.delete(self.move_rectangle)
-        )
+        # make a captured local copy, so that move_rect gets the same id in the lambda function.
+        move_rect = self.move_rectangle
+        main_window.canvas.tag_bind(move_rect, "<Leave>", lambda event: main_window.canvas.delete(move_rect))
 
-    def update_text(self):
+    def update_text(self) -> None:
         # Update self.text_content, so that the <Leave>-check in deactivate() does not signal a design-change and
         # that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
         # To ensure this, save_in_file_new() waits for idle.
@@ -107,7 +108,8 @@ class GlobalActionsCombinatorial:
         if self.text_id.get("1.0", tk.END) != self.text_content:
             undo_handling.design_has_changed()
 
-    def move_to(self, event_x, event_y, first, last) -> None:
+    def move_to(self, event_x: float, event_y: float, first: bool, last: bool) -> None:
+        assert self.move_rectangle is not None
         main_window.canvas.delete(self.move_rectangle)
         self.frame_id.configure(padding=1)  # decrease the width of the line around the box
         if first:

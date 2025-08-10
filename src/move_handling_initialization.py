@@ -5,6 +5,7 @@ as the text boxes are Canvas-Windows, for which the Canvas binding is not valid.
 """
 
 import tkinter as tk
+from typing import Optional
 
 import canvas_editing
 import main_window
@@ -13,12 +14,12 @@ import move_handling_finish
 import transition_handling
 
 
-def move_initialization(event) -> None:
+def move_initialization(event: tk.Event) -> None:
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
     _move_initialization_overlapping(event, event_x, event_y)
 
 
-def _move_initialization_overlapping(event, event_x, event_y) -> None:
+def _move_initialization_overlapping(event: tk.Event, event_x: float, event_y: float) -> None:
     items_near_mouse_click_location = _create_a_list_of_overlapping_items_near_the_mouse_click_location(
         event_x, event_y
     )
@@ -59,15 +60,14 @@ def _move_initialization_overlapping(event, event_x, event_y) -> None:
         move_handling.move_do(event, move_list, first=True)
 
         # Create a binding for the now following movements of the mouse and for finishing the moving:
+        # Must be "added", as store_mouse_position is already bound to "Motion".
         move_do_funcid = main_window.canvas.bind(
-            "<Motion>", lambda event, move_list=move_list: move_handling.move_do(event, move_list, first=False), add="+"
-        )  # Must be "added", as store_mouse_position is already bound to "Motion".
+            "<Motion>", lambda event: move_handling.move_do(event, move_list, first=False), add="+"
+        )
+        # move_finish must unbind move_do from "Motion", so it needs the function id.
         main_window.canvas.bind(
-            "<ButtonRelease-1>",
-            lambda event, move_list=move_list, move_do_funcid=move_do_funcid: move_handling_finish.move_finish(
-                event, move_list, move_do_funcid
-            ),
-        )  # move_finish must unbind move_do from "Motion", so it needs the function id.
+            "<ButtonRelease-1>", lambda event: move_handling_finish.move_finish(event, move_list, move_do_funcid)
+        )
 
         # From Button-1 the callback "move_initialization()" must be removed, because the user will
         # use Button-1 a second time, when move_finish() did not accept the location of the ButtonRelease-1 and this
@@ -75,7 +75,7 @@ def _move_initialization_overlapping(event, event_x, event_y) -> None:
         main_window.canvas.unbind("<Button-1>")
 
 
-def _create_a_list_of_overlapping_items_near_the_mouse_click_location(event_x, event_y) -> list:
+def _create_a_list_of_overlapping_items_near_the_mouse_click_location(event_x: float, event_y: float) -> list[int]:
     # As soon as a mouse click happens inside a canvas-window item, this click does not call move_initialization,
     # as there is no binding inside the canvas-window for this event. If there would be a binding,
     # it would return event coordinates from inside the window, which cannot be easily converted into canvas
@@ -96,21 +96,21 @@ def _create_a_list_of_overlapping_items_near_the_mouse_click_location(event_x, e
     return list_of_overlapping_items
 
 
-def _mouse_click_happened_in_state_name(items_near_mouse_click_location) -> bool:
+def _mouse_click_happened_in_state_name(items_near_mouse_click_location: list[int]) -> bool:
     list_item_types = []
     for item_id in items_near_mouse_click_location:
         list_item_types.append(main_window.canvas.type(item_id))
     return "oval" in list_item_types and "text" in list_item_types
 
 
-def _mouse_click_happened_in_priority_number(items_near_mouse_click_location) -> bool:
+def _mouse_click_happened_in_priority_number(items_near_mouse_click_location: list[int]) -> bool:
     list_item_types = []
     for item_id in items_near_mouse_click_location:
         list_item_types.append(main_window.canvas.type(item_id))
     return "rectangle" in list_item_types and "text" in list_item_types
 
 
-def _mouse_click_happened_in_connection_line(items_near_mouse_click_location) -> bool:
+def _mouse_click_happened_in_connection_line(items_near_mouse_click_location: list[int]) -> bool:
     for item_id in items_near_mouse_click_location:
         if main_window.canvas.type(item_id) == "line":
             tags = main_window.canvas.gettags(item_id)
@@ -120,7 +120,7 @@ def _mouse_click_happened_in_connection_line(items_near_mouse_click_location) ->
     return False
 
 
-def _mouse_click_happened_in_state_comment_line(items_near_mouse_click_location) -> bool:
+def _mouse_click_happened_in_state_comment_line(items_near_mouse_click_location: list[int]) -> bool:
     for item_id in items_near_mouse_click_location:
         if main_window.canvas.type(item_id) == "line":
             tags = main_window.canvas.gettags(item_id)
@@ -130,11 +130,11 @@ def _mouse_click_happened_in_state_comment_line(items_near_mouse_click_location)
     return False
 
 
-def _mouse_click_happened_in_grid_line(items_near_mouse_click_location) -> bool:
+def _mouse_click_happened_in_grid_line(items_near_mouse_click_location: list[int]) -> bool:
     return all("grid_line" in main_window.canvas.gettags(item_id) for item_id in items_near_mouse_click_location)
 
 
-def _create_move_list(items_near_mouse_click_location, event_x, event_y) -> list:
+def _create_move_list(items_near_mouse_click_location: list[int], event_x: float, event_y: float) -> list:
     move_list = []
     move_list_entry_for_diagram_object = _create_move_list_entry_if_a_diagram_object_is_moved(
         items_near_mouse_click_location
@@ -149,7 +149,7 @@ def _create_move_list(items_near_mouse_click_location, event_x, event_y) -> list
     return move_list
 
 
-def _create_move_list_entry_if_a_diagram_object_is_moved(items_near_mouse_click_location) -> list | None:
+def _create_move_list_entry_if_a_diagram_object_is_moved(items_near_mouse_click_location: list[int]) -> Optional[list]:
     move_list_entry = None
     for item_id in items_near_mouse_click_location:
         tags_of_item_id = main_window.canvas.gettags(item_id)
@@ -178,7 +178,7 @@ def _create_move_list_entry_if_a_diagram_object_is_moved(items_near_mouse_click_
     return move_list_entry
 
 
-def _add_lines_connected_to_the_diagram_object_to_the_list(move_list) -> None:
+def _add_lines_connected_to_the_diagram_object_to_the_list(move_list: list) -> None:
     tag_list_of_object_to_move = main_window.canvas.gettags(move_list[0][0])
     tag_of_connected_line = None
     for tag in (
@@ -194,13 +194,14 @@ def _add_lines_connected_to_the_diagram_object_to_the_list(move_list) -> None:
         if to_be_moved_point_of_connected_line != "":
             # tag_of_connected_line identifies a single object.
             # So the method find_withtag() returns always a list of length 1:
+            assert tag_of_connected_line is not None
             id_of_connected_line = main_window.canvas.find_withtag(tag_of_connected_line)[0]
             move_list.append([id_of_connected_line, to_be_moved_point_of_connected_line])
             transition_handling.extend_transition_to_state_middle_points(tag_of_connected_line)
 
 
 def _add_items_for_moving_a_single_line_point_to_the_list(
-    move_list, items_near_mouse_click_location, event_x, event_y
+    move_list: list, items_near_mouse_click_location: list[int], event_x: float, event_y: float
 ) -> None:
     line_id = _find_the_item_id_of_the_line(items_near_mouse_click_location)
     if line_id is None:
@@ -208,7 +209,7 @@ def _add_items_for_moving_a_single_line_point_to_the_list(
     transition_tags = _search_for_the_tags_of_a_transition(
         line_id
     )  # A line can represent a "transition" or a "connection" (connections are ignored here).
-    if transition_tags != ():
+    if transition_tags is not None:
         moving_point = transition_handling.get_point_to_move(line_id, event_x, event_y)
         for tag in transition_tags:
             if tag.startswith("transition"):
@@ -220,7 +221,7 @@ def _add_items_for_moving_a_single_line_point_to_the_list(
                 _remove_tags_and_hide_priority(line_id, tag, transition_tags, moving_point)
 
 
-def _find_the_item_id_of_the_line(items_near_mouse_click_location) -> None:
+def _find_the_item_id_of_the_line(items_near_mouse_click_location: list[int]) -> Optional[int]:
     for item_id in items_near_mouse_click_location:
         if main_window.canvas.type(item_id) == "line" and "grid_line" not in main_window.canvas.gettags(item_id):
             return item_id
@@ -235,7 +236,9 @@ def _search_for_the_tags_of_a_transition(line_id: int) -> tuple[str, ...]:
     return ()
 
 
-def _remove_tags_and_hide_priority(line_id, transition_tag, transition_tags, moving_point) -> None:
+def _remove_tags_and_hide_priority(
+    line_id: int, transition_tag: str, transition_tags: tuple, moving_point: str
+) -> None:
     for tag in transition_tags:
         if moving_point == "start" and tag.startswith("coming_from_"):
             main_window.canvas.dtag(line_id, tag)  # delete the "coming_from_" tag from the line

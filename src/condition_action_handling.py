@@ -22,6 +22,7 @@ That is the reason, why the polygon must always also be removed at event 4.
 
 import tkinter as tk
 from tkinter import ttk
+from typing import Optional
 
 import canvas_editing
 import custom_text
@@ -32,21 +33,31 @@ import undo_handling
 class ConditionAction:
     """This class handles the condition&action box which can be activated for each transition."""
 
-    conditionaction_id = 0
-    dictionary = {}
+    conditionaction_id: int = 0
+    dictionary: dict[int, "ConditionAction"] = {}
 
-    def __init__(self, menu_x, menu_y, connected_to_reset_entry, height, width, padding, increment) -> None:
+    def __init__(
+        self,
+        menu_x: float,
+        menu_y: float,
+        connected_to_reset_entry: bool,
+        height: int,
+        width: int,
+        padding: int,
+        increment: bool,
+    ) -> None:
         if increment is True:
             ConditionAction.conditionaction_id += 1
-        self.difference_x = 0
-        self.difference_y = 0
-        self.line_id = None
-        self.line_coords = None
-        self.canvas_enter_func_id = None
+        self.difference_x = 0.0
+        self.difference_y = 0.0
+        self.line_id: Optional[int] = None
+        self.line_coords: Optional[list[float]] = None
+        self.canvas_enter_func_id: Optional[str] = None
+        self.window_enter_func_id: str = ""
         self.debug_events = False
-        self.action_text = None
-        self.condition_text = None
-        self.move_rectangle = None
+        self.action_text: Optional[str] = None
+        self.condition_text: Optional[str] = None
+        self.move_rectangle: Optional[int] = None
         # Create frame:
         self.frame_id = ttk.Frame(main_window.canvas, relief=tk.FLAT, padding=padding, style="Window.TFrame")
         self.condition_action_enter_func_id = self.frame_id.bind("<Enter>", lambda event: self.enter_box())
@@ -111,13 +122,13 @@ class ConditionAction:
         # Create dictionary for translating the canvas-id of the canvas-window into a reference to this object:
         ConditionAction.dictionary[self.window_id] = self
 
-    def update_action(self):
+    def update_action(self) -> None:
         # Update self.action_text, so that the <Leave>-check in deactivate() does not signal a design-change and
         # that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
         # To ensure this, save_in_file_new() waits for idle.
         self.action_text = self.action_id.get("1.0", tk.END)
 
-    def update_condition(self):
+    def update_condition(self) -> None:
         # Update self.condition_text, so that the <Leave>-check in deactivate() does not signal a design-change and
         # that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
         # To ensure this, save_in_file_new() waits for idle.
@@ -129,26 +140,26 @@ class ConditionAction:
         self.action_label.grid(row=2, column=0, sticky="we")
         self.action_id.grid(row=3, column=0, sticky="we")
 
-    def tag(self, connected_to_reset_entry) -> None:
+    def tag(self, connected_to_reset_entry: bool) -> None:
         if connected_to_reset_entry is True:
-            tag = (
-                "condition_action" + str(ConditionAction.conditionaction_id),
-                "ca_connection" + str(ConditionAction.conditionaction_id) + "_anchor",
+            tag = [
+                f"condition_action{ConditionAction.conditionaction_id}",
+                f"ca_connection{ConditionAction.conditionaction_id}_anchor",
                 "connected_to_reset_transition",
-            )
+            ]
         else:
-            tag = (
-                "condition_action" + str(ConditionAction.conditionaction_id),
-                "ca_connection" + str(ConditionAction.conditionaction_id) + "_anchor",
-            )
+            tag = [
+                f"condition_action{ConditionAction.conditionaction_id}",
+                f"ca_connection{ConditionAction.conditionaction_id}_anchor",
+            ]
         main_window.canvas.itemconfigure(self.window_id, tag=tag)
 
-    def change_descriptor_to(self, text) -> None:
+    def change_descriptor_to(self, text: str) -> None:
         self.action_label.config(
             text=text
         )  # Used for switching between "asynchronous" and "synchron" (clocked) transition.
 
-    def draw_line(self, transition_id, menu_x, menu_y) -> None:
+    def draw_line(self, transition_id: int, menu_x: float, menu_y: float) -> None:
         # Draw a line from the transition start point to the condition_action block which is added to the transition:
         transition_coords = main_window.canvas.coords(transition_id)
         transition_tags = main_window.canvas.gettags(transition_id)
@@ -159,11 +170,9 @@ class ConditionAction:
             transition_coords[1],
             dash=(2, 2),
             state=tk.HIDDEN,
-            tag=("ca_connection" + str(ConditionAction.conditionaction_id), "connected_to_" + transition_tags[0]),
+            tags=[f"ca_connection{ConditionAction.conditionaction_id}", f"connected_to_{transition_tags[0]}"],
         )
-        main_window.canvas.addtag_withtag(
-            "ca_connection" + str(ConditionAction.conditionaction_id) + "_end", transition_id
-        )
+        main_window.canvas.addtag_withtag(f"ca_connection{ConditionAction.conditionaction_id}_end", transition_id)
         main_window.canvas.tag_lower(self.line_id, transition_id)
 
     def __draw_polygon_around_window(self) -> None:
@@ -183,16 +192,17 @@ class ConditionAction:
         polygon_coords.append(bbox_coords[3] + 3)
         # It is "fill="blue" used instead of "width=3, outline="blue" as then the 4 edges are sharp and not round:
         self.move_rectangle = main_window.canvas.create_polygon(
-            polygon_coords, width=1, fill="blue", tag="polygon_for_move"
+            polygon_coords, width=1.0, fill="blue", tags="polygon_for_move"
         )
         main_window.canvas.tag_bind(self.move_rectangle, "<Leave>", self.delete_polygon)
         if self.window_enter_func_id is not None:
             main_window.canvas.tag_unbind(self.window_id, "<Enter>", self.window_enter_func_id)
-            self.window_enter_func_id = None
+            self.window_enter_func_id = ""
 
-    def delete_polygon(self, event):
+    def delete_polygon(self, event: tk.Event) -> None:
         if self.debug_events is True:
             print("event 3: leave-polygon: delete polygon")
+        assert self.move_rectangle is not None
         main_window.canvas.delete(self.move_rectangle)
 
     def enter_box(self) -> None:
@@ -204,7 +214,7 @@ class ConditionAction:
         self.register_all_widgets_at_grid()
         self.canvas_enter_func_id = main_window.canvas.bind("<Enter>", self.leave_box)
 
-    def leave_box(self, event):
+    def leave_box(self, event: tk.Event) -> None:
         self.frame_id.configure(padding=1)
         if self.debug_events is True:
             print("event 4: canvas-enter: shrink-box")
@@ -215,6 +225,7 @@ class ConditionAction:
         self.window_enter_func_id = main_window.canvas.tag_bind(
             self.window_id, "<Enter>", lambda event: self.__draw_polygon_around_window()
         )
+        assert self.move_rectangle is not None
         main_window.canvas.delete(self.move_rectangle)
 
     def shrink_box(self) -> None:
@@ -231,10 +242,12 @@ class ConditionAction:
             self.action_label.grid_forget()
             self.action_id.grid_forget()
 
-    def move_to(self, event_x, event_y, first, last) -> None:
+    def move_to(self, event_x: float, event_y: float, first: bool, last: bool) -> None:
         # During moving there might be no polygon-leave-event (which deletes the polygon),
-        # so delete it here for clean graphics:
+        # so delete it here for clean graphics.
+        assert self.move_rectangle is not None
         main_window.canvas.delete(self.move_rectangle)
+
         if last is True:
             self.frame_id.configure(padding=1)  # decrease the width of the line around the box
         if first is True:
