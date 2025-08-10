@@ -953,15 +953,11 @@ def _move_in_foreground(tab: GuiTab) -> None:
 
 
 def __show_menu(zoom_coords: list[float]) -> None:
-    canvas_menue_entries_list_with_hide = ["Change background color", "Hide grid"]
-    canvas_menue_entries_list_with_show = ["Change background color", "Show grid"]
-    if main_window.show_grid is True:
-        canvas_menue_entries_list = canvas_menue_entries_list_with_hide
-    else:
-        canvas_menue_entries_list = canvas_menue_entries_list_with_show
+    menu_entries = ["Change background color", "Hide grid" if main_window.show_grid else "Show grid"]
+
     menu = OptionMenu(
         main_window.canvas,
-        canvas_menue_entries_list,
+        menu_entries,
         height=2,
         bg="lightgrey",
         width=25,
