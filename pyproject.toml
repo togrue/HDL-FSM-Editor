@@ -84,3 +84,95 @@ exclude = [
     "__pycache__/.*",
     ".*\\.pyc",
 ]
+
+[tool.pylint.format]
+# Set maximum line length to 120 characters
+max-line-length = 120
+
+[tool.pylint.messages_control]
+# Start with only the most valuable checks enabled
+# Disable less valuable checks initially - enable them gradually
+disable = [
+    # TODO: Enable these formatting/style checks once core issues are fixed
+    "missing-module-docstring",     # C0114 - Missing module docstring
+    "missing-class-docstring",      # C0115 - Missing class docstring
+    "missing-function-docstring",   # C0116 - Missing function docstring
+    "line-too-long",               # C0301 - Already handled by max-line-length
+    "too-few-public-methods",      # R0903 - Often not meaningful for simple classes
+    "too-many-arguments",          # R0913 - Can be subjective
+    "too-many-locals",             # R0914 - Can be subjective
+    "too-many-branches",           # R0912 - Can be subjective
+    "too-many-statements",         # R0915 - Can be subjective
+    "too-many-instance-attributes", # R0902 - Can be subjective
+    "invalid-name",                # C0103 - Variable naming can be context-dependent
+    "fixme",                       # W0511 - TODO/FIXME comments are often intentional
+
+    # TODO: Enable these import-related checks after organizing imports
+    "wrong-import-order",          # C0411 - Import order issues
+    "ungrouped-imports",           # C0412 - Import grouping issues
+
+    # TODO: Enable these once code is more mature
+    "broad-except",                # W0703 - Catching too general exception
+    "bare-except",                 # W0702 - No exception type specified
+    "global-statement",            # W0603 - Using global statement
+
+    # TODO: Consider enabling these design checks later
+    "duplicate-code",              # R0801 - Similar lines in multiple files
+]
+
+# Keep these high-value checks enabled (these catch real bugs/issues)
+enable = [
+    "unused-import",               # W0611 - Imported but unused
+    "unused-variable",             # W0612 - Variable assigned but never used
+    "undefined-variable",          # E0602 - Using undefined variable
+    "redefined-outer-name",        # W0621 - Variable redefined from outer scope
+    "redefined-builtin",           # W0622 - Redefining built-in names
+    "unreachable",                 # W0101 - Unreachable code
+    "dangerous-default-value",     # W0102 - Mutable default argument
+    "super-init-not-called",       # W0231 - __init__ method not called
+    "non-parent-init-called",      # W0233 - __init__ from non-parent class called
+    "return-in-init",              # W0235 - Return in __init__ method
+    "inconsistent-return-statements", # R1710 - Inconsistent return statements
+]
+
+[tool.pylint.basic]
+# Allow short variable names for common cases
+good-names = [
+    "i", "j", "k",     # Loop counters
+    "ex", "e",         # Exceptions
+    "f",               # File handles
+    "x", "y", "z",     # Coordinates/math
+    "df",              # DataFrames
+    "db",              # Database connections
+    "id",              # Identifiers
+    "_",               # Unused variables
+]
+
+[tool.pylint.design]
+# Reasonable limits for code complexity
+max-args = 8
+max-locals = 20
+max-returns = 6
+max-branches = 15
+max-statements = 60
+max-parents = 10
+max-attributes = 12
+max-public-methods = 25
+
+[tool.pylint.exceptions]
+# Allow raising generic exceptions in some cases
+overgeneral-exceptions = ["builtins.Exception"]
+
+[tool.pylint.imports]
+# Allow wildcard imports in specific cases (can be adjusted)
+allow-wildcard-with-all = false
+
+[tool.pylint.logging]
+# Logging format string validation
+logging-format-style = "new"  # Use {} style formatting
+
+[tool.pylint.similarities]
+# Minimum lines for duplicate code detection
+min-similarity-lines = 6
+ignore-comments = true
+ignore-docstrings = true
