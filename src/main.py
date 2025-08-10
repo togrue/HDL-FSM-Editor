@@ -118,6 +118,10 @@ def _main() -> None:
     """Main entry point for HDL-FSM-Editor."""
     print(main_window.header_string)
 
+    # We have to set up the basic application before parsing the arguments,
+    # because the argument parsing accesses the main window.
+    # TODO: This should be refactored.
+    # (The argument parsing should provide the args to the main window init.)
     _setup_application_ui()
 
     _parse_and_process_arguments()
