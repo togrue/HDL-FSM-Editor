@@ -66,8 +66,8 @@ class StateComment:
             self.window_id, "<Enter>", lambda event: self.__draw_polygon_around_window()
         )  # See description in condition_action_handling.py.
         StateComment.dictionary[self.window_id] = self  # Store the object-reference with the Canvas-id as key.
-        self.label_id.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E))
-        self.text_id.grid(column=0, row=1, sticky=(tk.S, tk.W, tk.E))
+        self.label_id.grid(column=0, row=0, sticky="nwe")
+        self.text_id.grid(column=0, row=1, sticky="swe")
         self.difference_x = 0
         self.difference_y = 0
         self.move_rectangle = None
