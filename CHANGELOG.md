@@ -13,10 +13,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Fixed
 ## Security
 
+## [5.2]
+## Added
+## Changed
+## Deprecated
+## Removed
+## Fixed
+- Creating HDL in batch mode did not work because of an exception.
+- The number of linter warnings was reduced by refactoring.
+## Security
+
+## [5.1] - 04.08.2025
+## Added
+- Added the "Additional sources" entry field to the Control-tab. Will be used only by HDL-SCHEM-Editor.
+- The STDOUT messages at startup are now also copied into the "Compile messages" tab.
+- Linting (highlighting of never read or never written signals) now can handle VHDL-records.
+## Changed
+## Deprecated
+## Removed
+## Fixed
+- When a Condition&Action box was entered, sometimes the box switched permanently between its small and big size.
+- When the HDL-tab was updated, sometimes the old HDL was not removed.
+## Security
+
 ## [5.0] - 01.08.2025
 
 ## Added
-- The time-stamp in generated HDL can now be turned off. To simplify the handling with version control.
+- The time-stamp in generated HDL can now be turned off to simplify the handling with version control.
 - Additional FSM examples from http://www.hdl-fsm-editor.de/ - Designs
 
 ## Changed

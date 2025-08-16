@@ -48,8 +48,6 @@ addopts = [
     "--tb=short",
     "--strict-markers",
     "--disable-warnings",
-    "-n",
-    "auto",
 ]
 markers = [
     "golden_file: marks tests as golden file tests",
