@@ -149,7 +149,7 @@ def _insert_line_in_log(line) -> None:
 
     line_low = line.lower()
     main_window.log_frame_text.config(state=tk.NORMAL)
-    if match_object_of_message is not None or "error" in line_low or "warning" in line_low:
+    if match_object_of_message is not None or " error " in line_low or " warning " in line_low:
         # Add line together with color-tag to the text:
         if main_window.language.get() == "VHDL" and "report note" in line_low:
             main_window.log_frame_text.insert(tk.END, line, ("message_green"))
