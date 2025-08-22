@@ -495,7 +495,7 @@ def create_control_notebook_tab() -> None:
 
 
 def _set_path() -> None:
-    path = askdirectory()
+    path = askdirectory(title="Select directory for generated HDL")
     if path != "" and not path.isspace():
         generate_path_value.set(path)
 
