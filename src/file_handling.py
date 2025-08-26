@@ -676,7 +676,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         state_action_ref.text_content = text + "\n"
         state_action_ref.text_id.insert("1.0", text)
         state_action_ref.text_id.format()
-        main_window.canvas.itemconfigure(state_action_ref.window_id, tag=tags)
+        main_window.canvas.itemconfigure(state_action_ref.window_id, tags=tags)
 
     # Load state comments
     for definition in design_dictionary.get("window_state_comment", []):
@@ -759,7 +759,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         global_action_ref.text_content = text + "\n"
         global_action_ref.text_id.insert("1.0", text)
         global_action_ref.text_id.format()
-        main_window.canvas.itemconfigure(global_action_ref.window_id, tag=tags)
+        main_window.canvas.itemconfigure(global_action_ref.window_id, tags=tags)
 
     # Load state actions default
     for definition in design_dictionary["window_state_actions_default"]:
@@ -772,4 +772,4 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         state_action_default_ref.text_content = text + "\n"
         state_action_default_ref.text_id.insert("1.0", text)
         state_action_default_ref.text_id.format()
-        main_window.canvas.itemconfigure(state_action_default_ref.window_id, tag=tags)
+        main_window.canvas.itemconfigure(state_action_default_ref.window_id, tags=tags)
