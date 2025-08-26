@@ -232,7 +232,9 @@ def _a_line_start_or_end_point_is_moved_to_a_line(item_ids_at_moving_end_locatio
     return False
 
 
-def _a_point_of_a_line_is_moved_illegally_to_a_reset_entry(item_ids_at_moving_end_location: list[int], move_list: list) -> bool:
+def _a_point_of_a_line_is_moved_illegally_to_a_reset_entry(
+    item_ids_at_moving_end_location: list[int], move_list: list
+) -> bool:
     for target in item_ids_at_moving_end_location:
         if main_window.canvas.type(target) == "polygon":
             for move_list_entry in move_list:
@@ -240,7 +242,7 @@ def _a_point_of_a_line_is_moved_illegally_to_a_reset_entry(item_ids_at_moving_en
                     "transition"
                 ):
                     return True
-                elif move_list_entry[1] == "start":
+                if move_list_entry[1] == "start":
                     reset_entry_tags = main_window.canvas.gettags(target)
                     for reset_entry_tag in reset_entry_tags:
                         if reset_entry_tag.startswith("transition"):
