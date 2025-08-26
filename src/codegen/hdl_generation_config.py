@@ -53,12 +53,11 @@ class GenerationConfig:
         """Get the appropriate file extension for the current language"""
         if self.language == "VHDL":
             return ".vhd"
-        elif self.language == "Verilog":
+        if self.language == "Verilog":
             return ".v"
-        elif self.language == "SystemVerilog":
+        if self.language == "SystemVerilog":
             return ".sv"
-        else:
-            raise ValueError(f"Unsupported language: {self.language}")
+        raise ValueError(f"Unsupported language: {self.language}")
 
     def get_output_files(self) -> list[str]:
         """

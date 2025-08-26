@@ -246,7 +246,7 @@ def _a_point_of_a_line_is_moved_illegally_to_a_reset_entry(
                     "transition"
                 ):
                     return True
-                elif move_list_entry[1] == "start":
+                if move_list_entry[1] == "start":
                     reset_entry_tags = main_window.canvas.gettags(target)
                     for reset_entry_tag in reset_entry_tags:
                         if reset_entry_tag.startswith("transition"):

@@ -226,9 +226,9 @@ def _get_reset_edge(reset_condition: str) -> str:
     reset_condition_mod = re.sub("\\s", "", reset_condition_mod)  # remove blanks
     if reset_condition_mod.endswith("1'b0"):
         return "negedge"
-    elif reset_condition_mod.endswith("1'b1"):
+    if reset_condition_mod.endswith("1'b1"):
         return "posedge"
-    else:
-        raise GenerationError(
-            "Error", "The reset polarity could not be determined from the reset condition: " + reset_condition_mod
-        )
+
+    raise GenerationError(
+        "Error", "The reset polarity could not be determined from the reset condition: " + reset_condition_mod
+    )
