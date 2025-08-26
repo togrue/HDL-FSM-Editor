@@ -241,7 +241,7 @@ def get_point_to_move(item_id: int, event_x: float, event_y: float) -> str:
         if return_value == "":
             return_value = "next_to_start" if distance_event_to_point[1] < distance_event_to_point[2] else "next_to_end"
         return return_value
-    elif number_of_points == 3:
+    if number_of_points == 3:
         # if   distance_event_to_point[0]<distance_to_neighbour[0]/4:
         #     return "start"
         # if distance_event_to_point[0]<distance_to_neighbour[0]*3/4:

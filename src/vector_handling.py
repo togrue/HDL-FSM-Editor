@@ -16,12 +16,12 @@ def shorten_vector(
     delta1_y = delta1 * math.sin(phi)
     if y1 >= y0 and x1 >= x0:
         return [x0 + delta0_x * modify0, y0 + delta0_y * modify0, x1 - delta1_x * modify1, y1 - delta1_y * modify1]
-    elif y1 >= y0 and x1 < x0:
+    if y1 >= y0 and x1 < x0:
         return [x0 - delta0_x * modify0, y0 + delta0_y * modify0, x1 + delta1_x * modify1, y1 - delta1_y * modify1]
-    elif y1 < y0 and x1 >= x0:
+    if y1 < y0 and x1 >= x0:
         return [x0 + delta0_x * modify0, y0 - delta0_y * modify0, x1 - delta1_x * modify1, y1 + delta1_y * modify1]
-    else:
-        return [x0 - delta0_x * modify0, y0 - delta0_y * modify0, x1 + delta1_x * modify1, y1 + delta1_y * modify1]
+    # y1 < y0 and x1 < x0
+    return [x0 - delta0_x * modify0, y0 - delta0_y * modify0, x1 + delta1_x * modify1, y1 + delta1_y * modify1]
 
 
 def try_to_convert_into_straight_line(coords: list[float]) -> list:
@@ -36,8 +36,7 @@ def try_to_convert_into_straight_line(coords: list[float]) -> list:
             eliminate_points = False
     if eliminate_points:
         return [coords[0], coords[1], coords[-2], coords[-1]]
-    else:
-        return coords
+    return coords
 
 
 def _calculate_vectors_from_line_point_to_next_line_point(coords: list[float]) -> list:

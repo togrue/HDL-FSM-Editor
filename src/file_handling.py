@@ -44,10 +44,9 @@ def ask_save_unsaved_changes(title: str) -> str:
     )
     if result is True:
         return "save"
-    elif result is False:
+    if result is False:
         return "discard"
-    else:
-        return "cancel"
+    return "cancel"
 
 
 def save_as() -> None:
@@ -94,7 +93,7 @@ def new_design() -> bool:
         action = ask_save_unsaved_changes(title)
         if action == "cancel":
             return False
-        elif action == "save":
+        if action == "save":
             save()
             # Check if save was successful (current_file is not empty)
             if project_manager.current_file == "":
