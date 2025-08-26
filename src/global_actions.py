@@ -135,7 +135,7 @@ class GlobalActions:
         self.text_after_content = self.text_after_id.get("1.0", tk.END)
 
     def tag(self) -> None:
-        self.canvas.itemconfigure(self.window_id, tag="global_actions" + str(GlobalActions.global_actions_number))
+        self.canvas.itemconfigure(self.window_id, tags="global_actions" + str(GlobalActions.global_actions_number))
 
     def activate_frame(self) -> None:
         self.activate_window()

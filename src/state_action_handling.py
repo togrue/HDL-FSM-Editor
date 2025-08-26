@@ -85,7 +85,7 @@ class MyText:
     def tag(self) -> None:
         self.canvas.itemconfigure(
             self.window_id,
-            tag=("state_action" + str(MyText.mytext_id), "connection" + str(MyText.mytext_id) + "_start"),
+            tags=("state_action" + str(MyText.mytext_id), "connection" + str(MyText.mytext_id) + "_start"),
         )
 
     def connect_to_state(self, menu_x: float, menu_y: float, state_id: int) -> None:

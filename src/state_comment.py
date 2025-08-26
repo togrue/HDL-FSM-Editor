@@ -151,5 +151,5 @@ class StateComment:
     def tag(self, state_identifier: str) -> None:  # Called by state_handling.evaluate_menu().
         self.canvas.addtag_withtag(state_identifier + "_comment_line_end", state_identifier)
         self.canvas.itemconfigure(
-            self.window_id, tag=(state_identifier + "_comment", state_identifier + "_comment_line_start")
+            self.window_id, tags=(state_identifier + "_comment", state_identifier + "_comment_line_start")
         )

@@ -89,7 +89,7 @@ class GlobalActionsCombinatorial:
         self.text_content = self.text_id.get("1.0", tk.END)
 
     def tag(self) -> None:
-        self.canvas.itemconfigure(self.window_id, tag="global_actions_combinatorial1")
+        self.canvas.itemconfigure(self.window_id, tags="global_actions_combinatorial1")
 
     def activate_frame(self) -> None:
         self.activate_window()

@@ -79,7 +79,7 @@ class StateActionsDefault:
         canvas_modify_bindings.switch_to_move_mode()
 
     def tag(self) -> None:
-        self.canvas.itemconfigure(self.window_id, tag="state_actions_default")
+        self.canvas.itemconfigure(self.window_id, tags="state_actions_default")
 
     def _edit_in_external_editor(self) -> None:
         self.text_id.edit_in_external_editor()

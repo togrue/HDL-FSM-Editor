@@ -175,7 +175,7 @@ class ConditionAction:
                 f"condition_action{ConditionAction.conditionaction_id}",
                 f"ca_connection{ConditionAction.conditionaction_id}_anchor",
             ]
-        self.canvas.itemconfigure(self.window_id, tag=tag)
+        self.canvas.itemconfigure(self.window_id, tags=tag)
 
     def change_descriptor_to(self, text: str) -> None:
         self.action_label.config(
