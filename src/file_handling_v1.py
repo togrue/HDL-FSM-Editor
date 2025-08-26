@@ -373,7 +373,7 @@ def open_v1_file_with_name(read_filename: str) -> None:
                 )
                 action_ref.text_id.insert("1.0", text)
                 action_ref.text_id.format()
-                main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
+                main_window.canvas.itemconfigure(action_ref.window_id, tags=tags)
             elif line.startswith("window_condition_action_block|"):
                 rest_of_line = _remove_keyword_from_line(line, "window_condition_action_block|")
                 condition = _get_data(rest_of_line, fileobject)
@@ -419,7 +419,7 @@ def open_v1_file_with_name(read_filename: str) -> None:
                 ):
                     condition_action_ref.action_label.grid_forget()
                     condition_action_ref.action_id.grid_forget()
-                main_window.canvas.itemconfigure(condition_action_ref.window_id, tag=tags)
+                main_window.canvas.itemconfigure(condition_action_ref.window_id, tags=tags)
             elif line.startswith("window_global_actions|"):
                 rest_of_line = _remove_keyword_from_line(line, "window_global_actions|")
                 text_before = _get_data(rest_of_line, fileobject)
@@ -447,7 +447,7 @@ def open_v1_file_with_name(read_filename: str) -> None:
                 global_actions_ref.text_before_id.format()
                 global_actions_ref.text_after_id.insert("1.0", text_after)
                 global_actions_ref.text_after_id.format()
-                main_window.canvas.itemconfigure(global_actions_ref.window_id, tag=tags)
+                main_window.canvas.itemconfigure(global_actions_ref.window_id, tags=tags)
             elif line.startswith("window_global_actions_combinatorial|"):
                 rest_of_line = _remove_keyword_from_line(line, "window_global_actions_combinatorial|")
                 text = _get_data(rest_of_line, fileobject)
@@ -466,7 +466,7 @@ def open_v1_file_with_name(read_filename: str) -> None:
                 )
                 global_action_ref.text_id.insert("1.0", text)
                 global_action_ref.text_id.format()
-                main_window.canvas.itemconfigure(global_action_ref.window_id, tag=tags)
+                main_window.canvas.itemconfigure(global_action_ref.window_id, tags=tags)
             elif line.startswith("window_state_actions_default|"):
                 rest_of_line = _remove_keyword_from_line(line, "window_state_actions_default|")
                 text = _get_data(rest_of_line, fileobject)
@@ -485,7 +485,7 @@ def open_v1_file_with_name(read_filename: str) -> None:
                 )
                 state_action_default_ref.text_id.insert("1.0", text)
                 state_action_default_ref.text_id.format()
-                main_window.canvas.itemconfigure(state_action_default_ref.window_id, tag=tags)
+                main_window.canvas.itemconfigure(state_action_default_ref.window_id, tags=tags)
     undo_handling.stack = []
     undo_handling.stack_write_pointer = 0
     undo_handling.design_has_changed()  # Initialize the stack with the read design.

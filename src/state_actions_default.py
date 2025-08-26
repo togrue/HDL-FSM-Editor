@@ -100,7 +100,7 @@ class StateActionsDefault:
             )
 
     def tag(self) -> None:
-        self.canvas.itemconfigure(self.window_id, tag="state_actions_default")
+        self.canvas.itemconfigure(self.window_id, tags="state_actions_default")
 
     def update_text(self) -> None:
         # Update self.text_content, so that the <Leave>-check in deactivate() does not signal a design-change and

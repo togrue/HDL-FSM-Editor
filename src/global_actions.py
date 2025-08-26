@@ -125,7 +125,7 @@ class GlobalActions:
         self.canvas.tag_bind(move_rect, "<Leave>", lambda event: self.canvas.delete(move_rect))
 
     def tag(self) -> None:
-        self.canvas.itemconfigure(self.window_id, tag="global_actions" + str(GlobalActions.global_actions_number))
+        self.canvas.itemconfigure(self.window_id, tags="global_actions" + str(GlobalActions.global_actions_number))
 
     def activate(self) -> None:
         self.frame_id.configure(padding=3)  # increase the width of the line around the box
