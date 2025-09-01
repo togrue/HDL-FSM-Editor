@@ -1,5 +1,5 @@
 -- Filename: regression1_e.vhd
--- Created by HDL-FSM-Editor at Wed Aug 13 17:52:13 2025
+-- Created by HDL-FSM-Editor
 library ieee;
 use ieee.std_logic_1164.all;
 
