@@ -9,7 +9,7 @@
     "clock_signal_name": "clk_i",
     "compile_cmd": "ghdl -c -v $file1 $file2; ghdl -e $name; ghdl -r $name",
     "edit_cmd": "C:/Program Files/Notepad++/notepad++.exe -nosession -multiInst",
-    "include_timestamp_in_output": true,
+    "include_timestamp_in_output": false,
     "interface_package": "library ieee;\nuse ieee.std_logic_1164.all;",
     "interface_generics": "",
     "interface_ports": "res_i : in std_logic;\nclk_i : in std_logic",
