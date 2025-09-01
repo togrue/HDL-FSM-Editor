@@ -105,7 +105,7 @@ class GlobalActionsCombinatorial:
         if self.text_id.get("1.0", tk.END) != self.text_content:
             __import__("undo_handling").design_has_changed()
 
-    def move_to(self, event_x: float, event_y: float, first: bool, last: bool) -> None:
+    def move_to(self, event_x: float, event_y: float, first: bool, _last: bool) -> None:
         assert self.move_rectangle is not None
         self.canvas.delete(self.move_rectangle)
         self.frame_id.configure(padding=1)  # decrease the width of the line around the box

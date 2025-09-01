@@ -199,7 +199,7 @@ class ConditionAction:
             self.canvas.tag_unbind(self.window_id, "<Enter>", self.window_enter_func_id)
             self.window_enter_func_id = ""
 
-    def delete_polygon(self, event: tk.Event) -> None:
+    def delete_polygon(self, _event: tk.Event) -> None:
         if self.debug_events is True:
             print("event 3: leave-polygon: delete polygon")
         assert self.move_rectangle is not None
@@ -214,7 +214,7 @@ class ConditionAction:
         self.register_all_widgets_at_grid()
         self.canvas_enter_func_id = self.canvas.bind("<Enter>", self.leave_box)
 
-    def leave_box(self, event: tk.Event) -> None:
+    def leave_box(self, _event: tk.Event) -> None:
         self.frame_id.configure(padding=1)
         if self.debug_events is True:
             print("event 4: canvas-enter: shrink-box")

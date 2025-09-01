@@ -142,7 +142,7 @@ class GlobalActions:
         if self.text_after_id.get("1.0", tk.END) != self.text_after_content:
             undo_handling.design_has_changed()
 
-    def move_to(self, event_x: float, event_y: float, first: bool, last: bool) -> None:
+    def move_to(self, event_x: float, event_y: float, first: bool, _last: bool) -> None:
         assert self.move_rectangle is not None
         self.canvas.delete(self.move_rectangle)
         self.frame_id.configure(padding=1)  # Set the width of the line around the box
