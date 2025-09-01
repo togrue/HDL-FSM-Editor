@@ -129,7 +129,6 @@ def test_golden_file_generation(test_id: str, hfe_file: Path, test_output_dir: P
         for pattern in validation_patterns:
             match = re.search(re.escape(pattern), output_text, re.IGNORECASE)
             assert match is not None, f"Expected validation pattern '{pattern}' not found in output:\n{output_text}"
-            print(f"  ✓ Found validation pattern (regex): {pattern}")
 
     if should_succeed:
         # Test successful generation
@@ -142,7 +141,6 @@ def test_golden_file_generation(test_id: str, hfe_file: Path, test_output_dir: P
             after_time = output_file.stat().st_mtime
             was_modified = after_time > before_times[output_file]
 
-            print(f"  {output_file.name}: modified = {was_modified}")
             assert was_modified, f"File {output_file.name} was not modified during generation"
 
     else:
@@ -155,8 +153,18 @@ def test_golden_file_generation(test_id: str, hfe_file: Path, test_output_dir: P
                 after_time = output_file.stat().st_mtime
                 was_modified = after_time > before_times[output_file]
 
-                if was_modified:
-                    print(f"  ⚠️  Warning: {output_file.name} was modified despite validation failure")
+                assert not was_modified, f"File {output_file.name} was modified despite validation failure"
+
+    dirty_files = []
+    git_status = subprocess.run(
+        ["git", "status", "--porcelain", str(test_output_dir)], capture_output=True, text=True, check=True
+    )
+    for line in git_status.stdout.splitlines():
+        status, path = line[:2], line[3:]
+        if status.strip() and path.endswith(tuple(f.name for f in output_files)):
+            dirty_files.append(path)
+
+    assert len(dirty_files) == 0, f"Dirty test_output files after generation: {dirty_files}"
 
 
 if __name__ == "__main__":
