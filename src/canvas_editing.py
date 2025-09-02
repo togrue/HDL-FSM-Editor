@@ -573,7 +573,6 @@ def scroll_wheel(event: tk.Event) -> None:
 def _modify_font_sizes_of_all_canvas_items(factor: float) -> None:
     global fontsize
     global label_fontsize
-    global state_name_font
     fontsize *= factor
     label_fontsize *= factor
     used_label_fontsize = max(label_fontsize, 1)

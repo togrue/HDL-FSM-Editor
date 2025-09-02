@@ -1282,7 +1282,6 @@ def choose_bg_color() -> None:
 
 
 def __resize_event_interface_tab_frames(_event: tk.Event) -> None:
-    global sash_positions
     if "interface_tab" not in sash_positions:
         sash_positions["interface_tab"] = {}
     sash_positions["interface_tab"][0] = paned_window_interface.sashpos(0)
@@ -1291,7 +1290,6 @@ def __resize_event_interface_tab_frames(_event: tk.Event) -> None:
 
 
 def __resize_event_internals_tab_frames(_event: tk.Event) -> None:
-    global sash_positions
     if "internals_tab" not in sash_positions:
         sash_positions["internals_tab"] = {}
     sash_positions["internals_tab"][0] = paned_window_internals.sashpos(0)
