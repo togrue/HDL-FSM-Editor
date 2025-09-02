@@ -117,9 +117,9 @@ keywords: dict[str, list[str]] = constants.VHDL_KEYWORDS
 
 def read_message() -> None:
     try:
-        source = urllib.request.urlopen("http://www.hdl-fsm-editor.de/message.txt")
-        message = source.read()
-        _read_message_result = message.decode()
+        with urllib.request.urlopen("http://www.hdl-fsm-editor.de/message.txt") as source:
+            message = source.read()
+            _read_message_result = message.decode()
         # print(message.decode())
     except urllib.error.URLError:
         _read_message_result = "No message was found."
@@ -141,6 +141,12 @@ def check_version() -> None:
     global _check_version_result
     try:
         print("Checking for a newer version ...")
+        with urllib.request.urlopen("http://www.hdl-fsm-editor.de/index.php") as source:
+            website_source = str(source.read())
+        version_start = website_source.find("Version")
+        new_version = website_source[version_start : version_start + 24]
+        end_index = new_version.find("(")
+        new_version = new_version[:end_index]
         source = urllib.request.urlopen("http://www.hdl-fsm-editor.de/index.php")
         website_source = str(source.read())
         version_start = website_source.find("Version")
