@@ -86,7 +86,7 @@ class CustomText(tk.Text):
         import main_window
 
         file_name = "hdl-fsm-editor.tmp.vhd" if main_window.language.get() == "VHDL" else "hdl-fsm-editor.tmp.v"
-        with open(file_name, "w") as fileobject:
+        with open(file_name, "w", encoding="utf-8") as fileobject:
             fileobject.write(self.get("1.0", tk.END + "- 1 chars"))
         try:
             edit_cmd = main_window.edit_cmd.get().split()
@@ -99,7 +99,7 @@ class CustomText(tk.Text):
             poll = process.poll()
             if poll is not None:
                 break
-        with open(file_name) as fileobject:
+        with open(file_name, encoding="utf-8") as fileobject:
             new_text = fileobject.read()
         os.remove(file_name)
         self.delete("1.0", tk.END)
