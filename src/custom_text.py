@@ -91,14 +91,14 @@ class CustomText(tk.Text):
         try:
             edit_cmd = main_window.edit_cmd.get().split()
             edit_cmd.append(file_name)
-            process = subprocess.Popen(edit_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            with subprocess.Popen(edit_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
+                while True:
+                    poll = process.poll()
+                    if poll is not None:
+                        break
         except FileNotFoundError:
             messagebox.showerror("Error", "Error when running " + main_window.edit_cmd.get() + " " + file_name)
             return
-        while True:
-            poll = process.poll()
-            if poll is not None:
-                break
         with open(file_name, encoding="utf-8") as fileobject:
             new_text = fileobject.read()
         os.remove(file_name)

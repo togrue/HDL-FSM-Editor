@@ -147,8 +147,8 @@ def check_version() -> None:
         new_version = website_source[version_start : version_start + 24]
         end_index = new_version.find("(")
         new_version = new_version[:end_index]
-        source = urllib.request.urlopen("http://www.hdl-fsm-editor.de/index.php")
-        website_source = str(source.read())
+        with urllib.request.urlopen("http://www.hdl-fsm-editor.de/index.php") as source:
+            website_source = str(source.read())
         version_start = website_source.find("Version")
         new_version = website_source[version_start : version_start + 24]
         end_index = new_version.find("(")
