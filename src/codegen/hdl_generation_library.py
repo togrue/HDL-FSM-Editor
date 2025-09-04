@@ -510,10 +510,7 @@ def _merge_trace_array(trace_array: list[list[dict[str, Any]]]) -> list[dict[str
                     ):
                         if trace[search_index]["target"] != "":
                             target_at_error = trace[search_index]["target"]
-                        if (
-                            search_index == len(trace) - 1
-                            or search_index == len(traces_of_a_state_reversed[trace_index + 1]) - 1
-                        ):
+                        if search_index in (len(trace) - 1, len(traces_of_a_state_reversed[trace_index + 1]) - 1):
                             raise GenerationError(
                                 "Error",
                                 [
