@@ -313,8 +313,7 @@ def _resize_state(state_tag: str, text_id: int) -> None:
     text_width = float(
         size[2] - size[0] + 15
     )  # Make the text a little bit bigger, so that it does not touch the state circle.
-    if text_width < 2 * canvas_editing.state_radius:
-        text_width = 2 * canvas_editing.state_radius
+    text_width = max(text_width, 2 * canvas_editing.state_radius)
     difference = text_width - state_width
     state_coords[0] = state_coords[0] - difference // 2
     state_coords[1] = state_coords[1] - difference // 2
