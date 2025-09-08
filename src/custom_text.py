@@ -111,11 +111,11 @@ class CustomText(tk.Text):
 
     def format(self) -> None:
         text = self.get("1.0", tk.END)
-        self.__update_size_of_text_box(text)
-        self.__update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows()
+        self._update_size_of_text_box(text)
+        self._update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows()
         self.update_highlighting()
 
-    def __update_size_of_text_box(self, text: str) -> None:
+    def _update_size_of_text_box(self, text: str) -> None:
         import main_window
 
         nr_of_lines = 0
@@ -256,7 +256,7 @@ class CustomText(tk.Text):
         all_signal_declarations = self.get("1.0", tk.END).lower()
         self.signals_list = hdl_generation_library.get_all_declared_signal_names(all_signal_declarations)
         self.constants_list = hdl_generation_library.get_all_declared_constant_names(all_signal_declarations)
-        self.__update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows()
+        self._update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows()
         self.update_highlighting()
 
     def update_custom_text_class_ports_list(self) -> None:
@@ -277,25 +277,25 @@ class CustomText(tk.Text):
         all_generic_declarations = main_window.interface_generics_text.get("1.0", tk.END).lower()
         self.generics_list = hdl_generation_architecture_state_actions.get_all_generic_names(all_generic_declarations)
 
-    def __update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows(self) -> None:
+    def _update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows(self) -> None:
         import main_window
 
         CustomText.read_variables_of_all_windows[self] = []
         CustomText.written_variables_of_all_windows[self] = []
         text = self.get("1.0", tk.END + "- 1 chars")
         text = hdl_generation_library.convert_hdl_lines_into_a_searchable_string(text)
-        text = self.__remove_keywords(text)
+        text = self._remove_keywords(text)
         if main_window.language.get() == "VHDL":
             text = re.sub(r"\..*?\s", " ", text)  # remove all record-element-names from their signal/variable names
         if self.text_type == "condition":
-            text = self.__remove_condition_keywords(text)
+            text = self._remove_condition_keywords(text)
             CustomText.read_variables_of_all_windows[self] = text.split()
         elif self.text_type == "action":
-            text = self.__add_read_variables_from_with_select_blocks_to_read_variables_of_all_windows(text)
-            text = self.__add_read_variables_from_conditions_to_read_variables_of_all_windows(text)
-            text = self.__add_read_variables_from_case_constructs_to_read_variables_of_all_windows(text)
-            text = self.__add_read_variables_from_assignments_to_read_variables_of_all_windows(text)
-            text = self.__add_read_variables_from_always_statements_to_read_variables_of_all_windows(text)
+            text = self._add_read_variables_from_with_select_blocks_to_read_variables_of_all_windows(text)
+            text = self._add_read_variables_from_conditions_to_read_variables_of_all_windows(text)
+            text = self._add_read_variables_from_case_constructs_to_read_variables_of_all_windows(text)
+            text = self._add_read_variables_from_assignments_to_read_variables_of_all_windows(text)
+            text = self._add_read_variables_from_always_statements_to_read_variables_of_all_windows(text)
             # Remove duplicates:
             CustomText.read_variables_of_all_windows[self] = list(set(CustomText.read_variables_of_all_windows[self]))
             text = re.sub(
@@ -325,16 +325,16 @@ class CustomText(tk.Text):
             if ":=" in CustomText.written_variables_of_all_windows[self]:
                 CustomText.written_variables_of_all_windows[self].remove(":=")
 
-    def __remove_keywords(self, text: str) -> str:
+    def _remove_keywords(self, text: str) -> str:
         import main_window
 
         if main_window.language.get() == "VHDL":
-            text = self.__remove_keywords_from_vhdl(text)
+            text = self._remove_keywords_from_vhdl(text)
         else:
-            text = self.__remove_keywords_from_verilog(text)
+            text = self._remove_keywords_from_verilog(text)
         return text
 
-    def __remove_keywords_from_vhdl(self, text: str) -> str:
+    def _remove_keywords_from_vhdl(self, text: str) -> str:
         for keyword in constants.VHDL_KEYWORDS_FOR_SIGNAL_HANDLING + (
             " process.*?begin ",  # Remove complete process headers, if some exist.
             " end\\s+?process\\s*?;",  # remove end of process, before ...
@@ -364,7 +364,7 @@ class CustomText(tk.Text):
             text = re.sub(" " + keyword + " ", "  ", text, flags=re.I)  # Keep the blanks the keyword is surrounded by.
         return text
 
-    def __remove_keywords_from_verilog(self, text: str) -> str:
+    def _remove_keywords_from_verilog(self, text: str) -> str:
         for keyword in constants.VERILOG_KEYWORDS_FOR_SIGNAL_HANDLING + (
             " end ",
             " endcase\\s*?;",
@@ -382,7 +382,7 @@ class CustomText(tk.Text):
             text = re.sub(keyword, "  ", text, flags=re.I)  # Keep the blanks the keyword is surrounded by.
         return text
 
-    def __remove_condition_keywords(self, text: str) -> str:
+    def _remove_condition_keywords(self, text: str) -> str:
         import main_window
 
         if main_window.language.get() == "VHDL":
@@ -403,7 +403,7 @@ class CustomText(tk.Text):
                 text = re.sub(keyword, "  ", text, flags=re.I)  # Keep the blanks the keyword is surrounded by.
         return text
 
-    def __add_read_variables_from_with_select_blocks_to_read_variables_of_all_windows(self, text: str) -> str:
+    def _add_read_variables_from_with_select_blocks_to_read_variables_of_all_windows(self, text: str) -> str:
         import main_window
 
         if main_window.language.get() == "VHDL":
@@ -426,7 +426,7 @@ class CustomText(tk.Text):
                 )  # split() removes only blanks here.
         return text
 
-    def __add_read_variables_from_conditions_to_read_variables_of_all_windows(self, text: str) -> str:
+    def _add_read_variables_from_conditions_to_read_variables_of_all_windows(self, text: str) -> str:
         import main_window
 
         if main_window.language.get() == "VHDL":
@@ -476,7 +476,7 @@ class CustomText(tk.Text):
             CustomText.read_variables_of_all_windows[self] += condition.split()
         return text
 
-    def __add_read_variables_from_case_constructs_to_read_variables_of_all_windows(self, text: str) -> str:
+    def _add_read_variables_from_case_constructs_to_read_variables_of_all_windows(self, text: str) -> str:
         import main_window
 
         if main_window.language.get() == "VHDL":
@@ -504,7 +504,7 @@ class CustomText(tk.Text):
             CustomText.read_variables_of_all_windows[self] += case.split()
         return text
 
-    def __add_read_variables_from_assignments_to_read_variables_of_all_windows(self, text: str) -> str:
+    def _add_read_variables_from_assignments_to_read_variables_of_all_windows(self, text: str) -> str:
         right_hand_side_search_pattern = "=.*?;"
         while True:  # Collect all right hand sides and remove them from text.
             match = re.search(right_hand_side_search_pattern, text, flags=re.IGNORECASE)
@@ -525,7 +525,7 @@ class CustomText(tk.Text):
                 break
         return text
 
-    def __add_read_variables_from_always_statements_to_read_variables_of_all_windows(self, text: str) -> str:
+    def _add_read_variables_from_always_statements_to_read_variables_of_all_windows(self, text: str) -> str:
         while True:
             match = re.search(r"always\s*@.*?begin", text, flags=re.IGNORECASE)
             if match:
