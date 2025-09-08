@@ -464,7 +464,7 @@ def create_control_notebook_tab() -> None:
         padding=5,
     )
     additional_sources_entry = ttk.Entry(control_frame, textvariable=additional_sources_value, width=80)
-    additional_sources_button = ttk.Button(control_frame, text="Select...", command=__add_path, style="Path.TButton")
+    additional_sources_button = ttk.Button(control_frame, text="Select...", command=_add_path, style="Path.TButton")
     additional_sources_label.grid(row=9, column=0, sticky="w")
     additional_sources_entry.grid(row=9, column=1, sticky="ew")
     additional_sources_button.grid(row=9, column=2, sticky="ew")
@@ -514,7 +514,7 @@ def _set_path() -> None:
         generate_path_value.set(path)
 
 
-def __add_path() -> None:
+def _add_path() -> None:
     old_entry = additional_sources_value.get()
     if old_entry != "":
         old_entries = old_entry.split(",")
@@ -593,7 +593,7 @@ def create_interface_notebook_tab() -> None:
     interface_generics_text.grid(row=1, column=0, sticky="nsew")
     interface_generics_scroll.grid(row=1, column=1, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_interface.add(interface_generics_frame, weight=1)
-    interface_generics_frame.bind("<Configure>", __resize_event_interface_tab_frames)
+    interface_generics_frame.bind("<Configure>", _resize_event_interface_tab_frames)
 
     interface_ports_frame = ttk.Frame(paned_window_interface)
     interface_ports_frame.columnconfigure(0, weight=1)
@@ -691,7 +691,7 @@ def create_internals_notebook_tab() -> None:
         row=1, column=1, sticky="nsew"
     )  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_internals.add(internals_architecture_frame, weight=1)
-    internals_architecture_frame.bind("<Configure>", __resize_event_internals_tab_frames)
+    internals_architecture_frame.bind("<Configure>", _resize_event_internals_tab_frames)
 
     internals_process_clocked_frame = ttk.Frame(paned_window_internals)
     internals_process_clocked_frame.columnconfigure(0, weight=1)
@@ -800,8 +800,8 @@ def create_diagram_notebook_tab() -> None:
         highlightthickness=0,
         relief=tk.SUNKEN,
     )
-    h["command"] = __scroll_xview
-    v["command"] = __scroll_yview
+    h["command"] = _scroll_xview
+    v["command"] = _scroll_yview
     button_frame = ttk.Frame(diagram_frame, padding="3 3 3 3", borderwidth=1)
 
     # Layout of the drawing area:
@@ -889,25 +889,25 @@ def create_diagram_notebook_tab() -> None:
     canvas.bind("<Control-ButtonRelease-1>", canvas_editing.scroll_end)
     canvas.bind("<MouseWheel>", canvas_editing.scroll_wheel)
     canvas.bind("<Button-3>", canvas_editing.start_view_rectangle)
-    canvas.bind("<Configure>", __check_for_window_resize)
+    canvas.bind("<Configure>", _check_for_window_resize)
 
     canvas_editing.create_font_for_state_names()
     grid_drawer = grid_drawing.GridDraw(canvas)
 
 
-def __scroll_xview(*args: Any) -> None:
+def _scroll_xview(*args: Any) -> None:
     grid_drawer.remove_grid()
     canvas.xview(*args)
     grid_drawer.draw_grid()
 
 
-def __scroll_yview(*args: Any) -> None:
+def _scroll_yview(*args: Any) -> None:
     grid_drawer.remove_grid()
     canvas.yview(*args)
     grid_drawer.draw_grid()
 
 
-def __check_for_window_resize(_: Any) -> None:
+def _check_for_window_resize(_: Any) -> None:
     grid_drawer.remove_grid()
     grid_drawer.draw_grid()
 
@@ -1287,7 +1287,7 @@ def choose_bg_color() -> None:
         diagram_background_color.set(new_color)
 
 
-def __resize_event_interface_tab_frames(_event: tk.Event) -> None:
+def _resize_event_interface_tab_frames(_event: tk.Event) -> None:
     if "interface_tab" not in sash_positions:
         sash_positions["interface_tab"] = {}
     sash_positions["interface_tab"][0] = paned_window_interface.sashpos(0)
@@ -1295,7 +1295,7 @@ def __resize_event_interface_tab_frames(_event: tk.Event) -> None:
         sash_positions["interface_tab"][1] = paned_window_interface.sashpos(1)
 
 
-def __resize_event_internals_tab_frames(_event: tk.Event) -> None:
+def _resize_event_internals_tab_frames(_event: tk.Event) -> None:
     if "internals_tab" not in sash_positions:
         sash_positions["internals_tab"] = {}
     sash_positions["internals_tab"][0] = paned_window_internals.sashpos(0)

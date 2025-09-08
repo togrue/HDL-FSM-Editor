@@ -38,12 +38,12 @@ class UpdateHdlTab:
         main_window.hdl_frame_text.insert("1.0", "")
         main_window.hdl_frame_text.config(state=tk.DISABLED)
         hdl = ""
-        if self.__hdl_is_up_to_date(readfile, hdlfilename, hdlfilename_architecture, show_message=False):
+        if self._hdl_is_up_to_date(readfile, hdlfilename, hdlfilename_architecture, show_message=False):
             # print("HDL-file exists and is 'newer' than the design-file =", self.date_of_hdl_file)
             try:
                 with open(hdlfilename, encoding="utf-8") as fileobject:
                     entity = fileobject.read()
-                hdl += self.__add_line_numbers(entity)
+                hdl += self._add_line_numbers(entity)
             except FileNotFoundError:
                 messagebox.showerror(
                     "Error in HDL-FSM-Editor", "File " + hdlfilename + " could not be opened for copying into HDL-Tab."
@@ -53,7 +53,7 @@ class UpdateHdlTab:
                 try:
                     with open(hdlfilename_architecture, encoding="utf-8") as fileobject:
                         arch = fileobject.read()
-                    hdl += self.__add_line_numbers(arch)
+                    hdl += self._add_line_numbers(arch)
                 except FileNotFoundError:
                     messagebox.showerror(
                         "Error in HDL-FSM-Editor",
@@ -70,7 +70,7 @@ class UpdateHdlTab:
             10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
         )
 
-    def __hdl_is_up_to_date(
+    def _hdl_is_up_to_date(
         self, path_name: str, hdlfilename: str, hdlfilename_architecture: Optional[str], show_message: bool
     ) -> bool:
         if not os.path.isfile(path_name):
@@ -112,7 +112,7 @@ class UpdateHdlTab:
             return False
         return True
 
-    def __add_line_numbers(self, text: str) -> str:
+    def _add_line_numbers(self, text: str) -> str:
         text_lines = text.split("\n")
         text_length_as_string = str(len(text_lines))
         number_of_needed_digits_as_string = str(len(text_length_as_string))

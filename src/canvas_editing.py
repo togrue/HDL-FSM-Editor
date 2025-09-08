@@ -344,7 +344,7 @@ def _view_area_by_button3(rectangle_id: int) -> None:
             if "grid_line" not in tags:
                 item_found = True
         if not item_found:
-            __show_menu(rectangle_coords)
+            _show_menu(rectangle_coords)
         main_window.canvas.unbind("<Motion>")
         main_window.canvas.unbind("<ButtonRelease-1>")
         main_window.canvas.unbind("<ButtonRelease-3>")
@@ -951,7 +951,7 @@ def _move_in_foreground(tab: GuiTab) -> None:
             main_window.notebook.select(notebook_id)
 
 
-def __show_menu(zoom_coords: list[float]) -> None:
+def _show_menu(zoom_coords: list[float]) -> None:
     menu_entries = ["Change background color", "Hide grid" if main_window.show_grid else "Show grid"]
 
     menu = OptionMenu(
@@ -964,11 +964,11 @@ def __show_menu(zoom_coords: list[float]) -> None:
         relief=tk.RAISED,
     )
     menue_window = main_window.canvas.create_window(zoom_coords[0], zoom_coords[1], window=menu)
-    menu.bind("<Button-1>", lambda event: __evaluate_menu(menue_window, menu))
-    menu.bind("<Leave>", lambda event: __close_menu(menue_window, menu))
+    menu.bind("<Button-1>", lambda event: _evaluate_menu(menue_window, menu))
+    menu.bind("<Leave>", lambda event: _close_menu(menue_window, menu))
 
 
-def __evaluate_menu(menue_window: int, menu: OptionMenu) -> None:
+def _evaluate_menu(menue_window: int, menu: OptionMenu) -> None:
     selected_entry = menu.get(menu.curselection()[0])
     if "Change background color" in selected_entry:
         main_window.choose_bg_color()
@@ -978,9 +978,9 @@ def __evaluate_menu(menue_window: int, menu: OptionMenu) -> None:
     elif "Show grid" in selected_entry:
         main_window.show_grid = True
         main_window.grid_drawer.draw_grid()
-    __close_menu(menue_window, menu)
+    _close_menu(menue_window, menu)
 
 
-def __close_menu(menue_window: int, menu: OptionMenu) -> None:
+def _close_menu(menue_window: int, menu: OptionMenu) -> None:
     menu.destroy()
     main_window.canvas.delete(menue_window)

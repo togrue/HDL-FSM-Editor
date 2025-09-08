@@ -273,7 +273,7 @@ def _update_state_name(text_id: int, text_box: tk.Entry) -> None:
             transition_handling.shorten_to_state_border(t[:-4])
 
 
-def __get_list_of_state_names(text_id: int) -> list[str]:
+def _get_list_of_state_names(text_id: int) -> list[str]:
     state_name_list = []
     all_canvas_ids = main_window.canvas.find_withtag("all")
     for canvas_id in all_canvas_ids:
@@ -298,7 +298,7 @@ def _abort_edit_text(text_id: int, text_box: tk.Entry, old_text: str) -> None:
 
 
 def _show_new_state_name(new_text: str, text_id: int) -> None:
-    state_name_list = __get_list_of_state_names(text_id)
+    state_name_list = _get_list_of_state_names(text_id)
     if new_text != "":
         if new_text not in state_name_list:
             main_window.canvas.itemconfig(text_id, text=new_text)

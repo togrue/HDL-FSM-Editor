@@ -26,7 +26,7 @@ class TagPlausibility:
         shown_state_name_dict: dict[str, str] = {}
         transition_priority_dict: dict[str, str] = {}
         reset_dict: dict[str, str] = {}
-        self.__fill_dictionaries(
+        self._fill_dictionaries(
             state_dict_list,
             transition_dict_list,
             connector_dict_list,
@@ -41,19 +41,17 @@ class TagPlausibility:
             state_comment_line_dict_list,
         )
         self.tag_status_is_okay = True
-        self.__check_state_dicts(
-            state_dict_list, shown_state_name_dict, state_action_dict_list, state_comment_dict_list
-        )
-        self.__check_state_action_dicts(state_action_dict_list)
-        self.__check_state_action_line_dicts(state_action_line_dict_list)
-        self.__check_state_comment_dicts(state_comment_dict_list)
-        self.__check_state_comment_line_dicts(state_comment_line_dict_list)
-        self.__check_transition_dicts(transition_dict_list, transition_priority_dict)
-        self.__check_connector_dicts(connector_dict_list)
-        self.__check_ca_window_dicts(ca_window_dict_list)
-        self.__check_ca_anchor_line_dicts(ca_anchor_line_dict_list)
+        self._check_state_dicts(state_dict_list, shown_state_name_dict, state_action_dict_list, state_comment_dict_list)
+        self._check_state_action_dicts(state_action_dict_list)
+        self._check_state_action_line_dicts(state_action_line_dict_list)
+        self._check_state_comment_dicts(state_comment_dict_list)
+        self._check_state_comment_line_dicts(state_comment_line_dict_list)
+        self._check_transition_dicts(transition_dict_list, transition_priority_dict)
+        self._check_connector_dicts(connector_dict_list)
+        self._check_ca_window_dicts(ca_window_dict_list)
+        self._check_ca_anchor_line_dicts(ca_anchor_line_dict_list)
         if self.tag_status_is_okay:
-            self.__check_transitions(
+            self._check_transitions(
                 transition_dict_list,
                 state_dict_list,
                 connector_dict_list,
@@ -61,16 +59,16 @@ class TagPlausibility:
                 shown_state_name_dict,
                 ca_anchor_line_dict_list,
             )
-            self.__check_states_and_connectors(
+            self._check_states_and_connectors(
                 state_dict_list, transition_dict_list, shown_state_name_dict, connector_dict_list
             )
-            self.__check_ca_windows(ca_window_dict_list, ca_anchor_line_dict_list, transition_dict_list)
-            self.__check_state_action_lines(state_action_line_dict_list, state_action_dict_list, state_dict_list)
+            self._check_ca_windows(ca_window_dict_list, ca_anchor_line_dict_list, transition_dict_list)
+            self._check_state_action_lines(state_action_line_dict_list, state_action_dict_list, state_dict_list)
 
     def get_tag_status_is_okay(self) -> bool:
         return self.tag_status_is_okay
 
-    def __fill_dictionaries(
+    def _fill_dictionaries(
         self,
         state_dict_list: list[dict[str, Any]],
         transition_dict_list: list[dict[str, Any]],
@@ -88,11 +86,11 @@ class TagPlausibility:
         canvas_items = main_window.canvas.find_all()
         for canvas_item in canvas_items:
             if main_window.canvas.type(canvas_item) == "oval":  # "state"-circle
-                state_dict_list.append(self.__create_state_dict(canvas_item))
+                state_dict_list.append(self._create_state_dict(canvas_item))
             elif main_window.canvas.type(canvas_item) == "polygon" and "reset_entry" in main_window.canvas.gettags(
                 canvas_item
             ):
-                self.__fill_reset_dict(canvas_item, reset_dict)
+                self._fill_reset_dict(canvas_item, reset_dict)
             elif main_window.canvas.type(canvas_item) == "polygon" and "polygon_for_move" in main_window.canvas.gettags(
                 canvas_item
             ):
@@ -106,7 +104,7 @@ class TagPlausibility:
                         break  # A "priority"-rectangle was found
                     if rectangle_tag.startswith("connector"):
                         rectangle_was_identified = True
-                        connector_dict_list.append(self.__create_connector_dict(canvas_item))
+                        connector_dict_list.append(self._create_connector_dict(canvas_item))
                         break  # A "connector"-rectangle was found
                 if not rectangle_was_identified:
                     print(
@@ -126,19 +124,19 @@ class TagPlausibility:
                 for line_tag in line_tags:
                     if line_tag.startswith("transition"):
                         line_was_identified = True
-                        transition_dict_list.append(self.__create_transition_dict(canvas_item))
+                        transition_dict_list.append(self._create_transition_dict(canvas_item))
                         break
                     if line_tag.startswith("ca_connection"):
                         line_was_identified = True
-                        ca_anchor_line_dict_list.append(self.__create_ca_anchor_line_dict(canvas_item))
+                        ca_anchor_line_dict_list.append(self._create_ca_anchor_line_dict(canvas_item))
                         break
                     if line_tag.startswith("connection"):
                         line_was_identified = True
-                        state_action_line_dict_list.append(self.__create_state_action_line_dict(canvas_item))
+                        state_action_line_dict_list.append(self._create_state_action_line_dict(canvas_item))
                         break
                     if line_tag.endswith("_comment_line"):
                         line_was_identified = True
-                        state_comment_line_dict_list.append(self.__create_state_comment_line_dict(canvas_item))
+                        state_comment_line_dict_list.append(self._create_state_comment_line_dict(canvas_item))
                         break
                 if not line_was_identified:
                     print(
@@ -152,11 +150,11 @@ class TagPlausibility:
                 for text_tag in text_tags:
                     if text_tag.startswith("state"):
                         text_was_identified = True
-                        self.__create_entry_in_shown_state_name_dict(canvas_item, shown_state_name_dict)
+                        self._create_entry_in_shown_state_name_dict(canvas_item, shown_state_name_dict)
                         break
                     if text_tag.startswith("transition"):
                         text_was_identified = True
-                        self.__create_entry_in_transition_priority_dict(canvas_item, transition_priority_dict)
+                        self._create_entry_in_transition_priority_dict(canvas_item, transition_priority_dict)
                         break
                     if text_tag.startswith("reset_text"):
                         text_was_identified = True
@@ -175,13 +173,13 @@ class TagPlausibility:
                         window_was_identified = True
                     elif window_tag.startswith("state_action"):
                         window_was_identified = True
-                        state_action_dict_list.append(self.__create_state_action_dict(canvas_item))
+                        state_action_dict_list.append(self._create_state_action_dict(canvas_item))
                     elif window_tag.startswith("state") and window_tag.endswith("_comment"):
                         window_was_identified = True
-                        state_comment_dict_list.append(self.__create_state_comment_dict(canvas_item))
+                        state_comment_dict_list.append(self._create_state_comment_dict(canvas_item))
                     elif window_tag.startswith("condition_action"):
                         window_was_identified = True
-                        ca_window_dict_list.append(self.__create_ca_window_dict(canvas_item))
+                        ca_window_dict_list.append(self._create_ca_window_dict(canvas_item))
                 if not window_was_identified:
                     print(
                         "Fatal in TagPlausibility-Checks: a Canvas window was found,"
@@ -194,7 +192,7 @@ class TagPlausibility:
                     main_window.canvas.type(canvas_item),
                 )
 
-    def __fill_reset_dict(self, canvas_item: int, reset_dict: dict[str, Any]) -> None:
+    def _fill_reset_dict(self, canvas_item: int, reset_dict: dict[str, Any]) -> None:
         reset_outgoing_transitions_list = []
         reset_incoming_transitions_list = []
         reset_tags = main_window.canvas.gettags(canvas_item)
@@ -212,7 +210,7 @@ class TagPlausibility:
         reset_dict["reset_outgoing_transitions"] = reset_outgoing_transitions_list
         reset_dict["reset_incoming_transitions"] = reset_incoming_transitions_list
 
-    def __create_state_dict(self, canvas_item: int) -> dict[str, Any]:
+    def _create_state_dict(self, canvas_item: int) -> dict[str, Any]:
         state_dict: dict[str, Any] = {}
         state_outgoing_transitions_list = []
         state_incoming_transitions_list = []
@@ -240,7 +238,7 @@ class TagPlausibility:
         state_dict["state_comment_line"] = state_comment_line_list
         return state_dict
 
-    def __check_state_dicts(
+    def _check_state_dicts(
         self,
         state_dict_list: list[dict[str, Any]],
         shown_state_name_dict: dict[str, str],
@@ -340,7 +338,7 @@ class TagPlausibility:
                             + " but more than 1 attached state comment was found."
                         )
 
-    def __create_state_action_dict(self, canvas_item: int) -> dict[str, Any]:
+    def _create_state_action_dict(self, canvas_item: int) -> dict[str, Any]:
         # state_action_dict = ("state_action_identifier"      : "state_action"<integer>,
         #                      "state_action_line_identifier" : "connection"<integer>)
         # state_action tags: ('state_action1', 'connection1_start')
@@ -366,7 +364,7 @@ class TagPlausibility:
                 )
         return state_action_dict
 
-    def __check_state_action_dicts(self, state_action_dict_list: list[dict[str, str]]) -> None:
+    def _check_state_action_dicts(self, state_action_dict_list: list[dict[str, str]]) -> None:
         for state_action_dict in state_action_dict_list:
             if "state_action_identifier" not in state_action_dict:
                 self.tag_status_is_okay = False
@@ -381,7 +379,7 @@ class TagPlausibility:
                     + " which does not have a state-action-line-identifier-tag"
                 )
 
-    def __create_state_action_line_dict(self, canvas_item: int) -> dict[str, Any]:
+    def _create_state_action_line_dict(self, canvas_item: int) -> dict[str, Any]:
         # state_action_line_dict = ("state_action_line_identifier" : "connection"<integer>,
         #                           "state_identifier"             : "state"<integer>)
         # state_action_line tags: ('connection1', 'connected_to_state1')
@@ -407,7 +405,7 @@ class TagPlausibility:
                 )
         return state_action_line_dict
 
-    def __check_state_action_line_dicts(self, state_action_line_dict_list: list[dict[str, str]]) -> None:
+    def _check_state_action_line_dicts(self, state_action_line_dict_list: list[dict[str, str]]) -> None:
         for state_action_line_dict in state_action_line_dict_list:
             if "state_action_line_identifier" not in state_action_line_dict:
                 self.tag_status_is_okay = False
@@ -422,7 +420,7 @@ class TagPlausibility:
                     + " which does not have a state-identifier-tag"
                 )
 
-    def __create_state_comment_dict(self, canvas_item: int) -> dict[str, Any]:
+    def _create_state_comment_dict(self, canvas_item: int) -> dict[str, Any]:
         # state_comment_dict = ("state_comment_identifier"      : "state"<integer>"_comment",
         #                       "state_comment_line_identifier" : "state"<integer>"_comment_line")
         # state_comment tags: ('state1_comment', 'state1_comment_line_start')
@@ -444,7 +442,7 @@ class TagPlausibility:
                 )
         return state_comment_dict
 
-    def __check_state_comment_dicts(self, state_comment_dict_list: list[dict[str, str]]) -> None:
+    def _check_state_comment_dicts(self, state_comment_dict_list: list[dict[str, str]]) -> None:
         for state_comment_dict in state_comment_dict_list:
             if "state_comment_identifier" not in state_comment_dict:
                 self.tag_status_is_okay = False
@@ -459,7 +457,7 @@ class TagPlausibility:
                     + " which does not have a state-comment-line-identifier-tag"
                 )
 
-    def __create_state_comment_line_dict(self, canvas_item: int) -> dict[str, Any]:
+    def _create_state_comment_line_dict(self, canvas_item: int) -> dict[str, Any]:
         # state_comment_line_dict = ("state_comment_line_identifier" : "state"<integer>"_comment_line")
         # state_comment_line tags: ("state1_comment_line", )
         state_comment_line_dict = {}
@@ -480,7 +478,7 @@ class TagPlausibility:
                 )
         return state_comment_line_dict
 
-    def __check_state_comment_line_dicts(self, state_comment_line_dict_list: list[dict[str, str]]) -> None:
+    def _check_state_comment_line_dicts(self, state_comment_line_dict_list: list[dict[str, str]]) -> None:
         for state_comment_line_dict in state_comment_line_dict_list:
             if "state_comment_line_identifier" not in state_comment_line_dict:
                 self.tag_status_is_okay = False
@@ -489,7 +487,7 @@ class TagPlausibility:
                     + " which does not have a state-comment-line-identifier-tag"
                 )
 
-    def __create_transition_dict(self, canvas_item: int) -> dict[str, Any]:
+    def _create_transition_dict(self, canvas_item: int) -> dict[str, Any]:
         # transition_dict = {"transition_identifier"       : "transition"<integer>,
         #                    "transition_start_state"      : ["state"|"connector"]<integer>,
         #                    "transition_end_state"        : ["state"|"connector"]<integer>,
@@ -530,7 +528,7 @@ class TagPlausibility:
                 )
         return transition_dict
 
-    def __check_transition_dicts(
+    def _check_transition_dicts(
         self, transition_dict_list: list[dict[str, Any]], transition_priority_dict: dict[str, str]
     ) -> None:
         for transition_dict in transition_dict_list:
@@ -559,7 +557,7 @@ class TagPlausibility:
                     + ' which does not have a "transition_end_state" tag.'
                 )
 
-    def __create_connector_dict(self, canvas_item: int) -> dict[str, Any]:
+    def _create_connector_dict(self, canvas_item: int) -> dict[str, Any]:
         # connector_dict = {"connector_identifier"           : "connector"<integer>,
         #                   "connector_outgoing_transitions" : ["transition"<integer>,"transition"<integer>,...],
         #                   "connector_incoming_transitions" : ["transition"<integer>,"transition"<integer>,...]}
@@ -582,7 +580,7 @@ class TagPlausibility:
         connector_dict["connector_incoming_transitions"] = connector_incoming_transitions_list
         return connector_dict
 
-    def __check_connector_dicts(self, connector_dict_list: list[dict[str, Any]]) -> None:
+    def _check_connector_dicts(self, connector_dict_list: list[dict[str, Any]]) -> None:
         for connector_dict in connector_dict_list:
             if "connector_identifier" not in connector_dict:
                 self.tag_status_is_okay = False
@@ -609,7 +607,7 @@ class TagPlausibility:
                         transition_identifier,
                     )
 
-    def __create_ca_window_dict(self, canvas_item: int) -> dict[str, str]:
+    def _create_ca_window_dict(self, canvas_item: int) -> dict[str, str]:
         # ca_window_dict = {"ca_window_identifier"          : "condition_action13"<integer>,
         #                   "ca_connection_identifier"      : "ca_connection"<integer>,
         #                   "connected_to_reset_transition" : ""} <-- This entry is optional.
@@ -633,7 +631,7 @@ class TagPlausibility:
                 )
         return ca_window_dict
 
-    def __check_ca_window_dicts(self, ca_window_dict_list: list[dict[str, str]]) -> None:
+    def _check_ca_window_dicts(self, ca_window_dict_list: list[dict[str, str]]) -> None:
         for ca_window_dict in ca_window_dict_list:
             identifier_number1_exists = False
             identifier_number2_exists = False
@@ -676,7 +674,7 @@ class TagPlausibility:
                     + condition_action_number_from_anchor_line_identifier,
                 )
 
-    def __create_ca_anchor_line_dict(self, canvas_item: int) -> dict[str, str]:
+    def _create_ca_anchor_line_dict(self, canvas_item: int) -> dict[str, str]:
         ca_anchor_line_dict = {}
         line_tags = main_window.canvas.gettags(canvas_item)
         for ca_connection_tag in line_tags:
@@ -695,7 +693,7 @@ class TagPlausibility:
                 )
         return ca_anchor_line_dict
 
-    def __check_ca_anchor_line_dicts(self, ca_anchor_line_dict_list: list[dict[str, str]]) -> None:
+    def _check_ca_anchor_line_dicts(self, ca_anchor_line_dict_list: list[dict[str, str]]) -> None:
         for ca_anchor_line_dict in ca_anchor_line_dict_list:
             if "ca_connection_identifier" not in ca_anchor_line_dict:
                 self.tag_status_is_okay = False
@@ -710,7 +708,7 @@ class TagPlausibility:
                     + " which does not have a transition-identifier-tag"
                 )
 
-    def __create_entry_in_shown_state_name_dict(self, canvas_item: int, shown_state_name_dict: dict[str, str]) -> None:
+    def _create_entry_in_shown_state_name_dict(self, canvas_item: int, shown_state_name_dict: dict[str, str]) -> None:
         text_tags = main_window.canvas.gettags(canvas_item)  # The canvas_item identifies a text box.
         for text_tag in text_tags:
             if text_tag == "current":
@@ -727,7 +725,7 @@ class TagPlausibility:
                     text_tags,
                 )
 
-    def __create_entry_in_transition_priority_dict(
+    def _create_entry_in_transition_priority_dict(
         self, canvas_item: int, transition_priority_dict: dict[str, str]
     ) -> None:
         text_tags = main_window.canvas.gettags(canvas_item)
@@ -746,7 +744,7 @@ class TagPlausibility:
                     text_tags,
                 )
 
-    def __check_transitions(
+    def _check_transitions(
         self,
         transition_dict_list: list[dict[str, Any]],
         state_dict_list: list[dict[str, Any]],
@@ -897,7 +895,7 @@ class TagPlausibility:
                         + " attached, but more than 1 line exist."
                     )
 
-    def __check_states_and_connectors(
+    def _check_states_and_connectors(
         self,
         state_dict_list: list[dict[str, Any]],
         transition_dict_list: list[dict[str, Any]],
@@ -966,7 +964,7 @@ class TagPlausibility:
                         + " which does not exist in the list of transitions."
                     )
 
-    def __check_ca_windows(
+    def _check_ca_windows(
         self,
         ca_window_dict_list: list[dict[str, str]],
         ca_anchor_line_dict_list: list[dict[str, str]],
@@ -1050,7 +1048,7 @@ class TagPlausibility:
                         + " is attached to more than 1 transition."
                     )
 
-    def __check_state_action_lines(
+    def _check_state_action_lines(
         self,
         state_action_line_dict_list: list[dict[str, Any]],
         state_action_dict_list: list[dict[str, Any]],
