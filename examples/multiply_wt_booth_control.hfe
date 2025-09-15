@@ -16,7 +16,7 @@
     "internals_architecture": "signal counter : natural range 0 to g_counter_max;",
     "internals_process": "",
     "internals_process_combinatorial": "",
-    "regex_message_find": "(.*?):([0-9]+):[0-9]+:.*(",
+    "regex_message_find": "(.*?):([0-9]+):[0-9]+:.*",
     "regex_file_name_quote": "\\1",
     "regex_file_line_number_quote": "\\2",
     "diagram_background_color": "white",
