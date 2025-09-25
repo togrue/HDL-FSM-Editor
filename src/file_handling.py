@@ -706,6 +706,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         action_ref = state_action_handling.MyText(
             coords[0] - 100, coords[1], height=1, width=8, padding=1, increment=False
         )
+        action_ref.text_content = text + "\n"
         action_ref.text_id.insert("1.0", text)
         action_ref.text_id.format()
         main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
@@ -716,6 +717,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         text = definition[1]
         tags = definition[2]
         comment_ref = state_comment.StateComment(coords[0] - 100, coords[1], height=1, width=8, padding=1)
+        comment_ref.text_content = text + "\n"
         comment_ref.text_id.insert("1.0", text)
         comment_ref.text_id.format()
         main_window.canvas.itemconfigure(comment_ref.window_id, tag=tags)
@@ -733,8 +735,10 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         condition_action_ref = condition_action_handling.ConditionAction(
             coords[0], coords[1], connected_to_reset_entry, height=1, width=8, padding=1, increment=False
         )
+        condition_action_ref.condition_id.condition_text = condition + "\n"
         condition_action_ref.condition_id.insert("1.0", condition)
         condition_action_ref.condition_id.format()
+        condition_action_ref.condition_id.action_text = action + "\n"
         condition_action_ref.action_id.insert("1.0", action)
         condition_action_ref.action_id.format()
         if (
@@ -758,8 +762,10 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         text_after = definition[2]
         tags = definition[3]
         global_actions_ref = global_actions.GlobalActions(coords[0], coords[1], height=1, width=8, padding=1)
+        global_actions_ref.text_before_id.text_before_content = text_before + "\n"
         global_actions_ref.text_before_id.insert("1.0", text_before)
         global_actions_ref.text_before_id.format()
+        global_actions_ref.text_after_id.text_after_content = text_after + "\n"
         global_actions_ref.text_after_id.insert("1.0", text_after)
         global_actions_ref.text_after_id.format()
         main_window.canvas.itemconfigure(global_actions_ref.window_id, tag=tags)
@@ -772,6 +778,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         action_ref = global_actions_combinatorial.GlobalActionsCombinatorial(
             coords[0], coords[1], height=1, width=8, padding=1
         )
+        action_ref.text_content = text + "\n"
         action_ref.text_id.insert("1.0", text)
         action_ref.text_id.format()
         main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
@@ -782,6 +789,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         text = definition[1]
         tags = definition[2]
         action_ref = state_actions_default.StateActionsDefault(coords[0], coords[1], height=1, width=8, padding=1)
+        action_ref.text_content = text + "\n"
         action_ref.text_id.insert("1.0", text)
         action_ref.text_id.format()
         main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
