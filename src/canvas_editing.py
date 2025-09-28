@@ -551,7 +551,7 @@ def scroll_start(event: tk.Event) -> None:
 
 
 def scroll_move(event: tk.Event) -> None:
-    main_window.canvas.scan_dragto(event.x, event.y, gain=1)
+    main_window.canvas.scan_dragto(int(event.x), int(event.y), gain=1)
 
 
 def scroll_end(_event: tk.Event) -> None:
@@ -560,13 +560,13 @@ def scroll_end(_event: tk.Event) -> None:
 
 def scroll_wheel(event: tk.Event) -> None:
     main_window.grid_drawer.remove_grid()
-    main_window.canvas.scan_mark(event.x, event.y)
+    main_window.canvas.scan_mark(int(event.x), int(event.y))
     delta_y = 0.0
     if event.num == 5 or event.delta < 0:  # scroll down
         delta_y = -10.0
     elif event.num == 4 or event.delta >= 0:  # scroll up
         delta_y = 10.0
-    main_window.canvas.scan_dragto(event.x, event.y + delta_y, gain=1)
+    main_window.canvas.scan_dragto(int(event.x), int(event.y + delta_y), gain=1)
     main_window.grid_drawer.draw_grid()
 
 
