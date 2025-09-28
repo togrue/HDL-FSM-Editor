@@ -439,6 +439,14 @@ VERILOG_KEYWORDS = {
 
 CONNECTOR_COLOR = "violet"
 STATE_COLOR = "cyan"
+GRID_LINE_COLOR = "gray85"
+
+# Canvas and UI Constants
+DEFAULT_STATE_RADIUS = 20.0
+DEFAULT_PRIORITY_DISTANCE = 30.0
+DEFAULT_RESET_ENTRY_SIZE = 40.0
+DEFAULT_FONT_SIZE = 10.0
+DEFAULT_LABEL_FONT_SIZE = 8.0
 
 
 # StrEnum was introduced in Python 3.11, so we can't use it here.

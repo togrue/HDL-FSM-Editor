@@ -4,6 +4,8 @@ This class draws a grid into the canvas.
 
 import tkinter as tk
 
+import constants
+
 
 class GridDraw:
     """
@@ -29,19 +31,30 @@ class GridDraw:
                 self.canvas.canvasy(self.canvas.winfo_height()),
             ]
             grid_size = canvas_editing.state_radius
-            if grid_size > 8:
+            MINIMUM_GRID_SIZE = 8
+            if grid_size > MINIMUM_GRID_SIZE:
                 self._draw_horizontal_grid(grid_size, visible_window)
                 self._draw_vertical_grid(grid_size, visible_window)
         self.canvas.tag_lower("grid_line")
 
     def _draw_horizontal_grid(self, grid_size: float, visible_window: list[float]) -> None:
         # An extra margin of 3*grid_size is used because otherwise there are sometimes too few grid-lines:
-        x_min = visible_window[0] - visible_window[0] % grid_size - 3 * grid_size
-        x_max = visible_window[2] + visible_window[2] % grid_size + 3 * grid_size
-        y = visible_window[1] - visible_window[1] % grid_size - 3 * grid_size
-        y_max = visible_window[3] + visible_window[3] % grid_size + 3 * grid_size
+        GRID_MARGIN_MULTIPLIER = 3
+        x_min = visible_window[0] - visible_window[0] % grid_size - GRID_MARGIN_MULTIPLIER * grid_size
+        x_max = visible_window[2] + visible_window[2] % grid_size + GRID_MARGIN_MULTIPLIER * grid_size
+        y = visible_window[1] - visible_window[1] % grid_size - GRID_MARGIN_MULTIPLIER * grid_size
+        y_max = visible_window[3] + visible_window[3] % grid_size + GRID_MARGIN_MULTIPLIER * grid_size
+
         while y < y_max:
-            self.canvas.create_line(x_min, y, x_max, y, dash=(1, 1), fill="gray85", tags="grid_line")
+            self.canvas.create_line(
+                x_min,
+                y,
+                x_max,
+                y,
+                dash=(1, 1),
+                fill=constants.GRID_LINE_COLOR,
+                tags="grid_line",
+            )
             y += grid_size
 
     def _draw_vertical_grid(self, grid_size: float, visible_window: list[float]) -> None:
@@ -50,5 +63,13 @@ class GridDraw:
         y_min = visible_window[1] - visible_window[1] % grid_size
         y_max = visible_window[3] + visible_window[3] % grid_size
         while x < x_max:
-            self.canvas.create_line(x, y_min, x, y_max, dash=(1, 1), fill="gray85", tags="grid_line")
+            self.canvas.create_line(
+                x,
+                y_min,
+                x,
+                y_max,
+                dash=(1, 1),
+                fill=constants.GRID_LINE_COLOR,
+                tags="grid_line",
+            )
             x += grid_size

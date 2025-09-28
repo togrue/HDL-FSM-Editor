@@ -31,8 +31,9 @@ def try_to_convert_into_straight_line(coords: list[float]) -> list:
     vector_list = _calculate_vectors_from_line_point_to_next_line_point(coords)
     cos_phi_list = _calculate_cos_phi_values_between_vectors(vector_list)
     eliminate_points = True
+    STRAIGHT_LINE_COSINE_THRESHOLD = 0.97
     for cos_phi in cos_phi_list:
-        if cos_phi < 0.97:
+        if cos_phi < STRAIGHT_LINE_COSINE_THRESHOLD:
             eliminate_points = False
     if eliminate_points:
         return [coords[0], coords[1], coords[-2], coords[-1]]

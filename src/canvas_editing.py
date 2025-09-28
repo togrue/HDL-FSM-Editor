@@ -11,6 +11,7 @@ from typing import Optional, Union
 import canvas_modify_bindings
 import condition_action_handling
 import config
+import constants
 import custom_text
 import global_actions
 import global_actions_combinatorial
@@ -28,17 +29,17 @@ from widgets.OptionMenu import OptionMenu
 # import inspect
 
 # Global variables:
-state_radius: float = 20.0
-priority_distance: float = 30.0
-reset_entry_size: float = 40.0
+state_radius: float = constants.DEFAULT_STATE_RADIUS
+priority_distance: float = constants.DEFAULT_PRIORITY_DISTANCE
+reset_entry_size: float = constants.DEFAULT_RESET_ENTRY_SIZE
 canvas_x_coordinate: float = 0.0
 canvas_y_coordinate: float = 0.0
 _windows_x_coordinate: int = 0
 _windows_y_coordinate: int = 0
 _windows_x_coordinate_old: int = 0
 _windows_y_coordinate_old: int = 0
-fontsize: float = 10.0
-label_fontsize: float = 8.0
+fontsize: float = constants.DEFAULT_FONT_SIZE
+label_fontsize: float = constants.DEFAULT_LABEL_FONT_SIZE
 state_name_font: Optional[font.Font] = None
 _zoom_factor: float = 1.0
 
@@ -82,8 +83,12 @@ def delete() -> None:
     # So the last mouse position outside the window-canvas-item is the only available information.
     # But this position may be by 1 pixel outside the window-canvas-item.
     # So the area is increased here:
+    CANVAS_OVERLAP_MARGIN = 2
     ids = main_window.canvas.find_overlapping(
-        canvas_x_coordinate - 2, canvas_y_coordinate - 2, canvas_x_coordinate + 2, canvas_y_coordinate + 2
+        canvas_x_coordinate - CANVAS_OVERLAP_MARGIN,
+        canvas_y_coordinate - CANVAS_OVERLAP_MARGIN,
+        canvas_x_coordinate + CANVAS_OVERLAP_MARGIN,
+        canvas_y_coordinate + CANVAS_OVERLAP_MARGIN,
     )
     design_was_changed = False
     for i in ids:
@@ -113,14 +118,14 @@ def delete() -> None:
                     main_window.reset_entry_button.config(state=tk.NORMAL)
                     design_was_changed = True
                 elif tag.startswith("transition") and tag.endswith("_start"):  # transition<n>_start
-                    transition = tag[0:-6]
+                    transition = _remove_suffix(tag, "_start")
                     transition_tags = main_window.canvas.gettags(transition)
                     for transition_tag in transition_tags:
                         if transition_tag.startswith("going_to_"):
-                            state = transition_tag[9:]
+                            state = _remove_prefix(transition_tag, "going_to_")
                             main_window.canvas.dtag(state, transition + "_end")
                         elif transition_tag.startswith("ca_connection"):
-                            condition_action_tag = transition_tag[:-4]
+                            condition_action_tag = _remove_suffix(transition_tag, "_end")
                             main_window.canvas.delete(condition_action_tag + "_anchor")
                     main_window.canvas.delete(transition)
                     main_window.canvas.delete(transition + "rectangle")  # delete priority rectangle
@@ -175,23 +180,24 @@ def delete() -> None:
                     global_actions_handling.global_actions_combinatorial_number = 0
                     main_window.global_action_combinatorial_button.config(state=tk.NORMAL)
                 elif tag.startswith("connection"):  # connection<n>_start
-                    connection = tag[0:-6]
+                    connection = _remove_suffix(tag, "_start")
                     connection_tags = main_window.canvas.gettags(connection)
                     for connection_tag in connection_tags:
                         if connection_tag.startswith("connected_to_state"):
-                            state = connection_tag[13:]
-                    main_window.canvas.dtag(state, tag[0:-6] + "_end")  # delete tag "connection<n>_end" at state.
-                    main_window.canvas.delete(tag[0:-6])  # delete connection
+                            state = _remove_prefix(connection_tag, "connected_to_state")
+                    # delete tag "connection<n>_end" at state.
+                    main_window.canvas.dtag(state, _remove_suffix(tag, "_start") + "_end")
+                    main_window.canvas.delete(_remove_suffix(tag, "_start"))  # delete connection
                 elif tag.startswith("ca_connection"):  # ca_connection<n>_anchor
-                    ca_connection = tag[0:-7]
+                    ca_connection = _remove_suffix(tag, "_anchor")
                     ca_connection_tags = main_window.canvas.gettags(ca_connection)
                     for ca_connection_tag in ca_connection_tags:
                         if ca_connection_tag.startswith("connected_to_transition"):
-                            transition = ca_connection_tag[13:]
+                            transition = _remove_prefix(ca_connection_tag, "connected_to_transition")
                     main_window.canvas.dtag(
-                        transition, tag[0:-7] + "_end"
+                        transition, _remove_suffix(tag, "_anchor") + "_end"
                     )  # delete tag "ca_connection<n>_end" at state.
-                    main_window.canvas.delete(tag[0:-7])  # delete connection
+                    main_window.canvas.delete(_remove_suffix(tag, "_anchor"))  # delete connection
             design_was_changed = True
         elif main_window.canvas.type(i) == "oval":
             for tag in tags_of_item_i:
@@ -199,41 +205,41 @@ def delete() -> None:
                     main_window.canvas.delete(tag)  # delete state
                     main_window.canvas.delete(tag + "_name")  # delete state
                 elif tag.startswith("connection") and tag.endswith("_end"):  # connection<n>_end
-                    connection = tag[0:-4]
+                    connection = _remove_suffix(tag, "_end")
                     main_window.canvas.delete(connection)  # delete connection (line)
                     main_window.canvas.delete(connection + "_start")  # delete action window
                     main_window.canvas.dtag(i, connection + "_end")  # delete connection<n>_end tag from state
                 elif tag.startswith("transition") and tag.endswith("_end"):  # transition<n>_end
-                    transition = tag[0:-4]
+                    transition = _remove_suffix(tag, "_end")
                     transition_tags = main_window.canvas.gettags(transition)
                     for transition_tag in transition_tags:
                         if transition_tag.startswith("coming_from_"):
-                            state = transition_tag[12:]
+                            state = _remove_prefix(transition_tag, "coming_from_")
                             main_window.canvas.dtag(state, transition + "_start")
                             adapt_visibility_of_priority_rectangles_at_state(state)
                         elif transition_tag.startswith("ca_connection"):
-                            condition_action_tag = transition_tag[:-4]
+                            condition_action_tag = _remove_suffix(transition_tag, "_end")
                             main_window.canvas.delete(condition_action_tag + "_anchor")  # delete the window
                             main_window.canvas.delete(condition_action_tag)  # delete the line to the window
                     main_window.canvas.delete(transition)
                     main_window.canvas.delete(transition + "rectangle")  # delete priority rectangle
                     main_window.canvas.delete(transition + "priority")  # delete priority
                 elif tag.startswith("transition") and tag.endswith("_start"):  # transition<n>_start
-                    transition = tag[0:-6]
+                    transition = _remove_suffix(tag, "_start")
                     transition_tags = main_window.canvas.gettags(transition)
                     for transition_tag in transition_tags:
                         if transition_tag.startswith("going_to_"):
-                            state = transition_tag[9:]
+                            state = _remove_prefix(transition_tag, "going_to_")
                             main_window.canvas.dtag(state, transition + "_end")
                         elif transition_tag.startswith("ca_connection"):
-                            condition_action_tag = transition_tag[:-4]
+                            condition_action_tag = _remove_suffix(transition_tag, "_end")
                             main_window.canvas.delete(condition_action_tag + "_anchor")
                     main_window.canvas.delete(transition)
                     main_window.canvas.delete(transition + "rectangle")  # delete priority rectangle
                     main_window.canvas.delete(transition + "priority")  # delete priority
                 elif tag.endswith("comment_line_end"):
-                    canvas_id_of_comment_line = tag[:-4]
-                    canvas_id_of_comment = tag[:-9]
+                    canvas_id_of_comment_line = _remove_suffix(tag, "_end")
+                    canvas_id_of_comment = _remove_suffix(tag, "_line_end")
                     main_window.canvas.delete(canvas_id_of_comment_line)
                     main_window.canvas.delete(canvas_id_of_comment)
             design_was_changed = True
@@ -242,28 +248,28 @@ def delete() -> None:
                 if tag.startswith("connector"):
                     main_window.canvas.delete(tag)  # delete connector
                 elif tag.startswith("transition") and tag.endswith("_end"):  # transition<n>_end
-                    transition = tag[0:-4]
+                    transition = _remove_suffix(tag, "_end")
                     transition_tags = main_window.canvas.gettags(transition)
                     for transition_tag in transition_tags:
                         if transition_tag.startswith("coming_from_"):
-                            state = transition_tag[12:]
+                            state = _remove_prefix(transition_tag, "coming_from_")
                             main_window.canvas.dtag(state, transition + "_start")
                             adapt_visibility_of_priority_rectangles_at_state(state)
                         elif transition_tag.startswith("ca_connection"):
-                            condition_action_tag = transition_tag[:-4]
+                            condition_action_tag = _remove_suffix(transition_tag, "_end")
                             main_window.canvas.delete(condition_action_tag + "_anchor")
                     main_window.canvas.delete(transition)
                     main_window.canvas.delete(transition + "rectangle")  # delete priority rectangle
                     main_window.canvas.delete(transition + "priority")  # delete priority
                 elif tag.startswith("transition") and tag.endswith("_start"):  # transition<n>_start
-                    transition = tag[0:-6]
+                    transition = _remove_suffix(tag, "_start")
                     transition_tags = main_window.canvas.gettags(transition)
                     for transition_tag in transition_tags:
                         if transition_tag.startswith("going_to_"):
-                            state = transition_tag[9:]
+                            state = _remove_prefix(transition_tag, "going_to_")
                             main_window.canvas.dtag(state, transition + "_end")
                         elif transition_tag.startswith("ca_connection"):
-                            condition_action_tag = transition_tag[:-4]
+                            condition_action_tag = _remove_suffix(transition_tag, "_end")
                             main_window.canvas.delete(condition_action_tag + "_anchor")
                     main_window.canvas.delete(transition)
                     main_window.canvas.delete(transition + "rectangle")  # delete priority rectangle
@@ -277,15 +283,15 @@ def delete() -> None:
                     main_window.canvas.delete(tag + "priority")  # delete priority
                     transition = tag  # carries "transition<n>"
                 elif tag.startswith("ca_connection"):  # Line to condition-action block
-                    condition_action_tag = tag[:-4]
+                    condition_action_tag = _remove_suffix(tag, "_end")
                     main_window.canvas.delete(condition_action_tag + "_anchor")
             # Now the tag of the transition is known and the tags of the start- and end-state can be adapted:
             for tag in tags_of_item_i:
                 if tag.startswith("coming_from_"):
-                    start_state = tag[12:]
+                    start_state = _remove_prefix(tag, "coming_from_")
                     main_window.canvas.dtag(start_state, transition + "_start")
                 elif tag.startswith("going_to_"):
-                    end_state = tag[9:]
+                    end_state = _remove_prefix(tag, "going_to_")
                     main_window.canvas.dtag(end_state, transition + "_end")
             adapt_visibility_of_priority_rectangles_at_state(start_state)
             design_was_changed = True
@@ -316,6 +322,7 @@ def adapt_visibility_of_priority_rectangles_at_state(start_state: Union[int, str
 
 def start_view_rectangle(event: tk.Event) -> None:
     [event_x, event_y] = translate_window_event_coordinates_in_exact_canvas_coordinates(event)
+
     rectangle_id = main_window.canvas.create_rectangle(event_x, event_y, event_x, event_y, dash=(3, 5))
     main_window.canvas.tag_raise(rectangle_id, "all")
     main_window.canvas.bind("<Motion>", lambda event: _draw_view_rectangle(event, rectangle_id))
@@ -583,7 +590,8 @@ def _modify_font_sizes_of_all_canvas_items(factor: float) -> None:
     global label_fontsize
     fontsize *= factor
     label_fontsize *= factor
-    used_label_fontsize = max(label_fontsize, 1)
+    MINIMUM_FONT_SIZE = 1
+    used_label_fontsize = max(label_fontsize, MINIMUM_FONT_SIZE)
     assert state_name_font is not None, "The font must have been set before calling this function."
     state_name_font.configure(size=int(fontsize))
     canvas_ids = main_window.canvas.find_all()
@@ -992,3 +1000,15 @@ def _evaluate_menu(menue_window: int, menu: OptionMenu) -> None:
 def _close_menu(menue_window: int, menu: OptionMenu) -> None:
     menu.destroy()
     main_window.canvas.delete(menue_window)
+
+
+def _remove_suffix(tag: str, suffix: str) -> str:
+    if tag.endswith(suffix):
+        return tag[: -len(suffix)]
+    return tag
+
+
+def _remove_prefix(tag: str, prefix: str) -> str:
+    if tag.startswith(prefix):
+        return tag[len(prefix) :]
+    return tag
