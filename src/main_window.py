@@ -133,7 +133,10 @@ def read_message() -> None:
 
 def _copy_message_into_log_tab(_read_message_result: str) -> None:
     log_frame_text.config(state=tk.NORMAL)
-    log_frame_text.insert("1.0", header_string + "\n" + _check_version_result + "\n" + _read_message_result + "\n")
+    log_frame_text.insert(
+        "1.0",
+        header_string + "\n" + _check_version_result + "\n" + _read_message_result + "\n",
+    )
     log_frame_text.config(state=tk.NORMAL)
 
 
@@ -144,13 +147,14 @@ def check_version() -> None:
         with urllib.request.urlopen("http://www.hdl-fsm-editor.de/index.php") as source:
             website_source = str(source.read())
         version_start = website_source.find("Version")
-        new_version = website_source[version_start : version_start + 24]
+        VERSION_STRING_LENGTH = 24
+        new_version = website_source[version_start : version_start + VERSION_STRING_LENGTH]
         end_index = new_version.find("(")
         new_version = new_version[:end_index]
         with urllib.request.urlopen("http://www.hdl-fsm-editor.de/index.php") as source:
             website_source = str(source.read())
         version_start = website_source.find("Version")
-        new_version = website_source[version_start : version_start + 24]
+        new_version = website_source[version_start : version_start + VERSION_STRING_LENGTH]
         end_index = new_version.find("(")
         new_version = new_version[:end_index]
         new_version = re.sub(" ", "", new_version)
