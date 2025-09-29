@@ -40,6 +40,7 @@ _windows_y_coordinate_old: int = 0
 fontsize: float = 10.0
 label_fontsize: float = 8.0
 state_name_font: Optional[font.Font] = None
+_zoom_factor: float = 1.0
 
 
 def store_mouse_position(event: tk.Event) -> None:  # used by delete().
@@ -504,45 +505,47 @@ def zoom_minus() -> None:
     main_window.canvas.grid()
 
 
-def _canvas_zoom(zoom_center: Sequence[float], zoom_factor: float) -> None:
+def _canvas_zoom(zoom_center: Sequence[float], rel_zoom_factor: float) -> None:
+    global _zoom_factor
+    _zoom_factor *= rel_zoom_factor
     # Modify factor, so that fontsize is always an integer:
-    fontsize_rounded_down = int(fontsize * zoom_factor)
-    if zoom_factor > 1 and fontsize_rounded_down == fontsize:
+    fontsize_rounded_down = int(fontsize * rel_zoom_factor)
+    if rel_zoom_factor > 1 and fontsize_rounded_down == fontsize:
         fontsize_rounded_down += 1
     if fontsize_rounded_down != 0:
-        zoom_factor = fontsize_rounded_down / fontsize
+        rel_zoom_factor = fontsize_rounded_down / fontsize
         main_window.canvas.scale(
-            "all", 0, 0, zoom_factor, zoom_factor
+            "all", 0, 0, rel_zoom_factor, rel_zoom_factor
         )  # Scaling must use xoffset=0 and yoffset=0 to preserve the gridspacing of state_radius.
-        _scroll_canvas_to_show_the_zoom_center(zoom_center, zoom_factor)
-        _adapt_scroll_bars(zoom_factor)
-        _adapt_global_size_variables(zoom_factor)
+        _scroll_canvas_to_show_the_zoom_center(zoom_center, rel_zoom_factor)
+        _adapt_scroll_bars(rel_zoom_factor)
+        _adapt_global_size_variables(rel_zoom_factor)
 
 
-def _scroll_canvas_to_show_the_zoom_center(zoom_center: Sequence[float], zoom_factor: float) -> None:
-    new_position_of_zoom_center = [coord * zoom_factor for coord in zoom_center]
+def _scroll_canvas_to_show_the_zoom_center(zoom_center: Sequence[float], rel_zoom_factor: float) -> None:
+    new_position_of_zoom_center = [coord * rel_zoom_factor for coord in zoom_center]
     main_window.canvas.scan_mark(
         int(new_position_of_zoom_center[0]), int(new_position_of_zoom_center[1])
     )  # Mark the point of the canvas, which serves as anchor for the shift.
     main_window.canvas.scan_dragto(int(zoom_center[0]), int(zoom_center[1]), gain=1)
 
 
-def _adapt_scroll_bars(factor: float) -> None:
+def _adapt_scroll_bars(rel_zoom_factor: float) -> None:
     scrollregion_strings = main_window.canvas.cget("scrollregion").split()
-    # Only configure when we have a valid 4-value scrollregion; this keeps the type consistent
-    scrollregion_scaled = tuple(float(x) * factor for x in scrollregion_strings)
+    # Only configure when we have a valid 4-value scrollregion; this keeps type consistent
+    scrollregion_scaled = tuple(float(x) * rel_zoom_factor for x in scrollregion_strings)
     assert len(scrollregion_scaled) == 4
     main_window.canvas.configure(scrollregion=scrollregion_scaled)
 
 
-def _adapt_global_size_variables(factor: float) -> None:
+def _adapt_global_size_variables(rel_zoom_factor: float) -> None:
     global state_radius
     global priority_distance
     global reset_entry_size
-    state_radius = factor * state_radius  # publish new state radius
-    priority_distance = factor * priority_distance
-    reset_entry_size = factor * reset_entry_size
-    _modify_font_sizes_of_all_canvas_items(factor)
+    state_radius = rel_zoom_factor * state_radius  # publish new state radius
+    priority_distance = rel_zoom_factor * priority_distance
+    reset_entry_size = rel_zoom_factor * reset_entry_size
+    _modify_font_sizes_of_all_canvas_items(rel_zoom_factor)
 
 
 def scroll_start(event: tk.Event) -> None:
