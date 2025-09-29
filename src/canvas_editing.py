@@ -563,13 +563,18 @@ def scroll_end(_event: tk.Event) -> None:
 
 def scroll_wheel(event: tk.Event) -> None:
     main_window.grid_drawer.remove_grid()
-    main_window.canvas.scan_mark(int(event.x), int(event.y))
-    delta_y = 0.0
+    main_window.canvas.scan_mark(event.x, event.y)
+    delta = 0.0
+    SCROLL_DELTA = 10.0
     if event.num == 5 or event.delta < 0:  # scroll down
-        delta_y = -10.0
+        delta = -SCROLL_DELTA * _zoom_factor
     elif event.num == 4 or event.delta >= 0:  # scroll up
-        delta_y = 10.0
-    main_window.canvas.scan_dragto(int(event.x), int(event.y + delta_y), gain=1)
+        delta = SCROLL_DELTA * _zoom_factor
+
+    SHIFT = 1 << 0  # TKinter doesn't seem to provide a constant for this.
+    scroll_direction = "x" if event.state & SHIFT else "y"
+    dx, dy = (0, delta) if scroll_direction == "y" else (delta, 0)
+    main_window.canvas.scan_dragto(int(event.x + dx), int(event.y + dy), gain=1)
     main_window.grid_drawer.draw_grid()
 
 
