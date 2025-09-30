@@ -27,7 +27,7 @@ def move_finish(event, move_list, move_do_funcid) -> None:
         return
 
     # Moving can be finished:
-    move_handling.move_do(event, move_list, first=False)  # Move to the grid defined by state_radius.
+    move_handling.move_do(event, move_list, first=False, move_to_grid=True)  # Move to the grid defined by state_radius.
     main_window.canvas.unbind("<ButtonRelease-1>")
     main_window.canvas.unbind(
         "<Motion>", move_do_funcid

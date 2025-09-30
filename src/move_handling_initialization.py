@@ -15,25 +15,11 @@ import transition_handling
 
 def move_initialization(event) -> None:
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
-    _move_initialization_overlapping(event, event_x, event_y)
-
-
-def _move_initialization_overlapping(event, event_x, event_y) -> None:
     items_near_mouse_click_location = _create_a_list_of_overlapping_items_near_the_mouse_click_location(
         event_x, event_y
     )
-    if not items_near_mouse_click_location:
+    if _any_item_is_not_allowed_to_be_moved(items_near_mouse_click_location):
         return
-    if _mouse_click_happened_in_state_name(items_near_mouse_click_location):
-        return  # The state name shall be changed and no moving is required.
-    if _mouse_click_happened_in_priority_number(items_near_mouse_click_location):
-        return  # The priority shall be changed and no moving is required.
-    if _mouse_click_happened_in_connection_line(items_near_mouse_click_location):
-        return  # No connection-line can be moved.
-    if _mouse_click_happened_in_state_comment_line(items_near_mouse_click_location):
-        return  # No state-comment-line can be moved.
-    if _mouse_click_happened_in_grid_line(items_near_mouse_click_location):
-        return  # No grid_line can be moved.
     move_list = _create_move_list(items_near_mouse_click_location, event_x, event_y)
     # The move_list has an entry for each item, which must be moved.
     # The first entry belongs always to the object, the user wants to move.
@@ -52,20 +38,24 @@ def _move_initialization_overlapping(event, event_x, event_y) -> None:
     # The third value is the tag of the transition to which the moved condition_action belongs.
 
     if move_list:
-        # It is needed, because move_finish accesses always move_list[0].
+        # The check for an empty movelist is needed, because move_finish accesses always move_list[0].
 
-        # Give the user a feedback, that an object was picked up for moving, by moving the objects of the
-        # moving list immediately to the actual position of the mouse:
+        # With first=True the position of the cursor relativly to the anchor point of the object to move is
+        # determined and stored. This distance is afterwards at each cursor movement added to the event coordinates
+        # in order to get the new coordinates of the anchor point.
+        # This prevents the object from jumping to the cursor at the first movement.
         move_handling.move_do(event, move_list, first=True)
 
         # Create a binding for the now following movements of the mouse and for finishing the moving:
         move_do_funcid = main_window.canvas.bind(
-            "<Motion>", lambda event, move_list=move_list: move_handling.move_do(event, move_list, first=False), add="+"
+            "<Motion>",
+            lambda motion_event, move_list=move_list: move_handling.move_do(motion_event, move_list, first=False),
+            add="+",
         )  # Must be "added", as store_mouse_position is already bound to "Motion".
         main_window.canvas.bind(
             "<ButtonRelease-1>",
-            lambda event, move_list=move_list, move_do_funcid=move_do_funcid: move_handling_finish.move_finish(
-                event, move_list, move_do_funcid
+            lambda release_event, move_list=move_list, move_do_funcid=move_do_funcid: move_handling_finish.move_finish(
+                release_event, move_list, move_do_funcid
             ),
         )  # move_finish must unbind move_do from "Motion", so it needs the function id.
 
@@ -73,6 +63,20 @@ def _move_initialization_overlapping(event, event_x, event_y) -> None:
         # use Button-1 a second time, when move_finish() did not accept the location of the ButtonRelease-1 and this
         # second time shall not start a new moving:
         main_window.canvas.unbind("<Button-1>")
+
+
+def _any_item_is_not_allowed_to_be_moved(items_near_mouse_click_location):
+    if not items_near_mouse_click_location:
+        return True
+    if _mouse_click_happened_in_state_name(items_near_mouse_click_location):
+        return True  # The state name shall be changed and no moving is required.
+    if _mouse_click_happened_in_priority_number(items_near_mouse_click_location):
+        return True  # The priority shall be changed and no moving is required.
+    if _mouse_click_happened_in_connection_line(items_near_mouse_click_location):
+        return True  # No connection-line can be moved.
+    if _mouse_click_happened_in_state_comment_line(items_near_mouse_click_location):
+        return True  # No state-comment-line can be moved.
+    return _mouse_click_happened_in_grid_line(items_near_mouse_click_location)
 
 
 def _create_a_list_of_overlapping_items_near_the_mouse_click_location(event_x, event_y) -> list:
