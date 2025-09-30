@@ -7,10 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ## Added
+- A title for the "select HDL directory" dialog.
 ## Changed
 ## Deprecated
 ## Removed
 ## Fixed
+- Moving the cursor into any action or comment block (without any code change) could set the design state to "modified" .
+- Names containing the string "warning" or "error" were highlighted red in the "Compile Message" tab.
+- Sometimes states may be shrinked during moving.
 ## Security
 
 ## [5.2]
