@@ -26,27 +26,36 @@ def move_to(event_x, event_y, state_id, first, last) -> None:
     if first is True:
         # Calculate the difference between the "anchor" point and the event:
         coords = main_window.canvas.coords(state_id)
-        middle_point = _calculate_middle_point(coords)
-        difference_x, difference_y = -event_x + middle_point[0], -event_y + middle_point[1]
-    # Keep the distance between event and anchor point constant:
-    event_x, event_y = event_x + difference_x, event_y + difference_y
+        center = _calculate_center(coords)
+        difference_x, difference_y = -event_x + center[0], -event_y + center[1]
+    # When moving the center, keep the distance between event and anchor point constant:
+    new_center_x, new_center_y = event_x + difference_x, event_y + difference_y
     if last is True:
-        event_x = canvas_editing.state_radius * round(event_x / canvas_editing.state_radius)
-        event_y = canvas_editing.state_radius * round(event_y / canvas_editing.state_radius)
+        new_center_x, new_center_y = _move_center_to_grid(new_center_x, new_center_y)
     text_tag = _determine_the_tag_of_the_state_name(state_id)
     state_radius = _determine_the_radius_of_the_state(state_id)
     main_window.canvas.coords(
-        state_id, event_x - state_radius, event_y - state_radius, event_x + state_radius, event_y + state_radius
+        state_id,
+        new_center_x - state_radius,
+        new_center_y - state_radius,
+        new_center_x + state_radius,
+        new_center_y + state_radius,
     )
-    main_window.canvas.coords(text_tag, event_x, event_y)
+    main_window.canvas.coords(text_tag, new_center_x, new_center_y)
     main_window.canvas.tag_raise(state_id, "all")
     main_window.canvas.tag_raise(text_tag, state_id)
 
 
-def _calculate_middle_point(coords) -> list:
+def _calculate_center(coords) -> list:
     middle_x = (coords[0] + coords[2]) / 2
     middle_y = (coords[1] + coords[3]) / 2
     return [middle_x, middle_y]
+
+
+def _move_center_to_grid(new_center_x, new_center_y):
+    new_center_x = canvas_editing.state_radius * round(new_center_x / canvas_editing.state_radius)
+    new_center_y = canvas_editing.state_radius * round(new_center_y / canvas_editing.state_radius)
+    return new_center_x, new_center_y
 
 
 def _determine_the_tag_of_the_state_name(state_id):
@@ -58,7 +67,7 @@ def _determine_the_tag_of_the_state_name(state_id):
 
 def _determine_the_radius_of_the_state(state_id):
     state_coords = main_window.canvas.coords(state_id)
-    return (state_coords[2] - state_coords[0]) // 2
+    return (state_coords[2] - state_coords[0]) / 2
 
 
 def get_canvas_id_of_state_name(state_id):
