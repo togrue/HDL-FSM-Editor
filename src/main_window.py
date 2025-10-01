@@ -883,6 +883,7 @@ def create_diagram_notebook_tab() -> None:
     minus_button.bind("<Button-1>", lambda event: canvas_editing.zoom_minus())
 
     canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+    canvas.bind("<Home>", lambda event: canvas_editing.view_all())
     canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
     canvas.bind("<Motion>", canvas_editing.store_mouse_position)
     canvas.bind("<Control-MouseWheel>", canvas_editing.zoom_wheel)  # MouseWheel used at Windows.
