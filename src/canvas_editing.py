@@ -579,6 +579,7 @@ def scroll_wheel(event: tk.Event) -> None:
         delta = SCROLL_DELTA * _zoom_factor
 
     SHIFT = 1 << 0  # TKinter doesn't seem to provide a constant for this.
+    assert isinstance(event.state, int)
     scroll_direction = "x" if event.state & SHIFT else "y"
     dx, dy = (0, delta) if scroll_direction == "y" else (delta, 0)
     main_window.canvas.scan_dragto(int(event.x + dx), int(event.y + dy), gain=1)

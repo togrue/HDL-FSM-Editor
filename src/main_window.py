@@ -31,7 +31,9 @@ from constants import GuiTab
 from dialogs.color_changer import ColorChanger
 from dialogs.regex_dialog import RegexDialog
 from link_dictionary import init_link_dict, link_dict
+from persistent_settings import app_settings
 from project_manager import project_manager
+from window_geometry import get_window_state, restore_window_state
 
 _VERSION = "5.7"
 header_string = (
@@ -170,6 +172,8 @@ def check_version() -> None:
 
 
 def show_window() -> None:
+    """Show the main window and restore its geometry from persistent settings."""
+
     root.wm_deiconify()
 
 
@@ -189,6 +193,11 @@ def _close_tool() -> None:
             # Check if save was successful (current_file is not empty)
             if project_manager.current_file == "":
                 return
+
+    # Save window geometry & state before closing
+    if window_state := get_window_state(root):
+        app_settings.set_main_window_state(window_state)
+    app_settings.save_settings()
 
     # Clean up temp file and exit
     if os.path.isfile(project_manager.current_file + ".tmp"):
@@ -229,6 +238,9 @@ def create_root() -> None:
     root.rowconfigure(1, weight=1)
     root.grid()
     root.protocol("WM_DELETE_WINDOW", _close_tool)
+
+    restore_window_state(root, app_settings.get_main_window_state())
+
     init_link_dict(root)
 
 

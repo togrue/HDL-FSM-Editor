@@ -4,6 +4,10 @@ Constants for all modules of HDL-FSM-Editor
 
 from enum import Enum
 
+# The application name effects the path to the settings file.
+APP_NAME = "HDL-FSM-Editor"
+
+
 VHDL_KEYWORDS_FOR_SIGNAL_HANDLING = (
     " to_stdulogic ",
     " to_stdlogicvector ",
