@@ -8,6 +8,7 @@ from tkinter import messagebox
 import canvas_editing
 import constants
 import main_window
+import move_handling_canvas_item
 import move_handling_initialization
 import state_action_handling
 import state_comment
@@ -106,6 +107,12 @@ def insert_state(event) -> None:
         tags="state" + str(state_number) + "_name",
         font=canvas_editing.state_name_font,
     )
+
+    main_window.canvas.tag_bind(
+        text_id,
+        "<Button-1>",
+        lambda event: move_handling_canvas_item.MoveHandlingCanvasItem(event, text_id),
+    )
     main_window.canvas.tag_bind(
         text_id, "<Double-Button-1>", lambda event, text_id=text_id: edit_state_name(event, text_id)
     )
@@ -114,6 +121,11 @@ def insert_state(event) -> None:
     )
     main_window.canvas.tag_bind(
         state_id, "<Leave>", lambda event, id=state_id: main_window.canvas.itemconfig(id, width=2)
+    )
+    main_window.canvas.tag_bind(
+        state_id,
+        "<Button-1>",
+        lambda event: move_handling_canvas_item.MoveHandlingCanvasItem(event, state_id),
     )
     main_window.canvas.tag_bind(state_id, "<Button-3>", lambda event, id=state_id: show_menu(event, id))
     undo_handling.design_has_changed()
@@ -153,7 +165,7 @@ def _evaluate_menu(event, window, listbox, menu_x, menu_y, state_id) -> None:
             if tag.startswith("connection"):
                 action_block_exists = True
         if not action_block_exists:
-            action_ref = state_action_handling.MyText(menu_x, menu_y, height=1, width=8, padding=3, increment=True)
+            action_ref = state_action_handling.MyText(menu_x, menu_y, height=1, width=8, padding=1, increment=True)
             action_ref.connect_to_state(menu_x, menu_y, state_id)
             action_ref.tag()
             undo_handling.design_has_changed()
@@ -165,7 +177,7 @@ def _evaluate_menu(event, window, listbox, menu_x, menu_y, state_id) -> None:
         for tag in tags:
             if tag.startswith("state"):
                 state_identifier = tag
-                comment_ref = state_comment.StateComment(menu_x, menu_y, height=1, width=8, padding=3)
+                comment_ref = state_comment.StateComment(menu_x, menu_y, height=1, width=8, padding=1)
                 comment_ref.add_line(menu_x, menu_y, state_identifier)
                 comment_ref.tag(state_identifier)
                 undo_handling.design_has_changed()

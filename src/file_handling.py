@@ -19,6 +19,7 @@ import global_actions
 import global_actions_combinatorial
 import global_actions_handling
 import main_window
+import move_handling_canvas_item
 import reset_entry_handling
 import state_action_handling
 import state_actions_default
@@ -590,6 +591,11 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
         main_window.canvas.tag_bind(
             state_id, "<Button-3>", lambda event, id=state_id: state_handling.show_menu(event, id)
         )
+        main_window.canvas.tag_bind(
+            state_id,
+            "<Button-1>",
+            lambda event, id=state_id: move_handling_canvas_item.MoveHandlingCanvasItem(event, id),
+        )
 
     # Load polygons (reset symbols)
     for definition in design_dictionary["polygon"]:
@@ -624,11 +630,16 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
                     "<Double-Button-1>",
                     lambda event, transition_tag=t[:-8]: transition_handling.edit_priority(event, transition_tag),
                 )
-            else:
+            elif t.startswith("state"):  # state<nr>_name
                 main_window.canvas.tag_bind(
                     text_id,
                     "<Double-Button-1>",
                     lambda event, text_id=text_id: state_handling.edit_state_name(event, text_id),
+                )
+                main_window.canvas.tag_bind(
+                    text_id,
+                    "<Button-1>",
+                    lambda event, text_id=text_id: move_handling_canvas_item.MoveHandlingCanvasItem(event, text_id),
                 )
 
     # Load lines (transitions)

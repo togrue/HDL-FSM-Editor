@@ -20,7 +20,7 @@ def move_initialization(event) -> None:
     )
     if _any_item_is_not_allowed_to_be_moved(items_near_mouse_click_location):
         return
-    move_list = _create_move_list(items_near_mouse_click_location, event_x, event_y)
+    move_list = create_move_list(items_near_mouse_click_location, event_x, event_y)
     # The move_list has an entry for each item, which must be moved.
     # The first entry belongs always to the object, the user wants to move.
     # All following entries are objects, which are "connected" to the object of the first entry and must also be moved.
@@ -86,6 +86,11 @@ def _create_a_list_of_overlapping_items_near_the_mouse_click_location(event_x, e
     # coordinates, as the window does not know its own location. So here a bigger overlapping area must be used,
     # so that the user can click beneath the window and catch it.
     list_of_overlapping_items = []
+    overlapping_items = main_window.canvas.find_overlapping(event_x, event_y, event_x, event_y)
+    for overlapping_item in overlapping_items:
+        if main_window.canvas.type(overlapping_item) == "oval":
+            # The cursor is inside a state, in this case moving shall use MoveHandlingCanvasItem.
+            return []
     overlapping_items = main_window.canvas.find_overlapping(
         event_x - canvas_editing.state_radius / 4,
         event_y - canvas_editing.state_radius / 4,
@@ -138,7 +143,7 @@ def _mouse_click_happened_in_grid_line(items_near_mouse_click_location) -> bool:
     return all("grid_line" in main_window.canvas.gettags(item_id) for item_id in items_near_mouse_click_location)
 
 
-def _create_move_list(items_near_mouse_click_location, event_x, event_y) -> list:
+def create_move_list(items_near_mouse_click_location, event_x, event_y) -> list:
     move_list = []
     move_list_entry_for_diagram_object = _create_move_list_entry_if_a_diagram_object_is_moved(
         items_near_mouse_click_location
@@ -161,9 +166,22 @@ def _create_move_list_entry_if_a_diagram_object_is_moved(items_near_mouse_click_
             tags_of_item_id != ()
         ):  # If left mouse button is pressed during view-area with the right mouse-button, the list is empty.
             for tag in tags_of_item_id:
-                if (
-                    (tag.startswith("state") and not tag.endswith("_comment_line_end"))
-                    or tag.startswith("state_action")
+                if tag.startswith("state") and tag.endswith("_name"):
+                    # This can happen only if the moving is started by MoveHandlingCanvasItem.
+                    # Then only the canvas-id of the state-name is in the list items_near_mouse_click_location.
+                    # To be able to create a complete move_list, the canvas-id of the state
+                    # must be added to the move_list:
+                    state_tag = tag[:-5]
+                    canvas_id_of_state = main_window.canvas.find_withtag(state_tag)[0]
+                    move_list_entry = [
+                        canvas_id_of_state,
+                        "",
+                    ]
+                elif (
+                    (  # state<nr>, state<nr>_comment, state<nr>_name:
+                        tag.startswith("state") and not tag.endswith("_comment_line_end")
+                    )
+                    or tag.startswith("state_action")  # state_action<nr>, state_actions_default
                     or tag.startswith("condition_action")
                     or tag.startswith("reset_entry")
                     or tag.startswith("global_actions")

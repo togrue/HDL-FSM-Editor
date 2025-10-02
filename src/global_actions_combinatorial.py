@@ -9,6 +9,7 @@ import canvas_editing
 import canvas_modify_bindings
 import custom_text
 import main_window
+import move_handling_canvas_window
 import undo_handling
 
 
@@ -21,11 +22,14 @@ class GlobalActionsCombinatorial:
 
     def __init__(self, menu_x, menu_y, height, width, padding) -> None:
         self.text_content = None
+        self.difference_x = 0
+        self.difference_y = 0
+
         self.frame_id = ttk.Frame(
-            main_window.canvas, relief=tk.FLAT, padding=padding, style="GlobalActionsWindow.TFrame"
+            main_window.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="GlobalActionsWindow.TFrame"
         )
-        self.frame_id.bind("<Enter>", lambda event, self=self: self.activate())
-        self.frame_id.bind("<Leave>", lambda event, self=self: self.deactivate())
+        self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
+        self.frame_id.bind("<Leave>", lambda event: self.deactivate_frame())
         # Create label object inside frame:
         self.label = ttk.Label(
             self.frame_id,
@@ -33,6 +37,8 @@ class GlobalActionsCombinatorial:
             font=("Arial", int(canvas_editing.label_fontsize)),
             style="GlobalActionsWindow.TLabel",
         )
+        self.label.bind("<Enter>", lambda event: self.activate_window())
+        self.label.bind("<Leave>", lambda event: self.deactivate_window())
         self.text_id = custom_text.CustomText(
             self.frame_id,
             text_type="action",
@@ -55,37 +61,20 @@ class GlobalActionsCombinatorial:
         self.label.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E))
         self.text_id.grid(row=1, column=0, sticky=(tk.E, tk.W))
 
-        self.difference_x = 0
-        self.difference_y = 0
-        self.move_rectangle = None
-
         # Create canvas window for frame and text:
         self.window_id = main_window.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
-        main_window.canvas.tag_bind(
-            self.window_id, "<Enter>", lambda event: self.__draw_polygon_around_window()
-        )  # See description in condition_action_handling.py.
+
+        self.frame_id.bind(
+            "<Button-1>",
+            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(event, self.frame_id, self.window_id),
+        )
+        self.label.bind(
+            "<Button-1>",
+            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(event, self.label, self.window_id),
+        )
         self.frame_id.lower()
         GlobalActionsCombinatorial.dictionary[self.window_id] = self
         canvas_modify_bindings.switch_to_move_mode()
-
-    def __draw_polygon_around_window(self) -> None:
-        bbox_coords = main_window.canvas.bbox(self.window_id)
-        polygon_coords = []
-        polygon_coords.append(bbox_coords[0] - 3)
-        polygon_coords.append(bbox_coords[1] - 3)
-        polygon_coords.append(bbox_coords[2] + 3)
-        polygon_coords.append(bbox_coords[1] - 3)
-        polygon_coords.append(bbox_coords[2] + 3)
-        polygon_coords.append(bbox_coords[3] + 3)
-        polygon_coords.append(bbox_coords[0] - 3)
-        polygon_coords.append(bbox_coords[3] + 3)
-        # It is "fill="blue" used instead of "width=3, outline="blue" as then the 4 edges are sharp and not round:
-        self.move_rectangle = main_window.canvas.create_polygon(
-            polygon_coords, width=1, fill="PaleGreen2", tag="polygon_for_move"
-        )
-        main_window.canvas.tag_bind(
-            self.move_rectangle, "<Leave>", lambda event: main_window.canvas.delete(self.move_rectangle)
-        )
 
     def update_text(self):
         # Update self.text_content, so that the <Leave>-check in deactivate() does not signal a design-change and
@@ -96,22 +85,26 @@ class GlobalActionsCombinatorial:
     def tag(self) -> None:
         main_window.canvas.itemconfigure(self.window_id, tag="global_actions_combinatorial1")
 
-    def activate(self) -> None:
-        self.frame_id.configure(padding=3)  # increase the width of the line around the box
+    def activate_frame(self) -> None:
+        self.activate_window()
         self.text = self.text_id.get("1.0", tk.END)
 
-    def deactivate(self) -> None:
-        self.frame_id.configure(padding=1)  # decrease the width of the line around the box
+    def activate_window(self) -> None:
+        self.frame_id.configure(borderwidth=1, style="GlobalActionsWindowSelected.TFrame")
+        self.label.configure(style="GlobalActionsWindowSelected.TLabel")
+
+    def deactivate_frame(self) -> None:
+        self.deactivate_window()
         self.frame_id.focus()  # "unfocus" the Text, when the mouse leaves the text.
-        # self.text_id.format()
         if self.text_id.get("1.0", tk.END) != self.text_content:
             undo_handling.design_has_changed()
 
-    def move_to(self, event_x, event_y, first, last) -> None:
-        main_window.canvas.delete(self.move_rectangle)
-        self.frame_id.configure(padding=1)  # decrease the width of the line around the box
+    def deactivate_window(self) -> None:
+        self.frame_id.configure(borderwidth=0, style="GlobalActionsWindow.TFrame")
+        self.label.configure(style="GlobalActionsWindow.TLabel")
+
+    def move_to(self, event_x, event_y, first, _) -> None:
         if first:
-            self.frame_id.configure(padding=4)  # increase the width of the line around the box
             # Calculate the difference between the "anchor" point and the event:
             coords = main_window.canvas.coords(self.window_id)
             self.difference_x, self.difference_y = -event_x + coords[0], -event_y + coords[1]

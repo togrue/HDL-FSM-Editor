@@ -34,7 +34,7 @@ def _insert_global_actions_clocked_in_canvas(event) -> None:
 
 def _create_global_actions_clocked(canvas_grid_coordinates_of_the_event) -> None:
     ref = global_actions.GlobalActions(
-        canvas_grid_coordinates_of_the_event[0], canvas_grid_coordinates_of_the_event[1], height=1, width=8, padding=3
+        canvas_grid_coordinates_of_the_event[0], canvas_grid_coordinates_of_the_event[1], height=1, width=8, padding=1
     )
     ref.tag()
 
@@ -57,7 +57,7 @@ def _insert_global_actions_combinatorial_in_canvas(event) -> None:
 
 def _create_global_actions_combinatorial(canvas_grid_coordinates_of_the_event) -> None:
     ref = global_actions_combinatorial.GlobalActionsCombinatorial(
-        canvas_grid_coordinates_of_the_event[0], canvas_grid_coordinates_of_the_event[1], height=1, width=8, padding=3
+        canvas_grid_coordinates_of_the_event[0], canvas_grid_coordinates_of_the_event[1], height=1, width=8, padding=1
     )
     ref.tag()
 
@@ -80,6 +80,6 @@ def _insert_state_actions_default_in_canvas(event) -> None:
 
 def _create_state_actions_default(canvas_grid_coordinates_of_the_event) -> None:
     ref = state_actions_default.StateActionsDefault(
-        canvas_grid_coordinates_of_the_event[0], canvas_grid_coordinates_of_the_event[1], height=1, width=8, padding=3
+        canvas_grid_coordinates_of_the_event[0], canvas_grid_coordinates_of_the_event[1], height=1, width=8, padding=1
     )
     ref.tag()

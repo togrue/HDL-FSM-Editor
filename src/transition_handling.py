@@ -806,7 +806,7 @@ def _evaluate_menu(event, window, listbox, menu_x, menu_y, transition_id) -> Non
                 connected_to_reset_entry = True
         if has_condition_action is False:
             condition_action_ref = condition_action_handling.ConditionAction(
-                menu_x, menu_y, connected_to_reset_entry, height=1, width=8, padding=3, increment=True
+                menu_x, menu_y, connected_to_reset_entry, height=1, width=8, padding=1, increment=True
             )
             condition_action_ref.tag(connected_to_reset_entry)
             condition_action_ref.draw_line(transition_id, menu_x, menu_y)
