@@ -14,7 +14,6 @@ import condition_action_handling
 import connector_handling
 import constants
 import custom_text
-import file_handling_v1
 import global_actions
 import global_actions_combinatorial
 import global_actions_handling
@@ -79,14 +78,6 @@ def save() -> None:
         main_window.root.after_idle(
             save_in_file_new, project_manager.current_file
         )  # Wait for the handling of all possible events.
-
-
-def open_v1_file() -> None:
-    filename_new = askopenfilename(filetypes=(("HDL-FSM-Editor files", "*.hfe"), ("all files", "*.*")))
-    if filename_new != "":
-        success = new_design()
-        if success:
-            file_handling_v1.open_v1_file_with_name(filename_new)
 
 
 def open_file() -> None:
