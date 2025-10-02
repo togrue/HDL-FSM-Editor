@@ -19,7 +19,6 @@ import global_actions
 import global_actions_combinatorial
 import global_actions_handling
 import main_window
-import move_handling_canvas_item
 import reset_entry_handling
 import state_action_handling
 import state_actions_default
@@ -581,21 +580,7 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
                 number_of_outgoing_transitions += 1
         if number_of_outgoing_transitions == 1:
             hide_priority_rectangle_list.append(transition_identifier)
-        state_id = main_window.canvas.create_oval(coords, fill=fill_color, width=2, outline="blue", tags=tags)
-        main_window.canvas.tag_bind(
-            state_id, "<Enter>", lambda event, id=state_id: main_window.canvas.itemconfig(id, width=4)
-        )
-        main_window.canvas.tag_bind(
-            state_id, "<Leave>", lambda event, id=state_id: main_window.canvas.itemconfig(id, width=2)
-        )
-        main_window.canvas.tag_bind(
-            state_id, "<Button-3>", lambda event, id=state_id: state_handling.show_menu(event, id)
-        )
-        main_window.canvas.tag_bind(
-            state_id,
-            "<Button-1>",
-            lambda event, id=state_id: move_handling_canvas_item.MoveHandlingCanvasItem(event, id),
-        )
+        state_handling.draw_state_circle(coords, fill_color, tags)
 
     # Load polygons (reset symbols)
     for definition in design_dictionary["polygon"]:
@@ -621,9 +606,11 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
         coords = definition[0]
         tags = definition[1]
         text = definition[2]
-        text_id = main_window.canvas.create_text(coords, text=text, tags=tags, font=canvas_editing.state_name_font)
         for t in tags:
             if t.startswith("transition"):
+                text_id = main_window.canvas.create_text(
+                    coords, text=text, tags=tags, font=canvas_editing.state_name_font
+                )
                 priority_ids.append(text_id)
                 main_window.canvas.tag_bind(
                     text_id,
@@ -631,16 +618,7 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
                     lambda event, transition_tag=t[:-8]: transition_handling.edit_priority(event, transition_tag),
                 )
             elif t.startswith("state"):  # state<nr>_name
-                main_window.canvas.tag_bind(
-                    text_id,
-                    "<Double-Button-1>",
-                    lambda event, text_id=text_id: state_handling.edit_state_name(event, text_id),
-                )
-                main_window.canvas.tag_bind(
-                    text_id,
-                    "<Button-1>",
-                    lambda event, text_id=text_id: move_handling_canvas_item.MoveHandlingCanvasItem(event, text_id),
-                )
+                state_handling.draw_state_name(coords[0], coords[1], text, tags)
 
     # Load lines (transitions)
     for definition in design_dictionary["line"]:

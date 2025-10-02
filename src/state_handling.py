@@ -76,10 +76,7 @@ def get_canvas_id_of_state_name(state_id):
     return main_window.canvas.find_withtag(tags[0] + "_name")[0]
 
 
-def insert_state(event) -> None:
-    global state_number
-    state_number += 1
-    event_x, event_y = canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(event)
+def _state_overlaps(event_x, event_y) -> bool:
     overlapping_items = main_window.canvas.find_overlapping(
         event_x - canvas_editing.state_radius,
         event_y - canvas_editing.state_radius,
@@ -88,23 +85,38 @@ def insert_state(event) -> None:
     )
     for overlapping_item in overlapping_items:
         if "grid_line" not in main_window.canvas.gettags(overlapping_item):
-            return
+            return True
+    return False
+
+
+def draw_state_circle(coords, color, tags):
     state_id = main_window.canvas.create_oval(
-        event_x - canvas_editing.state_radius,
-        event_y - canvas_editing.state_radius,
-        event_x + canvas_editing.state_radius,
-        event_y + canvas_editing.state_radius,
-        fill=constants.STATE_COLOR,
+        coords,
+        fill=color,
         width=2,
         outline="blue",
-        tags="state" + str(state_number),
+        tags=tags,
     )
-    # main_window.canvas.tag_lower(state_id,'all')
+    main_window.canvas.tag_bind(
+        state_id, "<Enter>", lambda event, id=state_id: main_window.canvas.itemconfig(id, width=4)
+    )
+    main_window.canvas.tag_bind(
+        state_id, "<Leave>", lambda event, id=state_id: main_window.canvas.itemconfig(id, width=2)
+    )
+    main_window.canvas.tag_bind(state_id, "<Button-3>", lambda event, id=state_id: show_menu(event, id))
+    main_window.canvas.tag_bind(
+        state_id,
+        "<Button-1>",
+        lambda event: move_handling_canvas_item.MoveHandlingCanvasItem(event, state_id),
+    )
+
+
+def draw_state_name(event_x, event_y, text, tags):
     text_id = main_window.canvas.create_text(
         event_x,
         event_y,
-        text="S" + str(state_number),
-        tags="state" + str(state_number) + "_name",
+        text=text,
+        tags=tags,
         font=canvas_editing.state_name_font,
     )
 
@@ -116,21 +128,28 @@ def insert_state(event) -> None:
     main_window.canvas.tag_bind(
         text_id, "<Double-Button-1>", lambda event, text_id=text_id: edit_state_name(event, text_id)
     )
-    main_window.canvas.tag_bind(
-        state_id, "<Enter>", lambda event, id=state_id: main_window.canvas.itemconfig(id, width=4)
+
+
+def insert_state(event) -> None:
+    global state_number
+    state_number += 1
+    event_x, event_y = canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(event)
+    if _state_overlaps(event_x, event_y):
+        return
+    draw_state_circle(
+        [
+            event_x - canvas_editing.state_radius,
+            event_y - canvas_editing.state_radius,
+            event_x + canvas_editing.state_radius,
+            event_y + canvas_editing.state_radius,
+        ],
+        constants.STATE_COLOR,
+        "state" + str(state_number),
     )
-    main_window.canvas.tag_bind(
-        state_id, "<Leave>", lambda event, id=state_id: main_window.canvas.itemconfig(id, width=2)
-    )
-    main_window.canvas.tag_bind(
-        state_id,
-        "<Button-1>",
-        lambda event: move_handling_canvas_item.MoveHandlingCanvasItem(event, state_id),
-    )
-    main_window.canvas.tag_bind(state_id, "<Button-3>", lambda event, id=state_id: show_menu(event, id))
+    text = "S" + str(state_number)
+    tags = "state" + str(state_number) + "_name"
+    draw_state_name(event_x, event_y, text, tags)
     undo_handling.design_has_changed()
-    # print ("New State"    , state_id, main_window.canvas.coords(state_id))
-    # print ("New Statename", text_id , main_window.canvas.coords(text_id))
 
 
 def show_menu(event, state_id) -> None:
