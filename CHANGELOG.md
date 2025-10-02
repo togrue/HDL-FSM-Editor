@@ -7,8 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ## Added
+## Changed
+## Deprecated
+## Removed
+## Fixed
+## Security
+
+## [5.3]
+## Added
 - A title for the "select HDL directory" dialog.
 ## Changed
+- Picking up objects for moving was sometimes kind of hard, now it works easy and as expected.</li>
 ## Deprecated
 ## Removed
 ## Fixed
