@@ -13,6 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Fixed
 ## Security
 
+## [5.4]
+## Added
+## Changed
+## Deprecated
+## Removed
+## Fixed
+- A fix the for new move method was implemented
+## Security
+
 ## [5.3]
 ## Added
 - A title for the "select HDL directory" dialog.
