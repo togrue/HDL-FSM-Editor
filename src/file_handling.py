@@ -577,13 +577,7 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
     for definition in design_dictionary["polygon"]:
         coords = definition[0]
         tags = definition[1]
-        polygon_id = main_window.canvas.create_polygon(coords, fill="red", outline="orange", tags=tags)
-        main_window.canvas.tag_bind(
-            polygon_id, "<Enter>", lambda event, id=polygon_id: main_window.canvas.itemconfig(id, width=2)
-        )
-        main_window.canvas.tag_bind(
-            polygon_id, "<Leave>", lambda event, id=polygon_id: main_window.canvas.itemconfig(id, width=1)
-        )
+        reset_entry_handling.draw_reset_entry(coords, tags)
         number_of_outgoing_transitions = 0
         for tag in tags:
             if tag.startswith("transition") and tag.endswith("_start"):
@@ -597,19 +591,27 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
         coords = definition[0]
         tags = definition[1]
         text = definition[2]
+        text_is_state_name = False
+        text_is_reset_text = False
         for t in tags:
-            if t.startswith("transition"):
-                text_id = main_window.canvas.create_text(
-                    coords, text=text, tags=tags, font=canvas_editing.state_name_font
-                )
-                priority_ids.append(text_id)
-                main_window.canvas.tag_bind(
-                    text_id,
-                    "<Double-Button-1>",
-                    lambda event, transition_tag=t[:-8]: transition_handling.edit_priority(event, transition_tag),
-                )
-            elif t.startswith("state"):  # state<nr>_name
-                state_handling.draw_state_name(coords[0], coords[1], text, tags)
+            if t.startswith("state"):  # state<nr>_name
+                text_is_state_name = True
+            elif t.startswith("reset_text"):
+                text_is_reset_text = True
+        if text_is_state_name:
+            state_handling.draw_state_name(coords[0], coords[1], text, tags)
+        elif text_is_reset_text:
+            reset_entry_handling.draw_reset_entry_text(coords[0], coords[1], text, tags)
+        else:
+            text_id = main_window.canvas.create_text(coords, text=text, tags=tags, font=canvas_editing.state_name_font)
+            for t in tags:
+                if t.startswith("transition"):
+                    priority_ids.append(text_id)
+                    main_window.canvas.tag_bind(
+                        text_id,
+                        "<Double-Button-1>",
+                        lambda event, transition_tag=t[:-8]: transition_handling.edit_priority(event, transition_tag),
+                    )
 
     # Load lines (transitions)
     for definition in design_dictionary["line"]:

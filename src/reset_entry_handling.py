@@ -34,21 +34,32 @@ def _insert_reset_entry_in_canvas(event) -> None:
 def _create_reset_entry(canvas_grid_coordinates_of_the_event) -> None:
     reset_entry_polygon = _create_polygon_shape_for_reset_entry()
     reset_entry_polygon = _move_reset_entry_polygon_to_event(canvas_grid_coordinates_of_the_event, reset_entry_polygon)
-    polygon_id = main_window.canvas.create_polygon(
-        *reset_entry_polygon, fill="red", outline="orange", tag="reset_entry"
-    )
-    main_window.canvas.create_text(
+    draw_reset_entry(reset_entry_polygon, "reset_entry")
+    draw_reset_entry_text(
         canvas_grid_coordinates_of_the_event[0] - 4 * canvas_editing.reset_entry_size / 5,
         canvas_grid_coordinates_of_the_event[1],
         text="Reset",
         tag="reset_text",
-        font=canvas_editing.state_name_font,
     )
+
+
+def draw_reset_entry(reset_entry_polygon, tag):
+    polygon_id = main_window.canvas.create_polygon(*reset_entry_polygon, fill="red", outline="orange", tag=tag)
     main_window.canvas.tag_bind(
         polygon_id, "<Enter>", lambda event, id=polygon_id: main_window.canvas.itemconfig(id, width=2)
     )
     main_window.canvas.tag_bind(
         polygon_id, "<Leave>", lambda event, id=polygon_id: main_window.canvas.itemconfig(id, width=1)
+    )
+
+
+def draw_reset_entry_text(coord_x, coord_y, text, tag):
+    main_window.canvas.create_text(
+        coord_x,
+        coord_y,
+        text=text,
+        tag=tag,
+        font=canvas_editing.state_name_font,
     )
 
 
