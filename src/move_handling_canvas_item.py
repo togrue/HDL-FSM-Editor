@@ -4,6 +4,7 @@ A MoveCanvasItem object is created, when the user moves a Canvas item.
 
 import main_window
 import move_handling
+import move_handling_finish
 import move_handling_initialization
 
 
@@ -47,3 +48,4 @@ class MoveHandlingCanvasItem:
             first=False,
             move_to_grid=True,
         )
+        move_handling_finish.move_finish_for_transitions(self.move_list)

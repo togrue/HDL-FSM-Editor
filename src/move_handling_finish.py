@@ -42,6 +42,10 @@ def move_finish(event, move_list, move_do_funcid) -> None:
             item_ids_at_moving_end_location, transition_id, transition_point, move_list
         )
         _update_the_tags_of_the_transition(item_ids_at_moving_end_location, transition_id, transition_point)
+    move_finish_for_transitions(move_list)
+
+
+def move_finish_for_transitions(move_list):
     _shorten_all_moved_transitions_to_the_state_borders(move_list)
     _move_all_ca_connection_end_points_to_the_new_transition_start_points(move_list)
     _hide_the_connection_line_of_moved_condition_action_window(
