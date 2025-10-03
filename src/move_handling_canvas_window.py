@@ -56,6 +56,6 @@ class MoveHandlingCanvasWindow:
             window_coords[1],
             self.move_list,
             first=False,
-            move_to_grid=True,
+            move_to_grid=False,  # Only used by the line to a window.
         )
         move_handling_finish.move_finish_for_transitions(self.move_list)
