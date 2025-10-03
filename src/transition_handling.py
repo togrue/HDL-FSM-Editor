@@ -420,38 +420,13 @@ def transition_start(event) -> None:
                     line_start_x = start_object_coords[4]
                     line_start_y = start_object_coords[5]
                 # Create first a line with length 0:
-                transition_id = main_window.canvas.create_line(
-                    line_start_x,
-                    line_start_y,
-                    line_start_x,
-                    line_start_y,
-                    arrow="last",
-                    fill="blue",
-                    smooth=True,
-                    tags=(
-                        "transition" + str(transition_number),
-                        "coming_from_" + tag_of_object_where_transition_starts,
-                    ),
-                )
-                main_window.canvas.tag_bind(
-                    transition_id,
-                    "<Enter>",
-                    lambda event, transition_id=transition_id: main_window.canvas.itemconfig(transition_id, width=3),
-                )
-                main_window.canvas.tag_bind(
-                    transition_id,
-                    "<Leave>",
-                    lambda event, transition_id=transition_id: main_window.canvas.itemconfig(transition_id, width=1),
-                )
-                main_window.canvas.tag_bind(
-                    transition_id,
-                    "<Button-3>",
-                    lambda event, transition_id=transition_id: show_menu(event, transition_id),
-                )
+                tags = ["transition" + str(transition_number), "coming_from_" + tag_of_object_where_transition_starts]
+                coords = [line_start_x, line_start_y, line_start_x, line_start_y]
+                transition_id = draw_transition(coords, tags)
                 main_window.root.unbind_all("<Escape>")
                 transition_draw_funcid = main_window.canvas.bind(
                     "<Motion>",
-                    lambda event, transition_id=transition_id: _transition_draw(event, transition_id),
+                    lambda event, transition_id=transition_id: _transition_continue(event, transition_id),
                     add="+",
                 )
                 main_window.canvas.bind(
@@ -475,12 +450,32 @@ def transition_start(event) -> None:
                 )
 
 
+def draw_transition(coords, tags) -> int:
+    transition_id = main_window.canvas.create_line(coords, arrow="last", fill="blue", smooth=True, tags=tags)
+    main_window.canvas.tag_bind(
+        transition_id,
+        "<Enter>",
+        lambda event, transition_id=transition_id: main_window.canvas.itemconfig(transition_id, width=3),
+    )
+    main_window.canvas.tag_bind(
+        transition_id,
+        "<Leave>",
+        lambda event, transition_id=transition_id: main_window.canvas.itemconfig(transition_id, width=1),
+    )
+    main_window.canvas.tag_bind(
+        transition_id,
+        "<Button-3>",
+        lambda event, transition_id=transition_id: show_menu(event, transition_id),
+    )
+    return transition_id
+
+
 def _reset_entry_has_no_transition(canvas_id) -> bool:
     tags_of_reset_entry = main_window.canvas.gettags(canvas_id)
     return all(not tag.startswith("transition") for tag in tags_of_reset_entry)
 
 
-def _transition_draw(event, canvas_id) -> None:
+def _transition_continue(event, canvas_id) -> None:
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
     coords_new = main_window.canvas.coords(canvas_id)
     coords_new[-2] = event_x

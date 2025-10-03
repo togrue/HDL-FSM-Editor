@@ -617,24 +617,18 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
     for definition in design_dictionary["line"]:
         coords = definition[0]
         tags = definition[1]
-        trans_id = main_window.canvas.create_line(coords, smooth=True, fill="blue", tags=tags)
-        main_window.canvas.tag_lower(trans_id)  # Lines are always "under" the priority rectangles.
-        main_window.canvas.tag_bind(
-            trans_id, "<Enter>", lambda event, trans_id=trans_id: main_window.canvas.itemconfig(trans_id, width=3)
-        )
-        main_window.canvas.tag_bind(
-            trans_id, "<Leave>", lambda event, trans_id=trans_id: main_window.canvas.itemconfig(trans_id, width=1)
-        )
         for t in tags:
-            if t.startswith("connected_to_transition"):
-                main_window.canvas.itemconfig(trans_id, dash=(2, 2), fill="black", state=tk.HIDDEN)
-            elif t.startswith("connected_to_state") or t.endswith("_comment_line"):
-                main_window.canvas.itemconfig(trans_id, dash=(2, 2), fill="black")
-            elif t.startswith("transition"):
-                main_window.canvas.itemconfig(trans_id, arrow="last")
-                main_window.canvas.tag_bind(
-                    trans_id, "<Button-3>", lambda event, id=trans_id: transition_handling.show_menu(event, id)
-                )
+            if t.startswith("connected_to_transition"):  # line to condition&action block
+                trans_id = main_window.canvas.create_line(coords, dash=(2, 2), fill="black", tags=tags, state=tk.HIDDEN)
+                break
+            if t.startswith("connected_to_state") or t.endswith("_comment_line"):  # line to state action/comment
+                trans_id = main_window.canvas.create_line(coords, dash=(2, 2), fill="black", tags=tags)
+                break
+            if t.startswith("transition"):
+                trans_id = transition_handling.draw_transition(coords, tags)
+                main_window.canvas.tag_lower(trans_id)
+                break
+        main_window.canvas.tag_lower(trans_id)  # Lines are always "under" anything else.
 
     # Load rectangles
     for definition in design_dictionary["rectangle"]:
