@@ -103,7 +103,7 @@ class StateActionsDefault:
         self.frame_id.configure(borderwidth=0, style="StateActionsWindow.TFrame")
         self.label.configure(style="StateActionsWindow.TLabel")
 
-    def move_to(self, event_x, event_y, first, _) -> None:
+    def move_to(self, event_x, event_y, first) -> None:
         if first:
             # Calculate the difference between the "anchor" point and the event:
             coords = main_window.canvas.coords(self.window_id)

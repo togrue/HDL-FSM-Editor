@@ -53,7 +53,7 @@ def move_to_coordinates(event_x, event_y, move_list, first, move_to_grid):
                 ref = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[item_id]
             else:
                 ref = condition_action_handling.ConditionAction.dictionary[item_id]
-            ref.move_to(event_x, event_y, first, move_to_grid)
+            ref.move_to(event_x, event_y, first)
         else:
             print("move: Fatal, unknown canvas type", "|" + item_type + "|")
 

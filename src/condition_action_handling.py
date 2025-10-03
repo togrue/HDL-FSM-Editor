@@ -221,7 +221,7 @@ class ConditionAction:
             self.action_label.grid_forget()
             self.action_id.grid_forget()
 
-    def move_to(self, event_x, event_y, first, _) -> None:
+    def move_to(self, event_x, event_y, first) -> None:
         if first is True:
             # Calculate the difference between the "anchor" point and the event:
             coords = main_window.canvas.coords(self.window_id)

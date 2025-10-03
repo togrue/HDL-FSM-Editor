@@ -103,7 +103,7 @@ class GlobalActionsCombinatorial:
         self.frame_id.configure(borderwidth=0, style="GlobalActionsWindow.TFrame")
         self.label.configure(style="GlobalActionsWindow.TLabel")
 
-    def move_to(self, event_x, event_y, first, _) -> None:
+    def move_to(self, event_x, event_y, first) -> None:
         if first:
             # Calculate the difference between the "anchor" point and the event:
             coords = main_window.canvas.coords(self.window_id)

@@ -151,7 +151,7 @@ class GlobalActions:
         self.label_before.configure(style="GlobalActionsWindow.TLabel")
         self.label_after.configure(style="GlobalActionsWindow.TLabel")
 
-    def move_to(self, event_x, event_y, first, _) -> None:
+    def move_to(self, event_x, event_y, first) -> None:
         if first:
             # Calculate the difference between the "anchor" point and the event:
             coords = main_window.canvas.coords(self.window_id)
