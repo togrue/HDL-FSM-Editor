@@ -383,16 +383,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                         fill_color = e.replace("fill=", "")
                     else:
                         tags = tags + (e,)
-            state_id = main_window.canvas.create_oval(coords, fill=fill_color, width=2, outline="blue", tags=tags)
-            main_window.canvas.tag_bind(
-                state_id, "<Enter>", lambda event, id=state_id: main_window.canvas.itemconfig(id, width=4)
-            )
-            main_window.canvas.tag_bind(
-                state_id, "<Leave>", lambda event, id=state_id: main_window.canvas.itemconfig(id, width=2)
-            )
-            main_window.canvas.tag_bind(
-                state_id, "<Button-3>", lambda event, id=state_id: state_handling.show_menu(event, id)
-            )
+            state_id = state_handling.draw_state_circle(coords, fill_color, tags)
             list_of_states.append(state_id)
         elif lines[_line_index].startswith("polygon|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "polygon|")
@@ -405,13 +396,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                     coords.append(v)
                 except ValueError:
                     tags = tags + (e,)
-            polygon_id = main_window.canvas.create_polygon(coords, fill="red", outline="orange", tags=tags)
-            main_window.canvas.tag_bind(
-                polygon_id, "<Enter>", lambda event, id=polygon_id: main_window.canvas.itemconfig(id, width=2)
-            )
-            main_window.canvas.tag_bind(
-                polygon_id, "<Leave>", lambda event, id=polygon_id: main_window.canvas.itemconfig(id, width=1)
-            )
+            reset_entry_handling.draw_reset_entry(coords, tags)
         elif lines[_line_index].startswith("text|"):  # This is a state-name or a priority-number.
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "text|")
             tags = ()
@@ -422,20 +407,30 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             text = entries[2]
             for e in entries[3:]:
                 tags = tags + (e,)
-            text_id = main_window.canvas.create_text(coords, text=text, tags=tags, font=canvas_editing.state_name_font)
+            text_is_state_name = False
+            text_is_reset_text = False
             for t in tags:
-                if t.startswith("transition"):  # then it ends with "priority"
-                    main_window.canvas.tag_bind(
-                        text_id,
-                        "<Double-Button-1>",
-                        lambda event, transition_tag=t[:-8]: transition_handling.edit_priority(event, transition_tag),
-                    )
-                else:
-                    main_window.canvas.tag_bind(
-                        text_id,
-                        "<Double-Button-1>",
-                        lambda event, text_id=text_id: state_handling.edit_state_name(event, text_id),
-                    )
+                if t.startswith("state"):  # state<nr>_name
+                    text_is_state_name = True
+                elif t.startswith("reset_text"):
+                    text_is_reset_text = True
+            if text_is_state_name:
+                state_handling.draw_state_name(coords[0], coords[1], text, tags)
+            elif text_is_reset_text:
+                reset_entry_handling.draw_reset_entry_text(coords[0], coords[1], text, tags)
+            else:
+                text_id = main_window.canvas.create_text(
+                    coords, text=text, tags=tags, font=canvas_editing.state_name_font
+                )
+                for t in tags:
+                    if t.startswith("transition"):
+                        main_window.canvas.tag_bind(
+                            text_id,
+                            "<Double-Button-1>",
+                            lambda event, transition_tag=t[:-8]: transition_handling.edit_priority(
+                                event, transition_tag
+                            ),
+                        )
         elif lines[_line_index].startswith("line|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "line|")
             coords = []
@@ -447,24 +442,20 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                     coords.append(v)
                 except ValueError:
                     tags = tags + (e,)
-            trans_id = main_window.canvas.create_line(coords, fill="blue", smooth=True, tags=tags)
-            main_window.canvas.tag_lower(trans_id)  # Lines are always "under" the priority rectangles.
-            main_window.canvas.tag_bind(
-                trans_id, "<Enter>", lambda event, trans_id=trans_id: main_window.canvas.itemconfig(trans_id, width=3)
-            )
-            main_window.canvas.tag_bind(
-                trans_id, "<Leave>", lambda event, trans_id=trans_id: main_window.canvas.itemconfig(trans_id, width=1)
-            )
             for t in tags:
-                if t.startswith("connected_to_transition"):
-                    main_window.canvas.itemconfig(trans_id, dash=(2, 2), fill="black", state=tk.HIDDEN)
-                elif t.startswith("connected_to_state") or t.endswith("_comment_line"):
-                    main_window.canvas.itemconfig(trans_id, dash=(2, 2), fill="black")
-                elif t.startswith("transition"):
-                    main_window.canvas.itemconfig(trans_id, arrow="last")
-                    main_window.canvas.tag_bind(
-                        trans_id, "<Button-3>", lambda event, id=trans_id: transition_handling.show_menu(event, id)
+                if t.startswith("connected_to_transition"):  # line to condition&action block
+                    trans_id = main_window.canvas.create_line(
+                        coords, dash=(2, 2), fill="black", tags=tags, state=tk.HIDDEN
                     )
+                    break
+                if t.startswith("connected_to_state") or t.endswith("_comment_line"):  # line to state action/comment
+                    trans_id = main_window.canvas.create_line(coords, dash=(2, 2), fill="black", tags=tags)
+                    break
+                if t.startswith("transition"):
+                    trans_id = transition_handling.draw_transition(coords, tags)
+                    main_window.canvas.tag_lower(trans_id)
+                    break
+            main_window.canvas.tag_lower(trans_id)  # Lines are always "under" anything else.
         elif lines[_line_index].startswith("rectangle|"):  # Used as connector or as priority entry.
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "rectangle|")
             coords = []
@@ -480,8 +471,15 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             for t in tags:
                 if t.startswith("connector"):
                     rectangle_color = constants.CONNECTOR_COLOR
-            notebook_id = main_window.canvas.create_rectangle(coords, tag=tags, fill=rectangle_color)
-            main_window.canvas.tag_raise(notebook_id)  # priority rectangles are always in "foreground"
+            rectangle_id = main_window.canvas.create_rectangle(coords, tag=tags, fill=rectangle_color)
+            main_window.canvas.tag_raise(rectangle_id)  # priority rectangles are always in "foreground"
+            if rectangle_color == constants.CONNECTOR_COLOR:
+                main_window.canvas.tag_bind(
+                    rectangle_id, "<Enter>", lambda event, id=rectangle_id: main_window.canvas.itemconfig(id, width=2)
+                )
+                main_window.canvas.tag_bind(
+                    rectangle_id, "<Leave>", lambda event, id=rectangle_id: main_window.canvas.itemconfig(id, width=1)
+                )
         elif lines[_line_index].startswith("window_state_action_block|"):  # state_action
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_state_action_block|")
             text = _get_data(rest_of_line, lines)

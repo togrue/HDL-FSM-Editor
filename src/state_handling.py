@@ -89,7 +89,7 @@ def _state_overlaps(event_x, event_y) -> bool:
     return False
 
 
-def draw_state_circle(coords, color, tags):
+def draw_state_circle(coords, color, tags) -> int:
     state_id = main_window.canvas.create_oval(
         coords,
         fill=color,
@@ -109,6 +109,7 @@ def draw_state_circle(coords, color, tags):
         "<Button-1>",
         lambda event: move_handling_canvas_item.MoveHandlingCanvasItem(event, state_id),
     )
+    return state_id
 
 
 def draw_state_name(event_x, event_y, text, tags):
