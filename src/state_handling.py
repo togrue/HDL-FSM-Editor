@@ -119,7 +119,6 @@ def draw_state_name(event_x, event_y, text, tags):
         tags=tags,
         font=canvas_editing.state_name_font,
     )
-
     main_window.canvas.tag_bind(
         text_id,
         "<Button-1>",
@@ -128,6 +127,14 @@ def draw_state_name(event_x, event_y, text, tags):
     main_window.canvas.tag_bind(
         text_id, "<Double-Button-1>", lambda event, text_id=text_id: edit_state_name(event, text_id)
     )
+    main_window.canvas.tag_bind(text_id, "<Button-3>", lambda event: _show_menu_from_text(event, text_id))
+
+
+def _show_menu_from_text(event, text_id):
+    for tag in main_window.canvas.gettags(text_id):
+        if tag.endswith("_name"):
+            state_tag = tag[:-5]
+            show_menu(event, state_tag)
 
 
 def insert_state(event) -> None:
