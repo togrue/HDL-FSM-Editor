@@ -85,7 +85,17 @@ def delete() -> None:
     design_was_changed = False
     for i in ids:
         tags_of_item_i = main_window.canvas.gettags(i)
-        if main_window.canvas.type(i) is None:
+        cannot_be_deleted = False
+        for single_tag in tags_of_item_i:
+            if (
+                single_tag == "grid_line"
+                or single_tag.startswith("connection")  # line to state-action
+                or single_tag.endswith("_comment_line")  # line to state-comment
+            ):
+                cannot_be_deleted = True
+        if cannot_be_deleted:
+            pass
+        elif main_window.canvas.type(i) is None:
             # This item i is a member of the list stored in ids but was already deleted,
             # when one of the items earlier in the list was deleted.
             pass
@@ -252,10 +262,7 @@ def delete() -> None:
                     main_window.canvas.delete(transition + "rectangle")  # delete priority rectangle
                     main_window.canvas.delete(transition + "priority")  # delete priority
             design_was_changed = True
-        elif main_window.canvas.type(i) == "line" and "grid_line" not in main_window.canvas.gettags(
-            i
-        ):  # transition (can be deleted) or connection (cannot be deleted)
-            # Remove transition-line, transition-priority, condition-action-block:
+        elif main_window.canvas.type(i) == "line":  # transition
             for tag in tags_of_item_i:
                 if tag.startswith("transition"):
                     main_window.canvas.delete(tag)  # delete transition
@@ -275,10 +282,6 @@ def delete() -> None:
                     main_window.canvas.dtag(end_state, transition + "_end")
             adapt_visibility_of_priority_rectangles_at_state(start_state)
             design_was_changed = True
-        elif main_window.canvas.type(i) == "line" and "grid_line" in main_window.canvas.gettags(
-            i
-        ):  # grid line cannot be deleted.
-            pass
         else:
             messagebox.showerror(
                 "Delete",
