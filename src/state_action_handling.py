@@ -98,8 +98,6 @@ class MyText:
             dash=(2, 2),
             tag=("connection" + str(MyText.mytext_id), "connected_to_" + state_tags[0]),
         )
-        main_window.canvas.tag_bind(self.line_id, "<Enter>", lambda event: self.activate_line())
-        main_window.canvas.tag_bind(self.line_id, "<Leave>", lambda event: self.deactivate_line())
         main_window.canvas.tag_lower(self.line_id, state_id)
 
     def update_text(self) -> None:
@@ -125,12 +123,6 @@ class MyText:
     def deactivate_window(self) -> None:
         self.frame_id.configure(borderwidth=0, style="StateActionsWindow.TFrame")
         self.label_id.configure(style="StateActionsWindow.TLabel")
-
-    def activate_line(self) -> None:
-        main_window.canvas.itemconfigure(self.line_id, width=3)
-
-    def deactivate_line(self) -> None:
-        main_window.canvas.itemconfigure(self.line_id, width=1)
 
     def move_to(self, event_x, event_y, first, _) -> None:
         if first:

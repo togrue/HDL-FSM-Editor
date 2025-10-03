@@ -137,8 +137,6 @@ class StateComment:
             dash=(2, 2),
             tag=state_identifier + "_comment_line",
         )
-        main_window.canvas.tag_bind(self.line_id, "<Enter>", lambda event: self.activate_line())
-        main_window.canvas.tag_bind(self.line_id, "<Leave>", lambda event: self.deactivate_line())
         main_window.canvas.tag_lower(self.line_id, state_identifier)
 
     def tag(self, state_identifier) -> None:  # Called by state_handling.evaluate_menu().
@@ -146,9 +144,3 @@ class StateComment:
         main_window.canvas.itemconfigure(
             self.window_id, tag=(state_identifier + "_comment", state_identifier + "_comment_line_start")
         )
-
-    def activate_line(self) -> None:
-        main_window.canvas.itemconfigure(self.line_id, width=3)
-
-    def deactivate_line(self) -> None:
-        main_window.canvas.itemconfigure(self.line_id, width=1)
