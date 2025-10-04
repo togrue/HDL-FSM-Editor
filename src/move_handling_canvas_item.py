@@ -2,6 +2,7 @@
 A MoveCanvasItem object is created, when the user moves a Canvas item.
 """
 
+import canvas_modify_bindings
 import main_window
 import move_handling
 import move_handling_finish
@@ -10,6 +11,8 @@ import move_handling_initialization
 
 class MoveHandlingCanvasItem:
     def __init__(self, event, canvas_id):
+        if canvas_modify_bindings.transition_insertion_runs:
+            return  # Button-1 shall now not move any canvas item
         self.canvas_id = canvas_id
         self.move_list = move_handling_initialization.create_move_list([self.canvas_id], event.x, event.y)
 
