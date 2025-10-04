@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed second implementation of transition drawing from file_handling.
 - Removed second implementation of transition priority drawing from file_handling.
 ## Fixed
+- Inserting a new transition activated the message box "corrupt database" with no reason.
 - The senseless attempt to remove the line to a state-action/comment box caused an exception.
 - After an Undo operation the new move method did not work for states anymore.
 - The end point of a connection line of a state action/comment jumped sometimes to the grid.
