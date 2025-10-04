@@ -467,19 +467,15 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                     coords.append(v)
                 except ValueError:
                     tags = tags + (e,)
-            rectangle_color = constants.STATE_COLOR
+            is_priority_rectangle = True
             for t in tags:
                 if t.startswith("connector"):
-                    rectangle_color = constants.CONNECTOR_COLOR
-            rectangle_id = main_window.canvas.create_rectangle(coords, tag=tags, fill=rectangle_color)
+                    is_priority_rectangle = False
+            if is_priority_rectangle:
+                rectangle_id = main_window.canvas.create_rectangle(coords, tag=tags, fill=constants.STATE_COLOR)
+            else:
+                rectangle_id = connector_handling.draw_connector(coords, tags)
             main_window.canvas.tag_raise(rectangle_id)  # priority rectangles are always in "foreground"
-            if rectangle_color == constants.CONNECTOR_COLOR:
-                main_window.canvas.tag_bind(
-                    rectangle_id, "<Enter>", lambda event, id=rectangle_id: main_window.canvas.itemconfig(id, width=2)
-                )
-                main_window.canvas.tag_bind(
-                    rectangle_id, "<Leave>", lambda event, id=rectangle_id: main_window.canvas.itemconfig(id, width=1)
-                )
         elif lines[_line_index].startswith("window_state_action_block|"):  # state_action
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_state_action_block|")
             text = _get_data(rest_of_line, lines)

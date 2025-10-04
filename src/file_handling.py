@@ -630,15 +630,19 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
                 break
         main_window.canvas.tag_lower(trans_id)  # Lines are always "under" anything else.
 
-    # Load rectangles
+    # Load rectangles (connector, priority-box)
     for definition in design_dictionary["rectangle"]:
         coords = definition[0]
         tags = definition[1]
-        rectangle_color = constants.STATE_COLOR
+        is_priority_rectangle = True
         for t in tags:
             if t.startswith("connector"):
-                rectangle_color = constants.CONNECTOR_COLOR
-        if rectangle_color == constants.CONNECTOR_COLOR:
+                is_priority_rectangle = False
+        if is_priority_rectangle:  # priority rectangle
+            rectangle_id = main_window.canvas.create_rectangle(coords, tag=tags, fill=constants.STATE_COLOR)
+            ids_of_rectangles_to_raise.append(rectangle_id)
+        else:
+            connector_handling.draw_connector(coords, tags)
             number_of_outgoing_transitions = 0
             for tag in tags:
                 if tag.startswith("transition") and tag.endswith("_start"):
@@ -646,16 +650,6 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
                     number_of_outgoing_transitions += 1
             if number_of_outgoing_transitions == 1:
                 hide_priority_rectangle_list.append(transition_identifier)
-        canvas_id = main_window.canvas.create_rectangle(coords, tag=tags, fill=rectangle_color)
-        if rectangle_color == constants.STATE_COLOR:  # priority rectangle
-            ids_of_rectangles_to_raise.append(canvas_id)
-        else:
-            main_window.canvas.tag_bind(
-                canvas_id, "<Enter>", lambda event, id=canvas_id: main_window.canvas.itemconfig(id, width=2)
-            )
-            main_window.canvas.tag_bind(
-                canvas_id, "<Leave>", lambda event, id=canvas_id: main_window.canvas.itemconfig(id, width=1)
-            )
 
     # Load window elements
     _load_window_elements(design_dictionary)

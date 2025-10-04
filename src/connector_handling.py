@@ -26,21 +26,26 @@ def insert_connector(event) -> None:
     for overlapping_item in overlapping_items:
         if "grid_line" not in main_window.canvas.gettags(overlapping_item):
             return
-    connector_id = main_window.canvas.create_rectangle(
+    coords = (
         event_x - canvas_editing.state_radius / 4,
         event_y - canvas_editing.state_radius / 4,
         event_x + canvas_editing.state_radius / 4,
         event_y + canvas_editing.state_radius / 4,
-        fill=constants.CONNECTOR_COLOR,
-        tag="connector" + str(connector_number),
     )
+    tag = "connector" + str(connector_number)
+    draw_connector(coords, tag)
+    undo_handling.design_has_changed()
+
+
+def draw_connector(coords, tags):
+    connector_id = main_window.canvas.create_rectangle(coords, fill=constants.CONNECTOR_COLOR, tags=tags)
     main_window.canvas.tag_bind(
         connector_id, "<Enter>", lambda event, id=connector_id: main_window.canvas.itemconfig(id, width=2)
     )
     main_window.canvas.tag_bind(
         connector_id, "<Leave>", lambda event, id=connector_id: main_window.canvas.itemconfig(id, width=1)
     )
-    undo_handling.design_has_changed()
+    return connector_id
 
 
 def move_to(event_x, event_y, rectangle_id, first, last) -> None:

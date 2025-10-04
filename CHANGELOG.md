@@ -7,12 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ## Added
+- The state menu can now also be opened over a state name.
 ## Changed
 ## Deprecated
 ## Removed
 - Removed useless highlighting at entering a line to a state-action/comment box.
+- Removed unused parameter move_to_grid of method move_to for canvas-windows.
+- Removed second implementation of transition drawing from file_handling.
 ## Fixed
 - The senseless attempt to remove the line to a state-action/comment box caused an exception.
+- After an Undo operation the new move method did not work for states anymore.
+- The end point of a connection line of a state action/comment jumped sometimes to the grid.
 ## Security
 
 ## [5.4]
