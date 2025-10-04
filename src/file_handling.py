@@ -602,16 +602,12 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
             state_handling.draw_state_name(coords[0], coords[1], text, tags)
         elif text_is_reset_text:
             reset_entry_handling.draw_reset_entry_text(coords[0], coords[1], text, tags)
-        else:
-            text_id = main_window.canvas.create_text(coords, text=text, tags=tags, font=canvas_editing.state_name_font)
+        else:  # priority number
             for t in tags:
                 if t.startswith("transition"):
+                    transition_tag = t[:-8]
+                    text_id = transition_handling.draw_priority_number(coords, text, tags, transition_tag)
                     priority_ids.append(text_id)
-                    main_window.canvas.tag_bind(
-                        text_id,
-                        "<Double-Button-1>",
-                        lambda event, transition_tag=t[:-8]: transition_handling.edit_priority(event, transition_tag),
-                    )
 
     # Load lines (transitions)
     for definition in design_dictionary["line"]:
@@ -626,7 +622,6 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
                 break
             if t.startswith("transition"):
                 trans_id = transition_handling.draw_transition(coords, tags)
-                main_window.canvas.tag_lower(trans_id)
                 break
         main_window.canvas.tag_lower(trans_id)  # Lines are always "under" anything else.
 
@@ -639,7 +634,7 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
             if t.startswith("connector"):
                 is_priority_rectangle = False
         if is_priority_rectangle:  # priority rectangle
-            rectangle_id = main_window.canvas.create_rectangle(coords, tag=tags, fill=constants.STATE_COLOR)
+            rectangle_id = transition_handling.draw_priority_rectangle(coords, tags)
             ids_of_rectangles_to_raise.append(rectangle_id)
         else:
             connector_handling.draw_connector(coords, tags)

@@ -652,6 +652,44 @@ def _move_transition_start_and_end_point_to_the_edge_of_the_state_circle(
 
 def _add_priority_rectangle_to_the_new_transition(transition_coords, start_state_canvas_id) -> None:
     priority_dict = determine_priorities_of_outgoing_transitions(start_state_canvas_id)
+    priority_visibility = _configure_visibility_of_priority_rectangles(priority_dict)
+    priority = _get_unused_priority(priority_dict)
+    coords = _determine_position_of_priority_rectangle(transition_coords)
+    tag_of_new_transition = "transition" + str(transition_number)
+    tag_of_priority_number = "transition" + str(transition_number) + "priority"
+    tag_of_priority_rectangle = "transition" + str(transition_number) + "rectangle"
+
+    canvas_id_priority_text = draw_priority_number(coords, priority, tag_of_priority_number, tag_of_new_transition)
+
+    priority_number_bbox_coords = main_window.canvas.bbox(canvas_id_priority_text)
+    canvas_id_priority_rectangle = draw_priority_rectangle(priority_number_bbox_coords, tag_of_priority_rectangle)
+
+    main_window.canvas.itemconfigure(canvas_id_priority_text, state=priority_visibility)
+    main_window.canvas.itemconfigure(canvas_id_priority_rectangle, state=priority_visibility)
+    main_window.canvas.tag_raise(tag_of_priority_number)
+
+
+def draw_priority_number(coords, transition_priority, tag_of_priority_number, tag_of_new_transition):
+    canvas_id_priority_text = main_window.canvas.create_text(
+        coords,
+        text=transition_priority,
+        tag=tag_of_priority_number,
+        font=canvas_editing.state_name_font,
+    )
+    main_window.canvas.tag_bind(
+        canvas_id_priority_text,
+        "<Double-Button-1>",
+        lambda event: edit_priority(event, tag_of_new_transition),
+    )
+    return canvas_id_priority_text
+
+
+def draw_priority_rectangle(coords, tags):
+    canvas_id_priority_rectangle = main_window.canvas.create_rectangle(coords, tag=tags, fill=constants.STATE_COLOR)
+    return canvas_id_priority_rectangle
+
+
+def _configure_visibility_of_priority_rectangles(priority_dict):
     if len(priority_dict) == 1:
         transition_priority_visibility = tk.HIDDEN
     else:
@@ -659,9 +697,12 @@ def _add_priority_rectangle_to_the_new_transition(transition_coords, start_state
         for outgoing_transition in priority_dict:
             main_window.canvas.itemconfigure(outgoing_transition + "priority", state=tk.NORMAL)
             main_window.canvas.itemconfigure(outgoing_transition + "rectangle", state=tk.NORMAL)
-    transition_priority = _get_unused_priority(priority_dict)
+    return transition_priority_visibility
+
+
+def _determine_position_of_priority_rectangle(transition_coords):
     # Determine middle of the priority rectangle position by calculating a shortened transition:
-    [priority_middle_x, priority_middle_y, _, _] = vector_handling.shorten_vector(
+    priority_middle_x, priority_middle_y, _, _ = vector_handling.shorten_vector(
         canvas_editing.priority_distance,
         transition_coords[0],
         transition_coords[1],
@@ -671,28 +712,7 @@ def _add_priority_rectangle_to_the_new_transition(transition_coords, start_state
         1,
         0,
     )
-    tag_of_new_transition = "transition" + str(transition_number)
-    main_window.canvas.create_text(
-        priority_middle_x,
-        priority_middle_y,
-        text=transition_priority,
-        tag=(tag_of_new_transition + "priority"),
-        font=canvas_editing.state_name_font,
-    )
-    text_rectangle = main_window.canvas.bbox(tag_of_new_transition + "priority")
-    main_window.canvas.itemconfigure(tag_of_new_transition + "priority", state=transition_priority_visibility)
-    main_window.canvas.create_rectangle(
-        text_rectangle,
-        tag=(tag_of_new_transition + "rectangle"),
-        fill=constants.STATE_COLOR,
-        state=transition_priority_visibility,
-    )
-    main_window.canvas.tag_raise(tag_of_new_transition + "priority")
-    main_window.canvas.tag_bind(
-        tag_of_new_transition + "priority",
-        "<Double-Button-1>",
-        lambda event, transition_tag=tag_of_new_transition: edit_priority(event, transition_tag),
-    )
+    return priority_middle_x, priority_middle_y
 
 
 def determine_priorities_of_outgoing_transitions(start_state_canvas_id) -> dict:

@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed useless highlighting at entering a line to a state-action/comment box.
 - Removed unused parameter move_to_grid of method move_to for canvas-windows.
 - Removed second implementation of transition drawing from file_handling.
+- Removed second implementation of transition priority drawing from file_handling.
 ## Fixed
 - The senseless attempt to remove the line to a state-action/comment box caused an exception.
 - After an Undo operation the new move method did not work for states anymore.
