@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ## Added
+## Changed
+## Deprecated
+## Removed
+## Fixed
+## Security
+
+## [5.5]
+## Added
 - The state menu can now also be opened over a state name.
 ## Changed
 ## Deprecated
