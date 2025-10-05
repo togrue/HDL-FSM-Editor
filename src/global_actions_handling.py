@@ -16,7 +16,7 @@ global_actions_combinatorial_number = 0
 state_actions_default_number = 0
 
 
-def insert_global_actions_clocked(event) -> None:
+def insert_global_actions_clocked(event: tk.Event) -> None:
     global global_actions_clocked_number
     if global_actions_clocked_number == 0:  # Only 1 global action is allowed.
         main_window.global_action_clocked_button.config(state=tk.DISABLED)
@@ -25,21 +25,21 @@ def insert_global_actions_clocked(event) -> None:
         undo_handling.design_has_changed()
 
 
-def _insert_global_actions_clocked_in_canvas(event) -> None:
+def _insert_global_actions_clocked_in_canvas(event: tk.Event) -> None:
     canvas_grid_coordinates_of_the_event = (
         canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(event)
     )
     _create_global_actions_clocked(canvas_grid_coordinates_of_the_event)
 
 
-def _create_global_actions_clocked(canvas_grid_coordinates_of_the_event) -> None:
+def _create_global_actions_clocked(canvas_grid_coordinates_of_the_event: list[float]) -> None:
     ref = global_actions.GlobalActions(
         canvas_grid_coordinates_of_the_event[0], canvas_grid_coordinates_of_the_event[1], height=1, width=8, padding=1
     )
     ref.tag()
 
 
-def insert_global_actions_combinatorial(event) -> None:
+def insert_global_actions_combinatorial(event: tk.Event) -> None:
     global global_actions_combinatorial_number
     if global_actions_combinatorial_number == 0:  # Only 1 global action is allowed.
         main_window.global_action_combinatorial_button.config(state=tk.DISABLED)
@@ -48,21 +48,21 @@ def insert_global_actions_combinatorial(event) -> None:
         undo_handling.design_has_changed()
 
 
-def _insert_global_actions_combinatorial_in_canvas(event) -> None:
+def _insert_global_actions_combinatorial_in_canvas(event: tk.Event) -> None:
     canvas_grid_coordinates_of_the_event = (
         canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(event)
     )
     _create_global_actions_combinatorial(canvas_grid_coordinates_of_the_event)
 
 
-def _create_global_actions_combinatorial(canvas_grid_coordinates_of_the_event) -> None:
+def _create_global_actions_combinatorial(canvas_grid_coordinates_of_the_event: list[float]) -> None:
     ref = global_actions_combinatorial.GlobalActionsCombinatorial(
         canvas_grid_coordinates_of_the_event[0], canvas_grid_coordinates_of_the_event[1], height=1, width=8, padding=1
     )
     ref.tag()
 
 
-def insert_state_actions_default(event) -> None:
+def insert_state_actions_default(event: tk.Event) -> None:
     global state_actions_default_number
     if state_actions_default_number == 0:  # Only 1 global action is allowed.
         main_window.state_action_default_button.config(state=tk.DISABLED)
@@ -71,14 +71,14 @@ def insert_state_actions_default(event) -> None:
         undo_handling.design_has_changed()
 
 
-def _insert_state_actions_default_in_canvas(event) -> None:
+def _insert_state_actions_default_in_canvas(event: tk.Event) -> None:
     canvas_grid_coordinates_of_the_event = (
         canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(event)
     )
     _create_state_actions_default(canvas_grid_coordinates_of_the_event)
 
 
-def _create_state_actions_default(canvas_grid_coordinates_of_the_event) -> None:
+def _create_state_actions_default(canvas_grid_coordinates_of_the_event: list[float]) -> None:
     ref = state_actions_default.StateActionsDefault(
         canvas_grid_coordinates_of_the_event[0], canvas_grid_coordinates_of_the_event[1], height=1, width=8, padding=1
     )

@@ -2,6 +2,8 @@
 This class draws a grid into the canvas.
 """
 
+import tkinter as tk
+
 import canvas_editing
 import main_window
 
@@ -11,7 +13,7 @@ class GridDraw:
     This class draws a grid into the canvas.
     """
 
-    def __init__(self, canvas) -> None:
+    def __init__(self, canvas: tk.Canvas) -> None:
         self.canvas = canvas
 
     def remove_grid(self) -> None:
@@ -31,7 +33,7 @@ class GridDraw:
                 self.__draw_vertical_grid(grid_size, visible_window)
         self.canvas.tag_lower("grid_line")
 
-    def __draw_horizontal_grid(self, grid_size, visible_window) -> None:
+    def __draw_horizontal_grid(self, grid_size: float, visible_window: list[float]) -> None:
         # An extra margin of 3*grid_size is used because otherwise there are sometimes too few grid-lines:
         x_min = visible_window[0] - visible_window[0] % grid_size - 3 * grid_size
         x_max = visible_window[2] + visible_window[2] % grid_size + 3 * grid_size
@@ -41,7 +43,7 @@ class GridDraw:
             self.canvas.create_line(x_min, y, x_max, y, dash=(1, 1), fill="gray85", tags="grid_line")
             y += grid_size
 
-    def __draw_vertical_grid(self, grid_size, visible_window) -> None:
+    def __draw_vertical_grid(self, grid_size: float, visible_window: list[float]) -> None:
         x = visible_window[0] - visible_window[0] % grid_size
         x_max = visible_window[2] + visible_window[2] % grid_size
         y_min = visible_window[1] - visible_window[1] % grid_size

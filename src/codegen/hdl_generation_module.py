@@ -14,7 +14,7 @@ from link_dictionary import link_dict
 from .exceptions import GenerationError
 
 
-def create_module_logic(file_name, file_line_number, state_tag_list_sorted) -> None:
+def create_module_logic(file_name: str, file_line_number: int, state_tag_list_sorted: list[str]) -> str:
     architecture = ""
     state_signal_type_definition = _create_signal_declaration_for_the_state_variable(state_tag_list_sorted)
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_signal_type_definition)
@@ -32,11 +32,15 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted) -> N
     )
     file_line_number += number_of_new_lines
 
-    [reset_condition, reset_action, reference_to_reset_condition_custom_text, reference_to_reset_action_custom_text] = (
-        hdl_generation_library.create_reset_condition_and_reset_action()
-    )
+    (
+        reset_condition,
+        reset_action,
+        reference_to_reset_condition_custom_text,
+        reference_to_reset_action_custom_text,
+    ) = hdl_generation_library.create_reset_condition_and_reset_action()
     if reset_condition is None:
-        return  # No further actions make sense, as always a reset condition must exist.
+        raise GenerationError("Error", "No reset condition found. A reset condition is required!")
+    assert reference_to_reset_condition_custom_text is not None, "Reset condition ui item not found."
 
     architecture += (
         "    always @(posedge "
@@ -99,8 +103,9 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted) -> N
     architecture += "        else begin\n"
     file_line_number += 2
 
-    global_actions_before_reference, global_actions_before = hdl_generation_library.create_global_actions_before()
-    if global_actions_before != "":
+    _res = hdl_generation_library.create_global_actions_before()
+    if _res:
+        global_actions_before_reference, global_actions_before = _res
         global_actions_before = "// Global Actions before:\n" + global_actions_before
         file_line_number += 1
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, global_actions_before)
@@ -130,8 +135,9 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted) -> N
     architecture += "            endcase\n"
     file_line_number += 3
 
-    global_actions_after_reference, global_actions_after = hdl_generation_library.create_global_actions_after()
-    if global_actions_after != "":
+    _res = hdl_generation_library.create_global_actions_after()
+    if _res:
+        global_actions_after_reference, global_actions_after = _res
         global_actions_after = "// Global Actions after:\n" + global_actions_after
         file_line_number += 1
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, global_actions_after)
@@ -154,8 +160,9 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted) -> N
     )
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_actions_process)
 
-    concurrent_actions_reference, concurrent_actions = hdl_generation_library.create_concurrent_actions()
-    if concurrent_actions != "":
+    _res = hdl_generation_library.create_concurrent_actions()
+    if _res:
+        concurrent_actions_reference, concurrent_actions = _res
         concurrent_actions = "// Global Actions combinatorial:\n" + concurrent_actions
         file_line_number += 1
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, concurrent_actions)
@@ -173,7 +180,7 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted) -> N
     return architecture
 
 
-def _create_signal_declaration_for_the_state_variable(state_tag_list_sorted) -> str:
+def _create_signal_declaration_for_the_state_variable(state_tag_list_sorted: list[str]) -> str:
     list_of_all_state_names = [
         main_window.canvas.itemcget(state_tag + "_name", "text") for state_tag in state_tag_list_sorted
     ]
@@ -197,7 +204,7 @@ def _create_signal_declaration_for_the_state_variable(state_tag_list_sorted) -> 
     return signal_declaration
 
 
-def _indent_identically(character, actual_list) -> list:
+def _indent_identically(character: str, actual_list: list[str]) -> list[str]:
     actual_list = [
         re.sub("[ ]*" + character, character, decl, count=1) for decl in actual_list
     ]  # Blanks for the character will be adapted und must first be removed here.
@@ -214,7 +221,7 @@ def _indent_identically(character, actual_list) -> list:
     return new_list
 
 
-def _get_reset_edge(reset_condition) -> str:
+def _get_reset_edge(reset_condition: str) -> str:
     reset_condition_mod = hdl_generation_library.remove_comments_and_returns(reset_condition)
     reset_condition_mod = re.sub("\\s", "", reset_condition_mod)  # remove blanks
     if reset_condition_mod.endswith("1'b0"):

@@ -6,7 +6,9 @@ import os
 import re
 import subprocess
 import tkinter as tk
+from re import Match
 from tkinter import messagebox
+from typing import Any, Optional
 
 import canvas_editing
 import codegen.hdl_generation_architecture_state_actions as hdl_generation_architecture_state_actions
@@ -24,17 +26,17 @@ class CustomText(tk.Text):
     https://stackoverflow.com/questions/40617515/python-tkinter-text-modified-callback
     """
 
-    read_variables_of_all_windows = {}
-    written_variables_of_all_windows = {}
+    read_variables_of_all_windows: dict["CustomText", list[str]] = {}
+    written_variables_of_all_windows: dict["CustomText", list[str]] = {}
 
-    def __init__(self, *args, text_type, **kwargs) -> None:
+    def __init__(self, *args: Any, text_type: str, **kwargs: Any) -> None:
         """A text widget that report on internal widget commands"""
         tk.Text.__init__(self, *args, **kwargs)
         self.text_type = text_type
         # create a proxy for the underlying widget
-        self._orig = self._w + "_orig"
-        self.tk.call("rename", self._w, self._orig)
-        self.tk.createcommand(self._w, self._proxy)
+        self._orig = str(self) + "_orig"
+        self.tk.call("rename", str(self), self._orig)
+        self.tk.createcommand(str(self), self._proxy)
         self.bind("<Tab>", lambda event: self.replace_tabs_by_blanks())
         # Overwrites the default control-e = "move cursor to end of line":
         self.bind("<Control-e>", lambda event: self.edit_in_external_editor())
@@ -49,12 +51,12 @@ class CustomText(tk.Text):
             "<Key>", lambda event: self.format_after_idle()
         )  # This binding will be overwritten for the CustomText objects in Interface/Internals tab.
         self.bind("<Button-1>", lambda event: self.tag_delete("highlight"))
-        self.signals_list = []
-        self.constants_list = []
-        self.readable_ports_list = []
-        self.writable_ports_list = []
-        self.generics_list = []
-        self.port_types_list = []
+        self.signals_list: list[str] = []
+        self.constants_list: list[str] = []
+        self.readable_ports_list: list[str] = []
+        self.writable_ports_list: list[str] = []
+        self.generics_list: list[str] = []
+        self.port_types_list: list[str] = []
         CustomText.read_variables_of_all_windows[self] = []
         CustomText.written_variables_of_all_windows[self] = []
         self.tag_config("message_red", foreground="red")
@@ -65,7 +67,7 @@ class CustomText(tk.Text):
         # Prevent a second call of open_file() by bind_all binding (which is located in entry 4 of the bind-list):
         return "break"
 
-    def _proxy(self, command, *args) -> None:
+    def _proxy(self, command: str, *args: Any) -> Any:
         cmd = (self._orig, command) + args
         try:
             result = self.tk.call(cmd)
@@ -112,7 +114,7 @@ class CustomText(tk.Text):
         self.__update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows()
         self.update_highlighting()
 
-    def __update_size_of_text_box(self, text) -> None:
+    def __update_size_of_text_box(self, text: str) -> None:
         nr_of_lines = 0
         nr_of_characters_in_line = 0
         max_line_length = 0
@@ -136,11 +138,11 @@ class CustomText(tk.Text):
             self.config(height=nr_of_lines)
 
     def update_highlighting(self) -> None:
-        self.update_highlight_tags(canvas_editing.fontsize, ["control", "datatype", "function"])
+        self.update_highlight_tags(int(canvas_editing.fontsize), ["control", "datatype", "function"])
         linting.recreate_keyword_list_of_unused_signals()
         linting.update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment()
 
-    def update_highlight_tags(self, fontsize, keyword_type_list) -> None:
+    def update_highlight_tags(self, fontsize: int, keyword_type_list: list[str]) -> None:
         for keyword_type in keyword_type_list:
             self.tag_delete(keyword_type)
             for keyword in main_window.keywords[keyword_type]:
@@ -153,12 +155,12 @@ class CustomText(tk.Text):
                 self.tag_configure(
                     keyword_type,
                     foreground=config.KEYWORD_COLORS[keyword_type],
-                    font=("Courier", int(fontsize), "normal"),
-                )  # int() is necessary, because fontsize can be a "real" number.
+                    font=("Courier", fontsize, "normal"),
+                )
             else:
                 self.tag_configure(keyword_type, foreground=config.KEYWORD_COLORS[keyword_type], font=("Courier", 10))
 
-    def add_highlight_tag_for_single_keyword(self, keyword_type, keyword) -> None:
+    def add_highlight_tag_for_single_keyword(self, keyword_type: str, keyword: str) -> None:
         copy_of_text = self.get("1.0", tk.END + "- 1 chars")
         if copy_of_text == "":
             return
@@ -202,7 +204,7 @@ class CustomText(tk.Text):
                     break
                 self.tag_add(keyword_type, "1.0 + " + str(match_start) + " chars", "1.0 + " + str(match_end) + " chars")
 
-    def replace_strings_and_attributes_by_blanks(self, copy_of_text):
+    def replace_strings_and_attributes_by_blanks(self, copy_of_text: str) -> str:
         for search_string in ["'image", "'length", '".*?"', "'.*?'"]:
             while True:
                 match_object = re.search(search_string, copy_of_text, flags=re.IGNORECASE)
@@ -217,7 +219,7 @@ class CustomText(tk.Text):
                     break
         return copy_of_text
 
-    def remove_surrounding_characters_from_the_match(self, match_object, keyword) -> tuple:
+    def remove_surrounding_characters_from_the_match(self, match_object: Match[str], keyword: str) -> tuple[int, int]:
         if match_object.end() - match_object.start() == len(keyword) + 2:
             return match_object.start() + 1, match_object.end() - 1
         if match_object.end() - match_object.start() == len(keyword) + 1:
@@ -309,14 +311,14 @@ class CustomText(tk.Text):
             if ":=" in CustomText.written_variables_of_all_windows[self]:
                 CustomText.written_variables_of_all_windows[self].remove(":=")
 
-    def __remove_keywords(self, text):
+    def __remove_keywords(self, text: str) -> str:
         if main_window.language.get() == "VHDL":
             text = self.__remove_keywords_from_vhdl(text)
         else:
             text = self.__remove_keywords_from_verilog(text)
         return text
 
-    def __remove_keywords_from_vhdl(self, text):
+    def __remove_keywords_from_vhdl(self, text: str) -> str:
         for keyword in constants.VHDL_KEYWORDS_FOR_SIGNAL_HANDLING + (
             " process.*?begin ",  # Remove complete process headers, if some exist.
             " end\\s+?process\\s*?;",  # remove end of process, before ...
@@ -346,7 +348,7 @@ class CustomText(tk.Text):
             text = re.sub(" " + keyword + " ", "  ", text, flags=re.I)  # Keep the blanks the keyword is surrounded by.
         return text
 
-    def __remove_keywords_from_verilog(self, text):
+    def __remove_keywords_from_verilog(self, text: str) -> str:
         for keyword in constants.VERILOG_KEYWORDS_FOR_SIGNAL_HANDLING + (
             " end ",
             " endcase\\s*?;",
@@ -364,7 +366,7 @@ class CustomText(tk.Text):
             text = re.sub(keyword, "  ", text, flags=re.I)  # Keep the blanks the keyword is surrounded by.
         return text
 
-    def __remove_condition_keywords(self, text):
+    def __remove_condition_keywords(self, text: str) -> str:
         if main_window.language.get() == "VHDL":
             for keyword in (" = ", " /= ", " < ", " <= ", " > ", " >= "):
                 text = re.sub(keyword, "  ", text, flags=re.I)  # Keep the blanks the keyword is surrounded by.
@@ -383,7 +385,7 @@ class CustomText(tk.Text):
                 text = re.sub(keyword, "  ", text, flags=re.I)  # Keep the blanks the keyword is surrounded by.
         return text
 
-    def __add_read_variables_from_with_select_blocks_to_read_variables_of_all_windows(self, text):
+    def __add_read_variables_from_with_select_blocks_to_read_variables_of_all_windows(self, text: str) -> str:
         if main_window.language.get() == "VHDL":
             with_select_search_pattern = "with\\s+.*?\\s+select"
             all_with_selects = []
@@ -404,7 +406,7 @@ class CustomText(tk.Text):
                 )  # split() removes only blanks here.
         return text
 
-    def __add_read_variables_from_conditions_to_read_variables_of_all_windows(self, text):
+    def __add_read_variables_from_conditions_to_read_variables_of_all_windows(self, text: str) -> str:
         if main_window.language.get() == "VHDL":
             condition_search_pattern = (
                 "^if\\s+[^;]*?\\s+then| if\\s+[^;]*?\\s+then|elsif\\s+[^;]*?\\s+then|"
@@ -452,7 +454,7 @@ class CustomText(tk.Text):
             CustomText.read_variables_of_all_windows[self] += condition.split()
         return text
 
-    def __add_read_variables_from_case_constructs_to_read_variables_of_all_windows(self, text):
+    def __add_read_variables_from_case_constructs_to_read_variables_of_all_windows(self, text: str) -> str:
         if main_window.language.get() == "VHDL":
             case_search_pattern = "^case\\s+.+?\\s+is| case\\s+.+?\\s+is"
         else:
@@ -478,7 +480,7 @@ class CustomText(tk.Text):
             CustomText.read_variables_of_all_windows[self] += case.split()
         return text
 
-    def __add_read_variables_from_assignments_to_read_variables_of_all_windows(self, text):
+    def __add_read_variables_from_assignments_to_read_variables_of_all_windows(self, text: str) -> str:
         right_hand_side_search_pattern = "=.*?;"
         while True:  # Collect all right hand sides and remove them from text.
             match = re.search(right_hand_side_search_pattern, text, flags=re.IGNORECASE)
@@ -499,7 +501,7 @@ class CustomText(tk.Text):
                 break
         return text
 
-    def __add_read_variables_from_always_statements_to_read_variables_of_all_windows(self, text):
+    def __add_read_variables_from_always_statements_to_read_variables_of_all_windows(self, text: str) -> str:
         while True:
             match = re.search(r"always\s*@.*?begin", text, flags=re.IGNORECASE)
             if match:
@@ -521,9 +523,41 @@ class CustomText(tk.Text):
                 break
         return text
 
-    def highlight_item(self, hdl_item_type, object_identifier, number_of_line) -> None:
+    def highlight_item(self, hdl_item_type: str, object_identifier: str, number_of_line: int) -> None:
         self.tag_add("highlight", str(number_of_line) + ".0", str(number_of_line + 1) + ".0")
         # self.tag_config("highlight", background="#e9e9e9")
         self.tag_config("highlight", background="orange")
         self.see(str(number_of_line) + ".0")
         self.focus_set()
+
+
+class ConditionCustomText(CustomText):
+    """Wrapper for CustomText that provides a condition_text attribute."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.condition_text: Optional[str] = None
+
+
+class ActionCustomText(CustomText):
+    """Wrapper for CustomText that provides an action_text attribute."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.action_text: Optional[str] = None
+
+
+class TextAfterCustomText(CustomText):
+    """Wrapper for CustomText that provides a text_after_content attribute."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.text_after_content: Optional[str] = None
+
+
+class TextBeforeCustomText(CustomText):
+    """Wrapper for CustomText that provides a text_before_content attribute."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.text_before_content: Optional[str] = None

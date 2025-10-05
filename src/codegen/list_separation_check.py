@@ -18,7 +18,7 @@ import codegen.hdl_generation_library as hdl_generation_library
 
 
 class ListSeparationCheck:
-    def __init__(self, list_string, language) -> None:
+    def __init__(self, list_string: str, language: str) -> None:
         self.list_string = list_string
         if language == "VHDL":
             separator = ";"
@@ -32,17 +32,19 @@ class ListSeparationCheck:
         )
         self.__remove_illegal_separator(list_string_without_comments, separator)
 
-    def get_fixed_list(self):
+    def get_fixed_list(self) -> str:
         return self.list_string
 
-    def __replace_all_comments_at_line_end(self, list_string_without_block_comment, comment_identifier) -> str:
+    def __replace_all_comments_at_line_end(
+        self, list_string_without_block_comment: str, comment_identifier: str
+    ) -> str:
         list_array = list_string_without_block_comment.split("\n")
         list_string_without_comments = ""
         for line in list_array:
             list_string_without_comments += self.__replace_comment_at_line_end_by_blank(comment_identifier, line) + "\n"
         return list_string_without_comments[:-1]  # remove last return
 
-    def __replace_comment_at_line_end_by_blank(self, comment_identifier, line):
+    def __replace_comment_at_line_end_by_blank(self, comment_identifier: str, line: str) -> str:
         match_object = re.search(comment_identifier + ".*", line)
         if match_object is not None:
             line = (
@@ -52,14 +54,14 @@ class ListSeparationCheck:
             )
         return line
 
-    def __remove_illegal_separator(self, list_string_without_comments, separator) -> None:
+    def __remove_illegal_separator(self, list_string_without_comments: str, separator: str) -> None:
         for index, char in enumerate(reversed(list_string_without_comments)):
             if char not in (" ", "\n"):
                 if char == separator:
                     self.__remove_character_by_blank(index)
                 break
 
-    def __remove_character_by_blank(self, index) -> None:
+    def __remove_character_by_blank(self, index: int) -> None:
         if index == 0:
             self.list_string = self.list_string[: -index - 1]
         else:

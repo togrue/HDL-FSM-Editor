@@ -16,6 +16,6 @@ class OptionMenu(tk.Listbox):
         self.bind("<Enter>", self.snap_highlight_to_mouse)
         self.bind("<Motion>", self.snap_highlight_to_mouse)
 
-    def snap_highlight_to_mouse(self, event) -> None:
+    def snap_highlight_to_mouse(self, event: tk.Event) -> None:
         self.selection_clear(0, tk.END)
         self.selection_set(self.nearest(event.y))
