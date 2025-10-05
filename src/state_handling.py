@@ -201,7 +201,9 @@ def _evaluate_menu(
             if tag.startswith("connection"):
                 action_block_exists = True
         if not action_block_exists:
-            action_ref = state_action_handling.MyText(menu_x, menu_y, height=1, width=8, padding=1, increment=True)
+            action_ref = state_action_handling.MyText(
+                main_window.canvas, menu_x, menu_y, height=1, width=8, padding=1, increment=True
+            )
             action_ref.connect_to_state(menu_x, menu_y, state_id)
             action_ref.tag()
             undo_handling.design_has_changed()

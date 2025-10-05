@@ -692,7 +692,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         text = definition[1]
         tags = definition[2]
         state_action_ref = state_action_handling.MyText(
-            coords[0] - 100, coords[1], height=1, width=8, padding=1, increment=False
+            main_window.canvas, coords[0] - 100, coords[1], height=1, width=8, padding=1, increment=False
         )
         main_window.canvas.itemconfigure(state_action_ref.window_id, tags=tags)
         state_action_ref.text_content = text + "\n"
