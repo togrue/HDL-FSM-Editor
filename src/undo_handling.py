@@ -419,18 +419,10 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             elif text_is_reset_text:
                 reset_entry_handling.draw_reset_entry_text(coords[0], coords[1], text, tags)
             else:
-                text_id = main_window.canvas.create_text(
-                    coords, text=text, tags=tags, font=canvas_editing.state_name_font
-                )
                 for t in tags:
                     if t.startswith("transition"):
-                        main_window.canvas.tag_bind(
-                            text_id,
-                            "<Double-Button-1>",
-                            lambda event, transition_tag=t[:-8]: transition_handling.edit_priority(
-                                event, transition_tag
-                            ),
-                        )
+                        transition_tag = t[:-8]
+                        transition_handling.draw_priority_number(coords, text, tags, transition_tag)
         elif lines[_line_index].startswith("line|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "line|")
             coords = []
