@@ -7,10 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ## Added
+- When the project file is read/written now the cursor changes its shape (visible only if the file operation is slow).
+- A warning pop up dialog informs the user, when a state is placed too near to another object.
 ## Changed
+- The call of the method design_has_changed was moved at move_handling_finish and added in move_handling_canvas_item/window.
+- Improved robustness when moving transitions (avoiding null vectors).
 ## Deprecated
 ## Removed
 ## Fixed
+- When a curved transition is moved, sometimes the transition shape gets strange at pick up.
 ## Security
 
 ## [5.5]
