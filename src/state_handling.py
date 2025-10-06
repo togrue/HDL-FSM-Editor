@@ -143,6 +143,10 @@ def insert_state(event) -> None:
     state_number += 1
     event_x, event_y = canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(event)
     if _state_overlaps(event_x, event_y):
+        messagebox.showwarning(
+            "Warning in HDL-FSM-Editor",
+            "The state could not be inserted, because it\nwas positioned too close to another object.\nTry again ...",
+        )
         return
     draw_state_circle(
         [
