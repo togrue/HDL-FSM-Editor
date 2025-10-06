@@ -1188,7 +1188,7 @@ def switch_language_mode() -> None:
         _compile_cmd_docu.config(text="Variables for compile command:\n$file\t= Module-File\n$name\t= Module Name")
 
 
-def _handle_key(event: tk.Event, custom_text_ref: custom_text.CustomText) -> None:
+def _handle_key(_event: tk.Event, custom_text_ref: custom_text.CustomText) -> None:
     custom_text_ref.after_idle(
         custom_text_ref.update_highlight_tags,
         int(canvas_editing.fontsize),
@@ -1281,7 +1281,7 @@ def choose_bg_color() -> None:
         diagram_background_color.set(new_color)
 
 
-def __resize_event_interface_tab_frames(event: tk.Event) -> None:
+def __resize_event_interface_tab_frames(_event: tk.Event) -> None:
     global sash_positions
     if "interface_tab" not in sash_positions:
         sash_positions["interface_tab"] = {}
@@ -1290,7 +1290,7 @@ def __resize_event_interface_tab_frames(event: tk.Event) -> None:
         sash_positions["interface_tab"][1] = paned_window_interface.sashpos(1)
 
 
-def __resize_event_internals_tab_frames(event: tk.Event) -> None:
+def __resize_event_internals_tab_frames(_event: tk.Event) -> None:
     global sash_positions
     if "internals_tab" not in sash_positions:
         sash_positions["internals_tab"] = {}

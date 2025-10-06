@@ -554,7 +554,7 @@ def scroll_move(event: tk.Event) -> None:
     main_window.canvas.scan_dragto(event.x, event.y, gain=1)
 
 
-def scroll_end(event: tk.Event) -> None:
+def scroll_end(_event: tk.Event) -> None:
     main_window.grid_drawer.draw_grid()
 
 

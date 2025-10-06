@@ -716,7 +716,7 @@ class CustomText(tk.Text):
                 break
         return text
 
-    def highlight_item(self, hdl_item_type: str, object_identifier: str, number_of_line: int) -> None:
+    def highlight_item(self, _hdl_item_type: str, _object_identifier: str, number_of_line: int) -> None:
         self.tag_add("highlight", str(number_of_line) + ".0", str(number_of_line + 1) + ".0")
         # self.tag_config("highlight", background="#e9e9e9")
         self.tag_config("highlight", background="orange")

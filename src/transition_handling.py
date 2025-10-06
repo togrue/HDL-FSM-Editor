@@ -818,7 +818,7 @@ def show_menu(event: tk.Event, transition_id: int) -> None:
 
 
 def _evaluate_menu(
-    event: tk.Event, window: int, listbox: tk.Listbox, menu_x: float, menu_y: float, transition_id: int
+    _event: tk.Event, window: int, listbox: tk.Listbox, menu_x: float, menu_y: float, transition_id: int
 ) -> None:
     design_was_changed = False
     selected_entry = listbox.get(listbox.curselection())
@@ -898,6 +898,6 @@ def _evaluate_menu(
         undo_handling.design_has_changed()  # It must be waited until the window for the menu is deleted.
 
 
-def _close_menu(event: tk.Event, window: int, listbox: tk.Listbox) -> None:
+def _close_menu(_event: tk.Event, window: int, listbox: tk.Listbox) -> None:
     listbox.destroy()
     main_window.canvas.delete(window)

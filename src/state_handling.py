@@ -189,7 +189,7 @@ def show_menu(event: tk.Event, state_id: int) -> None:
 
 
 def _evaluate_menu(
-    event: tk.Event, window: int, listbox: tk.Listbox, menu_x: float, menu_y: float, state_id: int
+    _event: tk.Event, window: int, listbox: tk.Listbox, menu_x: float, menu_y: float, state_id: int
 ) -> None:
     selected_entry = listbox.get(listbox.curselection())
     listbox.destroy()
