@@ -41,7 +41,11 @@ def try_to_convert_into_straight_line(coords) -> list:
 def _calculate_vectors_from_line_point_to_next_line_point(coords) -> list:
     vector_list = []
     for i in range(len(coords) // 2 - 1):
-        vector_list.append(_sub_vectors(coords[i * 2 + 2], coords[i * 2 + 3], coords[i * 2 + 0], coords[i * 2 + 1]))
+        vector_from_point_to_point = _sub_vectors(
+            coords[i * 2 + 2], coords[i * 2 + 3], coords[i * 2 + 0], coords[i * 2 + 1]
+        )
+        if vector_from_point_to_point != [0, 0]:
+            vector_list.append(vector_from_point_to_point)
     return vector_list
 
 
