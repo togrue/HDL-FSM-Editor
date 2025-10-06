@@ -190,7 +190,7 @@ def extend_transition_to_state_middle_points(transition_tag) -> None:
 
 
 def get_point_to_move(item_id, event_x, event_y) -> str:
-    # Determine which point of the transition is nearest to the event:
+    # Determine which point of the transition is nearest to the event and insert an additional if necessary:
     transition_coords = main_window.canvas.coords(item_id)
     number_of_points = len(transition_coords) // 2
     distance_event_to_point = []
@@ -206,24 +206,6 @@ def get_point_to_move(item_id, event_x, event_y) -> str:
                     + (transition_coords[2 * i + 1] - transition_coords[2 * i + 3]) ** 2
                 )
             )
-    # if number_of_points==4:
-    #     dist = []
-    #     dist.append(distance_from_point_to_line(event_x, event_y, transition_coords[0:4]))
-    #     dist.append(distance_from_point_to_line(event_x, event_y, transition_coords[2:6]))
-    #     dist.append(distance_from_point_to_line(event_x, event_y, transition_coords[4:]))
-    #     minimum = 0
-    #     for i in range(1,3):
-    #         if dist[i]<dist[minimum]:
-    #             minimum = i
-    #     if minimum==0:
-    #         return "start"
-    #     if minimum==1:
-    #         distance_to_point1 = math.sqrt((event_x-transition_coords[2])**2 + (event_y-transition_coords[3])**2)
-    #         distance_to_point2 = math.sqrt((event_x-transition_coords[4])**2 + (event_y-transition_coords[5])**2)
-    #         if distance_to_point1<distance_to_point2:
-    #             return "next_to_start"
-    #         return "next_to_end"
-    #     return 'end'
     if number_of_points == 4:
         return_value = ""
         if distance_event_to_point[0] < 2 * canvas_editing.state_radius:
@@ -236,22 +218,7 @@ def get_point_to_move(item_id, event_x, event_y) -> str:
         if return_value == "":
             return_value = "next_to_start" if distance_event_to_point[1] < distance_event_to_point[2] else "next_to_end"
         return return_value
-    elif number_of_points == 3:
-        # if   distance_event_to_point[0]<distance_to_neighbour[0]/4:
-        #     return "start"
-        # if distance_event_to_point[0]<distance_to_neighbour[0]*3/4:
-        #     # insert new point into transition:
-        #     main_window.canvas.coords(item_id, *transition_coords[0:2], event_x, event_y, *transition_coords[2:6])
-        #     return "next_to_start"
-        # if distance_event_to_point[0]<distance_to_neighbour[0]:
-        #     return "next_to_start"
-        # if distance_event_to_point[1]<distance_to_neighbour[1]/4:
-        #     return "next_to_start"
-        # if distance_event_to_point[1]<distance_to_neighbour[1]*3/4:
-        #     # insert new point into transition:
-        #     main_window.canvas.coords(item_id, *transition_coords[0:4], event_x, event_y, *transition_coords[4:6])
-        #     return "next_to_end"
-        # return 'end'
+    if number_of_points == 3:
         return_value = ""
         if distance_event_to_point[0] < 2 * canvas_editing.state_radius:
             return_value = "start"
@@ -265,23 +232,47 @@ def get_point_to_move(item_id, event_x, event_y) -> str:
         ratio = distance_event_to_point[0] / distance_event_to_point[2]
         if 0.8 < ratio < 1.2:
             return "next_to_start"  # equal to "next_to_end" because no new point is inserted.
+        _change_the_number_of_points_from_3_to_4(item_id, transition_coords)
         if distance_event_to_point[2] < distance_event_to_point[0]:
-            main_window.canvas.coords(
-                item_id, *transition_coords[0:4], event_x, event_y, *transition_coords[4:6]
-            )  # insert new point into transition
             return "next_to_end"
-        else:
-            main_window.canvas.coords(
-                item_id, *transition_coords[0:2], event_x, event_y, *transition_coords[2:6]
-            )  # insert new point into transition
-            return "next_to_start"
-    else:
-        if distance_event_to_point[0] < distance_to_neighbour[0] / 3:
-            return "start"
-        if distance_event_to_point[0] < distance_to_neighbour[0] * 2 / 3:
-            main_window.canvas.coords(item_id, *transition_coords[0:2], event_x, event_y, *transition_coords[2:4])
-            return "next_to_start"
-        return "end"
+        return "next_to_start"
+    # number_of_points == 2
+    if distance_event_to_point[0] < distance_to_neighbour[0] / 3:
+        return "start"
+    if distance_event_to_point[0] < distance_to_neighbour[0] * 2 / 3:
+        _change_the_number_of_points_from_2_to_3(item_id, transition_coords, event_x, event_y)
+        return "next_to_start"
+    return "end"
+
+
+def _change_the_number_of_points_from_3_to_4(item_id, transition_coords):
+    transition_coords = _calculate_4_points_from_3_points(transition_coords)
+    main_window.canvas.coords(item_id, *transition_coords)  # insert new point into transition
+
+
+def _calculate_4_points_from_3_points(transition_coords):
+    vector_to_point0 = transition_coords[0], transition_coords[1]
+    vector_to_point1 = transition_coords[2], transition_coords[3]
+    vector_to_point2 = transition_coords[4], transition_coords[5]
+    vector_point0_to_point2 = [vector_to_point2[i] - vector_to_point0[i] for i in range(2)]
+    vector_to_half_02 = [vector_to_point0[i] + 0.50 * vector_point0_to_point2[i] for i in range(2)]
+    vector_to_shor_02 = [vector_to_point0[i] + 0.25 * vector_point0_to_point2[i] for i in range(2)]
+    vector_to_long_02 = [vector_to_point0[i] + 0.75 * vector_point0_to_point2[i] for i in range(2)]
+    vector_half_02_to_point1 = [vector_to_point1[i] - vector_to_half_02[i] for i in range(2)]
+    new_point2 = [vector_to_shor_02[i] + 0.5 * vector_half_02_to_point1[i] for i in range(2)]
+    new_point3 = [vector_to_long_02[i] + 0.5 * vector_half_02_to_point1[i] for i in range(2)]
+    return (
+        transition_coords[0],
+        transition_coords[1],
+        new_point2,
+        new_point3,
+        transition_coords[4],
+        transition_coords[5],
+    )
+
+
+def _change_the_number_of_points_from_2_to_3(item_id, transition_coords, event_x, event_y):
+    main_window.canvas.coords(item_id, *transition_coords[0:2], event_x, event_y, *transition_coords[2:4])
 
 
 def shorten_to_state_border(transition_tag) -> None:
@@ -492,9 +483,7 @@ def _handle_next_added_transition_point(event, transition_id, start_state_canvas
     transition_ends_at_connector = _check_if_transition_ends_at_connector(end_state_canvas_id)
     if end_state_canvas_id is None:
         if len(transition_coords) < 8:  # An additional intermediate point is added to the transition.
-            _duplicate_last_transition_point_for_continuing_the_drawing_of_the_transition(
-                transition_id, transition_coords, event_x, event_y
-            )
+            _add_next_transition_point_(transition_id, transition_coords, event_x, event_y)
     elif "coming_from_reset_entry" in transition_tags and transition_ends_at_connector is True:
         return
     elif end_state_canvas_id == start_state_canvas_id and len(transition_coords) == 4:
@@ -533,9 +522,7 @@ def _get_canvas_id_of_state_or_connector_under_new_transition_point(event_x, eve
     return None
 
 
-def _duplicate_last_transition_point_for_continuing_the_drawing_of_the_transition(
-    transition_id, coords, event_x, event_y
-) -> None:
+def _add_next_transition_point_(transition_id, coords, event_x, event_y) -> None:
     coords.append(event_x)
     coords.append(event_y)
     main_window.canvas.coords(transition_id, coords)
