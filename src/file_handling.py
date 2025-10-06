@@ -157,14 +157,21 @@ def _clear_design() -> bool:
 
 def save_in_file_new(save_filename) -> None:  # Called at saving and at every design change (writing to .tmp-file)
     design_dictionary = _save_design_to_dict()
+    old_cursor = main_window.root.cget(
+        "cursor"
+    )  # may be different from "arrow" at design changes (writing to .tmp-file)
+    main_window.root.config(cursor="watch")
     try:
         with open(save_filename, "w", encoding="utf-8") as fileobject:
             json.dump(design_dictionary, fileobject, indent=4, default=str, ensure_ascii=False)
         if not save_filename.endswith(".tmp") and os.path.isfile(f"{project_manager.previous_file}.tmp"):
             os.remove(f"{project_manager.previous_file}.tmp")
+        main_window.root.config(cursor=old_cursor)
     except Exception as _:
+        main_window.root.config(cursor=old_cursor)
         messagebox.showerror("Error in HDL-FSM-Editor", f"Writing to file {save_filename} caused exception ")
     if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
+        main_window.root.config(cursor=old_cursor)
         messagebox.showerror("Error", "The database is corrupt.\nDo not use the written file.\nSee details at STDOUT.")
 
 
@@ -339,6 +346,7 @@ def open_file_with_name_new(read_filename) -> None:
         )
         if answer is True:
             replaced_read_filename = f"{read_filename}.tmp"
+    main_window.root.config(cursor="watch")
     try:
         with open(replaced_read_filename, encoding="utf-8") as fileobject:
             data = fileobject.read()
@@ -357,7 +365,6 @@ def open_file_with_name_new(read_filename) -> None:
         main_window.root.update()
         dir_name, file_name = os.path.split(read_filename)
         main_window.root.title(f"{file_name} ({dir_name})")
-        # canvas_editing.priority_distance = 1.5*canvas_editing.state_radius
         update_ref = update_hdl_tab.UpdateHdlTab(
             design_dictionary["language"],
             design_dictionary["number_of_files"],
@@ -369,12 +376,14 @@ def open_file_with_name_new(read_filename) -> None:
         main_window.date_of_hdl_file2_shown_in_hdl_tab = update_ref.get_date_of_hdl_file2()
         main_window.show_tab(GuiTab.DIAGRAM)
         main_window.root.after_idle(canvas_editing.view_all)
+        main_window.root.config(cursor="arrow")
         if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
             messagebox.showerror("Error", "The database is corrupt.\nDo not use this file.\nSee details at STDOUT.")
-
     except FileNotFoundError:
+        main_window.root.config(cursor="arrow")
         messagebox.showerror("Error", f"File {read_filename} could not be found.")
     except ValueError:  # includes JSONDecodeError
+        main_window.root.config(cursor="arrow")
         messagebox.showerror(
             "Error", f"File \n{read_filename}\nhas wrong format.\nProbably a HDL-FSM-Editor file format Version 1."
         )
