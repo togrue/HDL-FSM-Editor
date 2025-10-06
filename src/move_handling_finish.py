@@ -43,6 +43,7 @@ def move_finish(event, move_list, move_do_funcid) -> None:
         )
         _update_the_tags_of_the_transition(item_ids_at_moving_end_location, transition_id, transition_point)
     move_finish_for_transitions(move_list)
+    undo_handling.design_has_changed()
 
 
 def move_finish_for_transitions(move_list):
@@ -52,7 +53,6 @@ def move_finish_for_transitions(move_list):
         move_list
     )  # needed when a condition_action_window is moved alone.
     main_window.canvas.tag_lower("grid_line")
-    undo_handling.design_has_changed()
 
 
 def _get_item_ids_at_moving_end_location(event_x, event_y, move_list) -> list:

@@ -7,6 +7,7 @@ import main_window
 import move_handling
 import move_handling_finish
 import move_handling_initialization
+import undo_handling
 
 
 class MoveHandlingCanvasItem:
@@ -52,3 +53,4 @@ class MoveHandlingCanvasItem:
             move_to_grid=True,
         )
         move_handling_finish.move_finish_for_transitions(self.move_list)
+        undo_handling.design_has_changed()

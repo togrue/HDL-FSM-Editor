@@ -6,6 +6,7 @@ import main_window
 import move_handling
 import move_handling_finish
 import move_handling_initialization
+import undo_handling
 
 
 class MoveHandlingCanvasWindow:
@@ -59,3 +60,4 @@ class MoveHandlingCanvasWindow:
             move_to_grid=False,  # Only used by the line to a window.
         )
         move_handling_finish.move_finish_for_transitions(self.move_list)
+        undo_handling.design_has_changed()
