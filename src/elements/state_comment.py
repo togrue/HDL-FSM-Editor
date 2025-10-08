@@ -32,8 +32,9 @@ class StateComment:
         self.text_content = None
         self.difference_x = 0
         self.difference_y = 0
+        self.borderwidth = 0
         self.frame_id = ttk.Frame(
-            project_manager.canvas, relief=tk.FLAT, borderwidth=0, style="StateActionsWindow.TFrame", padding=padding
+            project_manager.canvas, relief=tk.FLAT, borderwidth=self.borderwidth, style="StateActionsWindow.TFrame", padding=padding
         )
         self.label_id = ttk.Label(
             self.frame_id,
@@ -100,12 +101,20 @@ class StateComment:
         # To ensure this, save_in_file() waits for idle.
         self.text_content = self.text_id.get("1.0", tk.END)
 
+    def _set_borderwidth(self, borderwidth: int, style: str) -> None:
+        diff = self.borderwidth - borderwidth
+        self.borderwidth = borderwidth
+        self.frame_id.configure(borderwidth=borderwidth, style=style)
+        # Compensate for the borderwidth of the frame.
+        pos = project_manager.canvas.coords(self.window_id)
+        project_manager.canvas.coords(self.window_id, (pos[0] + diff, pos[1]))
+
     def activate_frame(self) -> None:
         self.activate_window()
         self.text_content = self.text_id.get("1.0", tk.END)
 
     def activate_window(self) -> None:
-        self.frame_id.configure(borderwidth=1, style="StateActionsWindowSelected.TFrame")
+        self._set_borderwidth(1, "StateActionsWindowSelected.TFrame")
         self.label_id.configure(style="StateActionsWindowSelected.TLabel")
 
     def deactivate_frame(self) -> None:
@@ -115,7 +124,7 @@ class StateComment:
 
     def deactivate_window(self) -> None:
         project_manager.canvas.focus_set()  # "unfocus" the Text, when the mouse leaves the text.
-        self.frame_id.configure(borderwidth=0, style="StateActionsWindow.TFrame")
+        self._set_borderwidth(0, style="StateActionsWindow.TFrame")
         self.label_id.configure(style="StateActionsWindow.TLabel")
 
     def move_to(self, event_x, event_y, first) -> None:
