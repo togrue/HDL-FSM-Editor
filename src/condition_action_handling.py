@@ -42,6 +42,7 @@ class ConditionAction:
         self.canvas_enter_func_id: Optional[str] = None
         # Create frame:
         self.canvas = canvas
+        self.borderwidth = 0
         self.frame_id = ttk.Frame(self.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="Window.TFrame")
         # The method deactivate_frame() can not be bound to the Frame-leave-Event, because otherwise at moving the
         # cursor exactly at the frame would cause a flickering because of toggling between shrinked and full box.
@@ -208,8 +209,17 @@ class ConditionAction:
             self.frame_enter_func_id = None
         self.canvas_enter_func_id = self.canvas.bind("<Enter>", lambda event: self.deactivate_frame())
 
+    def _set_borderwidth(self, borderwidth: int, style: str) -> None:
+        diff = self.borderwidth - borderwidth
+        self.borderwidth = borderwidth
+        self.frame_id.configure(borderwidth=borderwidth, style=style)
+        # Compensate for the borderwidth of the frame.
+        # I don't know why only the x-coordinate needs to be compensated for, but it works.
+        pos = self.canvas.coords(self.window_id)
+        self.canvas.coords(self.window_id, (pos[0] + diff, pos[1]))
+
     def activate_window(self) -> None:
-        self.frame_id.configure(borderwidth=1, style="WindowSelected.TFrame")
+        self._set_borderwidth(1, "WindowSelected.TFrame")
         self.condition_label.configure(style="WindowSelected.TLabel")
         self.action_label.configure(style="WindowSelected.TLabel")
 
@@ -222,7 +232,9 @@ class ConditionAction:
         self.shrink_box()
 
     def deactivate_window(self) -> None:
-        self.frame_id.configure(borderwidth=0, style="Window.TFrame")
+        # Note: it is important that the frame borderwidth is less or equal to the activated frame borderwidth,
+        # otherwise the frame can start to flicker - when the mouse is moved over the frame.
+        self._set_borderwidth(0, style="Window.TFrame")
         self.condition_label.configure(style="Window.TLabel")
         self.action_label.configure(style="Window.TLabel")
 

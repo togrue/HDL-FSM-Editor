@@ -35,8 +35,13 @@ class StateComment:
         self.line_coords: list[float] = []
         # Create frame:
         self.canvas = canvas
+        self.borderwidth = 0
         self.frame_id = ttk.Frame(
-            self.canvas, relief=tk.FLAT, borderwidth=0, style="StateActionsWindow.TFrame", padding=padding
+            self.canvas,
+            relief=tk.FLAT,
+            borderwidth=self.borderwidth,
+            style="StateActionsWindow.TFrame",
+            padding=padding,
         )
         self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
         self.frame_id.bind("<Leave>", lambda event: self.deactivate_frame())
@@ -96,12 +101,21 @@ class StateComment:
         # To ensure this, save_in_file_new() waits for idle.
         self.text_content = self.text_id.get("1.0", tk.END)
 
+    def _set_borderwidth(self, borderwidth: int, style: str) -> None:
+        diff = self.borderwidth - borderwidth
+        self.borderwidth = borderwidth
+        self.frame_id.configure(borderwidth=borderwidth, style=style)
+        # Compensate for the borderwidth of the frame.
+        # I don't know why only the x-coordinate needs to be compensated for, but it works.
+        pos = self.canvas.coords(self.window_id)
+        self.canvas.coords(self.window_id, (pos[0] + diff, pos[1]))
+
     def activate_frame(self) -> None:
         self.activate_window()
         self.text_content = self.text_id.get("1.0", tk.END)
 
     def activate_window(self) -> None:
-        self.frame_id.configure(borderwidth=1, style="StateActionsWindowSelected.TFrame")
+        self._set_borderwidth(1, "StateActionsWindowSelected.TFrame")
         self.label_id.configure(style="StateActionsWindowSelected.TLabel")
 
     def deactivate_frame(self) -> None:
@@ -111,7 +125,7 @@ class StateComment:
             undo_handling.design_has_changed()
 
     def deactivate_window(self) -> None:
-        self.frame_id.configure(borderwidth=0, style="StateActionsWindow.TFrame")
+        self._set_borderwidth(0, style="StateActionsWindow.TFrame")
         self.label_id.configure(style="StateActionsWindow.TLabel")
 
     def move_to(self, event_x: float, event_y: float, first: bool) -> None:
