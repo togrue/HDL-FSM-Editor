@@ -38,17 +38,12 @@ class ConditionAction:
         self.line_coords: Optional[list[float]] = None
         self.action_text: Optional[str] = None
         self.condition_text: Optional[str] = None
-        self.frame_enter_func_id: Optional[str] = None
-        self.canvas_enter_func_id: Optional[str] = None
         # Create frame:
         self.canvas = canvas
         self.borderwidth = 0
         self.frame_id = ttk.Frame(self.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="Window.TFrame")
-        # The method deactivate_frame() can not be bound to the Frame-leave-Event, because otherwise at moving the
-        # cursor exactly at the frame would cause a flickering because of toggling between shrinked and full box.
-        # Instead the method deactivate_frame() is bound dynamically to the Canvas-Enter event in activate_frame():
-        self.frame_enter_func_id = self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
-        self.canvas_enter_func_id = None
+        self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
+        self.frame_id.bind("<Leave>", lambda event: self.deactivate_frame())
 
         # Create objects inside frame:
         if connected_to_reset_entry:
@@ -204,10 +199,6 @@ class ConditionAction:
         self.show_complete_box()
         self.action_text = self.action_id.get("1.0", tk.END)
         self.condition_text = self.condition_id.get("1.0", tk.END)
-        if self.frame_enter_func_id is not None:
-            self.canvas.unbind(self.frame_enter_func_id)
-            self.frame_enter_func_id = None
-        self.canvas_enter_func_id = self.canvas.bind("<Enter>", lambda event: self.deactivate_frame())
 
     def _set_borderwidth(self, borderwidth: int, style: str) -> None:
         diff = self.borderwidth - borderwidth
@@ -225,10 +216,6 @@ class ConditionAction:
 
     def deactivate_frame(self) -> None:
         self.deactivate_window()
-        if self.canvas_enter_func_id is not None:
-            self.canvas.unbind("<Enter>", self.canvas_enter_func_id)
-            self.canvas_enter_func_id = None
-        self.frame_enter_func_id = self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
         self.shrink_box()
 
     def deactivate_window(self) -> None:
