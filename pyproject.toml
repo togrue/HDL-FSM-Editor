@@ -23,6 +23,9 @@ dev = [
 # Allow lines to be as long as 120.
 line-length = 120
 
+# Assume Python 3.9
+target-version = "py39"
+
 [tool.ruff.lint]
 
 select = [
