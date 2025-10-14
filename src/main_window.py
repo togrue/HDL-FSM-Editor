@@ -177,11 +177,6 @@ def show_window() -> None:
     root.wm_deiconify()
 
 
-def view_all_after_window_is_built() -> None:
-    canvas_editing.view_all()
-    canvas.unbind("<Visibility>")
-
-
 def _close_tool() -> None:
     title = root.title()
     if title.endswith("*"):
