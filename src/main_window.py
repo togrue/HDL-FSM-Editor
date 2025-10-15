@@ -1200,7 +1200,6 @@ def show_tab(tab: GuiTab) -> None:
     for tab_id in notebook_ids:
         if notebook.tab(tab_id, option="text") == tab.value:
             notebook.select(tab_id)
-            _update_hdl_tab_if_necessary()
 
 
 def _update_hdl_tab_if_necessary() -> None:
@@ -1217,9 +1216,14 @@ def _update_hdl_tab_if_necessary() -> None:
         else:  # verilog
             hdlfilename = generate_path_value.get() + "/" + module_name.get() + ".v"
             hdlfilename2 = ""
-        if os.path.isfile(hdlfilename) and date_of_hdl_file_shown_in_hdl_tab < os.path.getmtime(hdlfilename):
+
+        if (os.path.isfile(hdlfilename) and date_of_hdl_file_shown_in_hdl_tab < os.path.getmtime(hdlfilename)) or (
+            select_file_number_text.get() == 2
+            and os.path.isfile(hdlfilename2)
+            and date_of_hdl_file2_shown_in_hdl_tab < os.path.getmtime(hdlfilename2)
+        ):
             answer = messagebox.askquestion(
-                "Warning in HDL-FSM-Editor",
+                "Warning in HDL-FSM-Editor3",
                 "The HDL was modified by another tool. Shall it be reloaded?",
                 default="yes",
             )
@@ -1232,42 +1236,7 @@ def _update_hdl_tab_if_necessary() -> None:
                     module_name.get(),
                 )
                 date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
-            hdlfilename2 = ""
-        if language.get() != "VHDL" or select_file_number_text.get() == 1:
-            if os.path.isfile(hdlfilename) and date_of_hdl_file_shown_in_hdl_tab < os.path.getmtime(hdlfilename):
-                answer = messagebox.askquestion(
-                    "Warning in HDL-FSM-Editor",
-                    "The HDL was modified by another tool. Shall it be reloaded?",
-                    default="yes",
-                )
-                if answer == "yes":
-                    update_ref = update_hdl_tab.UpdateHdlTab(
-                        language.get(),
-                        select_file_number_text.get(),
-                        project_manager.current_file,
-                        generate_path_value.get(),
-                        module_name.get(),
-                    )
-                    date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
-        else:
-            if (os.path.isfile(hdlfilename) and date_of_hdl_file_shown_in_hdl_tab < os.path.getmtime(hdlfilename)) or (
-                os.path.isfile(hdlfilename2) and date_of_hdl_file2_shown_in_hdl_tab < os.path.getmtime(hdlfilename2)
-            ):
-                answer = messagebox.askquestion(
-                    "Warning in HDL-FSM-Editor",
-                    "The HDL was modified by another tool. Shall it be reloaded?",
-                    default="yes",
-                )
-                if answer == "yes":
-                    update_ref = update_hdl_tab.UpdateHdlTab(
-                        language.get(),
-                        select_file_number_text.get(),
-                        project_manager.current_file,
-                        generate_path_value.get(),
-                        module_name.get(),
-                    )
-                    date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
-                    date_of_hdl_file2_shown_in_hdl_tab = update_ref.get_date_of_hdl_file2()
+                date_of_hdl_file2_shown_in_hdl_tab = update_ref.get_date_of_hdl_file2()
 
 
 def _change_color_of_diagram_background() -> None:
