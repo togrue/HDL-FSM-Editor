@@ -33,6 +33,7 @@ from dialogs.regex_dialog import RegexDialog
 from link_dictionary import init_link_dict, link_dict
 from persistent_settings import app_settings
 from project_manager import project_manager
+from widgets.Tooltip import Tooltip
 from window_geometry import get_window_state, restore_window_state
 
 _VERSION = "5.7"
@@ -280,12 +281,17 @@ def create_menu_bar() -> None:
         style="Find.TButton",
     )
     search_string_entry = ttk.Entry(search_frame, width=23, textvariable=search_string)
+    Tooltip(search_string_entry, "Find in the current file\nThe search uses regular expressions.\n(Ctrl+F)")
     replace_string_entry = ttk.Entry(search_frame, width=23, textvariable=replace_string)
+    Tooltip(replace_string_entry, "Replacement string for all occurences.\n(Ctrl+H)")
     replace_button = ttk.Button(
         search_frame,
         text="Find & Replace",
         command=lambda: canvas_editing.find(search_string, replace_string, replace=True),
         style="Find.TButton",
+    )
+    Tooltip(
+        replace_button, "Find and replace all occurences in the current file.\nThe search uses regular expressions."
     )
     search_string_entry.bind(
         "<Return>", lambda event: canvas_editing.find(search_string, replace_string, replace=False)
