@@ -376,6 +376,10 @@ def create_control_notebook_tab() -> None:
     module_name.set("")
     module_name_label = ttk.Label(control_frame, text="Module-Name:", padding=5)
     _module_name_entry = ttk.Entry(control_frame, width=23, textvariable=module_name)
+    Tooltip(
+        _module_name_entry,
+        "Enter the name for your HDL module/entity.\nThis will be also used as filename for the generated HDL code.",
+    )
     module_name_label.grid(row=0, column=0, sticky="w")
     _module_name_entry.grid(row=0, column=1, sticky="w")
     _module_name_entry.select_clear()
@@ -394,6 +398,11 @@ def create_control_notebook_tab() -> None:
     generate_path_value.trace_add("write", _show_path_has_changed)
     generate_path_label = ttk.Label(control_frame, text="Directory for generated HDL:", padding=5)
     generate_path_entry = ttk.Entry(control_frame, textvariable=generate_path_value, width=80)
+    Tooltip(
+        generate_path_entry,
+        "Set the directory for the generated HDL files.\n"
+        "Use a path starting with a single dot '.' to specify relative paths to the current working directory.",
+    )
     generate_path_button = ttk.Button(control_frame, text="Select...", command=_set_path, style="Path.TButton")
     generate_path_label.grid(row=2, column=0, sticky="w")
     generate_path_entry.grid(row=2, column=1, sticky="ew")
@@ -414,8 +423,16 @@ def create_control_notebook_tab() -> None:
     select_file_number_radio_button1 = ttk.Radiobutton(
         _select_file_number_frame, takefocus=False, variable=select_file_number_text, text="1 file", value=1
     )
+    Tooltip(
+        select_file_number_radio_button1,
+        "Generate a single file containing both entity/module declaration and architecture/implementation.",
+    )
     select_file_number_radio_button2 = ttk.Radiobutton(
         _select_file_number_frame, takefocus=False, variable=select_file_number_text, text="2 files", value=2
+    )
+    Tooltip(
+        select_file_number_radio_button2,
+        "Generate separate files: one for entity/module declaration and one for architecture/implementation.",
     )
     include_timestamp_in_output = tk.BooleanVar(value=True)
     include_timestamp_in_output.trace_add("write", lambda *args: undo_handling.update_window_title())
@@ -434,6 +451,13 @@ def create_control_notebook_tab() -> None:
     reset_signal_name.set("")
     reset_signal_name_label = ttk.Label(control_frame, text="Name of asynchronous reset input port:", padding=5)
     reset_signal_name_entry = ttk.Entry(control_frame, width=23, textvariable=reset_signal_name)
+    Tooltip(
+        reset_signal_name_entry,
+        "Enter the name for your reset signal (e.g., 'rst', 'reset_n', 'areset'). "
+        "This signal will reset the FSM to its initial state.\n"
+        "The polarity of the reset is determined by the reset condition in the diagram tab.\n"
+        "[Required]",
+    )
     reset_signal_name_entry.bind("<Key>", lambda event: undo_handling.update_window_title())
     reset_signal_name_label.grid(row=4, column=0, sticky="w")
     reset_signal_name_entry.grid(row=4, column=1, sticky="w")
@@ -442,6 +466,13 @@ def create_control_notebook_tab() -> None:
     clock_signal_name.set("")
     clock_signal_name_label = ttk.Label(control_frame, text="Name of clock input port:", padding=5)
     _clock_signal_name_entry = ttk.Entry(control_frame, width=23, textvariable=clock_signal_name)
+    Tooltip(
+        _clock_signal_name_entry,
+        "Enter the name for your clock signal (e.g., 'clk', 'clock', 'sys_clk'). "
+        "This signal drives the FSM state transitions.\n"
+        "The rising_edge is always used.\n"
+        "[Required]",
+    )
     _clock_signal_name_entry.bind("<Key>", lambda event: undo_handling.update_window_title())
     clock_signal_name_label.grid(row=5, column=0, sticky="w")
     _clock_signal_name_entry.grid(row=5, column=1, sticky="w")
@@ -450,6 +481,11 @@ def create_control_notebook_tab() -> None:
     compile_cmd.set("ghdl -a $file1 $file2; ghdl -e $name; ghdl -r $name")
     compile_cmd_label = ttk.Label(control_frame, text="Compile command:", padding=5)
     compile_cmd_entry = ttk.Entry(control_frame, width=23, textvariable=compile_cmd)
+    Tooltip(
+        compile_cmd_entry,
+        "Command to compile your HDL code. Use variables: $file1 (entity), $file2 (architecture), "
+        "$file (combined), $name (module name). Separate commands with semicolons.",
+    )
     compile_cmd_label.grid(row=6, column=0, sticky="w")
     compile_cmd_entry.grid(row=6, column=1, sticky="ew")
     control_frame.columnconfigure((6, 0), weight=0)
@@ -469,6 +505,11 @@ def create_control_notebook_tab() -> None:
     edit_cmd.set("C:/Program Files/Notepad++/notepad++.exe -nosession -multiInst")
     edit_cmd_label = ttk.Label(control_frame, text="Edit command (executed by Ctrl+e):", padding=5)
     edit_cmd_entry = ttk.Entry(control_frame, width=23, textvariable=edit_cmd)
+    Tooltip(
+        edit_cmd_entry,
+        "Command to open an external editor. The filename is automatically appended to the command.\n"
+        "Executed when pressing Ctrl+E.",
+    )
     edit_cmd_label.grid(row=8, column=0, sticky="w")
     edit_cmd_entry.grid(row=8, column=1, sticky="ew")
     control_frame.columnconfigure((8, 0), weight=0)
@@ -482,6 +523,11 @@ def create_control_notebook_tab() -> None:
         padding=5,
     )
     additional_sources_entry = ttk.Entry(control_frame, textvariable=additional_sources_value, width=80)
+    Tooltip(
+        additional_sources_entry,
+        "Select additional HDL source files (comma-separated) that your FSM depends on. "
+        "These files must be manually added to your compile command. Used for HDL-SCHEM-Editor integration.",
+    )
     additional_sources_button = ttk.Button(control_frame, text="Select...", command=_add_path, style="Path.TButton")
     additional_sources_label.grid(row=9, column=0, sticky="w")
     additional_sources_entry.grid(row=9, column=1, sticky="ew")
@@ -494,6 +540,11 @@ def create_control_notebook_tab() -> None:
     working_directory_value.trace_add("write", _show_path_has_changed)
     working_directory_label = ttk.Label(control_frame, text="Working directory:", padding=5)
     working_directory_entry = ttk.Entry(control_frame, textvariable=working_directory_value, width=80)
+    Tooltip(
+        working_directory_entry,
+        "Set the working directory for compilation and execution. If empty, uses the directory "
+        "containing the generated HDL files. Useful for project-specific build environments.",
+    )
     working_directory_button = ttk.Button(
         control_frame, text="Select...", command=_set_working_directory, style="Path.TButton"
     )
@@ -508,6 +559,11 @@ def create_control_notebook_tab() -> None:
     diagram_background_color.trace_add("write", lambda *args: _change_color_of_diagram_background())
     diagram_background_color_label = ttk.Label(control_frame, text="Diagram background color:", padding=5)
     diagram_background_color_entry = ttk.Entry(control_frame, textvariable=diagram_background_color, width=80)
+    Tooltip(
+        diagram_background_color_entry,
+        "Set the background color for the FSM diagram. Use color names (e.g., 'white', 'lightgray') "
+        "or hex codes (e.g., '#ffffff').",
+    )
     diagram_background_color_button = ttk.Button(
         control_frame, text="Choose color...", command=choose_bg_color, style="Path.TButton"
     )
