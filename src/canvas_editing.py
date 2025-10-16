@@ -703,13 +703,30 @@ def shift_visible_center_to_window_center(new_visible_center_string: str) -> Non
     _move_canvas_point_from_to(new_visible_center, actual_visible_center)
 
 
+def _validate_search_pattern(search_pattern: str) -> bool:
+    if search_pattern == "":
+        messagebox.showinfo("HDL-FSM-Editor", "Search is aborted as you search for an empty string.")
+        return False
+
+    try:
+        re.compile(search_pattern)
+    except re.error:
+        messagebox.showinfo(
+            "HDL-FSM-Editor",
+            "Search is aborted as the search pattern is not a valid regular expression.\n"
+            "You may want to escape the search pattern.\n"
+            "Example: search for 'array_var(1)' -> search for 'array_var\\(1\\)'",
+        )
+        return False
+    return True
+
+
 def find(search_string: tk.StringVar, replace_string: tk.StringVar, replace: bool) -> None:
     # search_in_canvas_text() uses <string>.find() and re.findall() and re.sub().
     # All other search-methods use text_widget.search() for find and replace.
     # In order to have identical behaviour, in search_in_canvas_text() the search_string/replace_string are "escaped".
     search_pattern = search_string.get()
-    if search_pattern == "":
-        messagebox.showinfo("HDL-FSM-Editor", "Search is aborted as you search for an empty string.")
+    if not _validate_search_pattern(search_pattern):
         return
     replace_pattern = replace_string.get()
     number_of_hits_all = 0
