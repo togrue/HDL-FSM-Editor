@@ -622,6 +622,7 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
     for definition in design_dictionary["line"]:
         coords = definition[0]
         tags = definition[1]
+        trans_id = None
         for t in tags:
             if t.startswith("connected_to_transition"):  # line to condition&action block
                 trans_id = main_window.canvas.create_line(coords, dash=(2, 2), fill="black", tags=tags, state=tk.HIDDEN)
@@ -632,7 +633,8 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
             if t.startswith("transition"):
                 trans_id = transition_handling.draw_transition(coords, tags)
                 break
-        main_window.canvas.tag_lower(trans_id)  # Lines are always "under" anything else.
+        if trans_id is not None:
+            main_window.canvas.tag_lower(trans_id)  # Lines are always "under" anything else.
 
     # Load rectangles (connector, priority-box)
     for definition in design_dictionary["rectangle"]:
