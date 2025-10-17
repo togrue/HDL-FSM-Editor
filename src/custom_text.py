@@ -324,7 +324,7 @@ class CustomText(tk.Text):
             " end\\s+?case\\s*?;",
             " end\\s+?if\\s*?;",
             " end\\s*?;",
-            " end\\s*",
+            " end\\s+",
             "\\(",
             "\\)",
             "\\+",
