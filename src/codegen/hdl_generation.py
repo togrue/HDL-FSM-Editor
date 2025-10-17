@@ -27,9 +27,10 @@ last_line_number_of_file1 = 0
 
 def run_hdl_generation(write_to_file, is_script_mode: bool = False) -> bool:
     config = GenerationConfig.from_main_window()
+    state_tag_list_sorted = _create_sorted_state_tag_list(is_script_mode)
     success = False
     try:
-        _generate_hdl(config, write_to_file)
+        _generate_hdl(config, write_to_file, state_tag_list_sorted)
         success = True
     except GenerationError as e:
         if is_script_mode:
@@ -47,7 +48,7 @@ def run_hdl_generation(write_to_file, is_script_mode: bool = False) -> bool:
     return success
 
 
-def _generate_hdl(config: GenerationConfig, write_to_file: bool) -> None:
+def _generate_hdl(config: GenerationConfig, write_to_file: bool, state_tag_list_sorted: list) -> None:
     errors = config.validate()
     if errors:
         raise GenerationError("Error in HDL-FSM-Editor", errors)
@@ -66,17 +67,16 @@ def _generate_hdl(config: GenerationConfig, write_to_file: bool) -> None:
     else:
         header = f"// Created by HDL-FSM-Editor{at_timestamp}\n"
 
-    _create_hdl(config, header, write_to_file)
+    _create_hdl(config, header, write_to_file, state_tag_list_sorted)
 
 
-def _create_hdl(config, header, write_to_file) -> None:
+def _create_hdl(config, header, write_to_file, state_tag_list_sorted) -> None:
     file_name, file_name_architecture = _get_file_names(config)
 
     link_dict().clear_link_dict(file_name)
     if file_name_architecture:
         link_dict().clear_link_dict(file_name_architecture)
     file_line_number = 3  # Line 1 = Filename, Line 2 = Header
-    state_tag_list_sorted = _create_sorted_state_tag_list()
 
     if config.language == "VHDL":
         entity, file_line_number = _create_entity(config, file_name, file_line_number)
@@ -306,7 +306,7 @@ def _add_line_numbers(text) -> str:
     return content_with_numbers
 
 
-def _create_sorted_state_tag_list():
+def _create_sorted_state_tag_list(is_script_mode) -> list:
     state_tag_dict_with_prio = {}
     state_tag_list = []
     reg_ex_for_state_tag = re.compile("^state[0-9]+$")
@@ -330,17 +330,24 @@ def _create_sorted_state_tag_list():
                         else:
                             if int(first_line_of_state_comments) in state_tag_dict_with_prio:
                                 state_tag_list.append(tag)
-                                # TODO: Just log this. Messageboxes should not be part of the code generation.
-                                # And show the warnings in the HDL source tab or in a separate log window
-                                # In script mode the warnings should end up on the console
-                                messagebox.showwarning(
-                                    "Warning in HDL-FSM-Editor",
-                                    "The state '"
-                                    + main_window.canvas.itemcget(tag + "_name", "text")
-                                    + "' uses the order-number "
-                                    + first_line_of_state_comments
-                                    + " which is already used at another state.",
-                                )
+                                if is_script_mode:
+                                    print(
+                                        "Warning in HDL-FSM-Editor: "
+                                        + "The state '"
+                                        + main_window.canvas.itemcget(tag + "_name", "text")
+                                        + "' uses the order-number "
+                                        + first_line_of_state_comments
+                                        + " which is already used at another state."
+                                    )
+                                else:
+                                    messagebox.showwarning(
+                                        "Warning in HDL-FSM-Editor",
+                                        "The state '"
+                                        + main_window.canvas.itemcget(tag + "_name", "text")
+                                        + "' uses the order-number "
+                                        + first_line_of_state_comments
+                                        + " which is already used at another state.",
+                                    )
                             else:
                                 state_tag_dict_with_prio[int(first_line_of_state_comments)] = tag
     for _, tag in sorted(state_tag_dict_with_prio.items(), reverse=True):
