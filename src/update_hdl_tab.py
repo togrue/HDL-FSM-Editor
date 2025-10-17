@@ -13,6 +13,7 @@ import main_window
 class UpdateHdlTab:
     """
     Copies the generated HDL into the HDL-tab if the HDL is younger than the hfe-file.
+    Not called in batch mode.
     """
 
     def __init__(self, language, number_of_files, readfile, generate_path, module_name) -> None:
@@ -58,7 +59,7 @@ class UpdateHdlTab:
                         + " (architecture-file) could not be opened for copying into HDL-Tab.",
                     )
             # Create hdl without writing to file for Link-Generation:
-            hdl_generation.run_hdl_generation(write_to_file=False)
+            hdl_generation.run_hdl_generation(write_to_file=False, is_script_mode=False)
         main_window.hdl_frame_text.config(state=tk.NORMAL)
         main_window.hdl_frame_text.insert("1.0", hdl)
         main_window.hdl_frame_text.config(state=tk.DISABLED)
