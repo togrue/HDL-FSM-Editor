@@ -167,9 +167,9 @@ def save_in_file_new(save_filename) -> None:  # Called at saving and at every de
         if not save_filename.endswith(".tmp") and os.path.isfile(f"{project_manager.previous_file}.tmp"):
             os.remove(f"{project_manager.previous_file}.tmp")
         main_window.root.config(cursor=old_cursor)
-    except Exception as _:
+    except Exception as e:
         main_window.root.config(cursor=old_cursor)
-        messagebox.showerror("Error in HDL-FSM-Editor", f"Writing to file {save_filename} caused exception ")
+        messagebox.showerror("Error in HDL-FSM-Editor", f"Writing to file {save_filename} caused an exception: {e}")
     if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
         main_window.root.config(cursor=old_cursor)
         messagebox.showerror("Error", "The database is corrupt.\nDo not use the written file.\nSee details at STDOUT.")
