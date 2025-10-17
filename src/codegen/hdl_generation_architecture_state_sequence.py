@@ -4,13 +4,14 @@ The methods create only the HDL for the state sequence.
 """
 
 import re
+from pathlib import Path
 from typing import Any
 
 from link_dictionary import link_dict
 
 
 def create_vhdl_for_the_state_sequence(
-    transition_specifications: list[dict[str, Any]], file_name: str, file_line_number: int
+    transition_specifications: list[dict[str, Any]], file_name: Path, file_line_number: int
 ) -> tuple[str, int]:
     vhdl = []
     ignore_control_for_vhdl_indent = []
@@ -170,7 +171,7 @@ def create_vhdl_for_the_state_sequence(
 
 
 def create_verilog_for_the_state_sequence(
-    transition_specifications: list[dict[str, Any]], file_name: str, file_line_number: int
+    transition_specifications: list[dict[str, Any]], file_name: Path, file_line_number: int
 ) -> tuple[str, int]:
     verilog = []
     ignore_control_for_verilog_indent = []

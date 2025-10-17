@@ -8,7 +8,6 @@ import shlex
 import subprocess
 import tkinter as tk
 from datetime import datetime
-from os.path import exists
 from tkinter import messagebox
 from typing import Optional
 
@@ -107,11 +106,13 @@ so only $file1 and $file2 are allowed.',
                 extension = ".v"
             else:
                 extension = ".sv"
-            file_name = main_window.generate_path_value.get() + "/" + main_window.module_name.get() + extension
-            if not exists(file_name):
-                messagebox.showerror("Error", "Compile is not possible, HDL file " + file_name + " does not exist.")
+            file_name = main_window.get_generation_dir() / (main_window.module_name.get() + extension)
+            if not file_name.exists():
+                messagebox.showerror(
+                    "Error", "Compile is not possible, HDL file " + file_name.as_posix() + " does not exist."
+                )
                 return None
-            command_array_new.append(file_name)
+            command_array_new.append(file_name.as_posix())
         elif entry == "$file1":
             if main_window.select_file_number_text.get() == 1:
                 messagebox.showerror(
@@ -119,11 +120,13 @@ so only $file1 and $file2 are allowed.',
                     'The compile command uses $file1, but the "1 files mode" is selected, so only $file is allowed).',
                 )
                 return None
-            file_name1 = main_window.generate_path_value.get() + "/" + main_window.module_name.get() + "_e.vhd"
-            if not exists(file_name1):
-                messagebox.showerror("Error", "Compile is not possible, as HDL file" + file_name1 + " does not exist.")
+            file_name1 = main_window.get_generation_dir() / (main_window.module_name.get() + "_e.vhd")
+            if not file_name1.exists():
+                messagebox.showerror(
+                    "Error", "Compile is not possible, as HDL file" + file_name1.as_posix() + " does not exist."
+                )
                 return None
-            command_array_new.append(file_name1)
+            command_array_new.append(file_name1.as_posix())
         elif entry == "$file2":
             if main_window.select_file_number_text.get() == 1:
                 messagebox.showerror(
@@ -131,11 +134,13 @@ so only $file1 and $file2 are allowed.',
                     'The compile command uses $file2, but the "1 files mode" is selected, so only $file is allowed).',
                 )
                 return None
-            file_name2 = main_window.generate_path_value.get() + "/" + main_window.module_name.get() + "_fsm.vhd"
-            if not exists(file_name2):
-                messagebox.showerror("Error", "Compile is not possible, as HDL file" + file_name2 + " does not exist.")
+            file_name2 = main_window.get_generation_dir() / (main_window.module_name.get() + "_fsm.vhd")
+            if not file_name2.exists():
+                messagebox.showerror(
+                    "Error", "Compile is not possible, as HDL file" + file_name2.as_posix() + " does not exist."
+                )
                 return None
-            command_array_new.append(file_name2)
+            command_array_new.append(file_name2.as_posix())
         elif entry == "$name":
             command_array_new.append(main_window.module_name.get())
         else:

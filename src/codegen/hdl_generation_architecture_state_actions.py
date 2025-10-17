@@ -4,6 +4,7 @@ All methods needed for the state action process in VHDL or Verilog
 
 import re
 import tkinter as tk
+from pathlib import Path
 
 import codegen.hdl_generation_library as hdl_generation_library
 import main_window
@@ -15,7 +16,7 @@ from .exceptions import GenerationError
 
 
 def create_state_action_process(
-    file_name: str, file_line_number: int, state_tag_list_sorted: list[str]
+    file_name: Path, file_line_number: int, state_tag_list_sorted: list[str]
 ) -> tuple[str, int]:
     default_state_actions = _get_default_state_actions()
     state_action_list = _create_state_action_list(
@@ -55,7 +56,7 @@ def _state_actions_contain_only_null_for_each_state(state_action_list: list[list
 
 
 def _create_state_action_process_for_vhdl(
-    file_name: str,
+    file_name: Path,
     file_line_number: int,
     state_action_list: list[list[str]],
     default_state_actions: str,
@@ -118,7 +119,7 @@ def _create_state_action_process_for_vhdl(
 
 
 def _create_state_action_process_for_verilog(
-    file_name: str,
+    file_name: Path,
     file_line_number: int,
     state_action_list: list[list[str]],
     default_state_actions: str,

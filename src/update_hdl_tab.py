@@ -2,8 +2,8 @@
 Copies the generated HDL into the HDL-tab if the HDL is younger than the hfe-file.
 """
 
-import os
 import tkinter as tk
+from pathlib import Path
 from tkinter import messagebox
 from typing import Optional
 
@@ -18,20 +18,13 @@ class UpdateHdlTab:
     """
 
     def __init__(
-        self, language: str, number_of_files: int, readfile: str, generate_path: str, module_name: str
+        self, language: str, number_of_files: int, readfile: str, generate_path: Path, module_name: str
     ) -> None:
         self.date_of_hdl_file = 0.0  # Default-Value, used when hdl-file not exists.
         self.date_of_hdl_file2 = 0.0  # Default-Value, used when hdl-file not exists.
-        if language == "VHDL":
-            if number_of_files == 1:
-                hdlfilename = generate_path + "/" + module_name + ".vhd"
-                hdlfilename_architecture = None
-            else:
-                hdlfilename = generate_path + "/" + module_name + "_e.vhd"
-                hdlfilename_architecture = generate_path + "/" + module_name + "_fsm.vhd"
-        else:  # verilog
-            hdlfilename = generate_path + "/" + module_name + ".v"
-            hdlfilename_architecture = None
+        hdlfilename = main_window.get_primary_file_path()
+        hdlfilename_architecture = main_window.get_architecture_file_path()
+
         # Compare modification time of HDL file against modification_time of design file (.hse):
         main_window.hdl_frame_text.config(state=tk.NORMAL)
         main_window.hdl_frame_text.delete("1.0", tk.END)
@@ -46,9 +39,10 @@ class UpdateHdlTab:
                 hdl += self._add_line_numbers(entity)
             except FileNotFoundError:
                 messagebox.showerror(
-                    "Error in HDL-FSM-Editor", "File " + hdlfilename + " could not be opened for copying into HDL-Tab."
+                    "Error in HDL-FSM-Editor",
+                    "File " + hdlfilename.absolute().as_posix() + " could not be opened for copying into HDL-Tab.",
                 )
-            if hdlfilename_architecture is not None:
+            if hdlfilename_architecture:
                 # HDL-file exists and was generated after the design-file was saved.
                 try:
                     with open(hdlfilename_architecture, encoding="utf-8") as fileobject:
@@ -58,7 +52,7 @@ class UpdateHdlTab:
                     messagebox.showerror(
                         "Error in HDL-FSM-Editor",
                         "File "
-                        + hdlfilename_architecture
+                        + hdlfilename_architecture.absolute().as_posix()
                         + " (architecture-file) could not be opened for copying into HDL-Tab.",
                     )
             # Create hdl without writing to file for Link-Generation:
@@ -71,42 +65,50 @@ class UpdateHdlTab:
         )
 
     def _hdl_is_up_to_date(
-        self, path_name: str, hdlfilename: str, hdlfilename_architecture: Optional[str], show_message: bool
+        self, path_name: str, hdlfilename: Path, hdlfilename_architecture: Optional[Path], show_message: bool
     ) -> bool:
-        if not os.path.isfile(path_name):
+        if not Path(path_name).is_file():
             messagebox.showerror(
                 "Error in HDL-FSM-Editor", "The HDL-FSM-Editor project file " + path_name + " is missing."
             )
             return False
-        if not os.path.isfile(hdlfilename):
+        if not hdlfilename.is_file():
             if show_message:
-                messagebox.showerror("Error in HDL-FSM-Editor", "The file " + hdlfilename + " is missing.")
+                messagebox.showerror(
+                    "Error in HDL-FSM-Editor", "The file " + hdlfilename.absolute().as_posix() + " is missing."
+                )
             return False
-        if hdlfilename_architecture is not None and not os.path.isfile(hdlfilename_architecture):
+        if hdlfilename_architecture and not hdlfilename_architecture.is_file():
             if show_message:
                 messagebox.showerror(
                     "Error in HDL-FSM-Editor",
-                    "The entity-file exists, but the architecture file\n" + hdlfilename_architecture + " is missing.",
+                    "The entity-file exists, but the architecture file\n"
+                    + hdlfilename_architecture.absolute().as_posix()
+                    + " is missing.",
                 )
             return False
-        self.date_of_hdl_file = os.path.getmtime(hdlfilename)
+        self.date_of_hdl_file = hdlfilename.stat().st_mtime
         if hdlfilename_architecture is not None:
-            self.date_of_hdl_file2 = os.path.getmtime(hdlfilename_architecture)
-        if self.date_of_hdl_file < os.path.getmtime(path_name):
+            self.date_of_hdl_file2 = hdlfilename_architecture.stat().st_mtime
+        if self.date_of_hdl_file < Path(path_name).stat().st_mtime:
             if show_message:
                 messagebox.showerror(
                     "Error in HDL-FSM-Editor",
-                    "The file\n" + hdlfilename + "\nis older than\n" + path_name + "\nPlease generate HDL again.",
+                    "The file\n"
+                    + hdlfilename.absolute().as_posix()
+                    + "\nis older than\n"
+                    + Path(path_name).absolute().as_posix()
+                    + "\nPlease generate HDL again.",
                 )
             return False
-        if hdlfilename_architecture is not None and self.date_of_hdl_file2 < os.path.getmtime(path_name):
+        if hdlfilename_architecture and self.date_of_hdl_file2 < Path(path_name).stat().st_mtime:
             if show_message:
                 messagebox.showerror(
                     "Error in HDL-FSM-Editor",
                     "The architecture file\n"
-                    + hdlfilename_architecture
+                    + hdlfilename_architecture.absolute().as_posix()
                     + "\nis older than\n"
-                    + path_name
+                    + Path(path_name).absolute().as_posix()
                     + "\nPlease generate HDL again.",
                 )
             return False

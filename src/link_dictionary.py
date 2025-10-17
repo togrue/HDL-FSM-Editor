@@ -15,11 +15,11 @@ line-number and file-name are determined and the corresponding entry of the Link
 """
 
 import tkinter as tk
+from pathlib import Path
 from typing import Any, Optional, Union
 
 import codegen.hdl_generation as hdl_generation
 import main_window
-from codegen.hdl_generation_config import GenerationConfig
 from constants import GuiTab
 
 
@@ -31,11 +31,11 @@ class LinkDictionary:
 
     def __init__(self, root: tk.Misc) -> None:
         self.root = root
-        self.link_dict: dict[str, dict[int, dict[str, Any]]] = {}
+        self.link_dict: dict[Path, dict[int, dict[str, Any]]] = {}
 
     def add(
         self,
-        file_name: str,  # Filename in which the HDL-item is stored
+        file_name: Path,  # Filename in which the HDL-item is stored
         file_line_number: int,  # File-line-number in which the HDL-item is stored
         hdl_item_type: str,  # One of HdlItemType enum values
         number_of_lines: int,  # How many lines does the HDL-item use in the file
@@ -80,11 +80,11 @@ class LinkDictionary:
                     "number_of_line": text_line_number,
                 }
 
-    def has_link(self, file_name: str, file_line_number: int) -> bool:
+    def has_link(self, file_name: Path, file_line_number: int) -> bool:
         """Check if a link exists for the given file and line."""
         return file_name in self.link_dict and file_line_number in self.link_dict[file_name]
 
-    def jump_to_source(self, selected_file: str, file_line_number: int) -> None:
+    def jump_to_source(self, selected_file: Path, file_line_number: int) -> None:
         # print("jump_to_source", selected_file, file_line_number)
         tab_to_show = self.link_dict[selected_file][file_line_number]["tab_name"]
         widget = self.link_dict[selected_file][file_line_number]["widget_reference"]
@@ -94,10 +94,9 @@ class LinkDictionary:
         main_window.show_tab(tab_to_show)
         widget.highlight_item(hdl_item_type, object_identifier, number_of_line)
 
-    def jump_to_hdl(self, selected_file: str, file_line_number: int) -> None:
+    def jump_to_hdl(self, selected_file: Path, file_line_number: int) -> None:
         if main_window.select_file_number_text.get() == 2:
-            gen_config = GenerationConfig.from_main_window()
-            file_name_architecture = gen_config.get_architecture_file()
+            file_name_architecture = main_window.get_architecture_file_path()
             if file_name_architecture and selected_file == file_name_architecture:
                 file_line_number += hdl_generation.last_line_number_of_file1
         main_window.show_tab(GuiTab.GENERATED_HDL)
@@ -106,7 +105,7 @@ class LinkDictionary:
         main_window.hdl_frame_text.focus_set()
         main_window.hdl_frame_text.config(state="disabled")
 
-    def clear_link_dict(self, file_name: str) -> None:
+    def clear_link_dict(self, file_name: Path) -> None:
         if file_name in self.link_dict:
             # print("clear_link_dict: file_name =", file_name)
             self.link_dict.pop(file_name)

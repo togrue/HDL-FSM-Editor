@@ -26,7 +26,6 @@ import grid_drawing
 import move_handling_initialization
 import undo_handling
 import update_hdl_tab
-from codegen.hdl_generation_config import GenerationConfig
 from constants import GuiTab
 from dialogs.color_changer import ColorChanger
 from dialogs.regex_dialog import RegexDialog
@@ -348,6 +347,32 @@ def create_notebook() -> None:
     global notebook
     notebook = ttk.Notebook(root, padding=5)
     notebook.grid(column=0, row=1, sticky="nsew")
+
+
+def get_generation_dir() -> Path:
+    return Path(generate_path_value.get()).resolve()
+
+
+def get_primary_file_path() -> Path:
+    lang = language.get()
+    if lang == "VHDL":
+        if select_file_number_text.get() == 1:
+            return get_generation_dir() / (module_name.get() + ".vhd")
+        else:
+            return get_generation_dir() / (module_name.get() + "_e.vhd")
+    elif lang == "Verilog":
+        return get_generation_dir() / (module_name.get() + ".v")
+    elif lang == "SystemVerilog":
+        return get_generation_dir() / (module_name.get() + ".sv")
+    else:
+        raise ValueError(f"Unsupported language: {lang}")
+
+
+def get_architecture_file_path() -> Optional[Path]:
+    if language.get() == "VHDL" and select_file_number_text.get() == 2:
+        return get_generation_dir() / (module_name.get() + "_fsm.vhd")
+    else:
+        return None
 
 
 def create_control_notebook_tab() -> None:
@@ -1163,14 +1188,13 @@ def _cursor_move_hdl_tab(*_: Any) -> None:
     line_number = int(re.sub(r"\..*", "", index_string))  # Remove everything after '.'
     if line_number != _line_number_under_pointer_hdl_tab:
         hdl_frame_text.tag_delete("underline")
-        config = GenerationConfig.from_main_window()
         if line_number > hdl_generation.last_line_number_of_file1:
             line_number_in_file = line_number - hdl_generation.last_line_number_of_file1
-            selected_file = config.get_architecture_file()
+            selected_file = get_architecture_file_path()
             start_index = size_of_file2_line_number
         else:
             line_number_in_file = line_number
-            selected_file = config.get_primary_file()
+            selected_file = get_primary_file_path()
             start_index = size_of_file1_line_number
         while hdl_frame_text.get(f"{line_number}.{start_index - 1}") == " ":
             start_index += 1
@@ -1234,7 +1258,7 @@ def _cursor_move_log_tab(*_: Any) -> None:
                 return
 
             if link_dict().has_link(
-                file_name, file_line_number
+                Path(file_name), file_line_number
             ):  # For example ieee source files are not a key in link_dict.
                 if debug:
                     print("Filename and line-number are found in Link-Dictionary.")
@@ -1242,11 +1266,11 @@ def _cursor_move_log_tab(*_: Any) -> None:
                 log_frame_text.tag_configure("underline", underline=True, foreground="red")
                 _func_id_jump1 = log_frame_text.bind(
                     "<Control-Button-1>",
-                    lambda event: link_dict().jump_to_source(file_name, file_line_number),
+                    lambda event: link_dict().jump_to_source(Path(file_name), file_line_number),
                 )
                 _func_id_jump2 = log_frame_text.bind(
                     "<Alt-Button-1>",
-                    lambda event: link_dict().jump_to_hdl(file_name, file_line_number),
+                    lambda event: link_dict().jump_to_hdl(Path(file_name), file_line_number),
                 )
             else:
                 if debug:
@@ -1360,21 +1384,13 @@ def _update_hdl_tab_if_necessary() -> None:
     global date_of_hdl_file_shown_in_hdl_tab
     global date_of_hdl_file2_shown_in_hdl_tab
     if notebook.index(notebook.select()) == 4:
-        if language.get() == "VHDL":
-            if select_file_number_text.get() == 1:
-                hdlfilename = generate_path_value.get() + "/" + module_name.get() + ".vhd"
-                hdlfilename2 = ""
-            else:
-                hdlfilename = generate_path_value.get() + "/" + module_name.get() + "_e.vhd"
-                hdlfilename2 = generate_path_value.get() + "/" + module_name.get() + "_fsm.vhd"
-        else:  # verilog
-            hdlfilename = generate_path_value.get() + "/" + module_name.get() + ".v"
-            hdlfilename2 = ""
+        hdlfilename = get_primary_file_path()
+        hdlfilename2 = get_architecture_file_path()
 
-        if (os.path.isfile(hdlfilename) and date_of_hdl_file_shown_in_hdl_tab < os.path.getmtime(hdlfilename)) or (
-            select_file_number_text.get() == 2
-            and os.path.isfile(hdlfilename2)
-            and date_of_hdl_file2_shown_in_hdl_tab < os.path.getmtime(hdlfilename2)
+        if (hdlfilename.is_file() and date_of_hdl_file_shown_in_hdl_tab < hdlfilename.stat().st_mtime) or (
+            hdlfilename2 is not None
+            and hdlfilename2.is_file()
+            and date_of_hdl_file2_shown_in_hdl_tab < hdlfilename2.stat().st_mtime
         ):
             answer = messagebox.askquestion(
                 "Warning in HDL-FSM-Editor3",
@@ -1386,7 +1402,7 @@ def _update_hdl_tab_if_necessary() -> None:
                     language.get(),
                     select_file_number_text.get(),
                     project_manager.current_file,
-                    generate_path_value.get(),
+                    get_generation_dir(),
                     module_name.get(),
                 )
                 date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()

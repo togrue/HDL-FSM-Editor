@@ -2,6 +2,8 @@
 This module provides a method for creating the architecture part of a VHDL file.
 """
 
+from pathlib import Path
+
 import codegen.hdl_generation_architecture_state_actions as hdl_generation_architecture_state_actions
 import codegen.hdl_generation_architecture_state_sequence as hdl_generation_architecture_state_sequence
 import codegen.hdl_generation_library as hdl_generation_library
@@ -10,7 +12,7 @@ from codegen.exceptions import GenerationError
 from link_dictionary import link_dict
 
 
-def create_architecture(file_name: str, file_line_number: int, state_tag_list_sorted: list[str]) -> str:
+def create_architecture(file_name: Path, file_line_number: int, state_tag_list_sorted: list[str]) -> str:
     architecture = ""
 
     package_statements = hdl_generation_library.get_text_from_text_widget(main_window.internals_package_text)

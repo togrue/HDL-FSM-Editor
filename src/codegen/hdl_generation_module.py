@@ -4,6 +4,7 @@ module for generating the logic inside a Verilog design.
 
 import math
 import re
+from pathlib import Path
 
 import codegen.hdl_generation_architecture_state_actions as hdl_generation_architecture_state_actions
 import codegen.hdl_generation_architecture_state_sequence as hdl_generation_architecture_state_sequence
@@ -14,7 +15,7 @@ from link_dictionary import link_dict
 from .exceptions import GenerationError
 
 
-def create_module_logic(file_name: str, file_line_number: int, state_tag_list_sorted: list[str]) -> str:
+def create_module_logic(file_name: Path, file_line_number: int, state_tag_list_sorted: list[str]) -> str:
     architecture = ""
     state_signal_type_definition = _create_signal_declaration_for_the_state_variable(state_tag_list_sorted)
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_signal_type_definition)

@@ -6,7 +6,9 @@ import os
 import re
 import tkinter as tk
 from datetime import datetime
+from pathlib import Path
 from tkinter import messagebox
+from typing import Optional
 
 import codegen.hdl_generation_architecture as hdl_generation_architecture
 import codegen.hdl_generation_library as hdl_generation_library
@@ -71,7 +73,8 @@ def _generate_hdl(config: GenerationConfig, write_to_file: bool, state_tag_list_
 
 
 def _create_hdl(config: GenerationConfig, header: str, write_to_file: bool, state_tag_list_sorted: list[str]) -> None:
-    file_name, file_name_architecture = _get_file_names(config)
+    file_name = config.primary_file_path
+    file_name_architecture = config.architecture_file_path
 
     link_dict().clear_link_dict(file_name)
     if file_name_architecture:
@@ -80,7 +83,7 @@ def _create_hdl(config: GenerationConfig, header: str, write_to_file: bool, stat
 
     if config.language == "VHDL":
         entity, file_line_number = _create_entity(config, file_name, file_line_number)
-        if file_name_architecture == "":  # All VHDL is written in 1 file.
+        if file_name_architecture is None:  # All VHDL is written in 1 file.
             file_to_use = file_name
             file_line_number_to_use = file_line_number
         else:
@@ -100,9 +103,9 @@ def _create_hdl(config: GenerationConfig, header: str, write_to_file: bool, stat
 
 
 # TODO: This should not be here!
-def _copy_hdl_into_generated_hdl_tab(hdl: str, file_name: str, file_name_architecture: str) -> None:
-    main_window.date_of_hdl_file_shown_in_hdl_tab = os.path.getmtime(file_name)
-    if file_name_architecture != "":
+def _copy_hdl_into_generated_hdl_tab(hdl: str, file_name: Path, file_name_architecture: Optional[Path]) -> None:
+    main_window.date_of_hdl_file_shown_in_hdl_tab = file_name.stat().st_mtime
+    if file_name_architecture:
         main_window.date_of_hdl_file2_shown_in_hdl_tab = os.path.getmtime(file_name_architecture)
     main_window.hdl_frame_text.config(state=tk.NORMAL)
     main_window.hdl_frame_text.delete("1.0", tk.END)
@@ -115,7 +118,7 @@ def _copy_hdl_into_generated_hdl_tab(hdl: str, file_name: str, file_name_archite
     main_window.show_tab(GuiTab.GENERATED_HDL)
 
 
-def _create_entity(config: GenerationConfig, file_name: str, file_line_number: int) -> tuple[str, int]:
+def _create_entity(config: GenerationConfig, file_name: Path, file_line_number: int) -> tuple[str, int]:
     entity = ""
 
     package_statements = hdl_generation_library.get_text_from_text_widget(main_window.interface_package_text)
@@ -182,7 +185,7 @@ def _create_entity(config: GenerationConfig, file_name: str, file_line_number: i
     return entity, file_line_number
 
 
-def _create_module_ports(config: GenerationConfig, file_name: str, file_line_number: int) -> tuple[str, int]:
+def _create_module_ports(config: GenerationConfig, file_name: Path, file_line_number: int) -> tuple[str, int]:
     module = ""
     file_line_number = 3  # Line 1 = Filename, Line 2 = Header
     module += "module " + config.module_name + "\n"
@@ -233,8 +236,8 @@ def _write_hdl_file(
     header: str,
     entity: str,
     architecture: str,
-    path_name: str,
-    path_name_architecture: str,
+    path_name: Path,
+    path_name_architecture: Optional[Path],
 ) -> str:
     global last_line_number_of_file1
     _, name_of_file = os.path.split(path_name)
@@ -265,8 +268,8 @@ def _write_hdl_file(
                 fileobject.write(content1)
         last_line_number_of_file1 = content1.count("\n") + 1  # For example: 3 lines are separated by 2 returns.
         main_window.size_of_file1_line_number = len(str(last_line_number_of_file1)) + 2  # "+2" because of string ": "
-        _, name_of_architecture_file = os.path.split(path_name_architecture)
-        content2 = "-- Filename: " + name_of_architecture_file + "\n"
+        assert path_name_architecture is not None
+        content2 = "-- Filename: " + path_name_architecture.name + "\n"
         content2 += header
         content2 += architecture
         if write_to_file:
@@ -281,21 +284,21 @@ def _write_hdl_file(
     return content_with_numbers
 
 
-def _get_file_names(config: GenerationConfig) -> tuple[str, str]:
-    # For Verilog and SystemVerilog, always generate single files regardless of number_of_files setting
-    if config.language in ["Verilog", "SystemVerilog"]:
-        file_type = ".v" if config.language == "Verilog" else ".sv"
-        file_name = config.generate_path + "/" + config.module_name + file_type
-        file_name_architecture = ""
-    elif config.select_file_number == 1:
-        # VHDL single file
-        file_name = config.generate_path + "/" + config.module_name + ".vhd"
-        file_name_architecture = ""
-    else:
-        # VHDL two files
-        file_name = config.generate_path + "/" + config.module_name + "_e.vhd"
-        file_name_architecture = config.generate_path + "/" + config.module_name + "_fsm.vhd"
-    return file_name, file_name_architecture
+# def _get_file_names(config: GenerationConfig) -> tuple[str, str]:
+#     # For Verilog and SystemVerilog, always generate single files regardless of number_of_files setting
+#     if config.language in ["Verilog", "SystemVerilog"]:
+#         file_type = ".v" if config.language == "Verilog" else ".sv"
+#         file_name = config.generate_path / (config.module_name + file_type)
+#         file_name_architecture = Path()
+#     elif config.select_file_number == 1:
+#         # VHDL single file
+#         file_name = config.generate_path / (config.module_name + ".vhd")
+#         file_name_architecture = Path()
+#     else:
+#         # VHDL two files
+#         file_name = config.generate_path / (config.module_name + "_e.vhd")
+#         file_name_architecture = config.generate_path / (config.module_name + "_fsm.vhd")
+#     return file_name.as_posix(), file_name_architecture.as_posix()
 
 
 def _add_line_numbers(text: str) -> str:
