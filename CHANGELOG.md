@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ## Added
+## Changed
+## Deprecated
+## Removed
+## Fixed
+## Security
+
+## [5.6]
+## Added
 - When the project file is read/written now the cursor changes its shape (visible only if the file operation is slow).
 - A warning pop up dialog informs the user, when a state is placed too near to another object.
 ## Changed
@@ -14,8 +22,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved robustness when moving transitions (avoiding null vectors).
 ## Deprecated
 ## Removed
+- Removed second implementation of priority box drawing from undo_handling.
 ## Fixed
 - When a curved transition is moved, sometimes the transition shape gets strange at pick up.
+- At reading a design sometimes an exception regarding variable "trans_id" happened.
+- When the "generated HDL" was opened sometimes no HDL was loaded.
 ## Security
 
 ## [5.5]
