@@ -88,9 +88,15 @@ def _parse_and_process_arguments() -> None:
     # Handle filename
     if args.filename:
         if not exists(args.filename):
-            messagebox.showerror("Error", f"File {args.filename} was not found.")
+            if args.generate_hdl:
+                print("Error: File " + args.filename + " was not found.")
+            else:
+                messagebox.showerror("Error", f"File {args.filename} was not found.")
         elif not args.filename.endswith(".hfe"):
-            messagebox.showerror("Error", f"File {args.filename} must have extension '.hfe'.")
+            if args.generate_hdl:
+                print("Error: File " + args.filename + " must have extension '.hfe'.")
+            else:
+                messagebox.showerror("Error", f"File {args.filename} must have extension '.hfe'.")
         else:
             # Load the file
             project_manager.current_file = args.filename
