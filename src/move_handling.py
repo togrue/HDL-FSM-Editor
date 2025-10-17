@@ -2,6 +2,9 @@
 This module contains a method to decide which graphical object must be moved.
 """
 
+import tkinter as tk
+from typing import Any
+
 import canvas_editing
 import condition_action_handling
 import connector_handling
@@ -17,13 +20,13 @@ import state_handling
 import transition_handling
 
 
-def move_do(event, move_list, first, move_to_grid=False) -> None:
+def move_do(event: tk.Event, move_list: list, first: bool, move_to_grid: bool = False) -> None:
     # move_to_grid = bool(event.type == "5")
     [event_x, event_y] = canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
     move_to_coordinates(event_x, event_y, move_list, first, move_to_grid)
 
 
-def move_to_coordinates(event_x, event_y, move_list, first, move_to_grid):
+def move_to_coordinates(event_x: float, event_y: float, move_list: list, first: bool, move_to_grid: bool) -> None:
     if _state_is_moved_to_near_to_state_or_connector(move_list, event_x, event_y):
         return
     if _connector_moved_too_close_to_other_object(move_list, event_x, event_y):
@@ -41,6 +44,7 @@ def move_to_coordinates(event_x, event_y, move_list, first, move_to_grid):
         elif item_type == "rectangle":
             connector_handling.move_to(event_x, event_y, item_id, first, move_to_grid)
         elif item_type == "window":
+            ref: Any
             if item_id in state_action_handling.MyText.mytext_dict:
                 ref = state_action_handling.MyText.mytext_dict[item_id]
             elif item_id in state_comment.StateComment.dictionary:
@@ -55,10 +59,10 @@ def move_to_coordinates(event_x, event_y, move_list, first, move_to_grid):
                 ref = condition_action_handling.ConditionAction.dictionary[item_id]
             ref.move_to(event_x, event_y, first)
         else:
-            print("move: Fatal, unknown canvas type", "|" + item_type + "|")
+            print("move: Fatal, unknown canvas type", "|" + str(item_type) + "|")
 
 
-def _state_is_moved_to_near_to_state_or_connector(move_list, event_x, event_y) -> bool:
+def _state_is_moved_to_near_to_state_or_connector(move_list: list, event_x: float, event_y: float) -> bool:
     for entry in move_list:
         moved_item_id = entry[0]
         if main_window.canvas.type(moved_item_id) == "oval":
@@ -93,7 +97,7 @@ def _state_is_moved_to_near_to_state_or_connector(move_list, event_x, event_y) -
     return False
 
 
-def _connector_moved_too_close_to_other_object(move_list, event_x, event_y) -> bool:
+def _connector_moved_too_close_to_other_object(move_list: list, event_x: float, event_y: float) -> bool:
     for entry in move_list:
         moved_item_id = entry[0]
         if (

@@ -4,6 +4,7 @@ This class handles "state-comments".
 
 import tkinter as tk
 from tkinter import ttk
+from typing import Optional
 
 import canvas_editing
 import custom_text
@@ -17,21 +18,21 @@ class StateComment:
     This class handles "state-comments".
     """
 
-    dictionary = {}
+    dictionary: dict[int, "StateComment"] = {}
 
     def __init__(
         self,
-        menu_x,
-        menu_y,  # coordinates for placing the StateComment-Window "near" the clicked menu-entry
-        height,
-        width,
-        padding,
+        menu_x: float,
+        menu_y: float,  # coordinates for placing the StateComment-Window "near" the clicked menu-entry
+        height: int,
+        width: int,
+        padding: int,
     ) -> None:
-        self.text_content = None
-        self.difference_x = 0
-        self.difference_y = 0
-        self.line_id = None
-        self.line_coords = []
+        self.text_content: Optional[str] = None
+        self.difference_x: float = 0.0
+        self.difference_y: float = 0.0
+        self.line_id: Optional[int] = None
+        self.line_coords: list[float] = []
         # Create frame:
         self.frame_id = ttk.Frame(
             main_window.canvas, relief=tk.FLAT, borderwidth=0, style="StateActionsWindow.TFrame", padding=padding
@@ -66,7 +67,7 @@ class StateComment:
         self.text_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
         self.text_id.bind("<FocusIn>", lambda event: main_window.canvas.unbind_all("<Delete>"))
         self.text_id.bind(
-            "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+            "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda _: canvas_editing.delete())
         )
 
         self.label_id.grid(column=0, row=0, sticky="nwe")
@@ -85,7 +86,7 @@ class StateComment:
         )
         StateComment.dictionary[self.window_id] = self  # Store the object-reference with the Canvas-id as key.
 
-    def _edit_in_external_editor(self):
+    def _edit_in_external_editor(self) -> None:
         self.text_id.edit_in_external_editor()
         self.update_text()
 
@@ -113,7 +114,7 @@ class StateComment:
         self.frame_id.configure(borderwidth=0, style="StateActionsWindow.TFrame")
         self.label_id.configure(style="StateActionsWindow.TLabel")
 
-    def move_to(self, event_x, event_y, first) -> None:
+    def move_to(self, event_x: float, event_y: float, first: bool) -> None:
         if first:
             # Calculate the difference between the "anchor" point and the event:
             coords = main_window.canvas.coords(self.window_id)
@@ -131,7 +132,9 @@ class StateComment:
                 self.line_coords[1] = event_y
                 main_window.canvas.coords(line_tag, self.line_coords)
 
-    def add_line(self, menu_x, menu_y, state_identifier) -> None:  # Called by state_handling.evaluate_menu().
+    def add_line(
+        self, menu_x: float, menu_y: float, state_identifier: str
+    ) -> None:  # Called by state_handling.evaluate_menu().
         # Draw a line from the state to the comment block which is added to the state:
         state_coords = main_window.canvas.coords(state_identifier)
         self.line_id = main_window.canvas.create_line(
@@ -140,11 +143,12 @@ class StateComment:
             (state_coords[2] + state_coords[0]) / 2,
             (state_coords[3] + state_coords[1]) / 2,
             dash=(2, 2),
-            tag=state_identifier + "_comment_line",
+            tags=state_identifier + "_comment_line",
         )
-        main_window.canvas.tag_lower(self.line_id, state_identifier)
+        if self.line_id is not None:
+            main_window.canvas.tag_lower(self.line_id, state_identifier)
 
-    def tag(self, state_identifier) -> None:  # Called by state_handling.evaluate_menu().
+    def tag(self, state_identifier: str) -> None:  # Called by state_handling.evaluate_menu().
         main_window.canvas.addtag_withtag(state_identifier + "_comment_line_end", state_identifier)
         main_window.canvas.itemconfigure(
             self.window_id, tag=(state_identifier + "_comment", state_identifier + "_comment_line_start")

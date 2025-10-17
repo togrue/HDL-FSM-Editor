@@ -3,6 +3,8 @@ State manager for HDL-FSM-Editor.
 This module provides a simple way to access application state throughout the application.
 """
 
+from typing import Any
+
 from project import Project
 
 
@@ -26,7 +28,7 @@ class ProjectManager:
         return self._current_file
 
     @current_file.setter
-    def current_file(self, value: str) -> str:
+    def current_file(self, value: str) -> None:
         """Set the current file path."""
         self._current_file = value
 
@@ -36,19 +38,19 @@ class ProjectManager:
         return self._previous_file
 
     @previous_file.setter
-    def previous_file(self, value: str) -> str:
+    def previous_file(self, value: str) -> None:
         """Set the previous file path."""
         self._previous_file = value
 
-    def get(self, attr_name: str, default=None):
+    def get(self, attr_name: str, default: Any = None) -> Any:
         """Get a state attribute."""
         return getattr(self._project, attr_name, default)
 
-    def set(self, attr_name: str, value) -> None:
+    def set(self, attr_name: str, value: Any) -> None:
         """Set a state attribute."""
         setattr(self._project, attr_name, value)
 
-    def update(self, **kwargs) -> None:
+    def update(self, **kwargs: Any) -> None:
         """Update multiple state attributes."""
         for key, value in kwargs.items():
             self.set(key, value)

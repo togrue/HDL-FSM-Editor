@@ -4,6 +4,7 @@ This module contains methods used at HDL generation.
 
 import re
 import tkinter as tk
+from typing import Any, Optional, Union
 
 import canvas_editing
 import condition_action_handling
@@ -12,11 +13,12 @@ import global_actions_combinatorial
 import global_actions_handling
 import main_window
 import state_comment
+from custom_text import CustomText
 
 from .exceptions import GenerationError
 
 
-def indent_text_by_the_given_number_of_tabs(number_of_tabs, text) -> str:
+def indent_text_by_the_given_number_of_tabs(number_of_tabs: int, text: str) -> str:
     keep_newline_at_each_line_end = True
     list_of_lines = text.splitlines(keep_newline_at_each_line_end)
     result_string = ""
@@ -27,24 +29,25 @@ def indent_text_by_the_given_number_of_tabs(number_of_tabs, text) -> str:
     return result_string
 
 
-def get_text_from_text_widget(wiget_id) -> str:
+def get_text_from_text_widget(wiget_id: CustomText) -> str:
     text = wiget_id.get("1.0", tk.END)
     if text != "\n":
         return text
     return ""
 
 
-def _get_target_state_name(all_reset_transition_tags):
+def _get_target_state_name(all_reset_transition_tags: Union[list[str], tuple]) -> str:
     target_state_tag = ""
     for t in all_reset_transition_tags:
         if t.startswith("going_to_state"):
             target_state_tag = t[9:]
     target_state_name = main_window.canvas.itemcget(target_state_tag + "_name", "text")
+    assert isinstance(target_state_name, str)
     return target_state_name
 
 
 # TODO: Might be unused right now.
-def _get_target_tag_of_transition(transition_tag):
+def _get_target_tag_of_transition(transition_tag: str) -> str:
     transition_tags = main_window.canvas.gettags(transition_tag)
     for transition_tag in transition_tags:
         if transition_tag.startswith("going_to_"):
@@ -55,7 +58,7 @@ def _get_target_tag_of_transition(transition_tag):
     return ""  # Should never happen.
 
 
-def create_reset_condition_and_reset_action() -> list:
+def create_reset_condition_and_reset_action() -> tuple[str, str, CustomText, CustomText]:
     reset_transition_tag = _get_reset_transition_tag()
     ref = _get_condition_action_reference_of_transition(reset_transition_tag)
     if ref is None:
@@ -80,14 +83,14 @@ def create_reset_condition_and_reset_action() -> list:
         )  # without "return" at the end
         all_reset_transition_tags = main_window.canvas.gettags(reset_transition_tag)
         target_state_name = _get_target_state_name(all_reset_transition_tags)
-        action = "state <= " + target_state_name + ";\n"
+        action = f"state <= {target_state_name};\n"
         reference_to_reset_action_custom_text = ref.action_id
         action_text = reference_to_reset_action_custom_text.get(
             "1.0", tk.END
         )  # action_text will always have a return as last character.
         if action_text != "\n":  # check for empty line
             action += action_text
-    return [condition, action, reference_to_reset_condition_custom_text, reference_to_reset_action_custom_text]
+    return (condition, action, reference_to_reset_condition_custom_text, reference_to_reset_action_custom_text)
 
 
 def _get_reset_transition_tag() -> str:
@@ -99,11 +102,13 @@ def _get_reset_transition_tag() -> str:
     return reset_transition_tag
 
 
-def _get_transition_target_condition_action(transition_tag) -> tuple[str, str, str, str]:
+def _get_transition_target_condition_action(
+    transition_tag: str,
+) -> tuple[str, str, str, Union[condition_action_handling.ConditionAction, str]]:
     tags = main_window.canvas.gettags(transition_tag)
     transition_condition = ""
     transition_action = ""
-    condition_action_reference = ""
+    condition_action_reference: Union[condition_action_handling.ConditionAction, str] = ""
     transition_target = ""
     for tag in tags:
         if tag.startswith("going_to_state"):
@@ -124,7 +129,9 @@ def _get_transition_target_condition_action(transition_tag) -> tuple[str, str, s
     return transition_target, transition_condition, transition_action, condition_action_reference
 
 
-def _get_condition_action_reference_of_transition(transition_tag) -> None:
+def _get_condition_action_reference_of_transition(
+    transition_tag: str,
+) -> Optional[condition_action_handling.ConditionAction]:
     tags = main_window.canvas.gettags(transition_tag)
     for tag in tags:
         if tag.startswith("ca_connection"):  # Complete tag: ca_connection<n>_end
@@ -138,11 +145,13 @@ def _get_condition_action_reference_of_transition(transition_tag) -> None:
     return None
 
 
-def extract_transition_specifications_from_the_graph(state_tag_list_sorted) -> list:
+def extract_transition_specifications_from_the_graph(state_tag_list_sorted: list[str]) -> list[dict[str, Any]]:
     transition_specifications = []
     for state_tag in state_tag_list_sorted:
         state_name = main_window.canvas.itemcget(state_tag + "_name", "text")
         all_tags_of_state = main_window.canvas.gettags(state_tag)
+        canvas_id_of_comment_text_widget: Optional[CustomText] = None
+        state_comments: str = ""
         if state_tag + "_comment_line_end" in all_tags_of_state:
             canvas_id_of_comment_window = main_window.canvas.find_withtag(state_tag + "_comment")[0]
             reference_to_state_comment_window = state_comment.StateComment.dictionary[canvas_id_of_comment_window]
@@ -151,13 +160,12 @@ def extract_transition_specifications_from_the_graph(state_tag_list_sorted) -> l
             state_comments = re.sub(r"^\s*[0-9]*\s*", "", state_comments)  # Remove order comment at comment start.
             if state_comments == "":
                 canvas_id_of_comment_text_widget = None
-        else:
-            canvas_id_of_comment_text_widget = None
-            state_comments = ""
         condition_level = 0
-        moved_actions = []
-        trace = []  # Is temporarily used when a path from a state to a target state passes connectors.
-        trace_array = []
+        moved_actions: list[dict[str, Any]] = []
+        # Is temporarily used when a path from a state to a target state passes connectors.
+        trace: list[dict[str, Any]] = []
+        trace_array: list[list[dict[str, Any]]] = []
+
         # Each entry of trace_array shall describe a path from this state to a target state (target state is always
         # also this state).
         # The entries of trace_array are ordered regarding their priority in the HDL, the first entry has the
@@ -184,7 +192,7 @@ def extract_transition_specifications_from_the_graph(state_tag_list_sorted) -> l
     return transition_specifications
 
 
-def _optimize_transition_specifications(transition_specifications) -> None:
+def _optimize_transition_specifications(transition_specifications: list[dict[str, Any]]) -> None:
     # Add an unique if-identifier to each transition_specification of the transition_specifications.
     # At each if, the identifier is incremented, at each end-if it is decremented.
     # Also add to each end-if transition specification the number of branches of this ending if-construct:
@@ -208,8 +216,8 @@ def _optimize_transition_specifications(transition_specifications) -> None:
                 != 1
             ):
                 # There is more than 1 branch for the if_identifier.
-                moved_actions = []
-                moved_target = []  # will get only 1 entry
+                moved_actions: list[str] = []
+                moved_target: list[str] = []  # will get only 1 entry
                 for action_target_dict in action_target_array[state_name][if_identifier]:
                     for action in action_target_dict["actions"]:
                         if _action_is_present_in_each_branch(action, state_name, if_identifier, action_target_array):
@@ -245,7 +253,7 @@ def _optimize_transition_specifications(transition_specifications) -> None:
     return
 
 
-def _expand_transition_specifications_by_if_identifier(transition_specifications) -> None:
+def _expand_transition_specifications_by_if_identifier(transition_specifications: list[dict[str, Any]]) -> None:
     if_identifier = 0
     if_identifier_max = 0
     for transition_specification in transition_specifications:
@@ -274,7 +282,9 @@ def _expand_transition_specifications_by_if_identifier(transition_specifications
             transition_specification["if_identifier"] = stack_of_if_identifier[-1]
 
 
-def _create_action_and_branch_array_for_each_if_construct(transition_specifications) -> tuple[dict, dict]:
+def _create_action_and_branch_array_for_each_if_construct(
+    transition_specifications: list[dict[str, Any]],
+) -> tuple[dict[str, Any], dict[str, Any]]:
     # The return dictionary action_target_array[state_name][if_identifier][0..n] is an
     # dictionary with the keys "actions" and "target".
     # The key "actions" stores a list of actions which are executed in this branch.
@@ -282,7 +292,7 @@ def _create_action_and_branch_array_for_each_if_construct(transition_specificati
     # The return dictionary branchnumber_array contains for each state a dictionary
     # with transition_specification["if_identifier"] as key,
     # where the value is the number of branches the "if" has.
-    action_target_array_of_state = {}
+    action_target_array_of_state: dict[int, list[dict[str, Any]]] = {}
     branchnumber_array_of_state = {}
     action_target_array = {}
     branchnumber_array = {}
@@ -319,14 +329,22 @@ def _create_action_and_branch_array_for_each_if_construct(transition_specificati
     return action_target_array, branchnumber_array
 
 
-def _action_is_present_in_each_branch(action, state_name, if_identifier, action_target_array) -> bool:
+def _action_is_present_in_each_branch(
+    action: str, state_name: str, if_identifier: int, action_target_array: dict[str, Any]
+) -> bool:
     for action_target_dict_check in action_target_array[state_name][if_identifier]:
         if action not in action_target_dict_check["actions"]:
             return False
     return True
 
 
-def _remove_action_from_branches(transition_specifications, state_name, if_identifier, action, moved_actions) -> int:
+def _remove_action_from_branches(
+    transition_specifications: list[dict[str, Any]],
+    state_name: str,
+    if_identifier: int,
+    action: str,
+    moved_actions: list[str],
+) -> int:
     index_of_if_in_transition_specifications = 0
     for index, transition_specification in enumerate(transition_specifications):
         if (
@@ -350,7 +368,13 @@ def _remove_action_from_branches(transition_specifications, state_name, if_ident
     return index_of_if_in_transition_specifications
 
 
-def _remove_target_from_branches(transition_specifications, state_name, if_identifier, target, moved_target) -> int:
+def _remove_target_from_branches(
+    transition_specifications: list[dict[str, Any]],
+    state_name: str,
+    if_identifier: int,
+    target: str,
+    moved_target: list[str],
+) -> int:
     index_of_if_in_transition_specifications = 0
     for index, transition_specification in enumerate(transition_specifications):
         if (
@@ -366,14 +390,16 @@ def _remove_target_from_branches(transition_specifications, state_name, if_ident
     return index_of_if_in_transition_specifications
 
 
-def _target_is_present_in_each_branch(target, state_name, if_identifier, action_target_array) -> bool:
+def _target_is_present_in_each_branch(
+    target: str, state_name: str, if_identifier: int, action_target_array: dict[str, Any]
+) -> bool:
     for action_target_dict_check in action_target_array[state_name][if_identifier]:
         if target != action_target_dict_check["target"]:
             return False
     return True
 
 
-def _check_for_wrong_priorities(trace_array) -> None:
+def _check_for_wrong_priorities(trace_array: list[list[dict[str, Any]]]) -> None:
     condition_array = []
     for trace in trace_array:
         # Each trace starts like this:
@@ -418,7 +444,7 @@ def _check_for_wrong_priorities(trace_array) -> None:
                 )
 
 
-def _merge_trace_array(trace_array) -> list:
+def _merge_trace_array(trace_array: list[list[dict[str, Any]]]) -> list[dict[str, Any]]:
     _check_for_wrong_priorities(trace_array)
     traces_of_a_state_reversed = list(reversed(trace_array))  # Start with the trace, which has lowest priority.
     for trace_index, trace in enumerate(traces_of_a_state_reversed):
@@ -532,7 +558,7 @@ def _merge_trace_array(trace_array) -> list:
     return transition_specifications
 
 
-def _get_a_list_of_all_state_tags():
+def _get_a_list_of_all_state_tags() -> list[str]:
     state_tag_list = []
     reg_ex_for_state_tag = re.compile("^state[0-9]+$")
     all_canvas_items = main_window.canvas.find_all()
@@ -544,7 +570,7 @@ def _get_a_list_of_all_state_tags():
     return sorted(state_tag_list)
 
 
-def _sort_list_of_all_state_tags(list_of_all_state_tags):
+def _sort_list_of_all_state_tags(list_of_all_state_tags: list[str]) -> list[str]:
     state_tag_dict_with_prio = {}
     state_tag_list = []
     sorted_list_of_all_state_tags = []
@@ -569,12 +595,12 @@ def _sort_list_of_all_state_tags(list_of_all_state_tags):
 
 
 def _extract_conditions_for_all_outgoing_transitions_of_the_state(
-    state_name,
-    start_point,
-    moved_actions,
-    condition_level,
-    trace,
-    trace_array,  # initialized by trace_array = []
+    state_name: str,
+    start_point: str,
+    moved_actions: list[dict[str, Any]],
+    condition_level: int,
+    trace: list[dict[str, Any]],
+    trace_array: list[list[dict[str, Any]]],  # initialized by trace_array = []
 ) -> None:
     outgoing_transition_tags = _get_all_outgoing_transitions_in_priority_order(start_point)
     if not outgoing_transition_tags and start_point.startswith("connector"):
@@ -600,6 +626,7 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
         )
         transition_condition_is_a_comment = _check_if_condition_is_a_comment(transition_condition)
         if transition_action != "" or transition_condition_is_a_comment:
+            assert isinstance(condition_action_reference, condition_action_handling.ConditionAction)
             if transition_action != "":
                 if transition_condition_is_a_comment:
                     if not transition_condition.endswith("\n"):
@@ -633,6 +660,7 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
             for entry in trace:
                 trace_new.append(entry)
             if transition_condition != "" and not transition_condition_is_a_comment:
+                assert isinstance(condition_action_reference, condition_action_handling.ConditionAction)
                 trace_new.append(
                     {
                         "state_name": state_name,
@@ -662,6 +690,7 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
             # print("start-point, trace", start_point, trace)
             if transition_condition != "" and not transition_condition_is_a_comment:
                 condition_level_new = condition_level + 1
+                assert isinstance(condition_action_reference, condition_action_handling.ConditionAction)
                 trace_new.append(
                     {
                         "state_name": state_name,
@@ -713,14 +742,14 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
             trace_array.append(trace_new)
 
 
-def _check_if_condition_is_a_comment(transition_condition) -> bool:
+def _check_if_condition_is_a_comment(transition_condition: str) -> bool:
     if transition_condition == "" or transition_condition.isspace():
         return False
     transition_condition_without_comments = remove_comments_and_returns(transition_condition)
     return bool(transition_condition_without_comments == "" or transition_condition_without_comments.isspace())
 
 
-def _get_all_outgoing_transitions_in_priority_order(state_tag) -> list:
+def _get_all_outgoing_transitions_in_priority_order(state_tag: str) -> list[str]:
     transition_tags_and_priority = _create_outgoing_transition_list_with_priority_information(state_tag)
     transition_tags_and_priority_sorted = sorted(transition_tags_and_priority, key=lambda entry: entry[1])
     _check_for_equal_priorities(transition_tags_and_priority_sorted, state_tag)
@@ -728,26 +757,26 @@ def _get_all_outgoing_transitions_in_priority_order(state_tag) -> list:
     return transition_tags_in_priority_order
 
 
-def _create_outgoing_transition_list_with_priority_information(state_tag) -> list:
+def _create_outgoing_transition_list_with_priority_information(state_tag: str) -> list[tuple[str, str]]:
     all_tags_of_the_state = main_window.canvas.gettags(state_tag)
-    transition_tag_and_priority = []
+    transition_tag_and_priority: list[tuple[str, str]] = []
     for tag in all_tags_of_the_state:
         if tag.endswith("_start"):
             transition_tag = tag[:-6]
             transition_priority_text_tag = transition_tag + "priority"
             transition_priority_string = main_window.canvas.itemcget(transition_priority_text_tag, "text")
-            transition_tag_and_priority.append([transition_tag, transition_priority_string])
+            transition_tag_and_priority.append((transition_tag, transition_priority_string))
     return transition_tag_and_priority
 
 
-def _remove_priority_information(transition_tag_and_priority_sorted) -> list:
+def _remove_priority_information(transition_tag_and_priority_sorted: list[tuple[str, str]]) -> list[str]:
     transition_tags_in_priority_order = []
     for transition_tag_and_priority in transition_tag_and_priority_sorted:
         transition_tags_in_priority_order.append(transition_tag_and_priority[0])
     return transition_tags_in_priority_order
 
 
-def _check_for_equal_priorities(transition_tags_and_priority_sorted, state_tag) -> None:
+def _check_for_equal_priorities(transition_tags_and_priority_sorted: list[tuple[str, str]], state_tag: str) -> None:
     for n in range(len(transition_tags_and_priority_sorted) - 1):
         if transition_tags_and_priority_sorted[n][1] == transition_tags_and_priority_sorted[n + 1][1]:
             object_coords = main_window.canvas.coords(state_tag)
@@ -771,39 +800,39 @@ def _check_for_equal_priorities(transition_tags_and_priority_sorted, state_tag) 
             )
 
 
-def _get_transition_condition(condition_action_reference):
+def _get_transition_condition(condition_action_reference: condition_action_handling.ConditionAction) -> str:
     return condition_action_reference.condition_id.get("1.0", tk.END + "-1 chars")  # without "return" at the end
 
 
-def _get_transition_action(condition_action_reference):
+def _get_transition_action(condition_action_reference: condition_action_handling.ConditionAction) -> str:
     return condition_action_reference.action_id.get("1.0", tk.END + "-1 chars")  # without "return" at the end
 
 
-def create_global_actions_before() -> tuple[str, str] | tuple:
+def create_global_actions_before() -> Optional[tuple[CustomText, str]]:
     if global_actions_handling.global_actions_clocked_number == 1:
         canvas_item_id = main_window.canvas.find_withtag("global_actions1")
         ref = global_actions.GlobalActions.dictionary[canvas_item_id[0]]
         return ref.text_before_id, ref.text_before_id.get("1.0", tk.END)
-    return "", ""
+    return None
 
 
-def create_global_actions_after() -> tuple[str, str] | tuple:
+def create_global_actions_after() -> Optional[tuple[CustomText, str]]:
     if global_actions_handling.global_actions_clocked_number == 1:
         canvas_item_id = main_window.canvas.find_withtag("global_actions1")
         ref = global_actions.GlobalActions.dictionary[canvas_item_id[0]]
         return ref.text_after_id, ref.text_after_id.get("1.0", tk.END)
-    return "", ""
+    return None
 
 
-def create_concurrent_actions() -> tuple[str, str] | tuple:
+def create_concurrent_actions() -> Optional[tuple[CustomText, str]]:
     if global_actions_handling.global_actions_combinatorial_number == 1:
         canvas_item_id = main_window.canvas.find_withtag("global_actions_combinatorial1")
         ref = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[canvas_item_id[0]]
         return ref.text_id, ref.text_id.get("1.0", tk.END)
-    return "", ""
+    return None
 
 
-def remove_comments_and_returns(hdl_text) -> str:
+def remove_comments_and_returns(hdl_text: str) -> str:
     if main_window.language.get() == "VHDL":
         hdl_text = remove_vhdl_block_comments(hdl_text)
     else:
@@ -822,21 +851,21 @@ def remove_comments_and_returns(hdl_text) -> str:
     return text
 
 
-def remove_functions(hdl_text):
+def remove_functions(hdl_text: str) -> str:
     text = re.sub(
         r"(^|\s+)function\s+.*end(\s+function\s*;|function)", "", hdl_text
     )  # Regular expression for VHDL and Verilog function declaration
     return text
 
 
-def remove_type_declarations(hdl_text):
+def remove_type_declarations(hdl_text: str) -> str:
     text = re.sub(
         r"(^|\s+)type\s+\w+\s+is\s+.*;", "", hdl_text
     )  # Regular expression for VHDL and Verilog function declaration
     return text
 
 
-def remove_vhdl_block_comments(list_string):
+def remove_vhdl_block_comments(list_string: str) -> str:
     # block comments are replaced by blanks, so all remaining text holds its position.
     while True:
         match_object = re.search(r"/\*.*?\*/", list_string, flags=re.DOTALL)
@@ -852,11 +881,11 @@ def remove_vhdl_block_comments(list_string):
     return list_string
 
 
-def _remove_verilog_block_comments(hdl_text):
+def _remove_verilog_block_comments(hdl_text: str) -> str:
     return re.sub("/\\*.*\\*/", "", hdl_text, flags=re.DOTALL)
 
 
-def convert_hdl_lines_into_a_searchable_string(text):
+def convert_hdl_lines_into_a_searchable_string(text: str) -> str:
     without_comments = remove_comments_and_returns(text)
     separated = surround_character_by_blanks(";", without_comments)
     separated = surround_character_by_blanks("(", separated)
@@ -883,13 +912,13 @@ def convert_hdl_lines_into_a_searchable_string(text):
     return separated
 
 
-def surround_character_by_blanks(character, all_port_declarations_without_comments):
+def surround_character_by_blanks(character: str, all_port_declarations_without_comments: str) -> str:
     # Add the escape character if necessary:
     search_character = "\\" + character if character in ("(", ")", "+", "*") else character
     return re.sub(search_character, " " + character + " ", all_port_declarations_without_comments)
 
 
-def get_all_declared_signal_names(all_signal_declarations) -> list:
+def get_all_declared_signal_names(all_signal_declarations: str) -> list[str]:
     all_signal_declarations = remove_comments_and_returns(all_signal_declarations)
     all_signal_declarations = remove_functions(all_signal_declarations)
     all_signal_declarations = remove_type_declarations(all_signal_declarations)
@@ -909,7 +938,7 @@ def get_all_declared_signal_names(all_signal_declarations) -> list:
     return signal_list
 
 
-def get_all_declared_constant_names(all_signal_declarations) -> list:
+def get_all_declared_constant_names(all_signal_declarations: str) -> list[str]:
     all_signal_declarations_without_comments = remove_comments_and_returns(all_signal_declarations)
     all_signal_declarations_separated = surround_character_by_blanks(
         ":", all_signal_declarations_without_comments
@@ -925,7 +954,7 @@ def get_all_declared_constant_names(all_signal_declarations) -> list:
     return constant_list
 
 
-def _get_all_signal_names(declaration):
+def _get_all_signal_names(declaration: str) -> str:
     signal_names = ""
     if " signal " in declaration and main_window.language.get() == "VHDL":
         if ":" in declaration:
@@ -944,7 +973,7 @@ def _get_all_signal_names(declaration):
     return signal_names_without_blanks
 
 
-def _get_all_constant_names(declaration):
+def _get_all_constant_names(declaration: str) -> str:
     constant_names = ""
     if " constant " in declaration and main_window.language.get() == "VHDL" and ":" in declaration:
         constant_names = re.sub(":.*", "", declaration)

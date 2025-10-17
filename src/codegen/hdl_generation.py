@@ -25,7 +25,7 @@ from .list_separation_check import ListSeparationCheck
 last_line_number_of_file1 = 0
 
 
-def run_hdl_generation(write_to_file, is_script_mode: bool = False) -> bool:
+def run_hdl_generation(write_to_file: bool, is_script_mode: bool = False) -> bool:
     config = GenerationConfig.from_main_window()
     state_tag_list_sorted = _create_sorted_state_tag_list(is_script_mode)
     success = False
@@ -70,7 +70,7 @@ def _generate_hdl(config: GenerationConfig, write_to_file: bool, state_tag_list_
     _create_hdl(config, header, write_to_file, state_tag_list_sorted)
 
 
-def _create_hdl(config, header, write_to_file, state_tag_list_sorted) -> None:
+def _create_hdl(config: GenerationConfig, header: str, write_to_file: bool, state_tag_list_sorted: list[str]) -> None:
     file_name, file_name_architecture = _get_file_names(config)
 
     link_dict().clear_link_dict(file_name)
@@ -92,8 +92,6 @@ def _create_hdl(config, header, write_to_file, state_tag_list_sorted) -> None:
     else:
         entity, file_line_number = _create_module_ports(config, file_name, file_line_number)
         architecture = hdl_generation_module.create_module_logic(file_name, file_line_number, state_tag_list_sorted)
-    if architecture is None:
-        return  # No further actions required, because when writing to a file, always an architecture must exist.
     # write_hdl_file must be called even if hdl is not needed, as write_hdl_file sets last_line_number_of_file1,
     # which is read by Linking:
     hdl = _write_hdl_file(config, write_to_file, header, entity, architecture, file_name, file_name_architecture)
@@ -102,7 +100,7 @@ def _create_hdl(config, header, write_to_file, state_tag_list_sorted) -> None:
 
 
 # TODO: This should not be here!
-def _copy_hdl_into_generated_hdl_tab(hdl, file_name, file_name_architecture) -> None:
+def _copy_hdl_into_generated_hdl_tab(hdl: str, file_name: str, file_name_architecture: str) -> None:
     main_window.date_of_hdl_file_shown_in_hdl_tab = os.path.getmtime(file_name)
     if file_name_architecture != "":
         main_window.date_of_hdl_file2_shown_in_hdl_tab = os.path.getmtime(file_name_architecture)
@@ -114,14 +112,10 @@ def _copy_hdl_into_generated_hdl_tab(hdl, file_name, file_name_architecture) -> 
     )
     main_window.hdl_frame_text.config(state=tk.DISABLED)
     # Bring the notebook tab with the hdl into the foreground:
-    # notebook_ids = main_window.notebook.tabs()
-    # for id in notebook_ids:
-    #     if main_window.notebook.tab(id, option="text")==GuiTab.HDL.value:
-    #         main_window.notebook.select(id)
     main_window.show_tab(GuiTab.GENERATED_HDL)
 
 
-def _create_entity(config, file_name, file_line_number) -> tuple:
+def _create_entity(config: GenerationConfig, file_name: str, file_line_number: int) -> tuple[str, int]:
     entity = ""
 
     package_statements = hdl_generation_library.get_text_from_text_widget(main_window.interface_package_text)
@@ -188,7 +182,7 @@ def _create_entity(config, file_name, file_line_number) -> tuple:
     return entity, file_line_number
 
 
-def _create_module_ports(config, file_name, file_line_number) -> tuple:
+def _create_module_ports(config: GenerationConfig, file_name: str, file_line_number: int) -> tuple[str, int]:
     module = ""
     file_line_number = 3  # Line 1 = Filename, Line 2 = Header
     module += "module " + config.module_name + "\n"
@@ -233,7 +227,15 @@ def _create_module_ports(config, file_name, file_line_number) -> tuple:
     return module, file_line_number
 
 
-def _write_hdl_file(config, write_to_file, header, entity, architecture, path_name, path_name_architecture) -> str:
+def _write_hdl_file(
+    config: GenerationConfig,
+    write_to_file: bool,
+    header: str,
+    entity: str,
+    architecture: str,
+    path_name: str,
+    path_name_architecture: str,
+) -> str:
     global last_line_number_of_file1
     _, name_of_file = os.path.split(path_name)
     if config.select_file_number == 1:
@@ -279,7 +281,7 @@ def _write_hdl_file(config, write_to_file, header, entity, architecture, path_na
     return content_with_numbers
 
 
-def _get_file_names(config) -> tuple:
+def _get_file_names(config: GenerationConfig) -> tuple[str, str]:
     # For Verilog and SystemVerilog, always generate single files regardless of number_of_files setting
     if config.language in ["Verilog", "SystemVerilog"]:
         file_type = ".v" if config.language == "Verilog" else ".sv"
@@ -296,7 +298,7 @@ def _get_file_names(config) -> tuple:
     return file_name, file_name_architecture
 
 
-def _add_line_numbers(text) -> str:
+def _add_line_numbers(text: str) -> str:
     text_lines = text.split("\n")
     text_length_as_string = str(len(text_lines))
     number_of_needed_digits_as_string = str(len(text_length_as_string))
@@ -306,9 +308,9 @@ def _add_line_numbers(text) -> str:
     return content_with_numbers
 
 
-def _create_sorted_state_tag_list(is_script_mode) -> list:
-    state_tag_dict_with_prio = {}
-    state_tag_list = []
+def _create_sorted_state_tag_list(is_script_mode: bool) -> list[str]:
+    state_tag_dict_with_prio: dict[int, str] = {}
+    state_tag_list: list[str] = []
     reg_ex_for_state_tag = re.compile("^state[0-9]+$")
     for canvas_id in main_window.canvas.find_all():
         for tag in main_window.canvas.gettags(canvas_id):

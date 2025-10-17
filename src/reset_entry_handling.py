@@ -10,11 +10,11 @@ import main_window
 import undo_handling
 
 reset_entry_number = 0
-_difference_x = 0
-_difference_y = 0
+_difference_x: float = 0.0
+_difference_y: float = 0.0
 
 
-def insert_reset_entry(event) -> None:
+def insert_reset_entry(event: tk.Event) -> None:
     global reset_entry_number
     if reset_entry_number == 0:  # Only 1 reset entry is allowed.
         reset_entry_number += 1
@@ -24,46 +24,48 @@ def insert_reset_entry(event) -> None:
         canvas_modify_bindings.switch_to_move_mode()
 
 
-def _insert_reset_entry_in_canvas(event) -> None:
+def _insert_reset_entry_in_canvas(event: tk.Event) -> None:
     canvas_grid_coordinates_of_the_event = (
         canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(event)
     )
     _create_reset_entry(canvas_grid_coordinates_of_the_event)
 
 
-def _create_reset_entry(canvas_grid_coordinates_of_the_event) -> None:
+def _create_reset_entry(canvas_grid_coordinates_of_the_event: list[float]) -> None:
     reset_entry_polygon = _create_polygon_shape_for_reset_entry()
     reset_entry_polygon = _move_reset_entry_polygon_to_event(canvas_grid_coordinates_of_the_event, reset_entry_polygon)
-    draw_reset_entry(reset_entry_polygon, "reset_entry")
+    draw_reset_entry(reset_entry_polygon, ["reset_entry"])
     draw_reset_entry_text(
         canvas_grid_coordinates_of_the_event[0] - 4 * canvas_editing.reset_entry_size / 5,
         canvas_grid_coordinates_of_the_event[1],
         text="Reset",
-        tag="reset_text",
+        tags=["reset_text"],
     )
 
 
-def draw_reset_entry(reset_entry_polygon, tag):
-    polygon_id = main_window.canvas.create_polygon(*reset_entry_polygon, fill="red", outline="orange", tag=tag)
+def draw_reset_entry(reset_entry_polygon: list[tuple[float, float]], tags: list[str]) -> int:
+    polygon_id = main_window.canvas.create_polygon(reset_entry_polygon, fill="red", outline="orange", tags=tags)
     main_window.canvas.tag_bind(
         polygon_id, "<Enter>", lambda event, id=polygon_id: main_window.canvas.itemconfig(id, width=2)
     )
     main_window.canvas.tag_bind(
         polygon_id, "<Leave>", lambda event, id=polygon_id: main_window.canvas.itemconfig(id, width=1)
     )
+    return polygon_id
 
 
-def draw_reset_entry_text(coord_x, coord_y, text, tag):
-    main_window.canvas.create_text(
+def draw_reset_entry_text(coord_x: float, coord_y: float, text: str, tags: list[str]) -> int:
+    assert canvas_editing.state_name_font is not None
+    return main_window.canvas.create_text(
         coord_x,
         coord_y,
         text=text,
-        tag=tag,
+        tags=tags,
         font=canvas_editing.state_name_font,
     )
 
 
-def _create_polygon_shape_for_reset_entry() -> list[list]:
+def _create_polygon_shape_for_reset_entry() -> list[tuple[float, float]]:
     # upper_left_corner  = [-20,-12]
     # upper_right_corner = [+20,-12]
     # point_corner       = [+32, 0]   connect-point for transition
@@ -71,22 +73,22 @@ def _create_polygon_shape_for_reset_entry() -> list[list]:
     # lower_left_corner  = [-20,+12]
     size = canvas_editing.reset_entry_size
     # Coordinates when the mouse-pointer is at point_corner of the polygon:
-    upper_left_corner = [-size / 2 - 4 * size / 5, -3 * size / 10]
-    upper_right_corner = [+size / 2 - 4 * size / 5, -3 * size / 10]
-    point_corner = [0, 0]
-    lower_right_corner = [+size / 2 - 4 * size / 5, +3 * size / 10]
-    lower_left_corner = [-size / 2 - 4 * size / 5, +3 * size / 10]
+    upper_left_corner = (-size / 2 - 4 * size / 5, -3 * size / 10)
+    upper_right_corner = (+size / 2 - 4 * size / 5, -3 * size / 10)
+    point_corner = (0, 0)
+    lower_right_corner = (+size / 2 - 4 * size / 5, +3 * size / 10)
+    lower_left_corner = (-size / 2 - 4 * size / 5, +3 * size / 10)
     return [upper_left_corner, upper_right_corner, point_corner, lower_right_corner, lower_left_corner]
 
 
-def _move_reset_entry_polygon_to_event(canvas_grid_coordinates_of_the_event, reset_entry_polygon):
-    for p in reset_entry_polygon:
-        p[0] += canvas_grid_coordinates_of_the_event[0]
-        p[1] += canvas_grid_coordinates_of_the_event[1]
-    return reset_entry_polygon
+def _move_reset_entry_polygon_to_event(
+    canvas_grid_coordinates_of_the_event: list[float], reset_entry_polygon: list[tuple[float, float]]
+) -> list[tuple[float, float]]:
+    offset_x, offset_y = canvas_grid_coordinates_of_the_event
+    return [(x + offset_x, y + offset_y) for x, y in reset_entry_polygon]
 
 
-def move_to(event_x, event_y, polygon_id, first, last) -> None:
+def move_to(event_x: float, event_y: float, polygon_id: int, first: bool, last: bool) -> None:
     global _difference_x, _difference_y
     if first is True:
         # Calculate the difference between the "anchor" point and the event:
@@ -116,36 +118,44 @@ def move_to(event_x, event_y, polygon_id, first, last) -> None:
     _move_polygon_in_canvas(polygon_id, new_coords, new_center)
 
 
-def _determine_width_of_the_polygon(polygon_id):
+def _determine_width_of_the_polygon(polygon_id: int) -> float:
     polygon_coords = main_window.canvas.coords(polygon_id)
     return polygon_coords[2] - polygon_coords[0]
 
 
-def _determine_height_of_the_polygon(polygon_id):
+def _determine_height_of_the_polygon(polygon_id: int) -> float:
     polygon_coords = main_window.canvas.coords(polygon_id)
     return polygon_coords[9] - polygon_coords[1]
 
 
-def _calculate_new_upper_left_corner_of_the_polygon(event_x, event_y, width, height) -> list:
+def _calculate_new_upper_left_corner_of_the_polygon(
+    event_x: float, event_y: float, width: float, height: float
+) -> list[float]:
     return [event_x - 13 * width / 10, event_y - height / 2]
 
 
-def _calculate_new_upper_right_corner_of_the_polygon(event_x, event_y, width, height) -> list:
+def _calculate_new_upper_right_corner_of_the_polygon(
+    event_x: float, event_y: float, width: float, height: float
+) -> list[float]:
     return [event_x - 3 * width / 10, event_y - height / 2]
 
 
-def _calculate_new_lower_right_corner_of_the_polygon(event_x, event_y, width, height) -> list:
+def _calculate_new_lower_right_corner_of_the_polygon(
+    event_x: float, event_y: float, width: float, height: float
+) -> list[float]:
     return [event_x - 3 * width / 10, event_y + height / 2]
 
 
-def _calculate_new_lower_left_corner_of_the_polygon(event_x, event_y, width, height) -> list:
+def _calculate_new_lower_left_corner_of_the_polygon(
+    event_x: float, event_y: float, width: float, height: float
+) -> list[float]:
     return [event_x - 13 * width / 10, event_y + height / 2]
 
 
-def _calculate_new_center_of_the_polygon(event_x, event_y, width) -> list:
+def _calculate_new_center_of_the_polygon(event_x: float, event_y: float, width: float) -> list[float]:
     return [event_x - 4 * width / 5, event_y]
 
 
-def _move_polygon_in_canvas(polygon_id, new_coords, new_center) -> None:
+def _move_polygon_in_canvas(polygon_id: int, new_coords: list[float], new_center: list[float]) -> None:
     main_window.canvas.coords(polygon_id, *new_coords)
     main_window.canvas.coords("reset_text", *new_center)

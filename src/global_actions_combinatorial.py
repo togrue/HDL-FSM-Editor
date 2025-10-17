@@ -4,6 +4,7 @@ Class for combinatorial actions independent from the state machine
 
 import tkinter as tk
 from tkinter import ttk
+from typing import Optional
 
 import canvas_editing
 import canvas_modify_bindings
@@ -18,12 +19,12 @@ class GlobalActionsCombinatorial:
     Class for combinatorial actions independent from the state machine
     """
 
-    dictionary = {}
+    dictionary: dict[int, "GlobalActionsCombinatorial"] = {}
 
-    def __init__(self, menu_x, menu_y, height, width, padding) -> None:
-        self.text_content = None
-        self.difference_x = 0
-        self.difference_y = 0
+    def __init__(self, menu_x: float, menu_y: float, height: int, width: int, padding: int) -> None:
+        self.text_content: Optional[str] = None
+        self.difference_x: float = 0.0
+        self.difference_y: float = 0.0
 
         self.frame_id = ttk.Frame(
             main_window.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="GlobalActionsWindow.TFrame"
@@ -77,11 +78,11 @@ class GlobalActionsCombinatorial:
         GlobalActionsCombinatorial.dictionary[self.window_id] = self
         canvas_modify_bindings.switch_to_move_mode()
 
-    def _edit_in_external_editor(self):
+    def _edit_in_external_editor(self) -> None:
         self.text_id.edit_in_external_editor()
         self.update_text()
 
-    def update_text(self):
+    def update_text(self) -> None:
         # Update self.text_content, so that the <Leave>-check in deactivate() does not signal a design-change and
         # that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
         # To ensure this, save_in_file_new() waits for idle.
@@ -108,7 +109,7 @@ class GlobalActionsCombinatorial:
         self.frame_id.configure(borderwidth=0, style="GlobalActionsWindow.TFrame")
         self.label.configure(style="GlobalActionsWindow.TLabel")
 
-    def move_to(self, event_x, event_y, first) -> None:
+    def move_to(self, event_x: float, event_y: float, first: bool) -> None:
         if first:
             # Calculate the difference between the "anchor" point and the event:
             coords = main_window.canvas.coords(self.window_id)

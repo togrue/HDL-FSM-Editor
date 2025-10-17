@@ -11,6 +11,7 @@ import urllib.request
 from pathlib import Path
 from tkinter import messagebox, ttk
 from tkinter.filedialog import askdirectory, askopenfilename
+from typing import Any, Optional
 
 import canvas_editing
 import canvas_modify_bindings
@@ -86,9 +87,9 @@ regex_file_line_number_quote: str = "\\2"
 _regex_error_happened: bool = False
 _line_number_under_pointer_log_tab: int = 0
 _line_number_under_pointer_hdl_tab: int = 0
-_func_id_jump: str | None = None
-_func_id_jump1: str | None = None
-_func_id_jump2: str | None = None
+_func_id_jump: Optional[str] = None
+_func_id_jump1: Optional[str] = None
+_func_id_jump2: Optional[str] = None
 size_of_file1_line_number: int = 0
 size_of_file2_line_number: int = 0
 _module_name_entry: ttk.Entry
@@ -128,7 +129,7 @@ def read_message() -> None:
     _copy_message_into_log_tab(_read_message_result)
 
 
-def _copy_message_into_log_tab(_read_message_result) -> None:
+def _copy_message_into_log_tab(_read_message_result: str) -> None:
     log_frame_text.config(state=tk.NORMAL)
     log_frame_text.insert("1.0", header_string + "\n" + _check_version_result + "\n" + _read_message_result + "\n")
     log_frame_text.config(state=tk.NORMAL)
@@ -185,7 +186,8 @@ def _close_tool() -> None:
 
 def _get_resource_path(resource_name: str) -> Path:
     """Get the path to a resource file, handling both development and PyInstaller environments."""
-    base_path = Path(sys._MEIPASS) if getattr(sys, "frozen", False) else Path(__file__).parent.parent
+    # PyInstaller creates a temp folder and stores path in _MEIPASS
+    base_path = Path(getattr(sys, "_MEIPASS", "")) if getattr(sys, "frozen", False) else Path(__file__).parent.parent
 
     return base_path / "rsc" / resource_name
 
@@ -309,7 +311,7 @@ def create_menu_bar() -> None:
     root.bind_all("<Control-F>", lambda event: _capslock_warning("F"))
 
 
-def _capslock_warning(character):
+def _capslock_warning(character: str) -> None:
     messagebox.showwarning(
         "Warning in HDL-FSM-Editor",
         "The character " + character + " is not bound to any action.\nPerhaps Capslock is active?",
@@ -504,7 +506,7 @@ def _set_path() -> None:
         generate_path_value.set(path)
 
 
-def __add_path():
+def __add_path() -> None:
     old_entry = additional_sources_value.get()
     if old_entry != "":
         old_entries = old_entry.split(",")
@@ -610,7 +612,7 @@ def create_interface_notebook_tab() -> None:
     interface_ports_scroll.grid(row=1, column=1, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_interface.add(interface_ports_frame, weight=1)
 
-    notebook.add(paned_window_interface, sticky="nsew", text=GuiTab.INTERFACE.value)
+    notebook.add(paned_window_interface, sticky="nsew", text=str(GuiTab.INTERFACE))
 
 
 def create_internals_notebook_tab() -> None:
@@ -759,7 +761,7 @@ def create_internals_notebook_tab() -> None:
     )  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_internals.add(internals_process_combinatorial_frame, weight=1)
 
-    notebook.add(paned_window_internals, sticky="nsew", text=GuiTab.INTERNALS.value)
+    notebook.add(paned_window_internals, sticky="nsew", text=str(GuiTab.INTERNALS))
 
 
 def create_diagram_notebook_tab() -> None:
@@ -775,7 +777,7 @@ def create_diagram_notebook_tab() -> None:
     diagram_frame.grid()
     diagram_frame.columnconfigure(0, weight=1)  # tkinter method (grid_columnconfigure is tcl method)
     diagram_frame.rowconfigure(0, weight=1)
-    notebook.add(diagram_frame, sticky="nsew", text=GuiTab.DIAGRAM.value)
+    notebook.add(diagram_frame, sticky="nsew", text=str(GuiTab.DIAGRAM))
 
     # Create the elements of the drawing area:
     h = ttk.Scrollbar(diagram_frame, orient=tk.HORIZONTAL, cursor="arrow", style="Horizontal.TScrollbar")
@@ -885,19 +887,19 @@ def create_diagram_notebook_tab() -> None:
     grid_drawer = grid_drawing.GridDraw(canvas)
 
 
-def __scroll_xview(*args) -> None:
+def __scroll_xview(*args: Any) -> None:
     grid_drawer.remove_grid()
     canvas.xview(*args)
     grid_drawer.draw_grid()
 
 
-def __scroll_yview(*args) -> None:
+def __scroll_yview(*args: Any) -> None:
     grid_drawer.remove_grid()
     canvas.yview(*args)
     grid_drawer.draw_grid()
 
 
-def __check_for_window_resize(_) -> None:
+def __check_for_window_resize(_: Any) -> None:
     grid_drawer.remove_grid()
     grid_drawer.draw_grid()
 
@@ -934,7 +936,7 @@ def create_hdl_notebook_tab() -> None:
 
     hdl_frame_text.bind("<Motion>", _cursor_move_hdl_tab)
 
-    notebook.add(hdl_frame, sticky="nsew", text=GuiTab.GENERATED_HDL.value)
+    notebook.add(hdl_frame, sticky="nsew", text=str(GuiTab.GENERATED_HDL))
 
 
 def create_log_notebook_tab() -> None:
@@ -967,18 +969,18 @@ def create_log_notebook_tab() -> None:
 
     log_frame_text.bind("<Motion>", _cursor_move_log_tab)
 
-    notebook.add(log_frame, sticky="nsew", text=GuiTab.COMPILE_MSG.value)
+    notebook.add(log_frame, sticky="nsew", text=str(GuiTab.COMPILE_MSG))
     _debug_active = tk.IntVar()
     _debug_active.set(1)  # 1: inactive, 2: active
 
 
-def _clear_log_tab(_) -> None:
+def _clear_log_tab(_: Any) -> None:
     log_frame_text.config(state=tk.NORMAL)
     log_frame_text.delete("1.0", tk.END)
     log_frame_text.config(state=tk.DISABLED)
 
 
-def _edit_regex(*_) -> None:
+def _edit_regex(*_: Any) -> None:
     """Open the regex configuration dialog and update settings if confirmed."""
     global \
         regex_message_find_for_vhdl, \
@@ -1015,7 +1017,7 @@ def _edit_regex(*_) -> None:
         _regex_error_happened = False
 
 
-def _cursor_move_hdl_tab(*_) -> None:
+def _cursor_move_hdl_tab(*_: Any) -> None:
     global _line_number_under_pointer_hdl_tab, _func_id_jump
     if hdl_frame_text.get("1.0", tk.END + "- 1 char") == "":
         return
@@ -1038,9 +1040,9 @@ def _cursor_move_hdl_tab(*_) -> None:
             start_index = size_of_file1_line_number
         while hdl_frame_text.get(f"{line_number}.{start_index - 1}") == " ":
             start_index += 1
-        if link_dict().has_link(selected_file, line_number_in_file):
+        if selected_file and link_dict().has_link(selected_file, line_number_in_file):
             hdl_frame_text.tag_add("underline", f"{line_number}.{start_index - 1}", f"{line_number + 1}.0")
-            hdl_frame_text.tag_config("underline", underline=1)
+            hdl_frame_text.tag_configure("underline", underline=True)
             _func_id_jump = hdl_frame_text.bind(
                 "<Control-Button-1>",
                 lambda event: link_dict().jump_to_source(selected_file, line_number_in_file),
@@ -1051,7 +1053,7 @@ def _cursor_move_hdl_tab(*_) -> None:
         _line_number_under_pointer_hdl_tab = line_number
 
 
-def _cursor_move_log_tab(*_) -> None:
+def _cursor_move_log_tab(*_: Any) -> None:
     global _func_id_jump1, _func_id_jump2, _regex_error_happened, _line_number_under_pointer_log_tab
     if log_frame_text.get("1.0", tk.END + "- 1 char") == "":
         return
@@ -1103,7 +1105,7 @@ def _cursor_move_log_tab(*_) -> None:
                 if debug:
                     print("Filename and line-number are found in Link-Dictionary.")
                 log_frame_text.tag_add("underline", str(line_number) + ".0", str(line_number + 1) + ".0")
-                log_frame_text.tag_config("underline", underline=1, foreground="red")
+                log_frame_text.tag_configure("underline", underline=True, foreground="red")
                 _func_id_jump1 = log_frame_text.bind(
                     "<Control-Button-1>",
                     lambda event: link_dict().jump_to_source(file_name, file_line_number),
@@ -1184,33 +1186,35 @@ def switch_language_mode() -> None:
         _compile_cmd_docu.config(text="Variables for compile command:\n$file\t= Module-File\n$name\t= Module Name")
 
 
-def _handle_key(event, custom_text_ref) -> None:
+def _handle_key(event: tk.Event, custom_text_ref: custom_text.CustomText) -> None:
     custom_text_ref.after_idle(
-        custom_text_ref.update_highlight_tags, canvas_editing.fontsize, ["control", "datatype", "function", "comment"]
+        custom_text_ref.update_highlight_tags,
+        int(canvas_editing.fontsize),
+        ["control", "datatype", "function", "comment"],
     )
 
 
-def _handle_key_at_ports(custom_text_ref) -> None:
+def _handle_key_at_ports(custom_text_ref: custom_text.CustomText) -> None:
     custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_ports_list)
     custom_text_ref.after_idle(custom_text_ref.update_highlighting)
 
 
-def _handle_key_at_generics(custom_text_ref) -> None:
+def _handle_key_at_generics(custom_text_ref: custom_text.CustomText) -> None:
     custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_generics_list)
     custom_text_ref.after_idle(custom_text_ref.update_highlighting)
 
 
-def _handle_key_at_declarations(custom_text_ref) -> None:
+def _handle_key_at_declarations(custom_text_ref: custom_text.CustomText) -> None:
     custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_signals_list)
     custom_text_ref.after_idle(custom_text_ref.update_highlighting)
 
 
-def _show_path_has_changed(*_) -> None:
+def _show_path_has_changed(*_: Any) -> None:
     undo_handling.design_has_changed()
 
 
 def show_tab(tab: GuiTab) -> None:
-    assert isinstance(tab, GuiTab), f"tab must be a GuiTab, but is {type(tab)}"
+    assert isinstance(tab, GuiTab), f"Tab must be a GuiTab, but is {type(tab)}"
 
     notebook_ids = notebook.tabs()
     for tab_id in notebook_ids:
@@ -1275,7 +1279,7 @@ def choose_bg_color() -> None:
         diagram_background_color.set(new_color)
 
 
-def __resize_event_interface_tab_frames(event) -> None:
+def __resize_event_interface_tab_frames(event: tk.Event) -> None:
     global sash_positions
     if "interface_tab" not in sash_positions:
         sash_positions["interface_tab"] = {}
@@ -1284,7 +1288,7 @@ def __resize_event_interface_tab_frames(event) -> None:
         sash_positions["interface_tab"][1] = paned_window_interface.sashpos(1)
 
 
-def __resize_event_internals_tab_frames(event) -> None:
+def __resize_event_internals_tab_frames(event: tk.Event) -> None:
     global sash_positions
     if "internals_tab" not in sash_positions:
         sash_positions["internals_tab"] = {}

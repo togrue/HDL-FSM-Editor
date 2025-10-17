@@ -4,6 +4,7 @@ Handles the combinatorial default actions for all states.
 
 import tkinter as tk
 from tkinter import ttk
+from typing import Optional
 
 import canvas_editing
 import canvas_modify_bindings
@@ -18,10 +19,10 @@ class StateActionsDefault:
     Handles the combinatorial default actions for all states.
     """
 
-    dictionary = {}
+    dictionary: dict[int, "StateActionsDefault"] = {}
 
-    def __init__(self, menu_x, menu_y, height, width, padding) -> None:
-        self.text_content = None
+    def __init__(self, menu_x: float, menu_y: float, height: int, width: int, padding: int) -> None:
+        self.text_content: Optional[str] = None
         self.frame_id = ttk.Frame(
             main_window.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="StateActionsWindow.TFrame"
         )  # , borderwidth=10)
@@ -59,9 +60,9 @@ class StateActionsDefault:
         self.label.grid(row=0, column=0, sticky="nwe")
         self.text_id.grid(row=1, column=0, sticky="ew")
 
-        self.difference_x = 0
-        self.difference_y = 0
-        self.move_rectangle = None
+        self.difference_x = 0.0
+        self.difference_y = 0.0
+        self.move_rectangle: Optional[int] = None
 
         # Create canvas window for frame and text:
         self.window_id = main_window.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
@@ -80,7 +81,7 @@ class StateActionsDefault:
     def tag(self) -> None:
         main_window.canvas.itemconfigure(self.window_id, tag="state_actions_default")
 
-    def _edit_in_external_editor(self):
+    def _edit_in_external_editor(self) -> None:
         self.text_id.edit_in_external_editor()
         self.update_text()
 
@@ -108,7 +109,7 @@ class StateActionsDefault:
         self.frame_id.configure(borderwidth=0, style="StateActionsWindow.TFrame")
         self.label.configure(style="StateActionsWindow.TLabel")
 
-    def move_to(self, event_x, event_y, first) -> None:
+    def move_to(self, event_x: float, event_y: float, first: bool) -> None:
         if first:
             # Calculate the difference between the "anchor" point and the event:
             coords = main_window.canvas.coords(self.window_id)

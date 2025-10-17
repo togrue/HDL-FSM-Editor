@@ -5,6 +5,7 @@ Copies the generated HDL into the HDL-tab if the HDL is younger than the hfe-fil
 import os
 import tkinter as tk
 from tkinter import messagebox
+from typing import Optional
 
 import codegen.hdl_generation as hdl_generation
 import main_window
@@ -16,7 +17,9 @@ class UpdateHdlTab:
     Not called in batch mode.
     """
 
-    def __init__(self, language, number_of_files, readfile, generate_path, module_name) -> None:
+    def __init__(
+        self, language: str, number_of_files: int, readfile: str, generate_path: str, module_name: str
+    ) -> None:
         self.date_of_hdl_file = 0.0  # Default-Value, used when hdl-file not exists.
         self.date_of_hdl_file2 = 0.0  # Default-Value, used when hdl-file not exists.
         if language == "VHDL":
@@ -67,7 +70,9 @@ class UpdateHdlTab:
             10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
         )
 
-    def __hdl_is_up_to_date(self, path_name, hdlfilename, hdlfilename_architecture, show_message) -> bool:
+    def __hdl_is_up_to_date(
+        self, path_name: str, hdlfilename: str, hdlfilename_architecture: Optional[str], show_message: bool
+    ) -> bool:
         if not os.path.isfile(path_name):
             messagebox.showerror(
                 "Error in HDL-FSM-Editor", "The HDL-FSM-Editor project file " + path_name + " is missing."
@@ -107,7 +112,7 @@ class UpdateHdlTab:
             return False
         return True
 
-    def __add_line_numbers(self, text) -> str:
+    def __add_line_numbers(self, text: str) -> str:
         text_lines = text.split("\n")
         text_length_as_string = str(len(text_lines))
         number_of_needed_digits_as_string = str(len(text_length_as_string))

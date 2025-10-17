@@ -71,6 +71,7 @@ disable_error_code = ["misc"]
 
 # Python version
 python_version = "3.9"
+mypy_path = ["src"]
 
 # Exclude test files and generated files
 exclude = [

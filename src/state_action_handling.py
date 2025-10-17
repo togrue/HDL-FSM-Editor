@@ -4,6 +4,7 @@ Handles the state action of a single state.
 
 import tkinter as tk
 from tkinter import ttk
+from typing import Optional
 
 import canvas_editing
 import custom_text
@@ -17,16 +18,16 @@ class MyText:
     Handles the state action of a single state.
     """
 
-    mytext_id = 0
-    mytext_dict = {}
+    mytext_id: int = 0
+    mytext_dict: dict[int, "MyText"] = {}
 
-    def __init__(self, menu_x, menu_y, height, width, padding, increment) -> None:
+    def __init__(self, menu_x: float, menu_y: float, height: int, width: int, padding: int, increment: bool) -> None:
         if increment is True:
             MyText.mytext_id += 1
-        self.text_content = None
-        self.difference_x = 0
-        self.difference_y = 0
-        self.line_id = None
+        self.text_content: Optional[str] = None
+        self.difference_x: float = 0.0
+        self.difference_y: float = 0.0
+        self.line_id: Optional[int] = None
         # Create frame:
         self.frame_id = ttk.Frame(
             main_window.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="StateActionsWindow.TFrame"
@@ -85,7 +86,7 @@ class MyText:
             tag=("state_action" + str(MyText.mytext_id), "connection" + str(MyText.mytext_id) + "_start"),
         )
 
-    def connect_to_state(self, menu_x, menu_y, state_id) -> None:
+    def connect_to_state(self, menu_x: float, menu_y: float, state_id: int) -> None:
         # Draw a line from the state to the action block which is added to the state:
         state_coords = main_window.canvas.coords(state_id)
         main_window.canvas.addtag_withtag("connection" + str(MyText.mytext_id) + "_end", state_id)
@@ -96,11 +97,11 @@ class MyText:
             (state_coords[2] + state_coords[0]) / 2,
             (state_coords[3] + state_coords[1]) / 2,
             dash=(2, 2),
-            tag=("connection" + str(MyText.mytext_id), "connected_to_" + state_tags[0]),
+            tags=("connection" + str(MyText.mytext_id), "connected_to_" + state_tags[0]),
         )
         main_window.canvas.tag_lower(self.line_id, state_id)
 
-    def _edit_in_external_editor(self):
+    def _edit_in_external_editor(self) -> None:
         self.text_id.edit_in_external_editor()
         self.update_text()
 
@@ -128,7 +129,7 @@ class MyText:
         self.frame_id.configure(borderwidth=0, style="StateActionsWindow.TFrame")
         self.label_id.configure(style="StateActionsWindow.TLabel")
 
-    def move_to(self, event_x, event_y, first) -> None:
+    def move_to(self, event_x: float, event_y: float, first: bool) -> None:
         if first:
             # Calculate the difference between the "anchor" point and the event:
             coords = main_window.canvas.coords(self.window_id)

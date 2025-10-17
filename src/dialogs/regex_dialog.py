@@ -6,6 +6,7 @@ import re
 import tkinter as tk
 from dataclasses import dataclass
 from tkinter import simpledialog, ttk
+from typing import Optional, Union
 
 
 @dataclass
@@ -21,7 +22,7 @@ class RegexConfig:
 class RegexDialog(simpledialog.Dialog):
     def __init__(
         self,
-        parent: tk.Tk | tk.Toplevel,
+        parent: Union[tk.Tk, tk.Toplevel],
         language: str,
         current_pattern: str,
         current_filename_group: str,
@@ -58,7 +59,7 @@ class RegexDialog(simpledialog.Dialog):
             style.configure("InvalidRegex.TEntry", fieldbackground="#ffcccc")
             self.pattern_entry.configure(style="InvalidRegex.TEntry")
 
-    def body(self, master: tk.Frame) -> tk.Widget | None:
+    def body(self, master: tk.Frame) -> Optional[tk.Widget]:
         """Create the dialog body. Return the widget that should have initial focus."""
         # Header
         ttk.Label(
@@ -74,7 +75,7 @@ class RegexDialog(simpledialog.Dialog):
         # Bind the validation function to key release events
         self.pattern_entry.bind("<KeyRelease>", self.on_pattern_change)
         # Initial validation
-        self.on_pattern_change(None)
+        self.on_pattern_change(tk.Event())
 
         # Group identifiers frame
         id_frame = ttk.Frame(master)
@@ -126,13 +127,13 @@ class RegexDialog(simpledialog.Dialog):
     @classmethod
     def ask_regex(
         cls,
-        parent: tk.Tk | tk.Toplevel,
+        parent: Union[tk.Tk, tk.Toplevel],
         language: str,
         current_pattern: str,
         current_filename_group: str,
         current_line_number_group: str,
         current_debug_active: bool,
-    ) -> RegexConfig | None:
+    ) -> Optional[RegexConfig]:
         """Show the regex configuration dialog and return the result."""
         dialog = cls(
             parent, language, current_pattern, current_filename_group, current_line_number_group, current_debug_active

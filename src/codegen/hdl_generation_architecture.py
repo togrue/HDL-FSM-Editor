@@ -6,10 +6,11 @@ import codegen.hdl_generation_architecture_state_actions as hdl_generation_archi
 import codegen.hdl_generation_architecture_state_sequence as hdl_generation_architecture_state_sequence
 import codegen.hdl_generation_library as hdl_generation_library
 import main_window
+from codegen.exceptions import GenerationError
 from link_dictionary import link_dict
 
 
-def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> None:
+def create_architecture(file_name: str, file_line_number: int, state_tag_list_sorted: list[str]) -> str:
     architecture = ""
 
     package_statements = hdl_generation_library.get_text_from_text_widget(main_window.internals_package_text)
@@ -74,8 +75,10 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> N
     [reset_condition, reset_action, reference_to_reset_condition_custom_text, reference_to_reset_action_custom_text] = (
         hdl_generation_library.create_reset_condition_and_reset_action()
     )
+    # Todo: The checking is kind of duplicated!
+    # It should be part of the fsm_validation.
     if reset_condition is None:
-        return  # No further actions make sense, as always a reset condition must exist.
+        raise GenerationError("Error", "No reset condition found. A reset condition is required!")
     if reset_condition.count("\n") == 0:
         architecture += "        if " + reset_condition + " then\n"
     else:
@@ -114,10 +117,9 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> N
     link_dict().add(file_name, file_line_number, "Control-Tab", 1, "reset_and_clock_signal_name")
     file_line_number += 1
 
-    reference_to_global_actions_before_custom_text, global_actions_before = (
-        hdl_generation_library.create_global_actions_before()
-    )
-    if global_actions_before != "":
+    _res = hdl_generation_library.create_global_actions_before()
+    if _res:
+        reference_to_global_actions_before_custom_text, global_actions_before = _res
         global_actions_before = "-- Global Actions before:\n" + global_actions_before
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, global_actions_before)
         # global_actions_before starts always with "-- Global Actions before:", which is not a line entered by the user,
@@ -146,10 +148,9 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> N
     architecture += "            end case;\n"
     file_line_number += 1
 
-    reference_to_global_actions_after_custom_text, global_actions_after = (
-        hdl_generation_library.create_global_actions_after()
-    )
-    if global_actions_after != "":
+    _res = hdl_generation_library.create_global_actions_after()
+    if _res:
+        reference_to_global_actions_after_custom_text, global_actions_after = _res
         global_actions_after = "-- Global Actions after:\n" + global_actions_after
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, global_actions_after)
         # global_actions_before starts always with "-- Global Actions after:", which is not a line entered by the user,
@@ -173,8 +174,9 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> N
     )
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_actions_process)
 
-    reference_to_concurrent_actions_custom_text, concurrent_actions = hdl_generation_library.create_concurrent_actions()
-    if concurrent_actions != "":
+    _res = hdl_generation_library.create_concurrent_actions()
+    if _res:
+        reference_to_concurrent_actions_custom_text, concurrent_actions = _res
         concurrent_actions = "-- Global Actions combinatorial:\n" + concurrent_actions
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, concurrent_actions)
         # concurrent_actions starts always with "-- Global Actions combinatorial:", which is not a line entered by
@@ -195,8 +197,8 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> N
     return architecture
 
 
-def _create_type_definition_for_the_state_signal(state_tag_list_sorted) -> None:
-    list_of_all_state_names = [
+def _create_type_definition_for_the_state_signal(state_tag_list_sorted: list[str]) -> str:
+    list_of_all_state_names: list[str] = [
         main_window.canvas.itemcget(state_tag + "_name", "text") for state_tag in state_tag_list_sorted
     ]
     if list_of_all_state_names != []:

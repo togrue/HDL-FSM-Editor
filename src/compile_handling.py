@@ -10,6 +10,7 @@ import tkinter as tk
 from datetime import datetime
 from os.path import exists
 from tkinter import messagebox
+from typing import Optional
 
 import main_window
 from constants import GuiTab
@@ -46,7 +47,7 @@ def compile_hdl() -> None:
     main_window.log_frame_text.config(state=tk.DISABLED)
 
 
-def _execute(command) -> bool:
+def _execute(command: str) -> bool:
     command_array = shlex.split(command)  # Does not split quoted sub-strings with blanks.
     command_array_new = _replace_variables(command_array)
     if command_array_new is None:
@@ -61,6 +62,8 @@ def _execute(command) -> bool:
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
         )
+        assert process.stdout is not None
+
         for line in process.stdout:  # Terminates when process.stdout is closed.
             if line != "\n":  # VHDL report-statements cause empty lines which mess up the protocol.
                 _insert_line_in_log(line)
@@ -75,13 +78,13 @@ def _execute(command) -> bool:
     return True
 
 
-def _get_command_list():
+def _get_command_list() -> list[str]:
     command_string_tmp = main_window.compile_cmd.get()
     command_string = command_string_tmp.replace(";", " ; ")
     return command_string.split(";")
 
 
-def _replace_variables(command_array) -> list | None:
+def _replace_variables(command_array: list[str]) -> Optional[list[str]]:
     command_array_new = []
     for entry in command_array:
         if entry == "$file":
@@ -91,7 +94,7 @@ def _replace_variables(command_array) -> list | None:
                     'The compile command uses $file, but the "2 files mode" is selected,\
 so only $file1 and $file2 are allowed.',
                 )
-                return
+                return None
             language = main_window.language.get()
             if language == "VHDL":
                 extension = ".vhd"
@@ -102,7 +105,7 @@ so only $file1 and $file2 are allowed.',
             file_name = main_window.generate_path_value.get() + "/" + main_window.module_name.get() + extension
             if not exists(file_name):
                 messagebox.showerror("Error", "Compile is not possible, HDL file " + file_name + " does not exist.")
-                return
+                return None
             command_array_new.append(file_name)
         elif entry == "$file1":
             if main_window.select_file_number_text.get() == 1:
@@ -110,11 +113,11 @@ so only $file1 and $file2 are allowed.',
                     "Error",
                     'The compile command uses $file1, but the "1 files mode" is selected, so only $file is allowed).',
                 )
-                return
+                return None
             file_name1 = main_window.generate_path_value.get() + "/" + main_window.module_name.get() + "_e.vhd"
             if not exists(file_name1):
                 messagebox.showerror("Error", "Compile is not possible, as HDL file" + file_name1 + " does not exist.")
-                return
+                return None
             command_array_new.append(file_name1)
         elif entry == "$file2":
             if main_window.select_file_number_text.get() == 1:
@@ -122,11 +125,11 @@ so only $file1 and $file2 are allowed.',
                     "Error",
                     'The compile command uses $file2, but the "1 files mode" is selected, so only $file is allowed).',
                 )
-                return
+                return None
             file_name2 = main_window.generate_path_value.get() + "/" + main_window.module_name.get() + "_fsm.vhd"
             if not exists(file_name2):
                 messagebox.showerror("Error", "Compile is not possible, as HDL file" + file_name2 + " does not exist.")
-                return
+                return None
             command_array_new.append(file_name2)
         elif entry == "$name":
             command_array_new.append(main_window.module_name.get())
@@ -135,7 +138,7 @@ so only $file1 and $file2 are allowed.',
     return command_array_new
 
 
-def _insert_line_in_log(line) -> None:
+def _insert_line_in_log(line: str) -> None:
     if main_window.language.get() == "VHDL":
         # search for compiler-message with ":<line-number>:<column-number>:":
         regex_message_find = main_window.regex_message_find_for_vhdl

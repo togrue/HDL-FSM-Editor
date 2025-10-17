@@ -4,6 +4,7 @@ Handles the global actions window in the diagram.
 
 import tkinter as tk
 from tkinter import ttk
+from typing import Optional
 
 import canvas_editing
 import canvas_modify_bindings
@@ -18,14 +19,14 @@ class GlobalActions:
     Handles the global actions clocked window in the diagram.
     """
 
-    global_actions_number = 1
-    dictionary = {}
+    global_actions_number: int = 1
+    dictionary: dict[int, "GlobalActions"] = {}
 
-    def __init__(self, menu_x, menu_y, height, width, padding) -> None:
-        self.text_before_content = None
-        self.text_after_content = None
-        self.difference_x = 0
-        self.difference_y = 0
+    def __init__(self, menu_x: float, menu_y: float, height: int, width: int, padding: int) -> None:
+        self.text_before_content: Optional[str] = None
+        self.text_after_content: Optional[str] = None
+        self.difference_x: float = 0.0
+        self.difference_y: float = 0.0
         self.frame_id = ttk.Frame(
             main_window.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="GlobalActionsWindow.TFrame"
         )
@@ -48,7 +49,7 @@ class GlobalActions:
         )
         self.label_after.bind("<Enter>", lambda event: self.activate_window())
         self.label_after.bind("<Leave>", lambda event: self.deactivate_window())
-        self.text_before_id = custom_text.CustomText(
+        self.text_before_id = custom_text.TextBeforeCustomText(
             self.frame_id,
             text_type="action",
             height=height,
@@ -57,7 +58,7 @@ class GlobalActions:
             maxundo=-1,
             font=("Courier", int(canvas_editing.fontsize)),
         )
-        self.text_after_id = custom_text.CustomText(
+        self.text_after_id = custom_text.TextAfterCustomText(
             self.frame_id,
             text_type="action",
             height=height,
@@ -113,21 +114,21 @@ class GlobalActions:
         GlobalActions.dictionary[self.window_id] = self
         canvas_modify_bindings.switch_to_move_mode()
 
-    def _edit_before_in_external_editor(self):
+    def _edit_before_in_external_editor(self) -> None:
         self.text_before_id.edit_in_external_editor()
         self.update_before()
 
-    def _edit_after_in_external_editor(self):
+    def _edit_after_in_external_editor(self) -> None:
         self.text_after_id.edit_in_external_editor()
         self.update_after()
 
-    def update_before(self):
+    def update_before(self) -> None:
         # Update self.text_before_content, so that the <Leave>-check in deactivate_frame() does not signal a design-
         # change and that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
         # To ensure this, save_in_file_new() waits for idle.
         self.text_before_content = self.text_before_id.get("1.0", tk.END)
 
-    def update_after(self):
+    def update_after(self) -> None:
         # Update self.text_after_content, so that the <Leave>-check in deactivate_frame() does not signal a design-
         # change and that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
         # To ensure this, save_in_file_new() waits for idle.
@@ -161,7 +162,7 @@ class GlobalActions:
         self.label_before.configure(style="GlobalActionsWindow.TLabel")
         self.label_after.configure(style="GlobalActionsWindow.TLabel")
 
-    def move_to(self, event_x, event_y, first) -> None:
+    def move_to(self, event_x: float, event_y: float, first: bool) -> None:
         if first:
             # Calculate the difference between the "anchor" point and the event:
             coords = main_window.canvas.coords(self.window_id)

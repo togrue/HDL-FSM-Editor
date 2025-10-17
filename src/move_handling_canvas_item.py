@@ -2,6 +2,8 @@
 A MoveCanvasItem object is created, when the user moves a Canvas item.
 """
 
+import tkinter as tk
+
 import canvas_modify_bindings
 import main_window
 import move_handling
@@ -11,7 +13,7 @@ import undo_handling
 
 
 class MoveHandlingCanvasItem:
-    def __init__(self, event, canvas_id):
+    def __init__(self, event: tk.Event, canvas_id: int) -> None:
         if canvas_modify_bindings.transition_insertion_runs:
             return  # Button-1 shall now not move any canvas item
         self.canvas_id = canvas_id
@@ -33,7 +35,7 @@ class MoveHandlingCanvasItem:
         self.funcid_motion = main_window.canvas.tag_bind(self.canvas_id, "<Motion>", self._motion)
         self.funcid_release = main_window.canvas.tag_bind(self.canvas_id, "<ButtonRelease-1>", self._release)
 
-    def _motion(self, motion_event):
+    def _motion(self, motion_event: tk.Event) -> None:
         move_handling.move_to_coordinates(
             motion_event.x,
             motion_event.y,
@@ -42,7 +44,7 @@ class MoveHandlingCanvasItem:
             move_to_grid=False,
         )
 
-    def _release(self, release_event):
+    def _release(self, release_event: tk.Event) -> None:
         main_window.canvas.tag_unbind(self.canvas_id, "<Motion>", self.funcid_motion)
         main_window.canvas.tag_unbind(self.canvas_id, "<ButtonRelease-1>", self.funcid_release)
         move_handling.move_to_coordinates(

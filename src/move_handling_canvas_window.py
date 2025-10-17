@@ -2,6 +2,8 @@
 A MoveCanvasWindow object is created, when the user moves a Canvas window object.
 """
 
+import tkinter as tk
+
 import main_window
 import move_handling
 import move_handling_finish
@@ -10,7 +12,7 @@ import undo_handling
 
 
 class MoveHandlingCanvasWindow:
-    def __init__(self, event, widget, window_id):
+    def __init__(self, event: tk.Event, widget: tk.Widget, window_id: int) -> None:
         self.widget = widget
         self.window_id = window_id
         window_coords = main_window.canvas.coords(self.window_id)
@@ -36,7 +38,7 @@ class MoveHandlingCanvasWindow:
         self.funcid_motion = widget.bind("<Motion>", self._motion)
         self.funcid_release = widget.bind("<ButtonRelease-1>", self._release)
 
-    def _motion(self, motion_event):
+    def _motion(self, motion_event: tk.Event) -> None:
         delta_x = motion_event.x - self.touching_point_x
         delta_y = motion_event.y - self.touching_point_y
         window_coords = main_window.canvas.coords(self.window_id)
@@ -48,7 +50,7 @@ class MoveHandlingCanvasWindow:
             move_to_grid=False,
         )
 
-    def _release(self, _):
+    def _release(self, _: tk.Event) -> None:
         self.widget.unbind("<Motion>", self.funcid_motion)
         self.widget.unbind("<ButtonRelease-1>", self.funcid_release)
         window_coords = main_window.canvas.coords(self.window_id)

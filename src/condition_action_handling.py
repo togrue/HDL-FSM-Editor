@@ -5,6 +5,7 @@ This class handles the condition&action box which can be activated for each tran
 
 import tkinter as tk
 from tkinter import ttk
+from typing import Optional
 
 import canvas_editing
 import custom_text
@@ -16,18 +17,29 @@ import undo_handling
 class ConditionAction:
     """This class handles the condition&action box which can be activated for each transition."""
 
-    conditionaction_id = 0
-    dictionary = {}
+    conditionaction_id: int = 0
+    dictionary: dict[int, "ConditionAction"] = {}
 
-    def __init__(self, menu_x, menu_y, connected_to_reset_entry, height, width, padding, increment) -> None:
+    def __init__(
+        self,
+        menu_x: float,
+        menu_y: float,
+        connected_to_reset_entry: bool,
+        height: int,
+        width: int,
+        padding: int,
+        increment: bool,
+    ) -> None:
         if increment is True:
             ConditionAction.conditionaction_id += 1
-        self.difference_x = 0
-        self.difference_y = 0
-        self.line_id = None
-        self.line_coords = None
-        self.action_text = None
-        self.condition_text = None
+        self.difference_x = 0.0
+        self.difference_y = 0.0
+        self.line_id: Optional[int] = None
+        self.line_coords: Optional[list[float]] = None
+        self.action_text: Optional[str] = None
+        self.condition_text: Optional[str] = None
+        self.frame_enter_func_id: Optional[str] = None
+        self.canvas_enter_func_id: Optional[str] = None
         # Create frame:
         self.frame_id = ttk.Frame(
             main_window.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="Window.TFrame"
@@ -59,7 +71,7 @@ class ConditionAction:
         )
         self.action_label.bind("<Enter>", lambda event: self.activate_window())
         self.action_label.bind("<Leave>", lambda event: self.deactivate_window())
-        self.action_id = custom_text.CustomText(
+        self.action_id = custom_text.ActionCustomText(
             self.frame_id,
             text_type="action",
             takefocus=0,
@@ -69,7 +81,7 @@ class ConditionAction:
             maxundo=-1,
             font=("Courier", int(canvas_editing.fontsize)),
         )
-        self.condition_id = custom_text.CustomText(
+        self.condition_id = custom_text.ConditionCustomText(
             self.frame_id,
             text_type="condition",
             takefocus=0,
@@ -126,21 +138,21 @@ class ConditionAction:
         # Create dictionary for translating the canvas-id of the canvas-window into a reference to this object:
         ConditionAction.dictionary[self.window_id] = self
 
-    def _edit_action_in_external_editor(self):
+    def _edit_action_in_external_editor(self) -> None:
         self.action_id.edit_in_external_editor()
         self.update_action()
 
-    def _edit_condition_in_external_editor(self):
+    def _edit_condition_in_external_editor(self) -> None:
         self.condition_id.edit_in_external_editor()
         self.update_condition()
 
-    def update_action(self):
+    def update_action(self) -> None:
         # Update self.action_text, so that the <Leave>-check in deactivate() does not signal a design-change and
         # that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
         # To ensure this, save_in_file_new() waits for idle.
         self.action_text = self.action_id.get("1.0", tk.END)
 
-    def update_condition(self):
+    def update_condition(self) -> None:
         # Update self.condition_text, so that the <Leave>-check in deactivate() does not signal a design-change and
         # that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
         # To ensure this, save_in_file_new() waits for idle.
@@ -152,26 +164,26 @@ class ConditionAction:
         self.action_label.grid(row=2, column=0, sticky="we")
         self.action_id.grid(row=3, column=0, sticky="we")
 
-    def tag(self, connected_to_reset_entry) -> None:
+    def tag(self, connected_to_reset_entry: bool) -> None:
         if connected_to_reset_entry is True:
-            tag = (
-                "condition_action" + str(ConditionAction.conditionaction_id),
-                "ca_connection" + str(ConditionAction.conditionaction_id) + "_anchor",
+            tag = [
+                f"condition_action{ConditionAction.conditionaction_id}",
+                f"ca_connection{ConditionAction.conditionaction_id}_anchor",
                 "connected_to_reset_transition",
-            )
+            ]
         else:
-            tag = (
-                "condition_action" + str(ConditionAction.conditionaction_id),
-                "ca_connection" + str(ConditionAction.conditionaction_id) + "_anchor",
-            )
+            tag = [
+                f"condition_action{ConditionAction.conditionaction_id}",
+                f"ca_connection{ConditionAction.conditionaction_id}_anchor",
+            ]
         main_window.canvas.itemconfigure(self.window_id, tag=tag)
 
-    def change_descriptor_to(self, text) -> None:
+    def change_descriptor_to(self, text: str) -> None:
         self.action_label.config(
             text=text
         )  # Used for switching between "asynchronous" and "synchron" (clocked) transition.
 
-    def draw_line(self, transition_id, menu_x, menu_y) -> None:
+    def draw_line(self, transition_id: int, menu_x: float, menu_y: float) -> None:
         # Draw a line from the transition start point to the condition_action block which is added to the transition:
         transition_coords = main_window.canvas.coords(transition_id)
         transition_tags = main_window.canvas.gettags(transition_id)
@@ -182,11 +194,9 @@ class ConditionAction:
             transition_coords[1],
             dash=(2, 2),
             state=tk.HIDDEN,
-            tag=("ca_connection" + str(ConditionAction.conditionaction_id), "connected_to_" + transition_tags[0]),
+            tags=[f"ca_connection{ConditionAction.conditionaction_id}", f"connected_to_{transition_tags[0]}"],
         )
-        main_window.canvas.addtag_withtag(
-            "ca_connection" + str(ConditionAction.conditionaction_id) + "_end", transition_id
-        )
+        main_window.canvas.addtag_withtag(f"ca_connection{ConditionAction.conditionaction_id}_end", transition_id)
         main_window.canvas.tag_lower(self.line_id, transition_id)
 
     def activate_frame(self) -> None:
@@ -231,7 +241,7 @@ class ConditionAction:
             self.action_label.grid_forget()
             self.action_id.grid_forget()
 
-    def move_to(self, event_x, event_y, first) -> None:
+    def move_to(self, event_x: float, event_y: float, first: bool) -> None:
         if first is True:
             # Calculate the difference between the "anchor" point and the event:
             coords = main_window.canvas.coords(self.window_id)
