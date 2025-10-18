@@ -6,6 +6,7 @@ import argparse
 import sys
 from os.path import exists
 from tkinter import messagebox, ttk
+from typing import Optional
 
 import codegen.hdl_generation as hdl_generation
 import file_handling
@@ -14,10 +15,10 @@ import undo_handling
 from project_manager import project_manager
 
 
-def _setup_application_ui() -> None:
+def _setup_application_ui(batch_mode: bool = False) -> None:
     """Set up the main application UI components."""
 
-    main_window.create_root()
+    main_window.create_root(batch_mode)
 
     # Configure application styling
     style = ttk.Style(main_window.root)
@@ -69,16 +70,18 @@ def _setup_application_ui() -> None:
     undo_handling.design_has_changed()
 
 
-def _parse_and_process_arguments() -> None:
-    """Parse command-line arguments and process them."""
+def _parse_arguments(argv: Optional[list[str]] = None) -> argparse.Namespace:
+    """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="HDL-FSM-Editor: A tool for modeling FSMs")
     parser.add_argument("filename", nargs="?", help="HDL-FSM-Editor file (.hfe) to open")
     parser.add_argument("--no-version-check", action="store_true", help="Skip version check at startup")
     parser.add_argument("--no-message", action="store_true", help="Skip message check at startup")
     parser.add_argument("--generate-hdl", action="store_true", help="Generate HDL and exit")
+    return parser.parse_args(argv)
 
-    args = parser.parse_args()
 
+def _process_arguments(args: argparse.Namespace) -> None:
+    """Process command-line arguments."""
     # Handle version and message checks
     if not args.no_version_check:
         main_window.check_version()
@@ -114,17 +117,15 @@ def _parse_and_process_arguments() -> None:
         sys.exit(0 if success else 1)
 
 
-def _main() -> None:
+def _main(argv: Optional[list[str]] = None) -> None:
     """Main entry point for HDL-FSM-Editor."""
     print(main_window.header_string)
 
-    # We have to set up the basic application before parsing the arguments,
-    # because the argument parsing accesses the main window.
-    # TODO: This should be refactored.
-    # (The argument parsing should provide the args to the main window init.)
-    _setup_application_ui()
+    args = _parse_arguments(argv)
 
-    _parse_and_process_arguments()
+    _setup_application_ui(batch_mode=args.generate_hdl)
+
+    _process_arguments(args)
 
     main_window.show_window()
     main_window.root.mainloop()

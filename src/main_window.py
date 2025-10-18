@@ -213,7 +213,7 @@ def _get_resource_path(resource_name: str) -> Path:
     return base_path / "rsc" / resource_name
 
 
-def create_root() -> None:
+def create_root(batch_mode: bool = False) -> None:
     global root
     # The top window:
     root = tk.Tk()
@@ -239,7 +239,8 @@ def create_root() -> None:
     root.grid()
     root.protocol("WM_DELETE_WINDOW", _close_tool)
 
-    restore_window_state(root, app_settings.get_main_window_state())
+    if not batch_mode:
+        restore_window_state(root, app_settings.get_main_window_state())
 
     init_link_dict(root)
 
