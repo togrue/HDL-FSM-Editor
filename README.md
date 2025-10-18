@@ -1,6 +1,8 @@
 # HDL-FSM-Editor
 A tool for modeling FSMs by VHDL or Verilog.
 
+![Alt text](http://www.hdl-fsm-editor.de/img/diagram_tab.jpg "Optional title")
+
 Please visit [HDL-FSM-Editor](http://www.hdl-fsm-editor.de) for more information.
 
 ## Quick Start
