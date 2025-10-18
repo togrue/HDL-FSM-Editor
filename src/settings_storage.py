@@ -10,21 +10,26 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 
 class SettingsStorage:
     """Handles persistent storage of application settings."""
 
-    def __init__(self, app_name: str = "HDL-FSM-Editor"):
+    def __init__(self, app_name: str = "HDL-FSM-Editor", config_name: str = "settings.json"):
         self.app_name = app_name
-        self.settings_file = self._get_settings_path()
+        self.config_name = config_name
+        self.settings_file: Optional[Path] = None
         self._settings: dict[str, Any] = {}
         self._dirty = False
         self._loaded = False
 
     def _get_settings_path(self) -> Path:
         """Get platform-appropriate settings file path."""
+
+        if self.settings_file is not None:
+            return self.settings_file
+
         if sys.platform == "win32":
             appdata = os.environ.get("APPDATA", "")
             settings_dir = Path(appdata) / self.app_name if appdata else Path.home() / ".config" / self.app_name
@@ -33,12 +38,13 @@ class SettingsStorage:
         else:
             settings_dir = Path.home() / ".config" / self.app_name
 
-        return settings_dir / "settings.json"
+        self.settings_file = settings_dir / self.config_name
+        return self.settings_file
 
     def _load_settings(self) -> None:
         """Load settings from file."""
         try:
-            with self.settings_file.open(encoding="utf-8") as f:
+            with self._get_settings_path().open(encoding="utf-8") as f:
                 self._settings = json.load(f)
         except (json.JSONDecodeError, OSError) as e:
             print(f"Warning: Could not load settings: {e}")
@@ -50,8 +56,8 @@ class SettingsStorage:
         if not self._dirty:
             return
         try:
-            self.settings_file.parent.mkdir(parents=True, exist_ok=True)
-            with self.settings_file.open("w", encoding="utf-8") as f:
+            self._get_settings_path().parent.mkdir(parents=True, exist_ok=True)
+            with self._get_settings_path().open("w", encoding="utf-8") as f:
                 json.dump(self._settings, f, indent=2, ensure_ascii=False)
             self._dirty = False
         except OSError as e:
