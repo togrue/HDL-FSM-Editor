@@ -50,6 +50,7 @@ class GlobalActionsCombinatorial:
         )
         self.text_id.bind("<Control-z>", lambda event: self.text_id.undo())
         self.text_id.bind("<Control-Z>", lambda event: self.text_id.redo())
+        self.text_id.bind("<Control-e>", lambda event: self._edit_in_external_editor())
         self.text_id.bind("<Control-s>", lambda event: self.update_text())
         self.text_id.bind("<Control-g>", lambda event: self.update_text())
         self.text_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
@@ -75,6 +76,10 @@ class GlobalActionsCombinatorial:
         self.frame_id.lower()
         GlobalActionsCombinatorial.dictionary[self.window_id] = self
         canvas_modify_bindings.switch_to_move_mode()
+
+    def _edit_in_external_editor(self):
+        self.text_id.edit_in_external_editor()
+        self.update_text()
 
     def update_text(self):
         # Update self.text_content, so that the <Leave>-check in deactivate() does not signal a design-change and

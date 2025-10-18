@@ -54,6 +54,7 @@ class MyText:
         )
         self.text_id.bind("<Control-z>", lambda event: self.text_id.undo())
         self.text_id.bind("<Control-Z>", lambda event: self.text_id.redo())
+        self.text_id.bind("<Control-e>", lambda event: self._edit_in_external_editor())
         self.text_id.bind("<Control-s>", lambda event: self.update_text())
         self.text_id.bind("<Control-g>", lambda event: self.update_text())
         self.text_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
@@ -99,6 +100,10 @@ class MyText:
             tag=("connection" + str(MyText.mytext_id), "connected_to_" + state_tags[0]),
         )
         main_window.canvas.tag_lower(self.line_id, state_id)
+
+    def _edit_in_external_editor(self):
+        self.text_id.edit_in_external_editor()
+        self.update_text()
 
     def update_text(self) -> None:
         # Update self.text_content, so that the <Leave>-check in deactivate_frame() does not signal a design-change and

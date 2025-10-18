@@ -68,8 +68,10 @@ class GlobalActions:
         )
         self.text_before_id.bind("<Control-z>", lambda event: self.text_before_id.undo())
         self.text_before_id.bind("<Control-Z>", lambda event: self.text_before_id.redo())
+        self.text_before_id.bind("<Control-e>", lambda event: self._edit_before_in_external_editor())
         self.text_after_id.bind("<Control-z>", lambda event: self.text_after_id.undo())
         self.text_after_id.bind("<Control-Z>", lambda event: self.text_after_id.redo())
+        self.text_after_id.bind("<Control-e>", lambda event: self._edit_after_in_external_editor())
         self.text_before_id.bind("<Control-s>", lambda event: self.update_before())
         self.text_before_id.bind("<Control-g>", lambda event: self.update_before())
         self.text_after_id.bind("<Control-s>", lambda event: self.update_after())
@@ -110,6 +112,14 @@ class GlobalActions:
 
         GlobalActions.dictionary[self.window_id] = self
         canvas_modify_bindings.switch_to_move_mode()
+
+    def _edit_before_in_external_editor(self):
+        self.text_before_id.edit_in_external_editor()
+        self.update_before()
+
+    def _edit_after_in_external_editor(self):
+        self.text_after_id.edit_in_external_editor()
+        self.update_after()
 
     def update_before(self):
         # Update self.text_before_content, so that the <Leave>-check in deactivate_frame() does not signal a design-

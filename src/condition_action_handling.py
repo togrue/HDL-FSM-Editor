@@ -82,8 +82,10 @@ class ConditionAction:
         # Create bindings for Undo/Redo:
         self.action_id.bind("<Control-z>", lambda event: self.action_id.undo())
         self.action_id.bind("<Control-Z>", lambda event: self.action_id.redo())
+        self.action_id.bind("<Control-e>", lambda event: self._edit_action_in_external_editor())
         self.condition_id.bind("<Control-z>", lambda event: self.condition_id.undo())
         self.condition_id.bind("<Control-Z>", lambda event: self.condition_id.redo())
+        self.condition_id.bind("<Control-e>", lambda event: self._edit_condition_in_external_editor())
         self.action_id.bind("<Control-s>", lambda event: self.update_action())
         self.action_id.bind("<Control-g>", lambda event: self.update_action())
         self.condition_id.bind("<Control-s>", lambda event: self.update_condition())
@@ -123,6 +125,14 @@ class ConditionAction:
 
         # Create dictionary for translating the canvas-id of the canvas-window into a reference to this object:
         ConditionAction.dictionary[self.window_id] = self
+
+    def _edit_action_in_external_editor(self):
+        self.action_id.edit_in_external_editor()
+        self.update_action()
+
+    def _edit_condition_in_external_editor(self):
+        self.condition_id.edit_in_external_editor()
+        self.update_condition()
 
     def update_action(self):
         # Update self.action_text, so that the <Leave>-check in deactivate() does not signal a design-change and

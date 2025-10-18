@@ -36,8 +36,6 @@ class CustomText(tk.Text):
         self.tk.call("rename", self._w, self._orig)
         self.tk.createcommand(self._w, self._proxy)
         self.bind("<Tab>", lambda event: self.replace_tabs_by_blanks())
-        # Overwrites the default control-e = "move cursor to end of line":
-        self.bind("<Control-e>", lambda event: self.edit_in_external_editor())
         # Overwrites the default control-o = "insert a new line", needed for opening a new file:
         self.bind("<Control-o>", lambda event: self._open())
         # After pressing a key 2 things happen:
