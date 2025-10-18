@@ -542,6 +542,7 @@ def create_interface_notebook_tab() -> None:
         10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
     )
     interface_package_text.bind("<Control-Z>", lambda event: interface_package_text.edit_redo())
+    interface_package_text.bind("<Control-e>", lambda event: interface_package_text.edit_in_external_editor())
     interface_package_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
     interface_package_text.bind("<Key>", lambda event, id=interface_package_text: _handle_key(event, id))
     _interface_package_scroll = ttk.Scrollbar(
@@ -565,6 +566,7 @@ def create_interface_notebook_tab() -> None:
         interface_generics_frame, text_type="generics", height=3, width=10, undo=True, font=("Courier", 10)
     )
     interface_generics_text.bind("<Control-Z>", lambda event: interface_generics_text.edit_redo())
+    interface_generics_text.bind("<Control-e>", lambda event: interface_generics_text.edit_in_external_editor())
     interface_generics_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
     interface_generics_text.bind("<Key>", lambda event, id=interface_generics_text: _handle_key_at_generics(id))
     interface_generics_scroll = ttk.Scrollbar(
@@ -590,6 +592,7 @@ def create_interface_notebook_tab() -> None:
     )
     interface_ports_text.bind("<Control-z>", lambda event: interface_ports_text.undo())
     interface_ports_text.bind("<Control-Z>", lambda event: interface_ports_text.redo())
+    interface_ports_text.bind("<Control-e>", lambda event: interface_ports_text.edit_in_external_editor())
     interface_ports_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
     interface_ports_text.bind("<Key>", lambda event, id=interface_ports_text: _handle_key_at_ports(id))
     interface_ports_scroll = ttk.Scrollbar(
@@ -628,6 +631,7 @@ def create_internals_notebook_tab() -> None:
         _internals_package_frame, text_type="package", height=3, width=10, undo=True, font=("Courier", 10)
     )
     internals_package_text.bind("<Control-Z>", lambda event: internals_package_text.edit_redo())
+    internals_package_text.bind("<Control-e>", lambda event: internals_package_text.edit_in_external_editor())
     internals_package_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
     internals_package_text.bind("<Key>", lambda event, id=internals_package_text: _handle_key(event, id))
     _internals_package_scroll = ttk.Scrollbar(
@@ -656,6 +660,7 @@ def create_internals_notebook_tab() -> None:
     )
     internals_architecture_text.bind("<Control-z>", lambda event: internals_architecture_text.undo())
     internals_architecture_text.bind("<Control-Z>", lambda event: internals_architecture_text.redo())
+    internals_architecture_text.bind("<Control-e>", lambda event: internals_architecture_text.edit_in_external_editor())
     internals_architecture_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
     internals_architecture_text.bind(
         "<Key>", lambda event, id=internals_architecture_text: _handle_key_at_declarations(id)
@@ -689,6 +694,9 @@ def create_internals_notebook_tab() -> None:
     )
     internals_process_clocked_text.bind("<Control-z>", lambda event: internals_process_clocked_text.undo())
     internals_process_clocked_text.bind("<Control-Z>", lambda event: internals_process_clocked_text.redo())
+    internals_process_clocked_text.bind(
+        "<Control-e>", lambda event: internals_process_clocked_text.edit_in_external_editor()
+    )
     internals_process_clocked_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
     internals_process_clocked_text.bind(
         "<Key>", lambda event, id=internals_process_clocked_text: _handle_key_at_declarations(id)
@@ -724,6 +732,9 @@ def create_internals_notebook_tab() -> None:
     )
     internals_process_combinatorial_text.bind("<Control-z>", lambda event: internals_process_combinatorial_text.undo())
     internals_process_combinatorial_text.bind("<Control-Z>", lambda event: internals_process_combinatorial_text.redo())
+    internals_process_combinatorial_text.bind(
+        "<Control-e>", lambda event: internals_process_combinatorial_text.edit_in_external_editor()
+    )
     internals_process_combinatorial_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
     internals_process_combinatorial_text.bind(
         "<Key>", lambda event, id=internals_process_combinatorial_text: _handle_key_at_declarations(id)
