@@ -6,128 +6,122 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-## Added
-## Changed
-## Deprecated
-## Removed
-## Fixed
-## Security
+### Added
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Security
+
+## [Next_Version]
+
+### Added
+- Restore window geometry and state when the application is started.
+- Tooltips to show in-context help
+- Horizontal scroll support
+- Search pattern validation
+### Changed
+### Fixed
+- Fixed icon handling for linux
+- Fixed Python 3.9 compatibility
+- Fixed all mypy errors
 
 ## [5.7]
-## Added
+
+### Added
 - Support of VHDL procedures for linting
 - Support of several signal declarations in 1 line
 - Linting for user defined processes in "Global Actions Combinatorial"
 - At reading from a hfe-file now a existing ".tmp" file is always removed.
-## Changed
+### Changed
 - In batch mode the warning about a wrong state order is now printed at STDOUT and not in a pop up dialog.
 - In batch mode warnings during file read are now printed at STDOUT instead in pop up dialogs.
 - In batch mode the warning about a wrong state order is now printed at STDOUT and not in a pop up dialog.
 - The timestamp checkbox was moved into the "Select for generation" line.
-## Deprecated
-## Removed
-## Fixed
+### Fixed
 - Delete state and delete state-action did not work since version 5.5
 - Signal names containing the string "end_" where sometimes highlighted in a wrong way.
 - After changing an text by an external editor and saving the design, leaving a block with the mouse pointer signaled "design has changed".
 - Linting highlighted 'x' in expressions like x"12AB" red.
 - A start from command line with file-parameter does not activate script-mode anymore.
 - Change detection in "global actions combinatorial" signaled design change too often
-## Security
 
-## [5.6]
-## Added
+## [5.6] - 17.10.2025
+
+### Added
 - When the project file is read/written now the cursor changes its shape (visible only if the file operation is slow).
 - A warning pop up dialog informs the user, when a state is placed too near to another object.
-## Changed
+### Changed
 - The call of the method design_has_changed was moved at move_handling_finish and added in move_handling_canvas_item/window.
 - Improved robustness when moving transitions (avoiding null vectors).
-## Deprecated
-## Removed
+### Removed
 - Removed second implementation of priority box drawing from undo_handling.
-## Fixed
+### Fixed
 - When a curved transition is moved, sometimes the transition shape gets strange at pick up.
 - At reading a design sometimes an exception regarding variable "trans_id" happened.
 - When the "generated HDL" was opened sometimes no HDL was loaded.
-## Security
+### Security
 
-## [5.5]
-## Added
+## [5.5] - 04.10.2025
+
+### Added
 - The state menu can now also be opened over a state name.
-## Changed
-## Deprecated
-## Removed
+### Removed
 - Removed useless highlighting at entering a line to a state-action/comment box.
 - Removed unused parameter move_to_grid of method move_to for canvas-windows.
 - Removed second implementation of transition drawing from file_handling.
 - Removed second implementation of transition priority drawing from file_handling.
-## Fixed
+### Fixed
 - Inserting a new transition activated the message box "corrupt database" with no reason.
 - The senseless attempt to remove the line to a state-action/comment box caused an exception.
 - After an Undo operation the new move method did not work for states anymore.
 - The end point of a connection line of a state action/comment jumped sometimes to the grid.
-## Security
+### Security
 
-## [5.4]
-## Added
-## Changed
-## Deprecated
-## Removed
-## Fixed
+## [5.4] - 02.10.2025
+
+### Fixed
 - A fix the for new move method was implemented
-## Security
 
-## [5.3]
-## Added
+## [5.3] - 02.10.2025
+
+### Added
 - A title for the "select HDL directory" dialog.
-## Changed
+### Changed
 - Picking up objects for moving was sometimes kind of hard, now it works easy and as expected.</li>
-## Deprecated
-## Removed
-## Fixed
+### Fixed
 - Moving the cursor into any action or comment block (without any code change) could set the design state to "modified" .
 - Names containing the string "warning" or "error" were highlighted red in the "Compile Message" tab.
 - Sometimes states may be shrinked during moving.
-## Security
 
-## [5.2]
-## Added
-## Changed
-## Deprecated
-## Removed
-## Fixed
+## [5.2] - 16.08.2025
+
+### Fixed
 - Creating HDL in batch mode did not work because of an exception.
 - The number of linter warnings was reduced by refactoring.
-## Security
+### Security
 
 ## [5.1] - 04.08.2025
-## Added
+
+### Added
 - Added the "Additional sources" entry field to the Control-tab. Will be used only by HDL-SCHEM-Editor.
 - The STDOUT messages at startup are now also copied into the "Compile messages" tab.
 - Linting (highlighting of never read or never written signals) now can handle VHDL-records.
-## Changed
-## Deprecated
-## Removed
-## Fixed
+### Fixed
 - When a Condition&Action box was entered, sometimes the box switched permanently between its small and big size.
 - When the HDL-tab was updated, sometimes the old HDL was not removed.
-## Security
+### Security
 
 ## [5.0] - 01.08.2025
 
-## Added
+### Added
 - The time-stamp in generated HDL can now be turned off to simplify the handling with version control.
 - Additional FSM examples from http://www.hdl-fsm-editor.de/ - Designs
 
-## Changed
+### Changed
 - Updated command line arguments to use dashes.
 - The project layout was restructured.
 - Improve "project unsaved dialog" when closing the application.
-
-## Deprecated
-## Removed
-## Fixed
-## Security
 
 ## [4.12] - 27.07.2025
 
