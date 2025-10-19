@@ -8,7 +8,7 @@ import subprocess
 import tkinter as tk
 from re import Match
 from tkinter import messagebox
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 import canvas_editing
 import codegen.hdl_generation_architecture_state_actions as hdl_generation_architecture_state_actions
@@ -38,8 +38,23 @@ class CustomText(tk.Text):
         self.tk.call("rename", str(self), self._orig)
         self.tk.createcommand(str(self), self._proxy)
         self.bind("<Tab>", lambda event: self.replace_tabs_by_blanks())
+        self.bind("<Shift-Tab>", lambda event: self.unindent_selection())
+        # Overwrites the default control-e = "move cursor to end of line":
+        self.bind("<Control-e>", lambda event: self.edit_in_external_editor())
         # Overwrites the default control-o = "insert a new line", needed for opening a new file:
         self.bind("<Control-o>", lambda event: self._open())
+        # Word-wise cursor movement
+        self.bind("<Control-Left>", lambda event: self.move_word_left())
+        self.bind("<Control-Right>", lambda event: self.move_word_right())
+        # Word selection
+        self.bind("<Shift-Control-Left>", lambda event: self.select_word_left())
+        self.bind("<Shift-Control-Right>", lambda event: self.select_word_right())
+        # Whole word deletion
+        self.bind("<Control-BackSpace>", lambda event: self.delete_word_backward())
+        self.bind("<Control-Delete>", lambda event: self.delete_word_forward())
+        # Indent/unindent with brackets
+        self.bind("<Control-bracketleft>", lambda event: self.unindent_selection())
+        self.bind("<Control-bracketright>", lambda event: self.indent_selection())
         # After pressing a key 2 things happen:
         # 1. The new character is inserted in the text.
         # 2. format() is started
@@ -81,6 +96,149 @@ class CustomText(tk.Text):
         self.insert(tk.INSERT, "    ")  # replace the Tab by 4 blanks.
         self.format_after_idle()
         return "break"  # This prevents the "Tab" to be inserted in the text.
+
+    def move_word_left(self) -> str:
+        """Move cursor one token chunk to the left."""
+        return self._move_cursor(self._find_token_start_backward)
+
+    def move_word_right(self) -> str:
+        """Move cursor one token chunk to the right."""
+        return self._move_cursor(self._find_token_end_forward)
+
+    def select_word_left(self) -> str:
+        """Select token chunk to the left of cursor."""
+        return self._select_token(self._find_token_start_backward)
+
+    def select_word_right(self) -> str:
+        """Select token chunk to the right of cursor."""
+        return self._select_token(self._find_token_end_forward)
+
+    def delete_word_backward(self) -> str:
+        """Delete token chunk to the left of cursor."""
+        return self._delete_token(self._find_token_start_backward)
+
+    def delete_word_forward(self) -> str:
+        """Delete token chunk to the right of cursor."""
+        return self._delete_token(self._find_token_end_forward)
+
+    def _delete_token(self, find_boundary_func) -> str:
+        """Generic token deletion."""
+        current_pos = self.index(tk.INSERT)
+        target_pos = find_boundary_func(current_pos)
+
+        if find_boundary_func == self._find_token_start_backward:
+            self.delete(target_pos, current_pos)
+        else:  # _find_token_end_forward
+            self.delete(current_pos, target_pos)
+
+        self.format_after_idle()
+        return "break"
+
+    def _move_cursor(self, find_boundary_func) -> str:
+        """Generic cursor movement to token boundary."""
+        current_pos = self.index(tk.INSERT)
+        target_pos = find_boundary_func(current_pos)
+        if not target_pos:
+            return "break"
+
+        self.mark_set(tk.INSERT, target_pos)
+        return "break"
+
+    def _select_token(self, find_boundary_func) -> str:
+        """Generic token selection extending from current position."""
+        cursor_pos = self.index(tk.INSERT)
+        target_pos = find_boundary_func(cursor_pos)
+
+        if not target_pos:
+            return "break"
+
+        # Check if there's an existing selection
+        sel_ranges: tuple[str, ...] = self.tag_ranges(tk.SEL)  # type: ignore[assignment]
+        self.tag_remove(tk.SEL, "1.0", tk.END)
+        if sel_ranges:
+            # There's an existing selection
+            sel_start, sel_end = sel_ranges[0], sel_ranges[1]
+        else:
+            sel_start, sel_end = cursor_pos, cursor_pos
+        sel_anchor = sel_start if self.compare(sel_end, "==", cursor_pos) else sel_end
+
+        self.mark_set(tk.ANCHOR, sel_anchor)
+        self.mark_set(tk.INSERT, target_pos)
+
+        if self.compare(target_pos, "<", sel_anchor):
+            sel_start, sel_end = target_pos, sel_anchor
+        else:
+            sel_start, sel_end = sel_anchor, target_pos
+
+        if self.compare(sel_start, "!=", sel_end):
+            self.tag_add(tk.SEL, sel_start, sel_end)
+            self.focus_set()
+        print("anchor", self.index(tk.ANCHOR))
+        print("sel", self.tag_ranges(tk.SEL))
+
+        return "break"
+
+    def _find_token_start_backward(self, idx: str) -> str:
+        TOKEN_RX = r"\n|(?:[\w_]+|[^\w\s]+)[ \t]*"
+
+        # TODO: This is pretty inefficient, because it scans (nearly) the entire text.
+        txt = self.get("1.0", f"{idx}")
+
+        m = None
+        for match in re.finditer(TOKEN_RX, txt):
+            m = match
+        if not m:
+            return ""
+        return f"1.0 + {m.start()} chars"
+
+    def _find_token_end_forward(self, idx: str) -> str:
+        TOKEN_RX = r"\n|[ \t]*(?:[\w_]+|[^\w\s]+)"
+
+        # Start search from the next character to avoid matching current position
+        # TODO: This is pretty inefficient, because it scans (nearly) the entire text.
+        txt = self.get(idx, "end - 1c")
+        m = re.search(TOKEN_RX, txt)
+        if m:
+            return f"{idx} + {m.end()} chars"
+        return ""
+
+    def _apply_indent_action(self, line_action: Callable[[int], None]) -> str:
+        """Helper to apply indent/unindent to selection or current line."""
+        sel = self.tag_ranges(tk.SEL)
+        if sel:
+            sel_start, sel_end = sel
+            # Apply line_action to selected lines
+            start_line = int(str(sel_start).split(".")[0])
+            end_line = int(str(sel_end).split(".")[0])
+            for line_num in range(start_line, end_line + 1):
+                line_action(line_num)
+        else:
+            # Apply to current line
+            current_line = int(self.index(tk.INSERT).split(".")[0])
+            line_action(current_line)
+        self.format_after_idle()
+        return "break"  # Prevent default key handling
+
+    def indent_selection(self) -> str:
+        """Indent selection or current line."""
+
+        def _indent_line(line_num: int) -> None:
+            line_start = f"{line_num}.0"
+            self.insert(line_start, "    ")
+
+        return self._apply_indent_action(_indent_line)
+
+    def unindent_selection(self) -> str:
+        """Unindent selection or current line."""
+
+        def _unindent_line(line_num: int) -> None:
+            line_start = f"{line_num}.0"
+            line_text = self.get(line_start, f"{line_num}.4")
+            spaces_to_remove = min(4, len(line_text) - len(line_text.lstrip()))
+            if spaces_to_remove > 0:
+                self.delete(line_start, f"{line_num}.{spaces_to_remove}")
+
+        return self._apply_indent_action(_unindent_line)
 
     def edit_in_external_editor(self) -> None:
         import main_window
