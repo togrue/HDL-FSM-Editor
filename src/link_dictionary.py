@@ -45,6 +45,8 @@ class LinkDictionary:
         if file_name not in self.link_dict:
             self.link_dict[file_name] = {}
         if hdl_item_type == "Control-Tab":
+            assert isinstance(hdl_item_name, str)
+
             self.link_dict[file_name][file_line_number] = {
                 "tab_name": GuiTab.CONTROL,
                 "widget_reference": main_window,
@@ -53,6 +55,9 @@ class LinkDictionary:
                 "number_of_line": "",
             }
         elif hdl_item_type == "custom_text_in_interface_tab":
+            assert isinstance(hdl_item_name, tk.Widget)
+            assert hasattr(hdl_item_name, "highlight_item")
+
             for text_line_number in range(1, number_of_lines + 1):
                 self.link_dict[file_name][file_line_number + text_line_number - 1] = {
                     "tab_name": GuiTab.INTERFACE,
@@ -62,6 +67,9 @@ class LinkDictionary:
                     "number_of_line": text_line_number,
                 }
         elif hdl_item_type == "custom_text_in_internals_tab":
+            assert isinstance(hdl_item_name, tk.Widget)
+            assert hasattr(hdl_item_name, "highlight_item")
+
             for text_line_number in range(1, number_of_lines + 1):
                 self.link_dict[file_name][file_line_number + text_line_number - 1] = {
                     "tab_name": GuiTab.INTERNALS,
@@ -71,6 +79,9 @@ class LinkDictionary:
                     "number_of_line": text_line_number,
                 }
         elif hdl_item_type == "custom_text_in_diagram_tab":
+            assert isinstance(hdl_item_name, tk.Widget)
+            assert hasattr(hdl_item_name, "highlight_item")
+
             for text_line_number in range(1, number_of_lines + 1):
                 self.link_dict[file_name][file_line_number + text_line_number - 1] = {
                     "tab_name": GuiTab.DIAGRAM,
