@@ -5,6 +5,7 @@ All methods needed for the state action process in VHDL or Verilog
 import re
 import tkinter as tk
 from pathlib import Path
+from typing import Optional
 
 import codegen.hdl_generation_library as hdl_generation_library
 import main_window
@@ -109,7 +110,13 @@ def _create_state_action_process_for_vhdl(
         state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, when_entry)
         file_line_number += 1  # A when_entry starts always with "when ..."
         number_of_lines = when_entry.count("\n")
-        link_dict().add(file_name, file_line_number, "custom_text_in_diagram_tab", number_of_lines - 1, state_action[2])
+
+        widget_reference: Optional[tk.Widget] = state_action[2]  # type: ignore
+        if isinstance(widget_reference, tk.Widget):
+            # Link only, if we have a widget to link to
+            link_dict().add(
+                file_name, file_line_number, "custom_text_in_diagram_tab", number_of_lines - 1, widget_reference
+            )
         file_line_number += number_of_lines - 1
 
     state_action_process += "    end case;\n"
@@ -174,13 +181,17 @@ def _create_state_action_process_for_verilog(
             file_line_number += 2
         else:
             file_line_number += 1  # A when_entry starts always with "<State-Name: ..."
-            link_dict().add(
-                file_name,
-                file_line_number,
-                "custom_text_in_diagram_tab",
-                number_of_lines - 2,  # a when entry always ends with "end"
-                state_action[2],
-            )
+            # TODO: introduce a state_action type and remove the type: ignore
+            widget_reference: Optional[tk.Widget] = state_action[2]  # type: ignore
+            if isinstance(widget_reference, tk.Widget):
+                # Link only, if we have a widget to link to
+                link_dict().add(
+                    file_name,
+                    file_line_number,
+                    "custom_text_in_diagram_tab",
+                    number_of_lines - 2,  # a when entry always ends with "end"
+                    widget_reference,
+                )
             file_line_number += number_of_lines - 1
 
     state_action_process += "        default:\n"

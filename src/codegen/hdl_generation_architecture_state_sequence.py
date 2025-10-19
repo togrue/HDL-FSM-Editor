@@ -4,6 +4,7 @@ The methods create only the HDL for the state sequence.
 """
 
 import re
+import tkinter as tk
 from pathlib import Path
 from typing import Any
 
@@ -23,16 +24,22 @@ def create_vhdl_for_the_state_sequence(
             if "state_comments" in transition_specification:
                 state_comments = re.sub(r"^", "    -- ", transition_specification["state_comments"], flags=re.M)
                 state_comments = state_comments[:-7]  # remove blanks and the comment-string from the last empty line.
+                # TODO: Why is there a last empty line? Where does it come from?
                 vhdl.append(state_comments)
                 ignore_control_for_vhdl_indent.append(False)
                 number_of_comment_lines = state_comments.count("\n")
-                link_dict().add(
-                    file_name,
-                    file_line_number,
-                    "custom_text_in_diagram_tab",
-                    number_of_comment_lines,
-                    transition_specification["state_comments_canvas_id"],
-                )
+
+                widget_reference = transition_specification["state_comments_canvas_id"]
+                if isinstance(widget_reference, tk.Widget):
+                    # Link only, when there is a widget to link to..
+                    # States without an attached comment have a widget_reference == None.
+                    link_dict().add(
+                        file_name,
+                        file_line_number,
+                        "custom_text_in_diagram_tab",
+                        number_of_comment_lines,
+                        transition_specification["state_comments_canvas_id"],
+                    )
                 file_line_number += number_of_comment_lines
         elif transition_specification["command"] == "if":
             transition_condition = transition_specification["condition"]
@@ -190,13 +197,19 @@ def create_verilog_for_the_state_sequence(
                 verilog.append(state_comments)
                 ignore_control_for_verilog_indent.append(False)
                 number_of_comment_lines = state_comments.count("\n")
-                link_dict().add(
-                    file_name,
-                    file_line_number,
-                    "custom_text_in_diagram_tab",
-                    number_of_comment_lines,
-                    transition_specification["state_comments_canvas_id"],
-                )
+
+                widget_reference = transition_specification["state_comments_canvas_id"]
+                if isinstance(widget_reference, tk.Widget):
+                    # Link only, when there is a widget to link to..
+                    # States without an attached comment have a widget_reference == None.
+                    link_dict().add(
+                        file_name,
+                        file_line_number,
+                        "custom_text_in_diagram_tab",
+                        number_of_comment_lines,
+                        widget_reference,
+                    )
+
                 file_line_number += number_of_comment_lines
         elif transition_specification["command"] == "if":
             transition_condition = transition_specification["condition"]
