@@ -621,10 +621,14 @@ def create_interface_notebook_tab() -> None:
     _interface_package_frame.columnconfigure(1, weight=0)
     _interface_package_frame.rowconfigure(0, weight=0)
     _interface_package_frame.rowconfigure(1, weight=1)
-    _interface_package_label = ttk.Label(_interface_package_frame, text="Packages:", padding=5)
+    _interface_package_label = ttk.Label(_interface_package_frame, text="Packages: 🛈", padding=5)
     interface_package_info = ttk.Label(_interface_package_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5)
     interface_package_text = custom_text.CustomText(
         _interface_package_frame, text_type="package", height=3, width=10, undo=True, font=("Courier", 10)
+    )
+    Tooltip(
+        _interface_package_label,
+        "Packages are used to define the library and use statements for the VHDL code.\n\nExample:\n\nlibrary ieee;\nuse ieee.std_logic_1164.all;",
     )
     interface_package_text.insert("1.0", "library ieee;\nuse ieee.std_logic_1164.all;")
     interface_package_text.update_highlight_tags(
@@ -649,7 +653,12 @@ def create_interface_notebook_tab() -> None:
     interface_generics_frame.columnconfigure(1, weight=0)
     interface_generics_frame.rowconfigure(0, weight=0)
     interface_generics_frame.rowconfigure(1, weight=1)
-    _interface_generics_label = ttk.Label(interface_generics_frame, text="Generics:", padding=5)
+    _interface_generics_label = ttk.Label(interface_generics_frame, text="Generics: 🛈", padding=5)
+    Tooltip(
+        _interface_generics_label,
+        "The generic parameters for the entity.\n\nExample:\n\ng_width : integer := 8;\ng_special_feature : boolean := true;\n\n"
+        "Little feature: You can keep the last semicolon at the end.",
+    )
     interface_generics_info = ttk.Label(interface_generics_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5)
     interface_generics_text = custom_text.CustomText(
         interface_generics_frame, text_type="generics", height=3, width=10, undo=True, font=("Courier", 10)
@@ -675,6 +684,7 @@ def create_interface_notebook_tab() -> None:
     interface_ports_frame.rowconfigure(0, weight=0)
     interface_ports_frame.rowconfigure(1, weight=1)
     _interface_ports_label = ttk.Label(interface_ports_frame, text="Ports:", padding=5)
+    Tooltip(_interface_ports_label, "")
     interface_ports_info = ttk.Label(interface_ports_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5)
     interface_ports_text = custom_text.CustomText(
         interface_ports_frame, text_type="ports", height=3, width=10, undo=True, font=("Courier", 10)
@@ -715,6 +725,7 @@ def create_internals_notebook_tab() -> None:
     _internals_package_frame.rowconfigure(0, weight=0)
     _internals_package_frame.rowconfigure(1, weight=1)
     _internals_package_label = ttk.Label(_internals_package_frame, text="Packages:", padding=5)
+    Tooltip(_internals_package_label, "")
     interface_package_info = ttk.Label(_internals_package_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5)
     internals_package_text = custom_text.CustomText(
         _internals_package_frame, text_type="package", height=3, width=10, undo=True, font=("Courier", 10)
@@ -741,6 +752,7 @@ def create_internals_notebook_tab() -> None:
     _internals_architecture_label = ttk.Label(
         internals_architecture_frame, text="Architecture Declarations:", padding=5
     )
+    Tooltip(_internals_architecture_label, "")
     interface_architecture_info = ttk.Label(
         internals_architecture_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5
     )
@@ -775,6 +787,7 @@ def create_internals_notebook_tab() -> None:
     _internals_process_clocked_label = ttk.Label(
         internals_process_clocked_frame, text="Variable Declarations for clocked process:", padding=5
     )
+    Tooltip(_internals_process_clocked_label, "")
     interface_process_clocked_info = ttk.Label(
         internals_process_clocked_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5
     )
@@ -813,6 +826,7 @@ def create_internals_notebook_tab() -> None:
     _internals_process_combinatorial_label = ttk.Label(
         internals_process_combinatorial_frame, text="Variable Declarations for combinatorial process:", padding=5
     )
+    Tooltip(_interface_ports_label, "")
     interface_process_combinatorial_info = ttk.Label(
         internals_process_combinatorial_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5
     )
