@@ -818,7 +818,7 @@ def remove_comments_and_returns(hdl_text) -> str:
         # Add " " at the beginning of the line. Then it is possible to search for keywords
         # surrounded by blanks also at the beginning of text:
         text += " " + line_without_comment
-    text += " "  # Add " " at the end, so that keywords at the end are also sourrounded by blanks.
+    text += " "  # Add " " at the end, so that keywords at the end are also surrounded by blanks.
     return text
 
 
@@ -902,6 +902,9 @@ def get_all_declared_signal_names(all_signal_declarations) -> list:
     signal_list = []
     for declaration in signal_declaration_list:
         if declaration != "" and not declaration.isspace():
+            declaration = (
+                " " + declaration + " "
+            )  # Splitting may have produced declarations without blanks but they are needed for keyword search.
             signals = _get_all_signal_names(declaration)
             if signals != "":
                 signal_list.extend(signals.split(","))
