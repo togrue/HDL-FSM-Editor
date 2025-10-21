@@ -273,6 +273,7 @@ class CustomText(tk.Text):
             text = self.__remove_condition_keywords(text)
             CustomText.read_variables_of_all_windows[self] = text.split()
         elif self.text_type == "action":
+            text = self.__add_read_variables_from_procedure_calls_to_read_variables_of_all_windows(text)
             text = self.__add_read_variables_from_with_select_blocks_to_read_variables_of_all_windows(text)
             text = self.__add_read_variables_from_conditions_to_read_variables_of_all_windows(text)
             text = self.__add_read_variables_from_case_constructs_to_read_variables_of_all_windows(text)
@@ -295,6 +296,7 @@ class CustomText(tk.Text):
                 flags=re.I,
             )
             # Store the remaining variable names and remove duplicates from the list:
+            # print("written-variables = ", list(set(text.split())))
             CustomText.written_variables_of_all_windows[self] = list(set(text.split()))
             # When the ";" is missing, then the right hand side with "<=" could not be found and erased.
             # So remove "<=" and ":=" from these lists:
@@ -380,6 +382,54 @@ class CustomText(tk.Text):
             ):
                 text = re.sub(keyword, "  ", text, flags=re.I)  # Keep the blanks the keyword is surrounded by.
         return text
+
+    def __add_read_variables_from_procedure_calls_to_read_variables_of_all_windows(self, text):
+        if main_window.language.get() == "VHDL":
+            all_procedure_calls = []
+            search_for_not_assignments = "^[^=]*?;"
+            while True:
+                # print("text =", text)
+                # match = re.search(r"^[^=]*?;", text, flags=re.IGNORECASE)
+                match = re.search(search_for_not_assignments, text, flags=re.IGNORECASE)
+                if match:
+                    # print("group 0 =", match.group(0))
+                    if match.start() == match.end():
+                        break
+                    all_procedure_calls.append(match.group(0)[:-1])  # append without semicolon
+                    text = text[: match.start()] + text[match.end() :]  # remove match from text
+                else:
+                    break
+            for procedure_call in all_procedure_calls:
+                # print("procedure_call =", "|" + procedure_call + "|")
+                procedure_parameters = self._remove_procedure_name(procedure_call)
+                procedure_parameter_list = procedure_parameters.split(",")
+                # print("procedure_parameter_list =", procedure_parameter_list)
+                for procedure_parameter in procedure_parameter_list:
+                    procedure_parameter = procedure_parameter.strip()
+                    if (
+                        procedure_parameter != ""
+                        and procedure_parameter not in ["x", "X"]
+                        and not procedure_parameter.isdigit()
+                    ):
+                        # As the procedure definition may not be part of this VHDL file,
+                        # it can not for sure be determined, which parameter is read and which parameter is written.
+                        if procedure_parameter in main_window.interface_ports_text.readable_ports_list:
+                            # If a parameter is an input port, then it is read.
+                            CustomText.read_variables_of_all_windows[self] += [procedure_parameter]
+                        elif procedure_parameter in main_window.interface_ports_text.writable_ports_list:
+                            # If a parameter is an output port, then it is written and
+                            # must be added to the variable text with a pseudo assignment:
+                            text += procedure_parameter + " <= ;"
+                        else:
+                            # If a parameter is neither an input nor an output, then the parameter is probably a signal.
+                            # But it is not clear if it is written or read and
+                            # to avoid false alarms it is added to both lists:
+                            CustomText.read_variables_of_all_windows[self] += [procedure_parameter]
+                            text += procedure_parameter + " <= ;"
+        return text
+
+    def _remove_procedure_name(self, procedure_call):
+        return re.sub(r"^.*?\s", "", procedure_call.lstrip())
 
     def __add_read_variables_from_with_select_blocks_to_read_variables_of_all_windows(self, text):
         if main_window.language.get() == "VHDL":
