@@ -338,8 +338,9 @@ class CustomText(tk.Text):
             "=>",  # something like "others =>"
             " [0-9]+ ",  # something like " 123 "
             "'.'",  # something like the std_logic value '1' or '0'
-            '\\s"[0-9,a-f,A-F]+"',  # something like " 1234AB"
             '[^\\s]"[0-9,a-f,A-F]+"',  # something like X"1234"
+            "'.*?'",  # Remove strings from report-commands (they might contain ';')
+            '".*?"',  # Remove strings from report-commands (they might contain ';')
         ):
             text = re.sub(keyword, "  ", text, flags=re.I)  # Keep the blanks the keyword is surrounded by.
         for keyword in constants.VHDL_KEYWORDS["datatype"]:

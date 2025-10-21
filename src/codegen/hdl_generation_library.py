@@ -880,8 +880,6 @@ def convert_hdl_lines_into_a_searchable_string(text):
     separated = re.sub("/  =", "/=", separated)  # restore this operator (comparison)
     separated = re.sub(":  =", ":=", separated)  # restore this operator (assignment)
     separated = re.sub("!  =", "!=", separated)  # restore this operator (comparison)
-    separated = re.sub("'.*?'", "", separated)  # Remove strings '...' from report-commands (they might contain ';')
-    separated = re.sub('".*?"', "", separated)  # Remove strings "..." from report-commands (they might contain ';')
     return separated
 
 
