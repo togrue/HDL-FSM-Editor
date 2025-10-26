@@ -255,11 +255,13 @@ def _update_state_name(text_id: int, text_box: tk.Entry) -> None:
     new_text = text_box.get()
     text_box.destroy()
     tags = main_window.canvas.gettags(text_id)
+    state_tag = ""
     for t in tags:
         if t.startswith("state"):  # Format of text_id tag: 'state' + str(state_number) + "_name"
             state_tag = t[:-5]
             _show_new_state_name(new_text, text_id)
             _resize_state(state_tag, text_id)
+    assert state_tag != "", "The state tag was not found. The model is corrupted."
     undo_handling.design_has_changed()
     main_window.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
     main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())

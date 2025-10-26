@@ -5,6 +5,7 @@ This module contains all method to support "undo" and "redo".
 import os
 import re
 import tkinter as tk
+from typing import Optional
 
 import canvas_editing
 import condition_action_handling
@@ -459,6 +460,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                     coords.append(v)
                 except ValueError:
                     tags.append(e)
+            trans_id: Optional[int] = None
             for t in tags:
                 if t.startswith("connected_to_transition"):  # line to condition&action block
                     trans_id = main_window.canvas.create_line(
@@ -472,7 +474,8 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                     trans_id = transition_handling.draw_transition(coords, tags)
                     main_window.canvas.tag_lower(trans_id)
                     break
-            main_window.canvas.tag_lower(trans_id)  # Lines are always "under" anything else.
+            if trans_id is not None:
+                main_window.canvas.tag_lower(trans_id)  # Lines are always "under" anything else.
         elif lines[_line_index].startswith("rectangle|"):  # Used as connector or as priority entry.
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "rectangle|")
             coords = []

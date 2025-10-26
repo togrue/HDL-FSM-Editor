@@ -182,18 +182,22 @@ def delete() -> None:
                 elif tag.startswith("connection"):  # connection<n>_start
                     connection = _remove_suffix(tag, "_start")
                     connection_tags = main_window.canvas.gettags(connection)
+                    state = ""
                     for connection_tag in connection_tags:
                         if connection_tag.startswith("connected_to_state"):
                             state = _remove_prefix(connection_tag, "connected_to_state")
+                    assert state != "", "The state tag was not found. The model is corrupted."
                     # delete tag "connection<n>_end" at state.
                     main_window.canvas.dtag(state, _remove_suffix(tag, "_start") + "_end")
                     main_window.canvas.delete(_remove_suffix(tag, "_start"))  # delete connection
                 elif tag.startswith("ca_connection"):  # ca_connection<n>_anchor
                     ca_connection = _remove_suffix(tag, "_anchor")
                     ca_connection_tags = main_window.canvas.gettags(ca_connection)
+                    transition = ""
                     for ca_connection_tag in ca_connection_tags:
                         if ca_connection_tag.startswith("connected_to_transition"):
                             transition = _remove_prefix(ca_connection_tag, "connected_to_transition")
+                    assert transition != "", "The transition tag was not found. The model is corrupted."
                     main_window.canvas.dtag(
                         transition, _remove_suffix(tag, "_anchor") + "_end"
                     )  # delete tag "ca_connection<n>_end" at state.
@@ -276,24 +280,28 @@ def delete() -> None:
                     main_window.canvas.delete(transition + "priority")  # delete priority
             design_was_changed = True
         elif main_window.canvas.type(i) == "line":  # transition
+            transition_tag = ""
             for tag in tags_of_item_i:
                 if tag.startswith("transition"):
                     main_window.canvas.delete(tag)  # delete transition
                     main_window.canvas.delete(tag + "rectangle")  # delete priority rectangle
                     main_window.canvas.delete(tag + "priority")  # delete priority
-                    transition = tag  # carries "transition<n>"
+                    transition_tag = tag  # carries "transition<n>"
                 elif tag.startswith("ca_connection"):  # Line to condition-action block
                     condition_action_tag = _remove_suffix(tag, "_end")
                     main_window.canvas.delete(condition_action_tag + "_anchor")
             # Now the tag of the transition is known and the tags of the start- and end-state can be adapted:
+            assert transition_tag != "", "The transition tag was not found. The model is corrupted."
+            start_state = None
             for tag in tags_of_item_i:
                 if tag.startswith("coming_from_"):
                     start_state = _remove_prefix(tag, "coming_from_")
-                    main_window.canvas.dtag(start_state, transition + "_start")
+                    main_window.canvas.dtag(start_state, transition_tag + "_start")
                 elif tag.startswith("going_to_"):
                     end_state = _remove_prefix(tag, "going_to_")
-                    main_window.canvas.dtag(end_state, transition + "_end")
-            adapt_visibility_of_priority_rectangles_at_state(start_state)
+                    main_window.canvas.dtag(end_state, transition_tag + "_end")
+            if start_state:
+                adapt_visibility_of_priority_rectangles_at_state(start_state)
             design_was_changed = True
         else:
             messagebox.showerror(

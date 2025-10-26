@@ -256,6 +256,8 @@ def _optimize_transition_specifications(transition_specifications: list[dict[str
 def _expand_transition_specifications_by_if_identifier(transition_specifications: list[dict[str, Any]]) -> None:
     if_identifier = 0
     if_identifier_max = 0
+    stack_of_if_identifier = []
+    stack_of_branch_number = []
     for transition_specification in transition_specifications:
         if transition_specification["command"] == "when":
             if_identifier_max = max(if_identifier_max, if_identifier)
@@ -266,9 +268,11 @@ def _expand_transition_specifications_by_if_identifier(transition_specifications
         elif transition_specification["command"] == "if":
             if_identifier += 1
             transition_specification["if_identifier"] = if_identifier
+            assert len(stack_of_if_identifier) > 0, "The stack of if_identifier is empty. The model is corrupted."
             stack_of_if_identifier.append(if_identifier)
             stack_of_branch_number.append(1)
         elif transition_specification["command"] == "endif":
+            assert len(stack_of_if_identifier) > 0, "The stack of if_identifier is empty. The model is corrupted."
             transition_specification["if_identifier"] = stack_of_if_identifier[-1]
             transition_specification["branch_number"] = stack_of_branch_number[
                 -1

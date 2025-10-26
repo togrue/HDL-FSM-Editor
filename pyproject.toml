@@ -70,6 +70,10 @@ warn_return_any = true
 warn_unreachable = true
 strict_equality = false
 
+enable_error_code = [
+    "possibly-undefined",
+]
+
 # Disable lambda type inference warnings
 disable_error_code = ["misc"]
 

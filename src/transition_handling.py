@@ -54,6 +54,7 @@ def move_to(
         event_x = canvas_editing.state_radius * round(event_x / canvas_editing.state_radius)
         event_y = canvas_editing.state_radius * round(event_y / canvas_editing.state_radius)
     all_transition_tags = main_window.canvas.gettags(transition_id)
+    transition_tag = ""
     for single_transition_tag in all_transition_tags:
         if (
             single_transition_tag.startswith("transition")
@@ -63,6 +64,7 @@ def move_to(
             transition_tag = single_transition_tag
             main_window.canvas.tag_lower(transition_tag)
     # Move transition:
+    assert transition_tag != "", "The transition tag was not found. The model is corrupted."
     transition_coords = main_window.canvas.coords(transition_tag)
     if point == "start":
         main_window.canvas.coords(transition_tag, event_x, event_y, *transition_coords[2:])
@@ -405,6 +407,7 @@ def transition_start(event: tk.Event) -> None:
                 or (element_type == "polygon" and _reset_entry_has_no_transition(canvas_id))
                 or (element_type == "rectangle" and main_window.canvas.gettags(canvas_id)[0].startswith("connector"))
             ):
+                tag_of_object_where_transition_starts = ""
                 for tag in main_window.canvas.gettags(canvas_id):
                     if (
                         (tag.startswith("state") and not tag.endswith("_comment_line_end"))
@@ -415,6 +418,9 @@ def transition_start(event: tk.Event) -> None:
                         main_window.canvas.addtag_withtag(
                             "transition" + str(transition_number) + "_start", tag_of_object_where_transition_starts
                         )
+                assert tag_of_object_where_transition_starts != "", (
+                    "The tag of the object where the transition starts was not found. The model is corrupted."
+                )
                 start_object_coords = main_window.canvas.coords(tag_of_object_where_transition_starts)
                 if element_type in ["oval", "rectangle"]:
                     line_start_x = start_object_coords[0] / 2 + start_object_coords[2] / 2
@@ -543,10 +549,12 @@ def _add_next_transition_point_(transition_id: int, coords: list[float], event_x
 def _add_tags_to_end_state_and_transition(end_state_canvas_id: int) -> None:
     main_window.canvas.addtag_withtag("transition" + str(transition_number) + "_end", end_state_canvas_id)
     state_tags = main_window.canvas.gettags(end_state_canvas_id)
+    end_state_tag = ""
     for tag in state_tags:
         if (tag.startswith("state") and not tag.endswith("_comment_line_end")) or tag.startswith("connector"):
             end_state_tag = tag
             break
+    assert end_state_tag != "", "The end state tag was not found. The model is corrupted."
     main_window.canvas.addtag_withtag("going_to_" + end_state_tag, "transition" + str(transition_number))
 
 
@@ -850,6 +858,7 @@ def _evaluate_menu(
         transition_tags = main_window.canvas.gettags(transition_id)
         start_state_radius = 0.0
         end_state_radius = 0.0
+        transition_tag = ""
         for tag in transition_tags:
             if tag.startswith("transition"):
                 transition_tag = tag
@@ -865,6 +874,7 @@ def _evaluate_menu(
                 end_state = tag.replace("going_to_", "")
                 end_state_coords = main_window.canvas.coords(end_state)
                 end_state_radius = abs(end_state_coords[2] - end_state_coords[0]) / 2
+        assert transition_tag != "", "The transition tag was not found. The model is corrupted."
         old_coords = main_window.canvas.coords(transition_id)
         new_coords = []
         new_coords.append(old_coords[0])
