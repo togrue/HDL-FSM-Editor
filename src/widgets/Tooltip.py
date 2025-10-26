@@ -99,6 +99,20 @@ class Tooltip:
         self.tooltip_window.attributes("-topmost", True)
         self.tooltip_window.update()
 
+    def _get_screen_bounds(self) -> tuple[int, int, int, int]:
+        """Get virtual root bounds for multi-monitor support.
+
+        Returns:
+            Tuple of (vroot_x, vroot_y, vroot_width, vroot_height)
+        """
+        root = self.widget.winfo_toplevel()
+        return (
+            root.winfo_vrootx(),
+            root.winfo_vrooty(),
+            root.winfo_vrootwidth(),
+            root.winfo_vrootheight(),
+        )
+
     def _position_tooltip_at_widget(self, x: int, y: int, width: int, height: int, label: tk.Label) -> None:
         """Position the tooltip relative to the widget."""
         assert self.tooltip_window is not None, "Tooltip window is not initialized"
@@ -107,30 +121,45 @@ class Tooltip:
         tooltip_width = self.tooltip_window.winfo_reqwidth()
         tooltip_height = self.tooltip_window.winfo_reqheight()
 
-        # Get the root window (parent window) for multi-monitor support
-        root = self.widget.winfo_toplevel()
-
         # Get virtual root bounds for multi-monitor support
-        vroot_x = root.winfo_vrootx()
-        vroot_y = root.winfo_vrooty()
-        vroot_width = root.winfo_vrootwidth()
-        vroot_height = root.winfo_vrootheight()
+        vroot_x, vroot_y, vroot_width, vroot_height = self._get_screen_bounds()
 
         # Calculate position (prefer below widget, centered horizontally)
         tooltip_x = x + (width - tooltip_width) // 2
         tooltip_y = y + height + 5
 
         # Adjust if tooltip would go off screen horizontally
-        if tooltip_x < vroot_x + 5:
-            tooltip_x = vroot_x + 5
-        elif tooltip_x + tooltip_width > vroot_x + vroot_width - 5:
-            tooltip_x = vroot_x + vroot_width - tooltip_width - 5
+        tooltip_x = self._clamp_horizontal_position(tooltip_x, tooltip_width, vroot_x, vroot_width)
 
         # If tooltip would go below screen, position above widget
         if tooltip_y + tooltip_height > vroot_y + vroot_height - 5:
             tooltip_y = y - tooltip_height - 5
 
-        # Use withdraw/deiconify approach for reliable positioning
+        # Ensure vertical position is within bounds
+        tooltip_y = self._clamp_vertical_position(tooltip_y, tooltip_height, vroot_y, vroot_height)
+
+        # Apply the tooltip position
+        self._apply_tooltip_position(tooltip_width, tooltip_height, tooltip_x, tooltip_y)
+
+    def _clamp_horizontal_position(self, tooltip_x: int, tooltip_width: int, vroot_x: int, vroot_width: int) -> int:
+        """Clamp tooltip horizontal position to stay within screen bounds."""
+        if tooltip_x < vroot_x + 5:
+            tooltip_x = vroot_x + 5
+        elif tooltip_x + tooltip_width > vroot_x + vroot_width - 5:
+            tooltip_x = vroot_x + vroot_width - tooltip_width - 5
+        return tooltip_x
+
+    def _clamp_vertical_position(self, tooltip_y: int, tooltip_height: int, vroot_y: int, vroot_height: int) -> int:
+        """Clamp tooltip vertical position to stay within screen bounds."""
+        if tooltip_y < vroot_y + 5:
+            tooltip_y = vroot_y + 5
+        elif tooltip_y + tooltip_height > vroot_y + vroot_height - 5:
+            tooltip_y = vroot_y + vroot_height - tooltip_height - 5
+        return tooltip_y
+
+    def _apply_tooltip_position(self, tooltip_width: int, tooltip_height: int, tooltip_x: int, tooltip_y: int) -> None:
+        """Apply tooltip position using withdraw/deiconify approach for reliable positioning."""
+        assert self.tooltip_window is not None, "Tooltip window is not initialized"
         self.tooltip_window.withdraw()
         self.tooltip_window.geometry(f"{tooltip_width}x{tooltip_height}+{tooltip_x}+{tooltip_y}")
         self.tooltip_window.deiconify()
@@ -143,37 +172,27 @@ class Tooltip:
         tooltip_width = self.tooltip_window.winfo_reqwidth()
         tooltip_height = self.tooltip_window.winfo_reqheight()
 
-        # Get the root window (parent window) for multi-monitor support
-        root = self.widget.winfo_toplevel()
-
         # Get virtual root bounds for multi-monitor support
-        vroot_x = root.winfo_vrootx()
-        vroot_y = root.winfo_vrooty()
-        vroot_width = root.winfo_vrootwidth()
-        vroot_height = root.winfo_vrootheight()
+        vroot_x, vroot_y, vroot_width, vroot_height = self._get_screen_bounds()
 
         # Calculate position (beside cursor with small offset)
         tooltip_x = self.mouse_x + 10
         tooltip_y = self.mouse_y + 10
 
-        # Adjust if tooltip would go off screen horizontally
+        # Adjust if tooltip would go off screen horizontally - flip to left side if needed
         if tooltip_x + tooltip_width > vroot_x + vroot_width - 5:
             tooltip_x = self.mouse_x - tooltip_width - 10
 
-        # Adjust if tooltip would go off screen vertically
+        # Adjust if tooltip would go off screen vertically - flip above if needed
         if tooltip_y + tooltip_height > vroot_y + vroot_height - 5:
             tooltip_y = self.mouse_y - tooltip_height - 10
 
-        # Ensure tooltip doesn't go off screen on the left or top
-        if tooltip_x < vroot_x + 5:
-            tooltip_x = vroot_x + 5
-        if tooltip_y < vroot_y + 5:
-            tooltip_y = vroot_y + 5
+        # Clamp to ensure tooltip doesn't go off screen on any side
+        tooltip_x = self._clamp_horizontal_position(tooltip_x, tooltip_width, vroot_x, vroot_width)
+        tooltip_y = self._clamp_vertical_position(tooltip_y, tooltip_height, vroot_y, vroot_height)
 
-        # Use withdraw/deiconify approach for reliable positioning
-        self.tooltip_window.withdraw()
-        self.tooltip_window.geometry(f"{tooltip_width}x{tooltip_height}+{tooltip_x}+{tooltip_y}")
-        self.tooltip_window.deiconify()
+        # Apply the tooltip position
+        self._apply_tooltip_position(tooltip_width, tooltip_height, tooltip_x, tooltip_y)
 
     def _hide(self, event: tk.Event) -> None:
         """Hide the tooltip and cancel any scheduled show."""
