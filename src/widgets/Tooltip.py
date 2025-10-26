@@ -18,7 +18,7 @@ class Tooltip:
         positioning_mode: How to position the tooltip - 'widget' (default) or 'cursor'
     """
 
-    def __init__(self, widget: tk.Widget, text: str, delay: int = 1000, positioning_mode: str = "widget") -> None:
+    def __init__(self, widget: tk.Widget, text: str, delay: int = 1000, positioning_mode: str = "cursor") -> None:
         self.widget = widget
         self.text = text
         self.delay = delay
