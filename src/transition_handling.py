@@ -438,7 +438,7 @@ def transition_start(event: tk.Event) -> None:
                     "<Motion>",
                     lambda event, tid=transition_id: _transition_continue(event, tid),
                     add="+",
-                )  # type: ignore
+                )  # type: ignore[call-overload]
                 main_window.canvas.bind(
                     "<Button-1>",
                     lambda event,

@@ -53,7 +53,7 @@ def move_initialization(event: tk.Event) -> None:
             "<Motion>",
             lambda motion_event, move_list=move_list: move_handling.move_do(motion_event, move_list, first=False),
             add="+",
-        )  # type: ignore
+        )  # type: ignore[call-overload]
         # Must be "added", as store_mouse_position is already bound to "Motion".
         main_window.canvas.bind(
             "<ButtonRelease-1>",

@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from tkinter import simpledialog, ttk
 from typing import Optional, Union
 
+from typing_extensions import override
+
 
 @dataclass
 class RegexConfig:
@@ -59,6 +61,7 @@ class RegexDialog(simpledialog.Dialog):
             style.configure("InvalidRegex.TEntry", fieldbackground="#ffcccc")
             self.pattern_entry.configure(style="InvalidRegex.TEntry")
 
+    @override
     def body(self, master: tk.Frame) -> Optional[tk.Widget]:
         """Create the dialog body. Return the widget that should have initial focus."""
         # Header
@@ -115,6 +118,7 @@ class RegexDialog(simpledialog.Dialog):
 
         return self.pattern_entry  # Return widget that should have initial focus
 
+    @override
     def apply(self) -> None:
         """Process the dialog data and set the result."""
         self.result = RegexConfig(

@@ -4,6 +4,8 @@ Constants for all modules of HDL-FSM-Editor
 
 from enum import Enum
 
+from typing_extensions import override
+
 # The application name effects the path to the settings file.
 APP_NAME = "HDL-FSM-Editor"
 
@@ -464,5 +466,6 @@ class GuiTab(str, Enum):
     GENERATED_HDL = "Generated HDL"
     COMPILE_MSG = "Compile Messages"
 
+    @override
     def __str__(self) -> str:
         return self.value

@@ -72,6 +72,16 @@ strict_equality = false
 
 enable_error_code = [
     "possibly-undefined",
+    "type-arg",
+    "redundant-cast",
+    "no-untyped-def",
+    "no-any-return",
+    "unreachable",
+    "deprecated",
+    "redundant-expr",
+    "ignore-without-code",
+    "unused-ignore",
+    "explicit-override",
 ]
 
 # Disable lambda type inference warnings

@@ -111,7 +111,7 @@ def _create_state_action_process_for_vhdl(
         file_line_number += 1  # A when_entry starts always with "when ..."
         number_of_lines = when_entry.count("\n")
 
-        widget_reference: Optional[tk.Widget] = state_action[2]  # type: ignore
+        widget_reference: Optional[tk.Widget] = state_action[2]  # type: ignore[assignment]
         if isinstance(widget_reference, tk.Widget):
             # Link only, if we have a widget to link to
             link_dict().add(
@@ -182,7 +182,7 @@ def _create_state_action_process_for_verilog(
         else:
             file_line_number += 1  # A when_entry starts always with "<State-Name: ..."
             # TODO: introduce a state_action type and remove the type: ignore
-            widget_reference: Optional[tk.Widget] = state_action[2]  # type: ignore
+            widget_reference: Optional[tk.Widget] = state_action[2]  # type: ignore[assignment]
             if isinstance(widget_reference, tk.Widget):
                 # Link only, if we have a widget to link to
                 link_dict().add(
