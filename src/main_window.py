@@ -542,7 +542,7 @@ def create_control_notebook_tab() -> None:
     working_directory_entry = ttk.Entry(control_frame, textvariable=working_directory_value, width=80)
     Tooltip(
         working_directory_entry,
-        "Set the working directory for compilation and execution. If empty, uses the directory "
+        "Set the working directory for compilation and execution.\n If empty, uses the directory "
         "containing the generated HDL files. Useful for project-specific build environments.",
     )
     working_directory_button = ttk.Button(
@@ -561,8 +561,8 @@ def create_control_notebook_tab() -> None:
     diagram_background_color_entry = ttk.Entry(control_frame, textvariable=diagram_background_color, width=80)
     Tooltip(
         diagram_background_color_entry,
-        "Set the background color for the FSM diagram. Use color names (e.g., 'white', 'lightgray') "
-        "or hex codes (e.g., '#ffffff').",
+        "The background color for the FSM diagram.\n"
+        "Use color names or hex codes (e.g., 'white', 'lightgray', '#ffffff').",
     )
     diagram_background_color_button = ttk.Button(
         control_frame, text="Choose color...", command=choose_bg_color, style="Path.TButton"
@@ -628,7 +628,10 @@ def create_interface_notebook_tab() -> None:
     )
     Tooltip(
         _interface_package_label,
-        "Packages are used to define the library and use statements for the VHDL code.\n\nExample:\n\nlibrary ieee;\nuse ieee.std_logic_1164.all;",
+        "The packages and use statements section required for the entity declaration of the VHDL code.\n\n"
+        "Example:\n\n"
+        "library ieee;\n"
+        "use ieee.std_logic_1164.all;",
     )
     interface_package_text.insert("1.0", "library ieee;\nuse ieee.std_logic_1164.all;")
     interface_package_text.update_highlight_tags(
@@ -656,7 +659,10 @@ def create_interface_notebook_tab() -> None:
     _interface_generics_label = ttk.Label(interface_generics_frame, text="Generics: 🛈", padding=5)
     Tooltip(
         _interface_generics_label,
-        "The generic parameters for the entity.\n\nExample:\n\ng_width : integer := 8;\ng_special_feature : boolean := true;\n\n"
+        "The generic parameters for the entity.\n\n"
+        "Example:\n\n"
+        "g_width : integer := 8;\n"
+        "g_special_feature : boolean := true;\n\n"
         "Little feature: You can keep the last semicolon at the end.",
     )
     interface_generics_info = ttk.Label(interface_generics_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5)
@@ -683,8 +689,16 @@ def create_interface_notebook_tab() -> None:
     interface_ports_frame.columnconfigure(1, weight=0)
     interface_ports_frame.rowconfigure(0, weight=0)
     interface_ports_frame.rowconfigure(1, weight=1)
-    _interface_ports_label = ttk.Label(interface_ports_frame, text="Ports:", padding=5)
-    Tooltip(_interface_ports_label, "")
+    _interface_ports_label = ttk.Label(interface_ports_frame, text="Ports: 🛈", padding=5)
+    Tooltip(
+        _interface_ports_label,
+        "The ports section for the VHDL code.\n\n"
+        "Example:\n\n"
+        "signal clk_i : std_logic;\n"
+        "signal reset_i : std_logic;\n"
+        "signal start_i : std_logic;\n"
+        "signal pulse_o : std_logic;\n",
+    )
     interface_ports_info = ttk.Label(interface_ports_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5)
     interface_ports_text = custom_text.CustomText(
         interface_ports_frame, text_type="ports", height=3, width=10, undo=True, font=("Courier", 10)
@@ -724,8 +738,16 @@ def create_internals_notebook_tab() -> None:
     _internals_package_frame.columnconfigure(1, weight=0)
     _internals_package_frame.rowconfigure(0, weight=0)
     _internals_package_frame.rowconfigure(1, weight=1)
-    _internals_package_label = ttk.Label(_internals_package_frame, text="Packages:", padding=5)
-    Tooltip(_internals_package_label, "")
+    _internals_package_label = ttk.Label(_internals_package_frame, text="Packages: 🛈", padding=5)
+    Tooltip(
+        _internals_package_label,
+        "The packages and use statements section required for the architecture of the VHDL code.\n\n"
+        "Example:\n\n"
+        "library ieee;\n"
+        "use ieee.std_logic_1164.all;\n"
+        "use ieee.numeric_std.all;\n"
+        "use work.my_package.all;",
+    )
     interface_package_info = ttk.Label(_internals_package_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5)
     internals_package_text = custom_text.CustomText(
         _internals_package_frame, text_type="package", height=3, width=10, undo=True, font=("Courier", 10)
@@ -750,9 +772,16 @@ def create_internals_notebook_tab() -> None:
     internals_architecture_frame.rowconfigure(0, weight=0)
     internals_architecture_frame.rowconfigure(1, weight=1)
     _internals_architecture_label = ttk.Label(
-        internals_architecture_frame, text="Architecture Declarations:", padding=5
+        internals_architecture_frame, text="Architecture Declarations: 🛈", padding=5
     )
-    Tooltip(_internals_architecture_label, "")
+    Tooltip(
+        _internals_architecture_label,
+        "Declarations put before the 'begin' of an architecture.\n"
+        "These are accessible in the whole architecture.\n\n"
+        "Example:\n"
+        "signal counter: natural 0 to 32;\n\n"
+        "Note: The state and the state type are generated automatically.",
+    )
     interface_architecture_info = ttk.Label(
         internals_architecture_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5
     )
@@ -785,9 +814,12 @@ def create_internals_notebook_tab() -> None:
     internals_process_clocked_frame.rowconfigure(0, weight=0)
     internals_process_clocked_frame.rowconfigure(1, weight=1)
     _internals_process_clocked_label = ttk.Label(
-        internals_process_clocked_frame, text="Variable Declarations for clocked process:", padding=5
+        internals_process_clocked_frame, text="Variable Declarations for clocked process: 🛈", padding=5
     )
-    Tooltip(_internals_process_clocked_label, "")
+    Tooltip(
+        _internals_process_clocked_label,
+        "Variable declarations for the clocked process.\n\nExample:\n\nvariable count_v: natural 0 to 15 := 0;",
+    )
     interface_process_clocked_info = ttk.Label(
         internals_process_clocked_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5
     )
@@ -826,7 +858,12 @@ def create_internals_notebook_tab() -> None:
     _internals_process_combinatorial_label = ttk.Label(
         internals_process_combinatorial_frame, text="Variable Declarations for combinatorial process:", padding=5
     )
-    Tooltip(_interface_ports_label, "")
+    Tooltip(
+        _interface_ports_label,
+        "Variable declarations for the combinatorial process.\n\n"
+        "Example:\n\n"
+        "variable mask: std_logic_vector(7 downto 0) := (others => '0');\n\n",
+    )
     interface_process_combinatorial_info = ttk.Label(
         internals_process_combinatorial_frame, text="Undo/Redo: Ctrl-z/Ctrl-Z,Ctrl-y", padding=5
     )
