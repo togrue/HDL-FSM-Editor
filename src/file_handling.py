@@ -378,7 +378,9 @@ def open_file_with_name_new(read_filename: str, is_script_mode: bool) -> None:
             main_window.date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
             main_window.date_of_hdl_file2_shown_in_hdl_tab = update_ref.get_date_of_hdl_file2()
             main_window.show_tab(GuiTab.DIAGRAM)
-            main_window.root.after_idle(canvas_editing.view_all)
+            # Wait for the layout to be calculated and then call view_all,
+            # Hopefully 100 ms are enough on all machines. At least they are not noticeable.
+            main_window.root.after_idle(lambda: main_window.root.after(100, canvas_editing.view_all))
         main_window.root.config(cursor="arrow")
         if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
             if is_script_mode:
