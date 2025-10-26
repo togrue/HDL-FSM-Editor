@@ -113,6 +113,66 @@ class Tooltip:
             root.winfo_vrootheight(),
         )
 
+    def _get_monitor_bounds_for_position(self, tooltip_x: int, tooltip_y: int) -> tuple[int, int, int, int]:
+        """Get the bounds of the monitor containing the given tooltip position.
+
+        Strategy: Detect which monitor contains the position by dividing the virtual
+        root into equal-sized monitors. This estimates monitor positions based on
+        the virtual root dimensions.
+
+        Args:
+            tooltip_x: X coordinate where tooltip will be positioned (screen coordinates)
+            tooltip_y: Y coordinate where tooltip will be positioned (screen coordinates)
+
+        Returns:
+            Tuple of (monitor_x, monitor_y, monitor_width, monitor_height)
+        """
+        root = self.widget.winfo_toplevel()
+
+        # Get virtual root bounds (spans all monitors)
+        vroot_x = root.winfo_vrootx()
+        vroot_y = root.winfo_vrooty()
+        vroot_width = root.winfo_vrootwidth()
+        vroot_height = root.winfo_vrootheight()
+
+        # Get primary screen dimensions
+        primary_width = root.winfo_screenwidth()
+        primary_height = root.winfo_screenheight()
+
+        # Calculate how many monitors exist horizontally
+        # Assume all monitors have the same dimensions (common case)
+        num_monitors_horizontal = max(1, round(vroot_width / primary_width) if primary_width > 0 else 1)
+        num_monitors_vertical = max(1, round(vroot_height / primary_height) if primary_height > 0 else 1)
+
+        # Estimate which monitor the tooltip is on
+        rel_x = tooltip_x - vroot_x  # Position relative to virtual root
+        rel_y = tooltip_y - vroot_y
+
+        # Clamp to virtual root bounds
+        rel_x = max(0, min(rel_x, vroot_width - 1))
+        rel_y = max(0, min(rel_y, vroot_height - 1))
+
+        # Calculate which monitor this position falls into
+        monitor_idx_x = min(int(rel_x / primary_width), num_monitors_horizontal - 1) if primary_width > 0 else 0
+        monitor_idx_y = min(int(rel_y / primary_height), num_monitors_vertical - 1) if primary_height > 0 else 0
+
+        # Calculate the bounds of this specific monitor
+        monitor_x = vroot_x + (monitor_idx_x * primary_width)
+        monitor_y = vroot_y + (monitor_idx_y * primary_height)
+        monitor_width = primary_width
+        monitor_height = primary_height
+
+        print(
+            f"tooltip position: ({tooltip_x}, {tooltip_y})\n"
+            f"vroot: ({vroot_x}, {vroot_y}) {vroot_width}x{vroot_height}\n"
+            f"primary screen: {primary_width}x{primary_height}\n"
+            f"num monitors: {num_monitors_horizontal}x{num_monitors_vertical}\n"
+            f"monitor indices: [{monitor_idx_x}, {monitor_idx_y}]\n"
+            f"monitor bounds: ({monitor_x}, {monitor_y}) {monitor_width}x{monitor_height}"
+        )
+
+        return (monitor_x, monitor_y, monitor_width, monitor_height)
+
     def _position_tooltip_at_widget(self, x: int, y: int, width: int, height: int, label: tk.Label) -> None:
         """Position the tooltip relative to the widget."""
         assert self.tooltip_window is not None, "Tooltip window is not initialized"
@@ -128,15 +188,19 @@ class Tooltip:
         tooltip_x = x + (width - tooltip_width) // 2
         tooltip_y = y + height + 5
 
-        # Adjust if tooltip would go off screen horizontally
-        tooltip_x = self._clamp_horizontal_position(tooltip_x, tooltip_width, vroot_x, vroot_width)
-
         # If tooltip would go below screen, position above widget
         if tooltip_y + tooltip_height > vroot_y + vroot_height - 5:
             tooltip_y = y - tooltip_height - 5
 
-        # Ensure vertical position is within bounds
-        tooltip_y = self._clamp_vertical_position(tooltip_y, tooltip_height, vroot_y, vroot_height)
+        # Get monitor bounds for the calculated tooltip position
+        # This ensures we clamp to the actual screen the tooltip will be on
+        monitor_x, monitor_y, monitor_width, monitor_height = self._get_monitor_bounds_for_position(
+            tooltip_x, tooltip_y
+        )
+
+        # Clamp to the monitor bounds
+        tooltip_x = self._clamp_horizontal_position(tooltip_x, tooltip_width, monitor_x, monitor_width)
+        tooltip_y = self._clamp_vertical_position(tooltip_y, tooltip_height, monitor_y, monitor_height)
 
         # Apply the tooltip position
         self._apply_tooltip_position(tooltip_width, tooltip_height, tooltip_x, tooltip_y)
@@ -187,9 +251,15 @@ class Tooltip:
         if tooltip_y + tooltip_height > vroot_y + vroot_height - 5:
             tooltip_y = self.mouse_y - tooltip_height - 10
 
+        # Get monitor bounds for the calculated tooltip position
+        # This ensures we clamp to the actual screen the tooltip will be on
+        monitor_x, monitor_y, monitor_width, monitor_height = self._get_monitor_bounds_for_position(
+            tooltip_x, tooltip_y
+        )
+
         # Clamp to ensure tooltip doesn't go off screen on any side
-        tooltip_x = self._clamp_horizontal_position(tooltip_x, tooltip_width, vroot_x, vroot_width)
-        tooltip_y = self._clamp_vertical_position(tooltip_y, tooltip_height, vroot_y, vroot_height)
+        tooltip_x = self._clamp_horizontal_position(tooltip_x, tooltip_width, monitor_x, monitor_width)
+        tooltip_y = self._clamp_vertical_position(tooltip_y, tooltip_height, monitor_y, monitor_height)
 
         # Apply the tooltip position
         self._apply_tooltip_position(tooltip_width, tooltip_height, tooltip_x, tooltip_y)
