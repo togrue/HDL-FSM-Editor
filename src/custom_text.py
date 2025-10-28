@@ -437,7 +437,7 @@ class CustomText(tk.Text):
 
     def __remove_keywords_from_vhdl(self, text):
         for keyword in constants.VHDL_KEYWORDS_FOR_SIGNAL_HANDLING + (
-            " process.*?begin ",  # Remove complete process headers, if some exist.
+            " process[^;]*?begin ",  # Remove complete process headers, if some exist.
             " end\\s+?process\\s*?;",  # remove end of process, before ...
             " process .*?$",  # ... when not complete process headers exist, remove until a return is found.
             " end\\s+?case\\s*?;",
