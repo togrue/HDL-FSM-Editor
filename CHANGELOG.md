@@ -13,6 +13,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Fixed
 ## Security
 
+## [5.7]
+## Added
+- Support of VHDL procedures for linting
+- Support of several signal declarations in 1 line
+- Linting for user defined processes in "Global Actions Combinatorial"
+- At reading from a hfe-file now a existing ".tmp" file is always removed.
+## Changed
+- In batch mode the warning about a wrong state order is now printed at STDOUT and not in a pop up dialog.
+- In batch mode warnings during file read are now printed at STDOUT instead in pop up dialogs.
+- In batch mode the warning about a wrong state order is now printed at STDOUT and not in a pop up dialog.
+- The timestamp checkbox was moved into the "Select for generation" line.
+## Deprecated
+## Removed
+## Fixed
+- Delete state and delete state-action did not work since version 5.5
+- Signal names containing the string "end_" where sometimes highlighted in a wrong way.
+- After changing an text by an external editor and saving the design, leaving a block with the mouse pointer signaled "design has changed".
+- Linting highlighted 'x' in expressions like x"12AB" red.
+- A start from command line with file-parameter does not activate script-mode anymore.
+- Change detection in "global actions combinatorial" signaled design change too often
+## Security
+
 ## [5.6]
 ## Added
 - When the project file is read/written now the cursor changes its shape (visible only if the file operation is slow).
