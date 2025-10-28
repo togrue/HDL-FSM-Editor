@@ -353,6 +353,8 @@ def open_file_with_name_new(read_filename, is_script_mode) -> None:
         project_manager.current_file = read_filename
         design_dictionary = json.loads(data)
         _load_design_from_dict(design_dictionary)
+        if os.path.isfile(f"{read_filename}.tmp") and not is_script_mode:
+            os.remove(f"{read_filename}.tmp")
 
         # Final cleanup
         undo_handling.stack = []
