@@ -372,20 +372,33 @@ def create_control_notebook_tab() -> None:
     control_frame.columnconfigure((2, 1), weight=1)
     control_frame.columnconfigure((2, 2), weight=0)
 
-    select_file_number_text = tk.IntVar()
-    select_file_number_text.set(2)
     _select_file_number_label = ttk.Label(control_frame, text="Select for generation:", padding=5)
     _select_file_number_frame = ttk.Frame(control_frame)
+    _select_file_number_label.grid(row=3, column=0, sticky=tk.W)
+    _select_file_number_frame.grid(row=3, column=1, sticky=(tk.W, tk.E))
+    control_frame.columnconfigure((3, 0), weight=0)
+    control_frame.columnconfigure((3, 1), weight=1)
+
+    select_file_number_text = tk.IntVar()
+    select_file_number_text.set(2)
     select_file_number_radio_button1 = ttk.Radiobutton(
         _select_file_number_frame, takefocus=False, variable=select_file_number_text, text="1 file", value=1
     )
     select_file_number_radio_button2 = ttk.Radiobutton(
         _select_file_number_frame, takefocus=False, variable=select_file_number_text, text="2 files", value=2
     )
-    _select_file_number_label.grid(row=3, column=0, sticky=tk.W)
-    _select_file_number_frame.grid(row=3, column=1, sticky=tk.W)
+    include_timestamp_in_output = tk.BooleanVar(value=True)
+    include_timestamp_in_output.trace_add("write", lambda *args: undo_handling.update_window_title())
+    include_timestamp_checkbox = ttk.Checkbutton(_select_file_number_frame, variable=include_timestamp_in_output)
+    include_timestamp_label = ttk.Label(_select_file_number_frame, text="Include timestamp in generated HDL files")
     select_file_number_radio_button1.grid(row=0, column=1, sticky=tk.W)
     select_file_number_radio_button2.grid(row=0, column=2, sticky=tk.W)
+    include_timestamp_checkbox.grid(row=0, column=2, sticky=tk.E)
+    include_timestamp_label.grid(row=0, column=3, sticky=tk.E)
+    _select_file_number_frame.columnconfigure((0, 0), weight=0)
+    _select_file_number_frame.columnconfigure((0, 1), weight=0)
+    _select_file_number_frame.columnconfigure((0, 2), weight=1)
+    _select_file_number_frame.columnconfigure((0, 3), weight=0)
 
     reset_signal_name = tk.StringVar()
     reset_signal_name.set("")
@@ -479,16 +492,6 @@ def create_control_notebook_tab() -> None:
     control_frame.columnconfigure((12, 0), weight=0)
     control_frame.columnconfigure((12, 1), weight=1)
     control_frame.columnconfigure((12, 2), weight=0)
-
-    include_timestamp_label = ttk.Label(control_frame, text="Include timestamp in generated HDL files:", padding=5)
-    include_timestamp_in_output = tk.BooleanVar(value=True)
-    include_timestamp_in_output.trace_add("write", lambda *args: undo_handling.update_window_title())
-    include_timestamp_checkbox = ttk.Checkbutton(control_frame, variable=include_timestamp_in_output, padding=5)
-    include_timestamp_label.grid(row=13, column=0, sticky=tk.W)
-    include_timestamp_checkbox.grid(row=13, column=1, sticky=tk.W)
-    control_frame.columnconfigure((13, 0), weight=0)
-    control_frame.columnconfigure((13, 1), weight=1)
-    control_frame.columnconfigure((13, 2), weight=0)
 
     notebook.add(control_frame, sticky="nsew", text=GuiTab.CONTROL.value)
 
@@ -1133,7 +1136,7 @@ def switch_language_mode() -> None:
         # enable 2 files mode
         select_file_number_text.set(2)
         _select_file_number_label.grid(row=3, column=0, sticky=tk.W)
-        _select_file_number_frame.grid(row=3, column=1, sticky=tk.W)
+        _select_file_number_frame.grid(row=3, column=1, sticky=(tk.W, tk.E))
         # Interface: Adapt documentation for generics and ports
         paned_window_interface.insert(0, _interface_package_frame, weight=1)
         _interface_generics_label.config(text="Generics:")
