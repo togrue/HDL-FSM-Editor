@@ -14,6 +14,7 @@ import codegen.hdl_generation_library as hdl_generation_library
 import config
 import constants
 import file_handling
+import global_actions_combinatorial
 import linting
 import main_window
 
@@ -47,7 +48,7 @@ class CustomText(tk.Text):
             "<Key>", lambda event: self.format_after_idle()
         )  # This binding will be overwritten for the CustomText objects in Interface/Internals tab.
         self.bind("<Button-1>", lambda event: self.tag_delete("highlight"))
-        self.signals_list = []
+        self.signals_list = []  # Will be updated at file-read, key-event, undo/redo if text_type is a declaration.
         self.constants_list = []
         self.readable_ports_list = []
         self.writable_ports_list = []
@@ -266,6 +267,10 @@ class CustomText(tk.Text):
         CustomText.written_variables_of_all_windows[self] = []
         text = self.get("1.0", tk.END + "- 1 chars")
         text = hdl_generation_library.convert_hdl_lines_into_a_searchable_string(text)
+        if main_window.language.get() == "VHDL":
+            text = self._remove_loop_indices(text)
+        if main_window.language.get() == "VHDL" and self._text_is_global_actions_combinatorial():
+            text = self._add_uncomplete_vhdl_variables_to_read_or_written_variables_of_all_windows(text)
         text = self.__remove_keywords(text)
         if main_window.language.get() == "VHDL":
             text = re.sub(r"\..*?\s", " ", text)  # remove all record-element-names from their signal/variable names
@@ -309,6 +314,120 @@ class CustomText(tk.Text):
             if ":=" in CustomText.written_variables_of_all_windows[self]:
                 CustomText.written_variables_of_all_windows[self].remove(":=")
 
+    def _text_is_global_actions_combinatorial(self):
+        list_of_canvas_id = main_window.canvas.find_withtag("global_actions_combinatorial1")
+        if list_of_canvas_id:
+            canvas_id = list_of_canvas_id[0]
+            if global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[canvas_id].text_id == self:
+                return True
+        return False
+
+    def _remove_loop_indices(self, text):
+        # Suchen nach "for   in"
+        search_for_loop_indizes = r"\sfor\s+(.+?)\s+in\s"
+        while True:
+            match = re.search(search_for_loop_indizes, text, flags=re.IGNORECASE)
+            if match:
+                if match.start() == match.end():
+                    break
+                # print("match found =", match.group(0) + "|")
+                # print("index found =", match.group(1) + "|")
+                text = text[: match.start()] + text[match.end() :]
+                search_for_index = " " + match.group(1) + " "
+                text = re.sub(search_for_index, " ", text)
+            else:
+                break
+        return text
+
+    def _add_uncomplete_vhdl_variables_to_read_or_written_variables_of_all_windows(self, text):
+        text_before_process_list, process_list, remaining_text = self._split(text)
+        for p_number, process in enumerate(process_list):
+            process, all_variable_names = self._remove_variable_declarations(process)
+            process, written_variables = self._remove_written_variables(process, all_variable_names)
+            process, read_variables = self._remove_read_variables(process, all_variable_names)
+            process_list[p_number] = process
+            self._check_variables(all_variable_names, written_variables, read_variables)
+        new_text = ""
+        for i, text_before in enumerate(text_before_process_list):
+            new_text += text_before + process_list[i]
+        return new_text + remaining_text
+
+    def _split(self, text):
+        process_list = []
+        search_for_processes = r"process(\s|\().*?\sbegin\s.*?\send\s+process(\s*;|\s.*?;)"
+        text_before_process_list = []
+        while True:
+            match = re.search(search_for_processes, text, flags=re.IGNORECASE)
+            if match:
+                if match.start() == match.end():
+                    break
+                text_before_process_list.append(text[: match.start()])
+                process_list.append(text[match.start() : match.end()])
+                text = text[match.end() :]  # remove before-match and match from text
+            else:
+                break
+        return text_before_process_list, process_list, text
+
+    def _remove_variable_declarations(self, process):
+        all_variable_names = []
+        search_for_variable_declaration = r"\svariable\s+(.*?):.*?;"
+        while True:
+            match = re.search(search_for_variable_declaration, process, flags=re.IGNORECASE)
+            if match:
+                if match.start() == match.end():
+                    break
+                all_variable_names.append(match.group(1).strip())
+                process = process[: match.start()] + " " + process[match.end() :]  # remove declaration from process
+            else:
+                break
+        return process, all_variable_names
+
+    def _remove_written_variables(self, process, all_variable_names):
+        written_variables = []
+        for variable_name in all_variable_names:
+            search_for_assignment_to_variable = rf"\s{variable_name}\s*:="
+            while True:
+                match = re.search(search_for_assignment_to_variable, process, flags=re.IGNORECASE)
+                if match:
+                    if match.start() == match.end():
+                        break
+                    process = (
+                        process[: match.start()] + " " + process[match.end() - 2 :]
+                    )  # remove assigned variable-name from process (without ":=")
+                    written_variables.append(variable_name)
+                else:
+                    break
+        written_variables = list(set(written_variables))  # remove duplicates
+        return process, written_variables
+
+    def _remove_read_variables(self, process, all_variable_names):
+        read_variables = []
+        for variable_name in all_variable_names:
+            search_for_reading_of_variable = rf"\s{variable_name}\s*"
+            while True:
+                match = re.search(search_for_reading_of_variable, process, flags=re.IGNORECASE)
+                if match:
+                    if match.start() == match.end():
+                        break
+                    process = (
+                        process[: match.start()] + " " + process[match.end() :]
+                    )  # remove assigned variable-name from process
+                    read_variables.append(variable_name)
+                else:
+                    break
+        read_variables = list(set(read_variables))  # remove duplicates
+        return process, read_variables
+
+    def _check_variables(self, all_variable_names, written_variables, read_variables):
+        for variable_name in all_variable_names:
+            if variable_name not in written_variables + read_variables or variable_name not in written_variables:
+                CustomText.read_variables_of_all_windows[self] += [variable_name]  # will be colored red
+            else:
+                CustomText.written_variables_of_all_windows[self] += [variable_name]  # will be colored yellow
+        for read_or_written_variable in written_variables + read_variables:
+            if read_or_written_variable not in all_variable_names:
+                CustomText.read_variables_of_all_windows[self] += [read_or_written_variable]  # will be colored red
+
     def __remove_keywords(self, text):
         if main_window.language.get() == "VHDL":
             text = self.__remove_keywords_from_vhdl(text)
@@ -337,7 +456,7 @@ class CustomText(tk.Text):
             "&",
             "=>",  # something like "others =>"
             " [0-9]+ ",  # something like " 123 "
-            "'.'",  # something like the std_logic value '1' or '0'
+            "' . '",  # something like the std_logic value ' 1 ' or ' 0 '
             '[^\\s]"[0-9,a-f,A-F]+"',  # something like X"1234"
             "'.*?'",  # Remove strings from report-commands (they might contain ';')
             '".*?"',  # Remove strings from report-commands (they might contain ';')
@@ -389,11 +508,8 @@ class CustomText(tk.Text):
             all_procedure_calls = []
             search_for_not_assignments = "^[^=]*?;"
             while True:
-                # print("text =", text)
-                # match = re.search(r"^[^=]*?;", text, flags=re.IGNORECASE)
                 match = re.search(search_for_not_assignments, text, flags=re.IGNORECASE)
                 if match:
-                    # print("group 0 =", match.group(0))
                     if match.start() == match.end():
                         break
                     all_procedure_calls.append(match.group(0)[:-1])  # append without semicolon
@@ -401,10 +517,8 @@ class CustomText(tk.Text):
                 else:
                     break
             for procedure_call in all_procedure_calls:
-                # print("procedure_call =", "|" + procedure_call + "|")
                 procedure_parameters = self._remove_procedure_name(procedure_call)
                 procedure_parameter_list = procedure_parameters.split(",")
-                # print("procedure_parameter_list =", procedure_parameter_list)
                 for procedure_parameter in procedure_parameter_list:
                     procedure_parameter = procedure_parameter.strip()
                     if (
