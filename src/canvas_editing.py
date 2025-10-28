@@ -89,7 +89,9 @@ def delete() -> None:
         for single_tag in tags_of_item_i:
             if (
                 single_tag == "grid_line"
-                or single_tag.startswith("connection")  # line to state-action
+                or (
+                    main_window.canvas.type(i) == "line" and single_tag.startswith("connection")
+                )  # line to state-action
                 or single_tag.endswith("_comment_line")  # line to state-comment
             ):
                 cannot_be_deleted = True
