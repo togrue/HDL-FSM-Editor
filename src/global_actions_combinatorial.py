@@ -92,7 +92,7 @@ class GlobalActionsCombinatorial:
 
     def activate_frame(self) -> None:
         self.activate_window()
-        self.text = self.text_id.get("1.0", tk.END)
+        self.text_content = self.text_id.get("1.0", tk.END)
 
     def activate_window(self) -> None:
         self.frame_id.configure(borderwidth=1, style="GlobalActionsWindowSelected.TFrame")
