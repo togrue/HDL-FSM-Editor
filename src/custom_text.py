@@ -49,6 +49,16 @@ class CustomText(tk.Text):
         # Word selection
         self.bind("<Shift-Control-Left>", lambda event: self.select_word_left())
         self.bind("<Shift-Control-Right>", lambda event: self.select_word_right())
+        # Handle normal selection (Shift+arrow) to fix anchor issues when switching
+        # from word selection to normal selection
+        self.bind("<Shift-Left>", lambda event: self._handle_normal_selection_left())
+        self.bind("<Shift-Right>", lambda event: self._handle_normal_selection_right())
+        # Reset anchor when using normal arrow keys (without Shift) to fix selection issues
+        # when switching from word selection to normal selection
+        self.bind("<Left>", lambda event: self._reset_anchor_if_no_selection())
+        self.bind("<Right>", lambda event: self._reset_anchor_if_no_selection())
+        self.bind("<Up>", lambda event: self._reset_anchor_if_no_selection())
+        self.bind("<Down>", lambda event: self._reset_anchor_if_no_selection())
         # Whole word deletion
         self.bind("<Control-BackSpace>", lambda event: self.delete_word_backward())
         self.bind("<Control-Delete>", lambda event: self.delete_word_forward())
@@ -134,6 +144,104 @@ class CustomText(tk.Text):
         self.format_after_idle()
         return "break"
 
+    def _handle_normal_selection_left(self) -> str:
+        """Handle Shift+Left for normal character selection.
+        Implements correct selection extension/contraction based on anchor position.
+
+        Cases:
+        - anchor_pos > cursor_pos and move_left -> expand (move selection beginning left)
+        - anchor_pos < cursor_pos and move_left -> shrink (move selection end left)
+        """
+        sel_ranges: tuple[str, ...] = self.tag_ranges(tk.SEL)  # type: ignore[assignment]
+        anchor_pos = self.index(tk.ANCHOR)
+        cursor_pos = self.index(tk.INSERT)
+
+        # If no selection exists, set anchor to current cursor position
+        if not sel_ranges:
+            self.mark_set(tk.ANCHOR, cursor_pos)
+            anchor_pos = cursor_pos
+
+        # Move cursor one character to the left
+        try:
+            new_cursor_pos = self.index(f"{cursor_pos} - 1 char")
+        except tk.TclError:
+            # Can't move left (already at start)
+            return "break"
+
+        # Update cursor position
+        self.mark_set(tk.INSERT, new_cursor_pos)
+
+        # Update selection based on anchor and new cursor position
+        if self.compare(anchor_pos, ">", new_cursor_pos):
+            # anchor_pos > cursor_pos: selection from cursor to anchor
+            sel_start, sel_end = new_cursor_pos, anchor_pos
+        else:
+            # anchor_pos <= cursor_pos: selection from anchor to cursor
+            sel_start, sel_end = anchor_pos, new_cursor_pos
+
+        # Update selection tag
+        self.tag_remove(tk.SEL, "1.0", tk.END)
+        if self.compare(sel_start, "!=", sel_end):
+            self.tag_add(tk.SEL, sel_start, sel_end)
+
+        return "break"  # Prevent default handler
+
+    def _handle_normal_selection_right(self) -> str:
+        """Handle Shift+Right for normal character selection.
+        Implements correct selection extension/contraction based on anchor position.
+
+        Cases:
+        - anchor_pos > cursor_pos and move_right -> shrink (move selection beginning right)
+        - anchor_pos < cursor_pos and move_right -> expand (move selection end right)
+        """
+        sel_ranges: tuple[str, ...] = self.tag_ranges(tk.SEL)  # type: ignore[assignment]
+        anchor_pos = self.index(tk.ANCHOR)
+        cursor_pos = self.index(tk.INSERT)
+
+        # If no selection exists, set anchor to current cursor position
+        if not sel_ranges:
+            self.mark_set(tk.ANCHOR, cursor_pos)
+            anchor_pos = cursor_pos
+
+        # Move cursor one character to the right
+        try:
+            new_cursor_pos = self.index(f"{cursor_pos} + 1 char")
+        except tk.TclError:
+            # Can't move right (already at end)
+            return "break"
+
+        # Update cursor position
+        self.mark_set(tk.INSERT, new_cursor_pos)
+
+        # Update selection based on anchor and new cursor position
+        if self.compare(anchor_pos, ">", new_cursor_pos):
+            # anchor_pos > cursor_pos: selection from cursor to anchor
+            sel_start, sel_end = new_cursor_pos, anchor_pos
+        else:
+            # anchor_pos <= cursor_pos: selection from anchor to cursor
+            sel_start, sel_end = anchor_pos, new_cursor_pos
+
+        # Update selection tag
+        self.tag_remove(tk.SEL, "1.0", tk.END)
+        if self.compare(sel_start, "!=", sel_end):
+            self.tag_add(tk.SEL, sel_start, sel_end)
+
+        return "break"  # Prevent default handler
+
+    def _reset_anchor_if_no_selection(self) -> None:
+        """Reset anchor to match cursor position when there's no active selection.
+        This fixes issues when switching from word selection to normal selection.
+        Uses after_idle to reset anchor after Tkinter's default cursor movement."""
+        sel_ranges: tuple[str, ...] = self.tag_ranges(tk.SEL)  # type: ignore[assignment]
+        if not sel_ranges:
+            # Reset anchor after cursor moves (using after_idle ensures this happens
+            # after Tkinter's default handler has moved the cursor)
+            def reset_anchor() -> None:
+                cursor_pos = self.index(tk.INSERT)
+                self.mark_set(tk.ANCHOR, cursor_pos)
+
+            self.after_idle(reset_anchor)
+
     def _move_cursor(self, find_boundary_func) -> str:
         """Generic cursor movement to token boundary."""
         current_pos = self.index(tk.INSERT)
@@ -173,8 +281,6 @@ class CustomText(tk.Text):
         if self.compare(sel_start, "!=", sel_end):
             self.tag_add(tk.SEL, sel_start, sel_end)
             self.focus_set()
-        print("anchor", self.index(tk.ANCHOR))
-        print("sel", self.tag_ranges(tk.SEL))
 
         return "break"
 
