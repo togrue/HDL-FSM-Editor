@@ -144,13 +144,11 @@ class CustomText(tk.Text):
         self.format_after_idle()
         return "break"
 
-    def _handle_normal_selection_left(self) -> str:
-        """Handle Shift+Left for normal character selection.
+    def _handle_normal_selection(self, direction: str) -> str:
+        """
+        Handle Shift+Left or Shift+Right for normal character selection.
+        `direction` should be "-1" for left and "+1" for right.
         Implements correct selection extension/contraction based on anchor position.
-
-        Cases:
-        - anchor_pos > cursor_pos and move_left -> expand (move selection beginning left)
-        - anchor_pos < cursor_pos and move_left -> shrink (move selection end left)
         """
         sel_ranges: tuple[str, ...] = self.tag_ranges(tk.SEL)  # type: ignore[assignment]
         anchor_pos = self.index(tk.ANCHOR)
@@ -161,11 +159,12 @@ class CustomText(tk.Text):
             self.mark_set(tk.ANCHOR, cursor_pos)
             anchor_pos = cursor_pos
 
-        # Move cursor one character to the left
+        # Move cursor one character to the left or right
         try:
-            new_cursor_pos = self.index(f"{cursor_pos} - 1 char")
+            delta = "- 1 char" if direction == "left" else "+ 1 char"
+            new_cursor_pos = self.index(f"{cursor_pos} {delta}")
         except tk.TclError:
-            # Can't move left (already at start)
+            # Can't move (already at start or end)
             return "break"
 
         # Update cursor position
@@ -185,48 +184,14 @@ class CustomText(tk.Text):
             self.tag_add(tk.SEL, sel_start, sel_end)
 
         return "break"  # Prevent default handler
+    # Legacy shim methods for clarity and backward compatibility
+    def _handle_normal_selection_left(self) -> str:
+        """Handle Shift+Left for normal character selection."""
+        return self._handle_normal_selection("left")
 
     def _handle_normal_selection_right(self) -> str:
-        """Handle Shift+Right for normal character selection.
-        Implements correct selection extension/contraction based on anchor position.
-
-        Cases:
-        - anchor_pos > cursor_pos and move_right -> shrink (move selection beginning right)
-        - anchor_pos < cursor_pos and move_right -> expand (move selection end right)
-        """
-        sel_ranges: tuple[str, ...] = self.tag_ranges(tk.SEL)  # type: ignore[assignment]
-        anchor_pos = self.index(tk.ANCHOR)
-        cursor_pos = self.index(tk.INSERT)
-
-        # If no selection exists, set anchor to current cursor position
-        if not sel_ranges:
-            self.mark_set(tk.ANCHOR, cursor_pos)
-            anchor_pos = cursor_pos
-
-        # Move cursor one character to the right
-        try:
-            new_cursor_pos = self.index(f"{cursor_pos} + 1 char")
-        except tk.TclError:
-            # Can't move right (already at end)
-            return "break"
-
-        # Update cursor position
-        self.mark_set(tk.INSERT, new_cursor_pos)
-
-        # Update selection based on anchor and new cursor position
-        if self.compare(anchor_pos, ">", new_cursor_pos):
-            # anchor_pos > cursor_pos: selection from cursor to anchor
-            sel_start, sel_end = new_cursor_pos, anchor_pos
-        else:
-            # anchor_pos <= cursor_pos: selection from anchor to cursor
-            sel_start, sel_end = anchor_pos, new_cursor_pos
-
-        # Update selection tag
-        self.tag_remove(tk.SEL, "1.0", tk.END)
-        if self.compare(sel_start, "!=", sel_end):
-            self.tag_add(tk.SEL, sel_start, sel_end)
-
-        return "break"  # Prevent default handler
+        """Handle Shift+Right for normal character selection."""
+        return self._handle_normal_selection("right")
 
     def _reset_anchor_if_no_selection(self) -> None:
         """Reset anchor to match cursor position when there's no active selection.
