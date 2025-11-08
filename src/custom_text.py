@@ -249,6 +249,10 @@ class CustomText(tk.Text):
         if not target_pos:
             return "break"
 
+        # Clear any existing selection when moving cursor
+        self.tag_remove(tk.SEL, "1.0", tk.END)
+        # Reset anchor to match new cursor position
+        self.mark_set(tk.ANCHOR, target_pos)
         self.mark_set(tk.INSERT, target_pos)
         return "break"
 
