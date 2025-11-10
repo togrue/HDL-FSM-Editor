@@ -11,12 +11,13 @@ import re
 import shutil
 import subprocess
 import sys
+from typing import Optional
 import zipfile
 from datetime import datetime
 from pathlib import Path
 
 
-def parse_arguments():
+def parse_arguments() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="HDL-FSM-Editor Release Script",
@@ -45,7 +46,7 @@ Examples:
     return parser.parse_args()
 
 
-def check_git_status(is_release):
+def check_git_status(is_release: bool) -> None:
     """Check git repository status."""
     if is_release:
         # For releases, check if repository is clean
@@ -81,7 +82,7 @@ def check_git_status(is_release):
             print("⚠️  Warning: Not in a git repository (dev build mode)")
 
 
-def parse_changelog_version(override_version=None, is_release=True):
+def parse_changelog_version(override_version: Optional[str] = None, is_release: bool = True) -> str:
     """Parse CHANGELOG.md and extract the latest version."""
     if override_version:
         print(f"✅ Using override version: {override_version}")
@@ -97,23 +98,22 @@ def parse_changelog_version(override_version=None, is_release=True):
         content = f.read()
 
     # Find the first version entry (not "Unreleased")
-    version_pattern = r"## \[([0-9]+\.[0-9]+(?:\.[0-9]+)?)\] - (.+)"
-    matches = re.findall(version_pattern, content)
+    version_pattern = r"## \[([0-9]+\.[0-9]+(?:\.[0-9]+)?)\](?:\s*-\s*(.+))?"
+    match = re.search(version_pattern, content)
 
-    if not matches:
+    if not match:
         print("❌ Error: No version entries found in CHANGELOG.md")
         sys.exit(1)
 
-    version, date = matches[0]
+    version = match.group(1)
+    date = match.group(2)
 
-    # Check if date is placeholder
-    if date.strip() == "xx.yy.2025":
-        if is_release:
-            print(f"❌ Error: Version {version} has no date assigned in CHANGELOG.md")
-            sys.exit(1)
-        else:
-            print(f"⚠️  Warning: Version {version} has no date assigned (dev build)")
-            print("   Continuing with dev build...")
+    if is_release and not date:
+        print(f"❌ Error: Version {version} has no date assigned in CHANGELOG.md")
+        sys.exit(1)
+    else:
+        print(f"⚠️  Warning: Version {version} has no date assigned (dev build)")
+        print("   Continuing with dev build...")
 
     if is_release:
         print(f"✅ Found version {version} with date {date}")
@@ -123,7 +123,7 @@ def parse_changelog_version(override_version=None, is_release=True):
     return version
 
 
-def verify_version_consistency(version, is_release):
+def verify_version_consistency(version: str, is_release: bool) -> None:
     """Verify that version in main_window.py matches CHANGELOG.md."""
     main_window_path = Path("src/main_window.py")
 
@@ -158,7 +158,7 @@ def verify_version_consistency(version, is_release):
     print(f"✅ Version consistency verified: {version}")
 
 
-def check_git_tag(version, is_release):
+def check_git_tag(version: str, is_release: bool) -> None:
     """Check if git tag already exists and handle user confirmation."""
     if not is_release:
         print("⏭️  Skipping git tag check (dev build)")
@@ -185,7 +185,7 @@ def check_git_tag(version, is_release):
     print(f"✅ Git tag status verified for {tag_name}")
 
 
-def build_executable():
+def build_executable() -> Path:
     """Build executable using PyInstaller."""
     print("🔨 Building executable with PyInstaller...")
 
@@ -239,7 +239,7 @@ def build_executable():
     return executable_path
 
 
-def create_release_directory(version, executable_path, is_release):
+def create_release_directory(version: str, executable_path: Path, is_release: bool) -> Path:
     """Create release directory and copy files."""
     if is_release:
         release_dir = Path("releases") / f"HDL-FSM-Editor-{version}"
@@ -263,7 +263,7 @@ def create_release_directory(version, executable_path, is_release):
     return release_dir
 
 
-def create_archive(version, release_dir, is_release):
+def create_archive(version: str, release_dir: Path, is_release: bool) -> Path:
     """Create ZIP archive of release directory."""
     if is_release:
         archive_name = f"HDL-FSM-Editor-{version}.zip"
@@ -294,7 +294,7 @@ def create_archive(version, release_dir, is_release):
     return archive_path
 
 
-def create_git_tag(version, is_release):
+def create_git_tag(version: str, is_release: bool) -> None:
     """Create git tag for the release."""
     if not is_release:
         print("⏭️  Skipping git tag creation (dev build)")
@@ -310,7 +310,7 @@ def create_git_tag(version, is_release):
         sys.exit(1)
 
 
-def cleanup_build_artifacts():
+def cleanup_build_artifacts() -> None:
     """Clean up PyInstaller build artifacts."""
     print("🧹 Cleaning up PyInstaller build artifacts...")
 
@@ -343,7 +343,7 @@ def cleanup_build_artifacts():
         print(f"✅ Cleanup completed! Removed {removed_count} items")
 
 
-def main():
+def main() -> None:
     """Main release process."""
     args = parse_arguments()
 
