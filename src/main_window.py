@@ -387,15 +387,13 @@ def create_control_notebook_tab() -> None:
     include_timestamp_in_output = tk.BooleanVar(value=True)
     include_timestamp_in_output.trace_add("write", lambda *args: undo_handling.update_window_title())
     include_timestamp_checkbox = ttk.Checkbutton(_select_file_number_frame, variable=include_timestamp_in_output)
-    include_timestamp_label = ttk.Label(_select_file_number_frame, text="Include timestamp in generated HDL files")
+    include_timestamp_label = ttk.Label(
+        _select_file_number_frame, text="Include timestamp in generated HDL files", width=40
+    )
     include_timestamp_checkbox.grid(row=0, column=0, sticky=tk.W)
     include_timestamp_label.grid(row=0, column=1, sticky=tk.W)
-    _select_file_number_radio_button1.grid(row=0, column=2, sticky=tk.E)
-    _select_file_number_radio_button2.grid(row=0, column=3, sticky=tk.E)
-    _select_file_number_frame.columnconfigure((0, 0), weight=0)
-    _select_file_number_frame.columnconfigure((0, 1), weight=0)
-    _select_file_number_frame.columnconfigure((0, 2), weight=1)
-    _select_file_number_frame.columnconfigure((0, 3), weight=0)
+    _select_file_number_radio_button1.grid(row=0, column=2, sticky=tk.W)
+    _select_file_number_radio_button2.grid(row=0, column=3, sticky=tk.W)
 
     reset_signal_name = tk.StringVar()
     reset_signal_name.set("")
