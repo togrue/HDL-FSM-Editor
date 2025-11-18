@@ -49,16 +49,16 @@ class ConditionAction:
             font=("Arial", int(canvas_editing.label_fontsize)),
             style="Window.TLabel",
         )
-        self.condition_label.bind("<Enter>", lambda event: self.activate_window())
-        self.condition_label.bind("<Leave>", lambda event: self.deactivate_window())
+        self.condition_label.bind("<Enter>", lambda event: self.select_window())
+        self.condition_label.bind("<Leave>", lambda event: self.deselect_window())
         self.action_label = ttk.Label(
             self.frame_id,
             text=label_action_text,
             font=("Arial", int(canvas_editing.label_fontsize)),
             style="Window.TLabel",
         )
-        self.action_label.bind("<Enter>", lambda event: self.activate_window())
-        self.action_label.bind("<Leave>", lambda event: self.deactivate_window())
+        self.action_label.bind("<Enter>", lambda event: self.select_window())
+        self.action_label.bind("<Leave>", lambda event: self.deselect_window())
         self.action_id = custom_text.CustomText(
             self.frame_id,
             text_type="action",
@@ -190,29 +190,29 @@ class ConditionAction:
         main_window.canvas.tag_lower(self.line_id, transition_id)
 
     def activate_frame(self) -> None:
-        self.activate_window()
+        self.select_window()
         self.show_complete_box()
         self.action_text = self.action_id.get("1.0", tk.END)
         self.condition_text = self.condition_id.get("1.0", tk.END)
         if self.frame_enter_func_id is not None:
-            main_window.canvas.unbind(self.frame_enter_func_id)
+            self.frame_id.unbind("<Enter>", self.frame_enter_func_id)
             self.frame_enter_func_id = None
-        self.canvas_enter_func_id = main_window.canvas.bind("<Enter>", lambda event: self.deactivate_frame())
+        self.canvas_enter_func_id = main_window.canvas.bind("<Motion>", lambda event: self.deactivate_frame())
 
-    def activate_window(self) -> None:
+    def select_window(self) -> None:
         self.frame_id.configure(borderwidth=1, style="WindowSelected.TFrame")
         self.condition_label.configure(style="WindowSelected.TLabel")
         self.action_label.configure(style="WindowSelected.TLabel")
 
     def deactivate_frame(self) -> None:
-        self.deactivate_window()
+        self.deselect_window()
         if self.canvas_enter_func_id is not None:
-            main_window.canvas.unbind("<Enter>", self.canvas_enter_func_id)
+            main_window.canvas.unbind("<Motion>", self.canvas_enter_func_id)
             self.canvas_enter_func_id = None
         self.frame_enter_func_id = self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
         self.shrink_box()
 
-    def deactivate_window(self) -> None:
+    def deselect_window(self) -> None:
         self.frame_id.configure(borderwidth=0, style="Window.TFrame")
         self.condition_label.configure(style="Window.TLabel")
         self.action_label.configure(style="Window.TLabel")
