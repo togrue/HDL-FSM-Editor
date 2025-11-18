@@ -17,13 +17,13 @@ import canvas_modify_bindings
 import codegen.hdl_generation as hdl_generation
 import compile_handling
 import constants
-import write_data_creator
 import custom_text
 import file_handling
 import grid_drawing
 import move_handling_initialization
 import undo_handling
 import update_hdl_tab
+import write_data_creator
 from codegen.hdl_generation_config import GenerationConfig
 from constants import GuiTab
 from dialogs.color_changer import ColorChanger
@@ -65,8 +65,6 @@ global_action_clocked_button: ttk.Button
 global_action_combinatorial_button: ttk.Button
 reset_entry_button: ttk.Button
 
-_select_file_number_label: ttk.Label
-_select_file_number_frame: ttk.Frame
 _interface_package_label: ttk.Label
 _interface_package_scroll: ttk.Scrollbar
 _interface_generics_label: ttk.Label
@@ -98,7 +96,7 @@ diagram_background_color: tk.StringVar
 _diagram_background_color_error: ttk.Label
 show_grid: bool = True
 grid_drawer: grid_drawing.GridDraw
-write_data_creator_ref : write_data_creator.WriteDataCreator
+write_data_creator_ref: write_data_creator.WriteDataCreator
 paned_window_interface: ttk.PanedWindow
 _interface_package_frame: ttk.Frame
 paned_window_internals: ttk.PanedWindow
@@ -392,8 +390,8 @@ def create_control_notebook_tab() -> None:
     include_timestamp_in_output.trace_add("write", lambda *args: undo_handling.update_window_title())
     include_timestamp_checkbox = ttk.Checkbutton(_select_file_number_frame, variable=include_timestamp_in_output)
     include_timestamp_label = ttk.Label(_select_file_number_frame, text="Include timestamp in generated HDL files")
-    include_timestamp_checkbox.grid       (row=0, column=0, sticky=tk.W)
-    include_timestamp_label.grid          (row=0, column=1, sticky=tk.W)
+    include_timestamp_checkbox.grid(row=0, column=0, sticky=tk.W)
+    include_timestamp_label.grid(row=0, column=1, sticky=tk.W)
     _select_file_number_radio_button1.grid(row=0, column=2, sticky=tk.E)
     _select_file_number_radio_button2.grid(row=0, column=3, sticky=tk.E)
     _select_file_number_frame.columnconfigure((0, 0), weight=0)
@@ -1272,6 +1270,7 @@ def choose_bg_color() -> None:
     if new_color is not None:
         canvas.configure(bg=new_color)
         diagram_background_color.set(new_color)
+
 
 def set_word_boundaries() -> None:
     # this first statement triggers tcl to autoload the library
