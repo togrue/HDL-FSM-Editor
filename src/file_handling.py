@@ -30,6 +30,9 @@ import update_hdl_tab
 from constants import GuiTab
 from project_manager import project_manager
 
+all_graphical_elements = ("state", "text", "line", "polygon", "rectangle",
+                          "window_state_action_block", "window_state_comment", "window_condition_action_block",
+                          "window_global_actions", "window_global_actions_combinatorial", "window_state_actions_default")
 
 def ask_save_unsaved_changes(title) -> str:
     """
@@ -57,7 +60,7 @@ def save_as() -> None:
         initialfile=main_window.module_name.get(),
         filetypes=(("HDL-FSM-Editor files", "*.hfe"), ("all files", "*.*")),
     )
-    if project_manager.current_file != "":
+    if project_manager.current_file!=() and project_manager.current_file != "":
         dir_name, file_name = os.path.split(project_manager.current_file)
         main_window.root.title(f"{file_name} ({dir_name})")
         save_in_file_new(project_manager.current_file)
@@ -149,6 +152,7 @@ def _clear_design() -> bool:
     main_window.include_timestamp_in_output.set(True)
     main_window.root.title("unnamed")
     main_window.grid_drawer.draw_grid()
+    main_window.write_data_creator_ref.store_as_compare_object(None)
     return True
 
 
@@ -156,7 +160,12 @@ def _clear_design() -> bool:
 
 
 def save_in_file_new(save_filename) -> None:  # Called at saving and at every design change (writing to .tmp-file)
+    if not save_filename.endswith(".tmp"):
+        zoom_factor = main_window.write_data_creator_ref.zoom_graphic_to_standard_size(canvas_editing.state_radius)
     design_dictionary = _save_design_to_dict()
+    if not save_filename.endswith(".tmp"):
+        main_window.write_data_creator_ref.zoom_graphic_back_to_actual_size(zoom_factor)
+        design_dictionary = main_window.write_data_creator_ref.round_and_sort_data(design_dictionary, all_graphical_elements)
     old_cursor = main_window.root.cget(
         "cursor"
     )  # may be different from "arrow" at design changes (writing to .tmp-file)
@@ -244,43 +253,33 @@ def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
     design_dictionary["priority_distance"] = canvas_editing.priority_distance
     design_dictionary["fontsize"] = canvas_editing.fontsize
     design_dictionary["label_fontsize"] = canvas_editing.label_fontsize
-    design_dictionary["visible_center"] = canvas_editing.get_visible_center_as_string()
-    design_dictionary["sash_positions"] = main_window.sash_positions
-    design_dictionary["state"] = []
-    design_dictionary["text"] = []
-    design_dictionary["line"] = []
-    design_dictionary["polygon"] = []
-    design_dictionary["rectangle"] = []
-    design_dictionary["window_state_action_block"] = []
-    design_dictionary["window_state_comment"] = []
-    design_dictionary["window_condition_action_block"] = []
-    design_dictionary["window_global_actions"] = []
-    design_dictionary["window_global_actions_combinatorial"] = []
-    design_dictionary["window_state_actions_default"] = []
-
+    #design_dictionary["visible_center"] = canvas_editing.get_visible_center_as_string()
+    #design_dictionary["sash_positions"] = main_window.sash_positions
+    for graphical_element in all_graphical_elements:
+        design_dictionary[graphical_element] = []
     items = main_window.canvas.find_all()
     for i in items:
         if main_window.canvas.type(i) == "oval":
             design_dictionary["state"].append(
-                [main_window.canvas.coords(i), main_window.canvas.gettags(i), main_window.canvas.itemcget(i, "fill")]
+                [main_window.canvas.coords(i), _gettags(i), main_window.canvas.itemcget(i, "fill")]
             )
         elif main_window.canvas.type(i) == "text":
             design_dictionary["text"].append(
-                [main_window.canvas.coords(i), main_window.canvas.gettags(i), main_window.canvas.itemcget(i, "text")]
+                [main_window.canvas.coords(i), _gettags(i), main_window.canvas.itemcget(i, "text")]
             )
-        elif main_window.canvas.type(i) == "line" and "grid_line" not in main_window.canvas.gettags(i):
-            design_dictionary["line"].append([main_window.canvas.coords(i), main_window.canvas.gettags(i)])
+        elif main_window.canvas.type(i) == "line" and "grid_line" not in _gettags(i):
+            design_dictionary["line"].append([main_window.canvas.coords(i), _gettags(i)])
         elif main_window.canvas.type(i) == "polygon":
-            design_dictionary["polygon"].append([main_window.canvas.coords(i), main_window.canvas.gettags(i)])
+            design_dictionary["polygon"].append([main_window.canvas.coords(i), _gettags(i)])
         elif main_window.canvas.type(i) == "rectangle":
-            design_dictionary["rectangle"].append([main_window.canvas.coords(i), main_window.canvas.gettags(i)])
+            design_dictionary["rectangle"].append([main_window.canvas.coords(i), _gettags(i)])
         elif main_window.canvas.type(i) == "window":
             if i in state_action_handling.MyText.mytext_dict:
                 design_dictionary["window_state_action_block"].append(
                     [
                         main_window.canvas.coords(i),
                         state_action_handling.MyText.mytext_dict[i].text_id.get("1.0", f"{tk.END}-1 chars"),
-                        main_window.canvas.gettags(i),
+                        _gettags(i),
                     ]
                 )
             elif i in state_comment.StateComment.dictionary:
@@ -288,7 +287,7 @@ def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
                     [
                         main_window.canvas.coords(i),
                         state_comment.StateComment.dictionary[i].text_id.get("1.0", f"{tk.END}-1 chars"),
-                        main_window.canvas.gettags(i),
+                        _gettags(i),
                     ]
                 )
             elif i in condition_action_handling.ConditionAction.dictionary:
@@ -301,7 +300,7 @@ def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
                         condition_action_handling.ConditionAction.dictionary[i].action_id.get(
                             "1.0", f"{tk.END}-1 chars"
                         ),
-                        main_window.canvas.gettags(i),
+                        _gettags(i),
                     ]
                 )
             elif i in global_actions.GlobalActions.dictionary:
@@ -310,7 +309,7 @@ def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
                         main_window.canvas.coords(i),
                         global_actions.GlobalActions.dictionary[i].text_before_id.get("1.0", f"{tk.END}-1 chars"),
                         global_actions.GlobalActions.dictionary[i].text_after_id.get("1.0", f"{tk.END}-1 chars"),
-                        main_window.canvas.gettags(i),
+                        _gettags(i),
                     ]
                 )
             elif i in global_actions_combinatorial.GlobalActionsCombinatorial.dictionary:
@@ -320,7 +319,7 @@ def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
                         global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[i].text_id.get(
                             "1.0", f"{tk.END}-1 chars"
                         ),
-                        main_window.canvas.gettags(i),
+                        _gettags(i),
                     ]
                 )
             elif i in state_actions_default.StateActionsDefault.dictionary:
@@ -328,12 +327,14 @@ def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
                     [
                         main_window.canvas.coords(i),
                         state_actions_default.StateActionsDefault.dictionary[i].text_id.get("1.0", f"{tk.END}-1 chars"),
-                        main_window.canvas.gettags(i),
+                        _gettags(i),
                     ]
                 )
             else:
                 print("file_handling: Fatal, unknown dictionary key ", i)
 
+def _gettags(i):
+    return [x for x in main_window.canvas.gettags(i) if x != "current"]
 
 def open_file_with_name_new(read_filename, is_script_mode) -> None:
     replaced_read_filename = read_filename
@@ -352,6 +353,7 @@ def open_file_with_name_new(read_filename, is_script_mode) -> None:
             data = fileobject.read()
         project_manager.current_file = read_filename
         design_dictionary = json.loads(data)
+        main_window.write_data_creator_ref.store_as_compare_object(design_dictionary)
         _load_design_from_dict(design_dictionary)
         if os.path.isfile(f"{read_filename}.tmp") and not is_script_mode:
             os.remove(f"{read_filename}.tmp")
@@ -498,38 +500,38 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
     main_window.diagram_background_color.set(design_dictionary.get("diagram_background_color", "white"))
     main_window.canvas.configure(bg=main_window.diagram_background_color.get())
 
-    # Load sash positions
-    if "sash_positions" in design_dictionary:
-        main_window.show_tab(
-            GuiTab.INTERFACE
-        )  # The tab must be shown at least once, so that the sash_positions do not have the default-value 0.
-        if (
-            "1" in design_dictionary["sash_positions"]["interface_tab"]
-            and design_dictionary["sash_positions"]["interface_tab"]["1"]
-            < 0.9 * main_window.paned_window_interface.winfo_height()
-        ):
-            for key, value in design_dictionary["sash_positions"]["interface_tab"].items():
-                if (
-                    main_window.paned_window_interface.sashpos(0) != 0
-                    and main_window.paned_window_interface.sashpos(0) != 1
-                ):
-                    main_window.paned_window_interface.sashpos(int(key), value)
-                    main_window.sash_positions["interface_tab"][int(key)] = value
-        main_window.show_tab(
-            GuiTab.INTERNALS
-        )  # The tab must be shown at least once, so that the sash_positions do not have the default-value 0.
-        if (
-            "2" in design_dictionary["sash_positions"]["internals_tab"]
-            and design_dictionary["sash_positions"]["internals_tab"]["2"]
-            < 0.9 * main_window.paned_window_internals.winfo_height()
-        ):
-            for key, value in design_dictionary["sash_positions"]["internals_tab"].items():
-                if (
-                    main_window.paned_window_internals.sashpos(0) != 0
-                    and main_window.paned_window_internals.sashpos(0) != 1
-                ):
-                    main_window.paned_window_internals.sashpos(int(key), value)
-                    main_window.sash_positions["internals_tab"][int(key)] = value
+    # # Load sash positions
+    # if "sash_positions" in design_dictionary:
+    #     main_window.show_tab(
+    #         GuiTab.INTERFACE
+    #     )  # The tab must be shown at least once, so that the sash_positions do not have the default-value 0.
+    #     if (
+    #         "1" in design_dictionary["sash_positions"]["interface_tab"]
+    #         and design_dictionary["sash_positions"]["interface_tab"]["1"]
+    #         < 0.9 * main_window.paned_window_interface.winfo_height()
+    #     ):
+    #         for key, value in design_dictionary["sash_positions"]["interface_tab"].items():
+    #             if (
+    #                 main_window.paned_window_interface.sashpos(0) != 0
+    #                 and main_window.paned_window_interface.sashpos(0) != 1
+    #             ):
+    #                 main_window.paned_window_interface.sashpos(int(key), value)
+    #                 main_window.sash_positions["interface_tab"][int(key)] = value
+    #     main_window.show_tab(
+    #         GuiTab.INTERNALS
+    #     )  # The tab must be shown at least once, so that the sash_positions do not have the default-value 0.
+    #     if (
+    #         "2" in design_dictionary["sash_positions"]["internals_tab"]
+    #         and design_dictionary["sash_positions"]["internals_tab"]["2"]
+    #         < 0.9 * main_window.paned_window_internals.winfo_height()
+    #     ):
+    #         for key, value in design_dictionary["sash_positions"]["internals_tab"].items():
+    #             if (
+    #                 main_window.paned_window_internals.sashpos(0) != 0
+    #                 and main_window.paned_window_internals.sashpos(0) != 1
+    #             ):
+    #                 main_window.paned_window_internals.sashpos(int(key), value)
+    #                 main_window.sash_positions["internals_tab"][int(key)] = value
 
     # Load canvas editing parameters
     state_handling.state_number = design_dictionary["state_number"]
@@ -567,8 +569,8 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
     canvas_editing.fontsize = design_dictionary["fontsize"]
     canvas_editing.state_name_font.configure(size=int(canvas_editing.fontsize))
     canvas_editing.label_fontsize = design_dictionary["label_fontsize"]
-    canvas_editing.shift_visible_center_to_window_center(design_dictionary["visible_center"])
-
+    #canvas_editing.shift_visible_center_to_window_center(design_dictionary["visible_center"])
+    canvas_editing.shift_visible_center_to_window_center(canvas_editing.get_visible_center_as_string())
 
 def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
     """Load all canvas elements including states, transitions, text, and windows."""

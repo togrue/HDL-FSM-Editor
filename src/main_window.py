@@ -17,6 +17,7 @@ import canvas_modify_bindings
 import codegen.hdl_generation as hdl_generation
 import compile_handling
 import constants
+import write_data_creator
 import custom_text
 import file_handling
 import grid_drawing
@@ -97,11 +98,11 @@ diagram_background_color: tk.StringVar
 _diagram_background_color_error: ttk.Label
 show_grid: bool = True
 grid_drawer: grid_drawing.GridDraw
+write_data_creator_ref : write_data_creator.WriteDataCreator
 paned_window_interface: ttk.PanedWindow
 _interface_package_frame: ttk.Frame
 paned_window_internals: ttk.PanedWindow
 _internals_package_frame: ttk.Frame
-sash_positions: dict[str, dict[int, int]] = {"interface_tab": {}, "internals_tab": {}}
 undo_button: ttk.Button
 redo_button: ttk.Button
 date_of_hdl_file_shown_in_hdl_tab: float = 0.0
@@ -332,8 +333,8 @@ def create_control_notebook_tab() -> None:
         clock_signal_name, \
         compile_cmd
     global \
-        _select_file_number_label, \
-        _select_file_number_frame, \
+        _select_file_number_radio_button1, \
+        _select_file_number_radio_button2, \
         _compile_cmd_docu, \
         edit_cmd, \
         _module_name_entry, \
@@ -345,9 +346,9 @@ def create_control_notebook_tab() -> None:
     module_name = tk.StringVar()
     module_name.set("")
     module_name_label = ttk.Label(control_frame, text="Module-Name:", padding=5)
-    _module_name_entry = ttk.Entry(control_frame, width=23, textvariable=module_name)
+    _module_name_entry = ttk.Entry(control_frame, textvariable=module_name)
     module_name_label.grid(row=0, column=0, sticky=tk.W)
-    _module_name_entry.grid(row=0, column=1, sticky=tk.W)
+    _module_name_entry.grid(row=0, column=1, sticky=(tk.W, tk.E))
     _module_name_entry.select_clear()
 
     language = tk.StringVar()
@@ -381,20 +382,20 @@ def create_control_notebook_tab() -> None:
 
     select_file_number_text = tk.IntVar()
     select_file_number_text.set(2)
-    select_file_number_radio_button1 = ttk.Radiobutton(
+    _select_file_number_radio_button1 = ttk.Radiobutton(
         _select_file_number_frame, takefocus=False, variable=select_file_number_text, text="1 file", value=1
     )
-    select_file_number_radio_button2 = ttk.Radiobutton(
+    _select_file_number_radio_button2 = ttk.Radiobutton(
         _select_file_number_frame, takefocus=False, variable=select_file_number_text, text="2 files", value=2
     )
     include_timestamp_in_output = tk.BooleanVar(value=True)
     include_timestamp_in_output.trace_add("write", lambda *args: undo_handling.update_window_title())
     include_timestamp_checkbox = ttk.Checkbutton(_select_file_number_frame, variable=include_timestamp_in_output)
     include_timestamp_label = ttk.Label(_select_file_number_frame, text="Include timestamp in generated HDL files")
-    select_file_number_radio_button1.grid(row=0, column=1, sticky=tk.W)
-    select_file_number_radio_button2.grid(row=0, column=2, sticky=tk.W)
-    include_timestamp_checkbox.grid(row=0, column=2, sticky=tk.E)
-    include_timestamp_label.grid(row=0, column=3, sticky=tk.E)
+    include_timestamp_checkbox.grid       (row=0, column=0, sticky=tk.W)
+    include_timestamp_label.grid          (row=0, column=1, sticky=tk.W)
+    _select_file_number_radio_button1.grid(row=0, column=2, sticky=tk.E)
+    _select_file_number_radio_button2.grid(row=0, column=3, sticky=tk.E)
     _select_file_number_frame.columnconfigure((0, 0), weight=0)
     _select_file_number_frame.columnconfigure((0, 1), weight=0)
     _select_file_number_frame.columnconfigure((0, 2), weight=1)
@@ -581,7 +582,6 @@ def create_interface_notebook_tab() -> None:
     interface_generics_text.grid(row=1, column=0, sticky="nsew")
     interface_generics_scroll.grid(row=1, column=1, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_interface.add(interface_generics_frame, weight=1)
-    interface_generics_frame.bind("<Configure>", __resize_event_interface_tab_frames)
 
     interface_ports_frame = ttk.Frame(paned_window_interface)
     interface_ports_frame.columnconfigure(0, weight=1)
@@ -679,7 +679,6 @@ def create_internals_notebook_tab() -> None:
         row=1, column=1, sticky="nsew"
     )  # "W,E" nötig, damit Text tatsächlich breiter wird
     paned_window_internals.add(internals_architecture_frame, weight=1)
-    internals_architecture_frame.bind("<Configure>", __resize_event_internals_tab_frames)
 
     internals_process_clocked_frame = ttk.Frame(paned_window_internals)
     internals_process_clocked_frame.columnconfigure(0, weight=1)
@@ -768,6 +767,7 @@ def create_diagram_notebook_tab() -> None:
     global reset_entry_button
     global grid_drawer
     global undo_button, redo_button
+    global write_data_creator_ref
 
     diagram_frame = ttk.Frame(notebook, borderwidth=0, relief="flat")
     diagram_frame.grid()
@@ -881,6 +881,7 @@ def create_diagram_notebook_tab() -> None:
 
     canvas_editing.create_font_for_state_names()
     grid_drawer = grid_drawing.GridDraw(canvas)
+    write_data_creator_ref = write_data_creator.WriteDataCreator(canvas_editing.state_radius)
 
 
 def __scroll_xview(*args) -> None:
@@ -1135,8 +1136,8 @@ def switch_language_mode() -> None:
         keywords = constants.VHDL_KEYWORDS
         # enable 2 files mode
         select_file_number_text.set(2)
-        _select_file_number_label.grid(row=3, column=0, sticky=tk.W)
-        _select_file_number_frame.grid(row=3, column=1, sticky=(tk.W, tk.E))
+        _select_file_number_radio_button1.grid(row=0, column=2, sticky=tk.E)
+        _select_file_number_radio_button2.grid(row=0, column=3, sticky=tk.E)
         # Interface: Adapt documentation for generics and ports
         paned_window_interface.insert(0, _interface_package_frame, weight=1)
         _interface_generics_label.config(text="Generics:")
@@ -1157,8 +1158,8 @@ def switch_language_mode() -> None:
         keywords = constants.VERILOG_KEYWORDS
         # Control: disable 2 files mode
         select_file_number_text.set(1)
-        _select_file_number_label.grid_forget()
-        _select_file_number_frame.grid_forget()
+        _select_file_number_radio_button1.grid_forget()
+        _select_file_number_radio_button2.grid_forget()
         # Interface: Remove VHDL-package text field
         paned_window_interface.forget(_interface_package_frame)
         # Interface: Adapt documentation for generics and ports
@@ -1271,26 +1272,6 @@ def choose_bg_color() -> None:
     if new_color is not None:
         canvas.configure(bg=new_color)
         diagram_background_color.set(new_color)
-
-
-def __resize_event_interface_tab_frames(event) -> None:
-    global sash_positions
-    if "interface_tab" not in sash_positions:
-        sash_positions["interface_tab"] = {}
-    sash_positions["interface_tab"][0] = paned_window_interface.sashpos(0)
-    if language.get() == "VHDL":
-        sash_positions["interface_tab"][1] = paned_window_interface.sashpos(1)
-
-
-def __resize_event_internals_tab_frames(event) -> None:
-    global sash_positions
-    if "internals_tab" not in sash_positions:
-        sash_positions["internals_tab"] = {}
-    sash_positions["internals_tab"][0] = paned_window_internals.sashpos(0)
-    sash_positions["internals_tab"][1] = paned_window_internals.sashpos(1)
-    if language.get() == "VHDL":
-        sash_positions["internals_tab"][2] = paned_window_internals.sashpos(2)
-
 
 def set_word_boundaries() -> None:
     # this first statement triggers tcl to autoload the library

@@ -396,7 +396,7 @@ def view_rectangle(complete_rectangle, check_fit) -> None:
             complete_center = _determine_center_of_rectangle(complete_rectangle)
             visible_center = _determine_center_of_rectangle(visible_rectangle)
             _move_canvas_point_from_to(complete_center, visible_center)
-            _canvas_zoom(complete_center, factor)
+            canvas_zoom(complete_center, factor)
             if check_fit:
                 main_window.canvas.after_idle(_decrement_font_size_if_window_is_too_wide)
         else:
@@ -425,7 +425,7 @@ def _decrement_font_size_if_window_is_too_wide() -> None:
         visible_center = _determine_center_of_rectangle(visible_rectangle)
         _move_canvas_point_from_to(complete_center, visible_center)
         zoom_factor = (fontsize - 1) / fontsize
-        _canvas_zoom(complete_center, zoom_factor)
+        canvas_zoom(complete_center, zoom_factor)
         main_window.canvas.after_idle(_decrement_font_size_if_window_is_too_wide)
 
 
@@ -462,7 +462,7 @@ def zoom_wheel(event) -> None:
     elif event.num == 4 or event.delta >= 0:  # scroll up
         factor = 1.1
     zoom_center = translate_window_event_coordinates_in_exact_canvas_coordinates(event)
-    _canvas_zoom(zoom_center, factor)
+    canvas_zoom(zoom_center, factor)
     main_window.grid_drawer.draw_grid()
     canvas_modify_bindings.switch_to_move_mode()
     main_window.canvas.grid()
@@ -479,7 +479,7 @@ def zoom_plus() -> None:
         main_window.canvas.canvasy(main_window.canvas.winfo_height()),
     ]
     visible_center = _determine_center_of_rectangle(visible_rectangle)
-    _canvas_zoom(visible_center, factor)
+    canvas_zoom(visible_center, factor)
     main_window.grid_drawer.draw_grid()
     main_window.canvas.grid()
 
@@ -495,12 +495,12 @@ def zoom_minus() -> None:
         main_window.canvas.canvasy(main_window.canvas.winfo_height()),
     ]
     visible_center = _determine_center_of_rectangle(visible_rectangle)
-    _canvas_zoom(visible_center, factor)
+    canvas_zoom(visible_center, factor)
     main_window.grid_drawer.draw_grid()
     main_window.canvas.grid()
 
 
-def _canvas_zoom(zoom_center, zoom_factor) -> None:
+def canvas_zoom(zoom_center, zoom_factor) -> None:
     # Modify factor, so that fontsize is always an integer:
     fontsize_rounded_down = int(fontsize * zoom_factor)
     if zoom_factor > 1 and fontsize_rounded_down == fontsize:
@@ -860,7 +860,7 @@ def _search_in_canvas_text(item, search_pattern, replace, replace_pattern) -> in
             object_coords = main_window.canvas.bbox(item)
             view_rectangle(object_coords, check_fit=False)
             object_center = main_window.canvas.coords(item)
-            _canvas_zoom(object_center, 0.25)
+            canvas_zoom(object_center, 0.25)
             continue_search = messagebox.askyesno("Continue", "Find next")
             if continue_search is False:
                 number_of_hits = -1
