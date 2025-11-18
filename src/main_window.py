@@ -339,7 +339,10 @@ def create_control_notebook_tab() -> None:
         _clock_signal_name_entry
     global diagram_background_color, _diagram_background_color_error, include_timestamp_in_output
     control_frame = ttk.Frame(notebook, takefocus=False)
-    control_frame.grid()
+    control_frame.grid(sticky=(tk.W, tk.E))
+    control_frame.columnconfigure(0, weight=0)  # column contains the labels.
+    control_frame.columnconfigure(1, weight=1)  # column contains the entry boxes.
+    control_frame.columnconfigure(2, weight=0)  # column contains the buttons.
 
     module_name = tk.StringVar()
     module_name.set("")
@@ -367,16 +370,11 @@ def create_control_notebook_tab() -> None:
     generate_path_label.grid(row=2, column=0, sticky=tk.W)
     generate_path_entry.grid(row=2, column=1, sticky="ew")
     generate_path_button.grid(row=2, column=2, sticky="ew")
-    control_frame.columnconfigure((2, 0), weight=0)
-    control_frame.columnconfigure((2, 1), weight=1)
-    control_frame.columnconfigure((2, 2), weight=0)
 
     _select_file_number_label = ttk.Label(control_frame, text="Select for generation:", padding=5)
     _select_file_number_frame = ttk.Frame(control_frame)
     _select_file_number_label.grid(row=3, column=0, sticky=tk.W)
     _select_file_number_frame.grid(row=3, column=1, sticky=(tk.W, tk.E))
-    control_frame.columnconfigure((3, 0), weight=0)
-    control_frame.columnconfigure((3, 1), weight=1)
 
     select_file_number_text = tk.IntVar()
     select_file_number_text.set(2)
@@ -421,8 +419,6 @@ def create_control_notebook_tab() -> None:
     compile_cmd_entry = ttk.Entry(control_frame, width=23, textvariable=compile_cmd)
     compile_cmd_label.grid(row=6, column=0, sticky=tk.W)
     compile_cmd_entry.grid(row=6, column=1, sticky="ew")
-    control_frame.columnconfigure((6, 0), weight=0)
-    control_frame.columnconfigure((6, 1), weight=1)
 
     _compile_cmd_docu = ttk.Label(
         control_frame,
@@ -431,8 +427,6 @@ def create_control_notebook_tab() -> None:
         padding=5,
     )
     _compile_cmd_docu.grid(row=7, column=1, sticky=tk.W)
-    control_frame.columnconfigure((7, 0), weight=0)
-    control_frame.columnconfigure((7, 1), weight=1)
 
     edit_cmd = tk.StringVar()
     edit_cmd.set("C:/Program Files/Notepad++/notepad++.exe -nosession -multiInst")
@@ -440,8 +434,6 @@ def create_control_notebook_tab() -> None:
     edit_cmd_entry = ttk.Entry(control_frame, width=23, textvariable=edit_cmd)
     edit_cmd_label.grid(row=8, column=0, sticky=tk.W)
     edit_cmd_entry.grid(row=8, column=1, sticky="ew")
-    control_frame.columnconfigure((8, 0), weight=0)
-    control_frame.columnconfigure((8, 1), weight=1)
 
     additional_sources_value = tk.StringVar(value="")
     additional_sources_value.trace_add("write", _show_path_has_changed)
@@ -455,9 +447,6 @@ def create_control_notebook_tab() -> None:
     additional_sources_label.grid(row=9, column=0, sticky=tk.W)
     additional_sources_entry.grid(row=9, column=1, sticky=(tk.W, tk.E))
     additional_sources_button.grid(row=9, column=2, sticky=(tk.W, tk.E))
-    control_frame.columnconfigure((9, 0), weight=0)
-    control_frame.columnconfigure((9, 1), weight=1)
-    control_frame.columnconfigure((9, 2), weight=0)
 
     working_directory_value = tk.StringVar(value="")
     working_directory_value.trace_add("write", _show_path_has_changed)
@@ -469,9 +458,6 @@ def create_control_notebook_tab() -> None:
     working_directory_label.grid(row=10, column=0, sticky=tk.W)
     working_directory_entry.grid(row=10, column=1, sticky="ew")
     working_directory_button.grid(row=10, column=2, sticky="ew")
-    control_frame.columnconfigure((10, 0), weight=0)
-    control_frame.columnconfigure((10, 1), weight=1)
-    control_frame.columnconfigure((10, 2), weight=0)
 
     diagram_background_color = tk.StringVar(value="white")
     diagram_background_color.trace_add("write", lambda *args: _change_color_of_diagram_background())
@@ -483,14 +469,8 @@ def create_control_notebook_tab() -> None:
     diagram_background_color_label.grid(row=11, column=0, sticky=tk.W)
     diagram_background_color_entry.grid(row=11, column=1, sticky="ew")
     diagram_background_color_button.grid(row=11, column=2, sticky="ew")
-    control_frame.columnconfigure((11, 0), weight=0)
-    control_frame.columnconfigure((11, 1), weight=1)
-    control_frame.columnconfigure((11, 2), weight=0)
     _diagram_background_color_error = ttk.Label(control_frame, text="", padding=5)
     _diagram_background_color_error.grid(row=12, column=1, sticky=tk.W)
-    control_frame.columnconfigure((12, 0), weight=0)
-    control_frame.columnconfigure((12, 1), weight=1)
-    control_frame.columnconfigure((12, 2), weight=0)
 
     notebook.add(control_frame, sticky="nsew", text=GuiTab.CONTROL.value)
 
