@@ -11,6 +11,7 @@ import undo_handling
 
 class MoveHandlingCanvasWindow:
     def __init__(self, event, widget, window_id):
+        self.move_active = True
         self.widget = widget
         self.window_id = window_id
         window_coords = main_window.canvas.coords(self.window_id)
@@ -33,10 +34,18 @@ class MoveHandlingCanvasWindow:
         )
 
         # Create a binding for the now following movements of the mouse and for finishing the moving:
-        self.funcid_motion = widget.bind("<Motion>", self._motion)
-        self.funcid_release = widget.bind("<ButtonRelease-1>", self._release)
+        self.funcid_motion = self.widget.bind("<Motion>", self._motion)
+        self.funcid_release = self.widget.bind("<ButtonRelease-1>", self._release)
 
     def _motion(self, motion_event):
+        # At slow systems, tkinter needs some time to rearrange the canvas items before
+        # it is able to give correct coords at events inside the Canvas window item.
+        # So first do not listen to events anymore:
+        self.widget.unbind("<Motion>", self.funcid_motion)
+        self.funcid_motion = None
+        if not self.move_active:
+            # The release event did already happen:
+            return 
         delta_x = motion_event.x - self.touching_point_x
         delta_y = motion_event.y - self.touching_point_y
         window_coords = main_window.canvas.coords(self.window_id)
@@ -47,10 +56,21 @@ class MoveHandlingCanvasWindow:
             first=False,
             move_to_grid=False,
         )
+        # Later on, listen to events again:
+        main_window.root.after(50, self._bind_motion_again)
+        #main_window.root.after_idle(self._bind_motion_again)
+
+    def _bind_motion_again(self):
+        self.funcid_motion = self.widget.bind("<Motion>", self._motion)
 
     def _release(self, _):
-        self.widget.unbind("<Motion>", self.funcid_motion)
-        self.widget.unbind("<ButtonRelease-1>", self.funcid_release)
+        self.move_active = False
+        if self.funcid_motion is not None:
+            self.widget.unbind("<Motion>", self.funcid_motion)
+            self.funcid_motion = None
+        if self.funcid_release is not None:
+            self.widget.unbind("<ButtonRelease-1>", self.funcid_release)
+            self.funcid_release = None
         window_coords = main_window.canvas.coords(self.window_id)
         move_handling.move_to_coordinates(
             window_coords[0],
