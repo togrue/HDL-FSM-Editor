@@ -27,48 +27,45 @@ class FindReplace:
     """
 
     def __init__(self, search_string, replace_string, replace) -> None:
-        search_pattern = search_string.get()
-        if search_pattern == "":
+        self.number_of_hits_all = 0
+        self.search_pattern = search_string.get()
+        self.replace_pattern = replace_string.get()
+        self.replace = replace
+        if self.search_pattern == "":
             messagebox.showinfo("HDL-FSM-Editor", "The search is aborted because you searched for an empty string.")
             return
-        replace_pattern = replace_string.get()
-        number_of_hits_all = 0
-        continue_search, number_of_hits_all = self._search_in_diagram(
-            search_pattern, replace_pattern, replace, number_of_hits_all
-        )
-        if continue_search:
-            continue_search, number_of_hits_all = self._search_in_all_text_fields(
-                search_pattern, replace_pattern, replace, number_of_hits_all
-            )
-            if continue_search:
-                if replace:
-                    undo_handling.design_has_changed()
-                    messagebox.showinfo("HDL-FSM-Editor", "Number of replacements = " + str(number_of_hits_all))
-                else:
-                    messagebox.showinfo("HDL-FSM-Editor", "Number of hits = " + str(number_of_hits_all))
+        continue_search = self._search_in_diagram()
+        if not continue_search:
+            return
+        continue_search = self._search_in_all_text_fields()
+        if not continue_search:
+            return
+        # Suchen auch in: Module-Name, Directory generated HDL, reset-name, clk-name, compile-command,
+        # edit-command, add. sources, working dir.
+        # Das sind alles entry-widgets
+        # continue_search = self._search_in_entry_widgets()
+        # if not continue_search:
+        #     return
+        if replace:
+            undo_handling.design_has_changed()
+            messagebox.showinfo("HDL-FSM-Editor", "Number of replacements = " + str(self.number_of_hits_all))
+        else:
+            messagebox.showinfo("HDL-FSM-Editor", "Number of hits = " + str(self.number_of_hits_all))
 
-    def _search_in_diagram(self, search_pattern, replace_pattern, replace, number_of_hits_all) -> tuple[bool, int]:
+    def _search_in_diagram(self) -> bool:
         all_canvas_items = main_window.canvas.find_all()
         continue_search = True
         for item in all_canvas_items:
             if main_window.canvas.type(item) == "window":
                 text_ids = self._get_text_ids_of_canvas_window(item)
-                continue_search, number_of_hits = self._search_in_all_text_fields_of_canvas_window(
-                    search_pattern, item, text_ids, replace, replace_pattern
-                )
-                number_of_hits_all += number_of_hits
+                continue_search = self._search_in_all_text_fields_of_canvas_window(item, text_ids)
             elif main_window.canvas.type(item) == "text":
-                continue_search, number_of_hits = self._search_in_canvas_text(
-                    item, search_pattern, replace, replace_pattern
-                )
-                number_of_hits_all += number_of_hits
+                continue_search = self._search_in_canvas_text(item)
             if continue_search is False:
                 break
-        return continue_search, number_of_hits_all
+        return continue_search
 
-    def _search_in_all_text_fields(
-        self, search_pattern, replace_pattern, replace, number_of_hits_all
-    ) -> tuple[bool, int]:
+    def _search_in_all_text_fields(self) -> bool:
         continue_search = True
         text_fields = []
         if main_window.language.get() == "VHDL":
@@ -85,11 +82,8 @@ class FindReplace:
         text_fields.append({"tab": GuiTab.GENERATED_HDL, "ref": main_window.hdl_frame_text, "update": ""})
         for text_field in text_fields:
             if continue_search:
-                continue_search, number_of_hits = self._search_in_text_field(
-                    text_field, search_pattern, replace, replace_pattern
-                )
-                number_of_hits_all += number_of_hits
-        return continue_search, number_of_hits_all
+                continue_search = self._search_in_text_field(text_field)
+        return continue_search
 
     def _get_text_ids_of_canvas_window(self, item) -> list:
         text_ids = []
@@ -109,38 +103,32 @@ class FindReplace:
             text_ids.append(state_comment.StateComment.dictionary[item].text_id)
         return text_ids
 
-    def _search_in_all_text_fields_of_canvas_window(
-        self, search_pattern, item, text_ids_of_actions, replace, replace_pattern
-    ) -> tuple[bool, int]:
-        number_of_hits_all = 0
+    def _search_in_all_text_fields_of_canvas_window(self, item, text_ids_of_actions) -> bool:
         for text_id in text_ids_of_actions:
             text_field = {"tab": GuiTab.DIAGRAM, "ref": text_id, "update": "", "window_id": item}
-            continue_search, number_of_hits = self._search_in_text_field(
-                text_field, search_pattern, replace, replace_pattern
-            )
+            continue_search = self._search_in_text_field(text_field)
             if not continue_search:
                 break
-            number_of_hits_all += number_of_hits
-        return continue_search, number_of_hits_all
+        return continue_search
 
-    def _search_in_canvas_text(self, item, search_pattern, replace, replace_pattern) -> tuple[bool, int]:
+    def _search_in_canvas_text(self, item) -> bool:
         text = main_window.canvas.itemcget(item, "text")
         start = 0
-        number_of_hits = 0
         continue_search = True
         while True:
-            hit_begin = text.find(search_pattern, start, len(text))
+            hit_begin = text.find(self.search_pattern, start, len(text))
             if hit_begin == -1:
                 break
-            if replace:
-                search_pattern = re.escape(search_pattern)
-                replace_pattern = re.escape(replace_pattern)
-                number_of_hits = len(re.findall(search_pattern, text, flags=re.IGNORECASE))
+            if self.replace:
+                # All hits are replaced in 1 action:
+                search_pattern = re.escape(self.search_pattern)
+                replace_pattern = re.escape(self.replace_pattern)
+                self.number_of_hits_all += len(re.findall(search_pattern, text, flags=re.IGNORECASE))
                 text = re.sub(search_pattern, replace_pattern, text, flags=re.IGNORECASE)
                 main_window.canvas.itemconfigure(item, text=text)
                 start = len(text)  # The search-pattern cannot be found again in the next loop.
             else:
-                number_of_hits += 1
+                self.number_of_hits_all += 1
                 self._move_in_foreground(GuiTab.DIAGRAM)
                 main_window.canvas.select_from(item, hit_begin)
                 main_window.canvas.select_to(item, hit_begin + len(search_pattern) - 1)
@@ -157,25 +145,24 @@ class FindReplace:
                     "HDL-FSM-Editor", "Search in canvas text is aborted as for unknown reason no progress happens."
                 )
                 break
-        return continue_search, number_of_hits
+        return continue_search
 
-    def _search_in_text_field(self, text_field, search_pattern, replace, replace_pattern) -> tuple[bool, int]:
+    def _search_in_text_field(self, text_field) -> bool:
         count = tk.IntVar()
-        number_of_hits = 0
         start = "1.0"
         continue_search = True
         while True:
             index = text_field["ref"].search(
-                search_pattern, start, tk.END, count=count, regexp=True, nocase=1
+                self.search_pattern, start, tk.END, count=count, regexp=True, nocase=1
             )  # index = "line.column"
             if index == "" or count.get() == 0:
                 break
-            number_of_hits += 1
-            if replace:
-                end_index = index + "+" + str(len(search_pattern)) + " chars"
+            if self.replace and text_field["ref"].cget("state") != tk.DISABLED:
+                self.number_of_hits_all += 1
+                end_index = index + "+" + str(len(self.search_pattern)) + " chars"
                 text_field["ref"].delete(index, end_index)
-                text_field["ref"].insert(index, replace_pattern)
-                start = index + "+" + str(len(replace_pattern)) + " chars"
+                text_field["ref"].insert(index, self.replace_pattern)
+                start = index + "+" + str(len(self.replace_pattern)) + " chars"
                 if text_field["tab"] == GuiTab.INTERFACE:
                     if text_field["update"] == "Generics":
                         text_field["ref"].update_custom_text_class_generics_list()
@@ -185,11 +172,8 @@ class FindReplace:
                     text_field["ref"].update_custom_text_class_signals_list()
                 elif text_field["tab"] == GuiTab.DIAGRAM:
                     text_field["ref"].format_after_idle()
-                else:  # tab=GuiTab.GENERATED_HDL
-                    pass
-                if text_field["ref"].cget("state") == tk.DISABLED:
-                    number_of_hits -= 1  # no replace was possible
             else:
+                self.number_of_hits_all += 1
                 self._move_in_foreground(text_field["tab"])
                 text_field["ref"].tag_add("hit", index, index + " + " + str(count.get()) + " chars")
                 text_field["ref"].tag_configure("hit", background="blue")
@@ -203,7 +187,7 @@ class FindReplace:
                 text_field["ref"].tag_remove("hit", index, index + " + " + str(count.get()) + " chars")
                 if not continue_search:
                     break
-        return continue_search, number_of_hits
+        return continue_search
 
     def _move_in_foreground(self, tab: GuiTab) -> None:
         notebook_ids = main_window.notebook.tabs()
