@@ -231,7 +231,7 @@ def create_menu_bar() -> None:
     file_menu.add_command(label="Open ...", accelerator="Ctrl+o", command=file_handling.open_file, font=("Arial", 10))
     file_menu.add_command(label="Save", accelerator="Ctrl+s", command=file_handling.save, font=("Arial", 10))
     file_menu.add_command(label="Save as ...", command=file_handling.save_as, font=("Arial", 10))
-    file_menu.add_command(label="Exit", command=sys.exit, font=("Arial", 10))
+    file_menu.add_command(label="Exit", command=_close_tool, font=("Arial", 10))
 
     hdl_menu_button = ttk.Menubutton(menue_frame, text="HDL", style="Window.TMenubutton")
     hdl_menu = tk.Menu(hdl_menu_button)
