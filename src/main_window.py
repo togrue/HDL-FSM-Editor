@@ -43,13 +43,19 @@ notebook: ttk.Notebook
 module_name: tk.StringVar
 language: tk.StringVar
 generate_path_value: tk.StringVar
+_generate_path_entry: ttk.Entry
 additional_sources_value: tk.StringVar
+_additional_sources_entry: ttk.Entry
 working_directory_value: tk.StringVar
+_working_directory_entry: ttk.Entry
 select_file_number_text: tk.IntVar
 reset_signal_name: tk.StringVar
+_reset_signal_name_entry: ttk.Entry
 clock_signal_name: tk.StringVar
 compile_cmd: tk.StringVar
+_compile_cmd_entry: ttk.Entry
 edit_cmd: tk.StringVar
+_edit_cmd_entry: ttk.Entry
 interface_package_text: custom_text.CustomText
 interface_generics_text: custom_text.CustomText
 interface_ports_text: custom_text.CustomText
@@ -325,17 +331,23 @@ def create_control_notebook_tab() -> None:
         module_name, \
         language, \
         generate_path_value, \
+        _generate_path_entry, \
         additional_sources_value, \
+        _additional_sources_entry, \
         working_directory_value, \
+        _working_directory_entry, \
         select_file_number_text, \
         reset_signal_name, \
+        _reset_signal_name_entry, \
         clock_signal_name, \
-        compile_cmd
+        compile_cmd, \
+        _compile_cmd_entry
     global \
         _select_file_number_radio_button1, \
         _select_file_number_radio_button2, \
         _compile_cmd_docu, \
         edit_cmd, \
+        _edit_cmd_entry, \
         _module_name_entry, \
         _clock_signal_name_entry
     global diagram_background_color, _diagram_background_color_error, include_timestamp_in_output
@@ -366,10 +378,10 @@ def create_control_notebook_tab() -> None:
     generate_path_value = tk.StringVar(value="")
     generate_path_value.trace_add("write", _show_path_has_changed)
     generate_path_label = ttk.Label(control_frame, text="Directory for generated HDL:", padding=5)
-    generate_path_entry = ttk.Entry(control_frame, textvariable=generate_path_value, width=80)
+    _generate_path_entry = ttk.Entry(control_frame, textvariable=generate_path_value, width=80)
     generate_path_button = ttk.Button(control_frame, text="Select...", command=_set_path, style="Path.TButton")
     generate_path_label.grid(row=2, column=0, sticky=tk.W)
-    generate_path_entry.grid(row=2, column=1, sticky="ew")
+    _generate_path_entry.grid(row=2, column=1, sticky="ew")
     generate_path_button.grid(row=2, column=2, sticky="ew")
 
     _select_file_number_label = ttk.Label(control_frame, text="Select for generation:", padding=5)
@@ -399,10 +411,10 @@ def create_control_notebook_tab() -> None:
     reset_signal_name = tk.StringVar()
     reset_signal_name.set("")
     reset_signal_name_label = ttk.Label(control_frame, text="Name of asynchronous reset input port:", padding=5)
-    reset_signal_name_entry = ttk.Entry(control_frame, width=23, textvariable=reset_signal_name)
-    reset_signal_name_entry.bind("<Key>", lambda event: undo_handling.update_window_title())
+    _reset_signal_name_entry = ttk.Entry(control_frame, width=23, textvariable=reset_signal_name)
+    _reset_signal_name_entry.bind("<Key>", lambda event: undo_handling.update_window_title())
     reset_signal_name_label.grid(row=4, column=0, sticky=tk.W)
-    reset_signal_name_entry.grid(row=4, column=1, sticky=tk.W)
+    _reset_signal_name_entry.grid(row=4, column=1, sticky=tk.W)
 
     clock_signal_name = tk.StringVar()
     clock_signal_name.set("")
@@ -415,9 +427,9 @@ def create_control_notebook_tab() -> None:
     compile_cmd = tk.StringVar()
     compile_cmd.set("ghdl -a $file1 $file2; ghdl -e $name; ghdl -r $name")
     compile_cmd_label = ttk.Label(control_frame, text="Compile command:", padding=5)
-    compile_cmd_entry = ttk.Entry(control_frame, width=23, textvariable=compile_cmd)
+    _compile_cmd_entry = ttk.Entry(control_frame, width=23, textvariable=compile_cmd)
     compile_cmd_label.grid(row=6, column=0, sticky=tk.W)
-    compile_cmd_entry.grid(row=6, column=1, sticky="ew")
+    _compile_cmd_entry.grid(row=6, column=1, sticky="ew")
 
     _compile_cmd_docu = ttk.Label(
         control_frame,
@@ -430,9 +442,9 @@ def create_control_notebook_tab() -> None:
     edit_cmd = tk.StringVar()
     edit_cmd.set("C:/Program Files/Notepad++/notepad++.exe -nosession -multiInst")
     edit_cmd_label = ttk.Label(control_frame, text="Edit command (executed by Ctrl+e):", padding=5)
-    edit_cmd_entry = ttk.Entry(control_frame, width=23, textvariable=edit_cmd)
+    _edit_cmd_entry = ttk.Entry(control_frame, width=23, textvariable=edit_cmd)
     edit_cmd_label.grid(row=8, column=0, sticky=tk.W)
-    edit_cmd_entry.grid(row=8, column=1, sticky="ew")
+    _edit_cmd_entry.grid(row=8, column=1, sticky="ew")
 
     additional_sources_value = tk.StringVar(value="")
     additional_sources_value.trace_add("write", _show_path_has_changed)
@@ -441,21 +453,21 @@ def create_control_notebook_tab() -> None:
         text="Additional sources:\n(used only by HDL-SCHEM-Editor, must\nbe added manually to compile command)",
         padding=5,
     )
-    additional_sources_entry = ttk.Entry(control_frame, textvariable=additional_sources_value, width=80)
+    _additional_sources_entry = ttk.Entry(control_frame, textvariable=additional_sources_value, width=80)
     additional_sources_button = ttk.Button(control_frame, text="Select...", command=__add_path, style="Path.TButton")
     additional_sources_label.grid(row=9, column=0, sticky=tk.W)
-    additional_sources_entry.grid(row=9, column=1, sticky=(tk.W, tk.E))
+    _additional_sources_entry.grid(row=9, column=1, sticky=(tk.W, tk.E))
     additional_sources_button.grid(row=9, column=2, sticky=(tk.W, tk.E))
 
     working_directory_value = tk.StringVar(value="")
     working_directory_value.trace_add("write", _show_path_has_changed)
     working_directory_label = ttk.Label(control_frame, text="Working directory:", padding=5)
-    working_directory_entry = ttk.Entry(control_frame, textvariable=working_directory_value, width=80)
+    _working_directory_entry = ttk.Entry(control_frame, textvariable=working_directory_value, width=80)
     working_directory_button = ttk.Button(
         control_frame, text="Select...", command=_set_working_directory, style="Path.TButton"
     )
     working_directory_label.grid(row=10, column=0, sticky=tk.W)
-    working_directory_entry.grid(row=10, column=1, sticky="ew")
+    _working_directory_entry.grid(row=10, column=1, sticky="ew")
     working_directory_button.grid(row=10, column=2, sticky="ew")
 
     diagram_background_color = tk.StringVar(value="white")
@@ -1259,3 +1271,17 @@ def set_word_boundaries() -> None:
     # information see http://www.tcl.tk/man/tcl8.5/TclCmd/library.htm#M19
     root.tk.call("set", "tcl_wordchars", "[a-zA-Z0-9_]")
     root.tk.call("set", "tcl_nonwordchars", "[^a-zA-Z0-9_]")
+
+
+def get_entry_widget_info() -> list:
+    entry_widgets = [
+        {"stringvar": module_name, "entry": _module_name_entry},
+        {"stringvar": generate_path_value, "entry": _generate_path_entry},
+        {"stringvar": reset_signal_name, "entry": _reset_signal_name_entry},
+        {"stringvar": clock_signal_name, "entry": _clock_signal_name_entry},
+        {"stringvar": compile_cmd, "entry": _compile_cmd_entry},
+        {"stringvar": edit_cmd, "entry": _edit_cmd_entry},
+        {"stringvar": additional_sources_value, "entry": _additional_sources_entry},
+        {"stringvar": working_directory_value, "entry": _working_directory_entry},
+    ]
+    return entry_widgets

@@ -20,9 +20,9 @@ from constants import GuiTab
 
 class FindReplace:
     """
-    The method _search_in_canvas_text() uses <string>.find() and re.findall() and re.sub().
+    The methods _search_in_canvas_text() and _search_in_entry_widget() use <string>.find(), re.findall() and re.sub().
     All other search-methods use text_widget.search() for find and replace.
-    In order to have identical behaviour in _search_in_canvas_text(),
+    In order to have identical behaviour in _search_in_canvas_text() and _search_in_entry_widget(),
     there the search_string/replace_string are "escaped".
     """
 
@@ -40,12 +40,9 @@ class FindReplace:
         continue_search = self._search_in_all_text_fields()
         if not continue_search:
             return
-        # Suchen auch in: Module-Name, Directory generated HDL, reset-name, clk-name, compile-command,
-        # edit-command, add. sources, working dir.
-        # Das sind alles entry-widgets
-        # continue_search = self._search_in_entry_widgets()
-        # if not continue_search:
-        #     return
+        continue_search = self._search_in_all_entry_widgets()
+        if not continue_search:
+            return
         if replace:
             undo_handling.design_has_changed()
             messagebox.showinfo("HDL-FSM-Editor", "Number of replacements = " + str(self.number_of_hits_all))
@@ -85,6 +82,14 @@ class FindReplace:
                 continue_search = self._search_in_text_field(text_field)
         return continue_search
 
+    def _search_in_all_entry_widgets(self):
+        continue_search = True
+        entry_widget_infos = main_window.get_entry_widget_info()
+        for entry_widget_info in entry_widget_infos:
+            if continue_search:
+                continue_search = self._search_in_entry_widget(entry_widget_info)
+        return continue_search
+
     def _get_text_ids_of_canvas_window(self, item) -> list:
         text_ids = []
         if item in state_action_handling.MyText.mytext_dict:
@@ -121,17 +126,17 @@ class FindReplace:
                 break
             if self.replace:
                 # All hits are replaced in 1 action:
-                search_pattern = re.escape(self.search_pattern)
-                replace_pattern = re.escape(self.replace_pattern)
-                self.number_of_hits_all += len(re.findall(search_pattern, text, flags=re.IGNORECASE))
-                text = re.sub(search_pattern, replace_pattern, text, flags=re.IGNORECASE)
+                search_pattern_escaped = re.escape(self.search_pattern)
+                replace_pattern_escaped = re.escape(self.replace_pattern)
+                self.number_of_hits_all += len(re.findall(search_pattern_escaped, text, flags=re.IGNORECASE))
+                text = re.sub(search_pattern_escaped, replace_pattern_escaped, text, flags=re.IGNORECASE)
                 main_window.canvas.itemconfigure(item, text=text)
                 start = len(text)  # The search-pattern cannot be found again in the next loop.
             else:
                 self.number_of_hits_all += 1
                 self._move_in_foreground(GuiTab.DIAGRAM)
                 main_window.canvas.select_from(item, hit_begin)
-                main_window.canvas.select_to(item, hit_begin + len(search_pattern) - 1)
+                main_window.canvas.select_to(item, hit_begin + len(self.search_pattern) - 1)
                 object_coords = main_window.canvas.bbox(item)
                 canvas_editing.view_rectangle(object_coords, check_fit=False)
                 object_center = main_window.canvas.coords(item)
@@ -139,7 +144,7 @@ class FindReplace:
                 continue_search = messagebox.askyesno("Continue", "Find next")
                 if continue_search is False:
                     break
-                start = hit_begin + len(search_pattern)
+                start = hit_begin + len(self.search_pattern)
             if start == hit_begin:
                 messagebox.showinfo(
                     "HDL-FSM-Editor", "Search in canvas text is aborted as for unknown reason no progress happens."
@@ -187,6 +192,38 @@ class FindReplace:
                 text_field["ref"].tag_remove("hit", index, index + " + " + str(count.get()) + " chars")
                 if not continue_search:
                     break
+        return continue_search
+
+    def _search_in_entry_widget(self, entry_widget_info) -> bool:
+        value = entry_widget_info["stringvar"].get()
+        start = 0
+        continue_search = True
+        while True:
+            hit_begin = value.find(self.search_pattern, start, len(value))
+            if hit_begin == -1:
+                break
+            if self.replace:
+                # All hits are replaced in 1 action:
+                search_pattern_escaped = re.escape(self.search_pattern)
+                replace_pattern_escaped = re.escape(self.replace_pattern)
+                self.number_of_hits_all += len(re.findall(search_pattern_escaped, value, flags=re.IGNORECASE))
+                value = re.sub(search_pattern_escaped, replace_pattern_escaped, value, flags=re.IGNORECASE)
+                entry_widget_info["stringvar"].set(value)
+                start = len(value)  # The search-pattern cannot be found again in the next loop.
+            else:
+                self.number_of_hits_all += 1
+                self._move_in_foreground(GuiTab.CONTROL)
+                entry_widget_info["entry"].select_range(hit_begin, hit_begin + len(self.search_pattern))
+                continue_search = messagebox.askyesno("Continue", "Find next")
+                if continue_search is False:
+                    break
+                start = hit_begin + len(self.search_pattern)
+            if start == hit_begin:
+                messagebox.showinfo(
+                    "HDL-FSM-Editor",
+                    "Search in entry field of Control-tab is aborted as for unknown reason no progress happens.",
+                )
+                break
         return continue_search
 
     def _move_in_foreground(self, tab: GuiTab) -> None:
