@@ -162,21 +162,24 @@ class FindReplace:
             )  # index = "line.column"
             if index == "" or count.get() == 0:
                 break
-            if self.replace and text_field["ref"].cget("state") != tk.DISABLED:
-                self.number_of_hits_all += 1
-                end_index = index + "+" + str(len(self.search_pattern)) + " chars"
-                text_field["ref"].delete(index, end_index)
-                text_field["ref"].insert(index, self.replace_pattern)
-                start = index + "+" + str(len(self.replace_pattern)) + " chars"
-                if text_field["tab"] == GuiTab.INTERFACE:
-                    if text_field["update"] == "Generics":
-                        text_field["ref"].update_custom_text_class_generics_list()
-                    else:  # kind=="ports"
-                        text_field["ref"].update_custom_text_class_ports_list()
-                elif text_field["tab"] == GuiTab.INTERNALS:
-                    text_field["ref"].update_custom_text_class_signals_list()
-                elif text_field["tab"] == GuiTab.DIAGRAM:
-                    text_field["ref"].format_after_idle()
+            if self.replace:
+                if text_field["ref"].cget("state") != tk.DISABLED:
+                    self.number_of_hits_all += 1
+                    end_index = index + "+" + str(len(self.search_pattern)) + " chars"
+                    text_field["ref"].delete(index, end_index)
+                    text_field["ref"].insert(index, self.replace_pattern)
+                    start = index + "+" + str(len(self.replace_pattern)) + " chars"
+                    if text_field["tab"] == GuiTab.INTERFACE:
+                        if text_field["update"] == "Generics":
+                            text_field["ref"].update_custom_text_class_generics_list()
+                        else:  # kind=="ports"
+                            text_field["ref"].update_custom_text_class_ports_list()
+                    elif text_field["tab"] == GuiTab.INTERNALS:
+                        text_field["ref"].update_custom_text_class_signals_list()
+                    elif text_field["tab"] == GuiTab.DIAGRAM:
+                        text_field["ref"].format_after_idle()
+                else:
+                    break
             else:
                 self.number_of_hits_all += 1
                 self._move_in_foreground(text_field["tab"])
