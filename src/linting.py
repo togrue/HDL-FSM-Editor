@@ -14,10 +14,12 @@ def recreate_keyword_list_of_unused_signals() -> None:
     read_variables = []
     for _, read_variables_of_window in custom_text.CustomText.read_variables_of_all_windows.items():
         read_variables += read_variables_of_window
+    read_variables = list(set(read_variables))  # remove duplicates
     # print("read_variables =", read_variables)
     written_variables = []
     for _, written_variables_of_window in custom_text.CustomText.written_variables_of_all_windows.items():
         written_variables += written_variables_of_window
+    written_variables = list(set(written_variables))  # remove duplicates
     # print("written_variables =", written_variables)
     # Check if each input_port is read (remove read input_ports from list, if a declaration exists):
     for input_port in main_window.interface_ports_text.readable_ports_list:

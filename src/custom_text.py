@@ -267,11 +267,14 @@ class CustomText(tk.Text):
         CustomText.written_variables_of_all_windows[self] = []
         text = self.get("1.0", tk.END + "- 1 chars")
         text = hdl_generation_library.convert_hdl_lines_into_a_searchable_string(text)
+        if text.isspace():
+            return
         if main_window.language.get() == "VHDL":
             text = self._remove_loop_indices(text)
         if main_window.language.get() == "VHDL" and self._text_is_global_actions_combinatorial():
             text = self._add_uncomplete_vhdl_variables_to_read_or_written_variables_of_all_windows(text)
         text = self.__remove_keywords(text)
+        text = self._remove_vhdl_attributes(text)
         if main_window.language.get() == "VHDL":
             text = re.sub(r"\..*?\s", " ", text)  # remove all record-element-names from their signal/variable names
         if self.text_type == "condition":
@@ -321,6 +324,20 @@ class CustomText(tk.Text):
             if global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[canvas_id].text_id == self:
                 return True
         return False
+
+    def _remove_vhdl_attributes(self, text):
+        search_for_attributes = r"\w+\s+'\s+\w+"  # remove signal-name and attribute; example: "paddr ' range"
+        while True:
+            match = re.search(search_for_attributes, text, flags=re.IGNORECASE)
+            if match:
+                if match.start() == match.end():
+                    break
+                # print("match found =", match.group(0) + "|")
+                # print("index found =", match.group(1) + "|")
+                text = text[: match.start()] + text[match.end() :]
+            else:
+                break
+        return text
 
     def _remove_loop_indices(self, text):
         # Suchen nach "for   in"
@@ -455,8 +472,8 @@ class CustomText(tk.Text):
             "%",
             "&",
             "=>",  # something like "others =>"
-            " [0-9]+ ",  # something like " 123 "
             "' . '",  # something like the std_logic value ' 1 ' or ' 0 '
+            " [0-9]+ ",  # something like " 123 "
             '[^\\s]"[0-9,a-f,A-F]+"',  # something like X"1234"
             "'.*?'",  # Remove strings from report-commands (they might contain ';')
             '".*?"',  # Remove strings from report-commands (they might contain ';')
