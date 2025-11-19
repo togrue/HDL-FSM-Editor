@@ -19,6 +19,7 @@ import compile_handling
 import constants
 import custom_text
 import file_handling
+import find_replace
 import grid_drawing
 import move_handling_initialization
 import undo_handling
@@ -249,7 +250,7 @@ def create_menu_bar() -> None:
     search_button = ttk.Button(
         search_frame,
         text="Find",
-        command=lambda: canvas_editing.find(search_string, replace_string, replace=False),
+        command=lambda: find_replace.FindReplace(search_string, replace_string, replace=False),
         style="Find.TButton",
     )
     search_string_entry = ttk.Entry(search_frame, width=23, textvariable=search_string)
@@ -257,17 +258,17 @@ def create_menu_bar() -> None:
     replace_button = ttk.Button(
         search_frame,
         text="Find & Replace",
-        command=lambda: canvas_editing.find(search_string, replace_string, replace=True),
+        command=lambda: find_replace.FindReplace(search_string, replace_string, replace=True),
         style="Find.TButton",
     )
     search_string_entry.bind(
-        "<Return>", lambda event: canvas_editing.find(search_string, replace_string, replace=False)
+        "<Return>", lambda event: find_replace.FindReplace(search_string, replace_string, replace=False)
     )
-    search_button.bind("<Return>", lambda event: canvas_editing.find(search_string, replace_string, replace=False))
+    search_button.bind("<Return>", lambda event: find_replace.FindReplace(search_string, replace_string, replace=False))
     replace_string_entry.bind(
-        "<Return>", lambda event: canvas_editing.find(search_string, replace_string, replace=True)
+        "<Return>", lambda event: find_replace.FindReplace(search_string, replace_string, replace=True)
     )
-    replace_button.bind("<Return>", lambda event: canvas_editing.find(search_string, replace_string, replace=True))
+    replace_button.bind("<Return>", lambda event: find_replace.FindReplace(search_string, replace_string, replace=True))
     search_string_entry.grid(row=0, column=0)
     search_button.grid(row=0, column=1)
     replace_string_entry.grid(row=0, column=2)
