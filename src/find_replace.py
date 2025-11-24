@@ -188,7 +188,12 @@ class FindReplace:
                 start = index + " + " + str(count.get()) + " chars"
                 if text_field["tab"] == GuiTab.DIAGRAM:
                     object_coords = main_window.canvas.bbox(text_field["window_id"])
-                    canvas_editing.view_rectangle(object_coords, check_fit=False)
+                    object_coords_new = []
+                    object_coords_new.append(object_coords[0] - 100)
+                    object_coords_new.append(object_coords[1] - 100)
+                    object_coords_new.append(object_coords[2] + 300)
+                    object_coords_new.append(object_coords[3] + 300)
+                    canvas_editing.view_rectangle(object_coords_new, check_fit=False)
                 else:
                     text_field["ref"].see(index)
                 continue_search = messagebox.askyesno("Continue", "Find next")
