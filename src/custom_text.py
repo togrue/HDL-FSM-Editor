@@ -272,6 +272,7 @@ class CustomText(tk.Text):
         if main_window.language.get() == "VHDL":
             text = self._remove_loop_indices(text)
         if main_window.language.get() == "VHDL" and self._text_is_global_actions_combinatorial():
+            # "processes" are possible in this text, which might contain "uncomplete" variable usage:
             text = self._add_uncomplete_vhdl_variables_to_read_or_written_variables_of_all_windows(text)
         text = self.__remove_keywords(text)
         text = self._remove_vhdl_attributes(text)
@@ -312,6 +313,10 @@ class CustomText(tk.Text):
                 CustomText.read_variables_of_all_windows[self].remove("<=")
             if ":=" in CustomText.read_variables_of_all_windows[self]:
                 CustomText.read_variables_of_all_windows[self].remove(":=")
+            if ";" in CustomText.read_variables_of_all_windows[self]:
+                CustomText.read_variables_of_all_windows[self].remove(";")
+            if "," in CustomText.read_variables_of_all_windows[self]:
+                CustomText.read_variables_of_all_windows[self].remove(",")
             if "<=" in CustomText.written_variables_of_all_windows[self]:
                 CustomText.written_variables_of_all_windows[self].remove("<=")
             if ":=" in CustomText.written_variables_of_all_windows[self]:
@@ -475,8 +480,9 @@ class CustomText(tk.Text):
             "' . '",  # something like the std_logic value ' 1 ' or ' 0 '
             " [0-9]+ ",  # something like " 123 "
             '[^\\s]"[0-9,a-f,A-F]+"',  # something like X"1234"
-            "'.*?'",  # Remove strings from report-commands (they might contain ';')
-            '".*?"',  # Remove strings from report-commands (they might contain ';')
+            '"[0,1]+"',  # something like "1011"
+            "report\\s*'.*?'",  # Remove strings from report-commands (they might contain ';')
+            'report\\s*".*?"',  # Remove strings from report-commands (they might contain ';')
         ):
             text = re.sub(keyword, "  ", text, flags=re.I)  # Keep the blanks the keyword is surrounded by.
         for keyword in constants.VHDL_KEYWORDS["datatype"]:
