@@ -53,7 +53,8 @@ class CustomText(tk.Text):
         self.readable_ports_list = []
         self.writable_ports_list = []
         self.generics_list = []
-        self.port_types_list = []
+        self.port_types_list = []  # Only used at object main_window.interface_ports_text
+        self.function_names_list = []
         CustomText.read_variables_of_all_windows[self] = []
         CustomText.written_variables_of_all_windows[self] = []
         self.tag_config("message_red", foreground="red")
@@ -248,8 +249,8 @@ class CustomText(tk.Text):
         self.__update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows()
         self.update_highlighting()
 
-    def update_custom_text_class_ports_list(self) -> None:
-        all_port_declarations = main_window.interface_ports_text.get("1.0", tk.END).lower()
+    def update_custom_text_class_ports_list(self) -> None:  # Only called for self==main_window.interface_ports_text
+        all_port_declarations = self.get("1.0", tk.END).lower()
         self.readable_ports_list = hdl_generation_architecture_state_actions.get_all_readable_ports(
             all_port_declarations, check=False
         )
@@ -269,6 +270,8 @@ class CustomText(tk.Text):
         text = hdl_generation_library.convert_hdl_lines_into_a_searchable_string(text)
         if text.isspace():
             return
+        if main_window.language.get() == "VHDL" and self == main_window.internals_architecture_text:
+            self._fill_function_names_list()
         if main_window.language.get() == "VHDL":
             text = self._remove_loop_indices(text)
         if main_window.language.get() == "VHDL" and self._text_is_global_actions_combinatorial():
@@ -313,6 +316,9 @@ class CustomText(tk.Text):
                 CustomText.read_variables_of_all_windows[self].remove("<=")
             if ":=" in CustomText.read_variables_of_all_windows[self]:
                 CustomText.read_variables_of_all_windows[self].remove(":=")
+            for function_name in main_window.internals_architecture_text.function_names_list:
+                if function_name in CustomText.read_variables_of_all_windows[self]:
+                    CustomText.read_variables_of_all_windows[self].remove(function_name)
             if ";" in CustomText.read_variables_of_all_windows[self]:
                 CustomText.read_variables_of_all_windows[self].remove(";")
             if "," in CustomText.read_variables_of_all_windows[self]:
@@ -329,6 +335,23 @@ class CustomText(tk.Text):
             if global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[canvas_id].text_id == self:
                 return True
         return False
+
+    def _fill_function_names_list(self):
+        self.function_names_list = []
+        copy_of_text = self.get("1.0", tk.END + "- 1 chars")
+        search_for_function_declarations = r"function\s+(\w+)"
+        while True:
+            match = re.search(search_for_function_declarations, copy_of_text, flags=re.IGNORECASE)
+            if match:
+                if match.start() == match.end():
+                    break
+                function_name = match.group(0).split()[1]
+                if function_name not in self.function_names_list:
+                    self.function_names_list.append(function_name)
+                copy_of_text = re.sub(match.group(0), "", copy_of_text)
+            else:
+                break
+        return
 
     def _remove_vhdl_attributes(self, text):
         search_for_attributes = r"\w+\s+'\s+\w+"  # remove signal-name and attribute; example: "paddr ' range"
@@ -527,43 +550,44 @@ class CustomText(tk.Text):
         return text
 
     def __add_read_variables_from_procedure_calls_to_read_variables_of_all_windows(self, text):
-        if main_window.language.get() == "VHDL":
-            all_procedure_calls = []
-            search_for_not_assignments = "^[^=]*?;"
-            while True:
-                match = re.search(search_for_not_assignments, text, flags=re.IGNORECASE)
-                if match:
-                    if match.start() == match.end():
-                        break
-                    all_procedure_calls.append(match.group(0)[:-1])  # append without semicolon
-                    text = text[: match.start()] + text[match.end() :]  # remove match from text
-                else:
+        if main_window.language.get() != "VHDL":
+            return text
+        all_procedure_calls = []
+        search_for_not_assignments = "^[^=]*?;"
+        while True:
+            match = re.search(search_for_not_assignments, text, flags=re.IGNORECASE)
+            if match:
+                if match.start() == match.end():
                     break
-            for procedure_call in all_procedure_calls:
-                procedure_parameters = self._remove_procedure_name(procedure_call)
-                procedure_parameter_list = procedure_parameters.split(",")
-                for procedure_parameter in procedure_parameter_list:
-                    procedure_parameter = procedure_parameter.strip()
-                    if (
-                        procedure_parameter != ""
-                        and procedure_parameter not in ["x", "X"]
-                        and not procedure_parameter.isdigit()
-                    ):
-                        # As the procedure definition may not be part of this VHDL file,
-                        # it can not for sure be determined, which parameter is read and which parameter is written.
-                        if procedure_parameter in main_window.interface_ports_text.readable_ports_list:
-                            # If a parameter is an input port, then it is read.
-                            CustomText.read_variables_of_all_windows[self] += [procedure_parameter]
-                        elif procedure_parameter in main_window.interface_ports_text.writable_ports_list:
-                            # If a parameter is an output port, then it is written and
-                            # must be added to the variable text with a pseudo assignment:
-                            text += procedure_parameter + " <= ;"
-                        else:
-                            # If a parameter is neither an input nor an output, then the parameter is probably a signal.
-                            # But it is not clear if it is written or read and
-                            # to avoid false alarms it is added to both lists:
-                            CustomText.read_variables_of_all_windows[self] += [procedure_parameter]
-                            text += procedure_parameter + " <= ;"
+                all_procedure_calls.append(match.group(0)[:-1])  # append without semicolon
+                text = text[: match.start()] + text[match.end() :]  # remove match from text
+            else:
+                break
+        for procedure_call in all_procedure_calls:
+            procedure_parameters = self._remove_procedure_name(procedure_call)
+            procedure_parameter_list = procedure_parameters.split(",")
+            for procedure_parameter in procedure_parameter_list:
+                procedure_parameter = procedure_parameter.strip()
+                if (
+                    procedure_parameter != ""
+                    and procedure_parameter not in ["x", "X"]
+                    and not procedure_parameter.isdigit()
+                ):
+                    # As the procedure definition may not be part of this VHDL file,
+                    # it can not for sure be determined, which parameter is read and which parameter is written.
+                    if procedure_parameter in main_window.interface_ports_text.readable_ports_list:
+                        # If a parameter is an input port, then it is read.
+                        CustomText.read_variables_of_all_windows[self] += [procedure_parameter]
+                    elif procedure_parameter in main_window.interface_ports_text.writable_ports_list:
+                        # If a parameter is an output port, then it is written and
+                        # must be added to the variable text with a pseudo assignment:
+                        text += procedure_parameter + " <= ;"
+                    else:
+                        # If a parameter is neither an input nor an output, then the parameter is probably a signal.
+                        # But it is not clear if it is written or read and
+                        # to avoid false alarms it is added to both lists:
+                        CustomText.read_variables_of_all_windows[self] += [procedure_parameter]
+                        text += procedure_parameter + " <= ;"
         return text
 
     def _remove_procedure_name(self, procedure_call):
