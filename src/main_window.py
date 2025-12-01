@@ -32,7 +32,7 @@ from dialogs.regex_dialog import RegexDialog
 from link_dictionary import init_link_dict, link_dict
 from project_manager import project_manager
 
-_VERSION = "5.7"
+_VERSION = "5.8"
 header_string = (
     "HDL-FSM-Editor\nVersion " + _VERSION + "\nCreated by Matthias Schweikart\nContact: matthias.schweikart@gmx.de"
 )

@@ -13,6 +13,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Fixed
 ## Security
 
+## [5.8]
+## Added
+- Highlighting when VHDL attributes are used is improved.
+- Find&Replace now works also in the Control-tab.
+## Changed
+- Scrolling and zooming does no longer modify the data written to the hfe-file, which means the content of the hfe-file will only change at "real" design changes.
+- The entry boxes of the Control-tab expand now together with the window.
+- The radio button for the number of files has been moved from the right-hand border to the middle
+- VHDL-function calls are not highlighted red anymore.
+- Refactoring: Find&Replace is now moved in its own class.
+- Refactoring of linting.py.
+## Deprecated
+## Removed
+## Fixed
+- At Linux Mint at leaving a condition&action window, the condition&action block was not shrinked anymore.
+- At slow Linux Mint systems the condition&action block, and all other block types too, jumped at moving.
+## Security
+
 ## [5.7]
 ## Added
 - Support of VHDL procedures for linting
