@@ -11,68 +11,107 @@ def recreate_keyword_list_of_unused_signals() -> None:
     main_window.keywords["not_read"].clear()
     main_window.keywords["not_written"].clear()
 
-    read_variables = []
+    variables_to_write = _get_all_read_variables()
+    variables_to_read = _get_all_written_variables()
+    variables_to_write = _detect_not_read_input_ports(variables_to_write)
+    variables_to_read, variables_to_write = _detect_not_written_output_ports(variables_to_read, variables_to_write)
+    variables_to_read, variables_to_write = _detect_not_written_not_read_signals(variables_to_read, variables_to_write)
+    variables_to_read, variables_to_write = _detect_not_written_constants(variables_to_read, variables_to_write)
+    variables_to_write = _remove_port_types(variables_to_write)
+    variables_to_read, variables_to_write = _remove_generics(variables_to_read, variables_to_write)
+    main_window.keywords["not_written"] += variables_to_write
+    main_window.keywords["not_read"] += variables_to_read
+
+
+def _get_all_read_variables():
+    variables_to_write = []
     for _, read_variables_of_window in custom_text.CustomText.read_variables_of_all_windows.items():
-        read_variables += read_variables_of_window
-    read_variables = list(set(read_variables))  # remove duplicates
-    # print("read_variables =", read_variables)
-    written_variables = []
+        variables_to_write += read_variables_of_window
+    variables_to_write = list(set(variables_to_write))  # remove duplicates
+    # print("variables_to_write =", variables_to_write)
+    return variables_to_write
+
+
+def _get_all_written_variables():
+    variables_to_read = []
     for _, written_variables_of_window in custom_text.CustomText.written_variables_of_all_windows.items():
-        written_variables += written_variables_of_window
-    written_variables = list(set(written_variables))  # remove duplicates
-    # print("written_variables =", written_variables)
-    # Check if each input_port is read (remove read input_ports from list, if a declaration exists):
+        variables_to_read += written_variables_of_window
+    variables_to_read = list(set(variables_to_read))  # remove duplicates
+    # print("variables_to_read =", variables_to_read)
+    return variables_to_read
+
+
+def _detect_not_read_input_ports(variables_to_write):
     for input_port in main_window.interface_ports_text.readable_ports_list:
-        if input_port in read_variables:
-            read_variables = [value for value in read_variables if value != input_port]
-        elif input_port != main_window.clock_signal_name.get():
-            main_window.keywords["not_read"].append(input_port)
-    # print('main_window.keywords["not_read"] 1 =', main_window.keywords["not_read"])
-    # Check if each output is written (remove written outputs from list, if a declaration exists):
-    for output in main_window.interface_ports_text.writable_ports_list:
-        if output in written_variables:
-            written_variables = [value for value in written_variables if value != output]
+        if input_port not in variables_to_write:
+            if input_port != main_window.clock_signal_name.get():
+                main_window.keywords["not_read"].append(input_port)
         else:
+            # Inputs must not be written:
+            variables_to_write.remove(input_port)
+    return variables_to_write
+
+
+def _detect_not_written_output_ports(variables_to_read, variables_to_write):
+    for output in main_window.interface_ports_text.writable_ports_list:
+        if output not in variables_to_read:
             main_window.keywords["not_written"].append(output)
-        if main_window.language.get() != "VHDL" and output in read_variables:  # A Verilog output can be read.
-            read_variables = [value for value in read_variables if value != output]
+        else:
+            # Outputs must not be read:
+            variables_to_read.remove(output)
+        if main_window.language.get() != "VHDL" and output in variables_to_write:  # A Verilog output is read.
+            # Writing of outputs is checked by the variables_to_read list:
+            variables_to_write.remove(output)
+    return variables_to_read, variables_to_write
+
+
+def _detect_not_written_not_read_signals(variables_to_read, variables_to_write):
     # Check if each signal or variable is written and is read:
     for signal in (
         main_window.internals_architecture_text.signals_list
         + main_window.internals_process_combinatorial_text.signals_list
         + main_window.internals_process_clocked_text.signals_list
     ):
-        if signal in written_variables and signal in read_variables:
-            written_variables = [value for value in written_variables if value != signal]  # remove signal from list
-            read_variables = [value for value in read_variables if value != signal]  # remove signal from list
-        elif signal in written_variables:
+        if signal in variables_to_read and signal in variables_to_write:
+            variables_to_read.remove(signal)
+            variables_to_write.remove(signal)
+        elif signal in variables_to_read:
             main_window.keywords["not_read"].append(signal)
         else:
             main_window.keywords["not_written"].append(signal)
+    return variables_to_read, variables_to_write
+
+
+def _detect_not_written_constants(variables_to_read, variables_to_write):
     for constant in (
         main_window.internals_architecture_text.constants_list
         + main_window.internals_process_combinatorial_text.constants_list
         + main_window.internals_process_clocked_text.constants_list
     ):
-        written_variables = [value for value in written_variables if value != constant]  # remove constant from list
-        if constant in read_variables:
-            read_variables = [value for value in read_variables if value != constant]  # remove constant from list
-        else:
+        # variables_to_read = [value for value in variables_to_read if value != constant]  # remove constant from list
+        if constant in variables_to_read:
+            variables_to_read.remove(constant)
+        if constant not in variables_to_write:  # Then the constant is not read.
             main_window.keywords["not_read"].append(constant)
-    # print('main_window.keywords["not_read"] 2 =', main_window.keywords["not_read"])
-    # print('read_variables =', read_variables)
+        else:
+            variables_to_write.remove(constant)
+    return variables_to_read, variables_to_write
+
+
+def _remove_port_types(variables_to_write):
     for port_type in main_window.interface_ports_text.port_types_list:
-        if port_type in read_variables:
-            read_variables = [value for value in read_variables if value != port_type]  # remove signal from list
+        if port_type in variables_to_write:
+            variables_to_write.remove(port_type)
+    return variables_to_write
+
+
+def _remove_generics(variables_to_read, variables_to_write):
     for generic in main_window.interface_generics_text.generics_list:
-        written_variables = [value for value in written_variables if value != generic]  # remove generic from list
-        if generic in read_variables:
-            read_variables = [value for value in read_variables if value != generic]  # remove signal from list
-    main_window.keywords["not_written"] += read_variables
-    main_window.keywords["not_read"] += written_variables
-    # print('written_variables =', written_variables)
-    # print('main_window.keywords["not_read"   ] 3 =', main_window.keywords["not_read"])
-    # print('main_window.keywords["not_written"] 3 =', main_window.keywords["not_written"])
+        if generic in variables_to_read:
+            variables_to_read.remove(generic)
+        if generic in variables_to_write:
+            variables_to_write.remove(generic)
+    return variables_to_read, variables_to_write
 
 
 def update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment() -> None:
