@@ -30,9 +30,20 @@ import update_hdl_tab
 from constants import GuiTab
 from project_manager import project_manager
 
-all_graphical_elements = ("state", "text", "line", "polygon", "rectangle",
-                          "window_state_action_block", "window_state_comment", "window_condition_action_block",
-                          "window_global_actions", "window_global_actions_combinatorial", "window_state_actions_default")
+all_graphical_elements = (
+    "state",
+    "text",
+    "line",
+    "polygon",
+    "rectangle",
+    "window_state_action_block",
+    "window_state_comment",
+    "window_condition_action_block",
+    "window_global_actions",
+    "window_global_actions_combinatorial",
+    "window_state_actions_default",
+)
+
 
 def ask_save_unsaved_changes(title) -> str:
     """
@@ -47,10 +58,9 @@ def ask_save_unsaved_changes(title) -> str:
     )
     if result is True:
         return "save"
-    elif result is False:
+    if result is False:
         return "discard"
-    else:
-        return "cancel"
+    return "cancel"
 
 
 def save_as() -> None:
@@ -60,7 +70,7 @@ def save_as() -> None:
         initialfile=main_window.module_name.get(),
         filetypes=(("HDL-FSM-Editor files", "*.hfe"), ("all files", "*.*")),
     )
-    if project_manager.current_file!=() and project_manager.current_file != "":
+    if project_manager.current_file != () and project_manager.current_file != "":
         dir_name, file_name = os.path.split(project_manager.current_file)
         main_window.root.title(f"{file_name} ({dir_name})")
         save_in_file_new(project_manager.current_file)
@@ -165,7 +175,9 @@ def save_in_file_new(save_filename) -> None:  # Called at saving and at every de
     design_dictionary = _save_design_to_dict()
     if not save_filename.endswith(".tmp"):
         main_window.write_data_creator_ref.zoom_graphic_back_to_actual_size(zoom_factor)
-        design_dictionary = main_window.write_data_creator_ref.round_and_sort_data(design_dictionary, all_graphical_elements)
+        design_dictionary = main_window.write_data_creator_ref.round_and_sort_data(
+            design_dictionary, all_graphical_elements
+        )
     old_cursor = main_window.root.cget(
         "cursor"
     )  # may be different from "arrow" at design changes (writing to .tmp-file)
@@ -253,8 +265,8 @@ def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
     design_dictionary["priority_distance"] = canvas_editing.priority_distance
     design_dictionary["fontsize"] = canvas_editing.fontsize
     design_dictionary["label_fontsize"] = canvas_editing.label_fontsize
-    #design_dictionary["visible_center"] = canvas_editing.get_visible_center_as_string()
-    #design_dictionary["sash_positions"] = main_window.sash_positions
+    # design_dictionary["visible_center"] = canvas_editing.get_visible_center_as_string()
+    # design_dictionary["sash_positions"] = main_window.sash_positions
     for graphical_element in all_graphical_elements:
         design_dictionary[graphical_element] = []
     items = main_window.canvas.find_all()
@@ -333,8 +345,10 @@ def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
             else:
                 print("file_handling: Fatal, unknown dictionary key ", i)
 
+
 def _gettags(i):
     return [x for x in main_window.canvas.gettags(i) if x != "current"]
+
 
 def open_file_with_name_new(read_filename, is_script_mode) -> None:
     replaced_read_filename = read_filename
@@ -569,8 +583,9 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
     canvas_editing.fontsize = design_dictionary["fontsize"]
     canvas_editing.state_name_font.configure(size=int(canvas_editing.fontsize))
     canvas_editing.label_fontsize = design_dictionary["label_fontsize"]
-    #canvas_editing.shift_visible_center_to_window_center(design_dictionary["visible_center"])
+    # canvas_editing.shift_visible_center_to_window_center(design_dictionary["visible_center"])
     canvas_editing.shift_visible_center_to_window_center(canvas_editing.get_visible_center_as_string())
+
 
 def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
     """Load all canvas elements including states, transitions, text, and windows."""
