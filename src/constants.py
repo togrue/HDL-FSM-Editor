@@ -2,7 +2,8 @@
 Constants for all modules of HDL-FSM-Editor
 """
 
-from enum import StrEnum
+# from enum import StrEnum # StrEnum does not exist in Linux Mint
+from enum import Enum
 
 VHDL_KEYWORDS_FOR_SIGNAL_HANDLING = (
     " to_stdulogic ",
@@ -433,7 +434,8 @@ CONNECTOR_COLOR = "violet"
 STATE_COLOR = "cyan"
 
 
-class GuiTab(StrEnum):
+# class GuiTab(StrEnum): # StrEnum does not exist in Linux Mint
+class GuiTab(str, Enum):
     """Used to identify the tab in the application"""
 
     CONTROL = "Control"
