@@ -208,6 +208,7 @@ class ConditionAction:
         self.deselect_window()
         if self.canvas_enter_func_id is not None:
             main_window.canvas.unbind("<Motion>", self.canvas_enter_func_id)
+            main_window.canvas.bind("<Motion>", canvas_editing.store_mouse_position)
             self.canvas_enter_func_id = None
         self.frame_enter_func_id = self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
         self.shrink_box()
