@@ -13,6 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Fixed
 ## Security
 
+## [5.9]
+## Added
+## Changed
+- Refactoring
+## Deprecated
+## Removed
+## Fixed
+- Deleting an object in the diagram did sometimes not work or did delete the wrong object.
+- At storing in afile sometimes an exception happened (caused by rounding of coordinates.)
+## Security
+
 ## [5.8]
 ## Added
 - Highlighting when VHDL attributes are used is improved.
