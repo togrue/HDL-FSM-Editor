@@ -1,5 +1,5 @@
 """
-A MoveCanvasItem object is created, when the user moves a Canvas item.
+A MoveHandlingCanvasItem object is created, when the user moves a state (touching state-circle or state-name).
 """
 
 import canvas_modify_bindings
