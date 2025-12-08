@@ -14,7 +14,6 @@ from tkinter.filedialog import askdirectory, askopenfilename
 
 import canvas_editing
 import canvas_modify_bindings
-import codegen.hdl_generation as hdl_generation
 import compile_handling
 import constants
 import custom_text
@@ -25,6 +24,7 @@ import move_handling_initialization
 import undo_handling
 import update_hdl_tab
 import write_data_creator
+from codegen import hdl_generation
 from codegen.hdl_generation_config import GenerationConfig
 from constants import GuiTab
 from dialogs.color_changer import ColorChanger
