@@ -30,7 +30,7 @@ import update_hdl_tab
 from constants import GuiTab
 from project_manager import project_manager
 
-all_graphical_elements = (
+allowed_element_names_in_design_dictionary = (
     "state",
     "text",
     "line",
@@ -176,7 +176,7 @@ def save_in_file_new(save_filename) -> None:  # Called at saving and at every de
     if not save_filename.endswith(".tmp"):
         main_window.write_data_creator_ref.zoom_graphic_back_to_actual_size(zoom_factor)
         design_dictionary = main_window.write_data_creator_ref.round_and_sort_data(
-            design_dictionary, all_graphical_elements
+            design_dictionary, allowed_element_names_in_design_dictionary
         )
     old_cursor = main_window.root.cget(
         "cursor"
@@ -267,8 +267,8 @@ def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
     design_dictionary["label_fontsize"] = canvas_editing.label_fontsize
     # design_dictionary["visible_center"] = canvas_editing.get_visible_center_as_string()
     # design_dictionary["sash_positions"] = main_window.sash_positions
-    for graphical_element in all_graphical_elements:
-        design_dictionary[graphical_element] = []
+    for element_name in allowed_element_names_in_design_dictionary:
+        design_dictionary[element_name] = []
     items = main_window.canvas.find_all()
     for i in items:
         if main_window.canvas.type(i) == "oval":

@@ -28,36 +28,34 @@ class WriteDataCreator:
         canvas_editing.canvas_zoom([0, 0], 1 / zoom_factor)
         return
 
-    def round_and_sort_data(self, design_dictionary, all_graphical_elements) -> dict[str, list]:
-        used_graphic_elements = self._create_used_graphic_elements(design_dictionary, all_graphical_elements)
-        design_dictionary = self._sort_graphic_elements(design_dictionary, used_graphic_elements)
-        design_dictionary = self._round_coordinates(design_dictionary, used_graphic_elements)
+    def round_and_sort_data(self, design_dictionary, allowed_element_names_in_design_dictionary) -> dict[str, list]:
+        used_element_names = self._get_used_element_names(design_dictionary, allowed_element_names_in_design_dictionary)
+        design_dictionary = self._sort_graphic_elements(design_dictionary, used_element_names)
+        design_dictionary = self._round_coordinates(design_dictionary, used_element_names)
         design_dictionary = self._round_parameters(design_dictionary)
         self.store_as_compare_object(design_dictionary)
         return design_dictionary
 
-    def _create_used_graphic_elements(self, design_dictionary, all_graphical_elements) -> list:
-        used_graphic_elements = []
-        for graphical_element in all_graphical_elements:
-            if graphical_element in design_dictionary:
-                used_graphic_elements.append(graphical_element)
-        return used_graphic_elements
+    def _get_used_element_names(self, design_dictionary, allowed_element_names_in_design_dictionary) -> list:
+        used_element_names = []
+        for element_name in allowed_element_names_in_design_dictionary:
+            if element_name in design_dictionary:
+                used_element_names.append(element_name)
+        return used_element_names
 
-    def _round_coordinates(self, design_dictionary, used_graphic_elements) -> dict[str, list]:
-        for graphical_element in used_graphic_elements:
-            if graphical_element in ("window_condition_action_block", "window_global_actions"):
+    def _round_coordinates(self, design_dictionary, used_element_names) -> dict[str, list]:
+        for element_name in used_element_names:
+            if element_name in ("window_condition_action_block", "window_global_actions"):
                 index_of_tags = 3
-            elif graphical_element.startswith("window_"):
+            elif element_name.startswith("window_"):
                 index_of_tags = 2
             else:
                 index_of_tags = 1
-            for graphic_instance_index, graphical_instance_property_list in enumerate(
-                design_dictionary[graphical_element]
-            ):
+            for graphic_instance_index, graphical_instance_property_list in enumerate(design_dictionary[element_name]):
                 identifier_at_write = graphical_instance_property_list[index_of_tags][0]
                 coordinates_at_write = graphical_instance_property_list[0]
                 identifier_from_last, coordinates_from_last = self._get_info_from_last_data_by_index(
-                    graphical_element, graphic_instance_index, index_of_tags
+                    element_name, graphic_instance_index, index_of_tags
                 )
                 for coordinate_index, coordinate_at_write in enumerate(coordinates_at_write):
                     coordinate_at_write = round(coordinate_at_write, 0)  # round to integer
@@ -80,16 +78,14 @@ class WriteDataCreator:
                     graphical_instance_property_list[0][coordinate_index] = coordinate_at_write
         return design_dictionary
 
-    def _get_info_from_last_data_by_index(self, graphical_element, graphic_instance_index, index_of_tags) -> list:
+    def _get_info_from_last_data_by_index(self, element_name, graphic_instance_index, index_of_tags) -> list:
         if (
             self.last_design_dictionary is not None
-            and graphical_element in self.last_design_dictionary
-            and graphic_instance_index < len(self.last_design_dictionary[graphical_element])
+            and element_name in self.last_design_dictionary
+            and graphic_instance_index < len(self.last_design_dictionary[element_name])
         ):
-            identifier_from_last = self.last_design_dictionary[graphical_element][graphic_instance_index][
-                index_of_tags
-            ][0]
-            coordinates_from_last = self.last_design_dictionary[graphical_element][graphic_instance_index][0]
+            identifier_from_last = self.last_design_dictionary[element_name][graphic_instance_index][index_of_tags][0]
+            coordinates_from_last = self.last_design_dictionary[element_name][graphic_instance_index][0]
         else:
             identifier_from_last = ""
             coordinates_from_last = []
@@ -100,17 +96,15 @@ class WriteDataCreator:
         design_dictionary["priority_distance"] = round(design_dictionary["priority_distance"], 0)
         return design_dictionary
 
-    def _sort_graphic_elements(self, design_dictionary, used_graphic_elements) -> dict[str, list]:
+    def _sort_graphic_elements(self, design_dictionary, used_element_names) -> dict[str, list]:
         # At all sorts the key is the first tag which the graphical element has (identifier tag).
         # The sorting will always give the same result if the order of tags is not changed by tkinter.
-        for graphical_element in used_graphic_elements:
-            if graphical_element in ("window_condition_action_block", "window_global_actions"):
+        for element_name in used_element_names:
+            if element_name in ("window_condition_action_block", "window_global_actions"):
                 index_of_tags = 3
-            elif graphical_element.startswith("window_"):
+            elif element_name.startswith("window_"):
                 index_of_tags = 2
             else:
                 index_of_tags = 1
-            design_dictionary[graphical_element] = sorted(
-                design_dictionary[graphical_element], key=lambda x: x[index_of_tags][0]
-            )
+            design_dictionary[element_name] = sorted(design_dictionary[element_name], key=lambda x: x[index_of_tags][0])
         return design_dictionary
