@@ -29,10 +29,7 @@ def move_finish(event, move_list, move_do_funcid) -> None:
     # Moving can be finished:
     move_handling.move_do(event, move_list, first=False, move_to_grid=True)  # Move to the grid defined by state_radius.
     main_window.canvas.unbind("<ButtonRelease-1>")
-    main_window.canvas.unbind(
-        "<Motion>", move_do_funcid
-    )  # unbinds motion completely, probably because of "lambda" use.
-    main_window.canvas.bind("<Motion>", canvas_editing.store_mouse_position)
+    main_window.canvas.unbind("<Motion>", move_do_funcid)
     main_window.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
 
     if transition_start_or_end_point_is_moved:

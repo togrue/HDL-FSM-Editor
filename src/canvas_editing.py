@@ -311,9 +311,17 @@ def start_view_rectangle(event) -> None:
     [event_x, event_y] = translate_window_event_coordinates_in_exact_canvas_coordinates(event)
     rectangle_id = main_window.canvas.create_rectangle(event_x, event_y, event_x, event_y, dash=(3, 5))
     main_window.canvas.tag_raise(rectangle_id, "all")
-    main_window.canvas.bind("<Motion>", lambda event: _draw_view_rectangle(event, rectangle_id))
-    main_window.canvas.bind("<ButtonRelease-1>", lambda event: _view_area(rectangle_id))
-    main_window.canvas.bind("<ButtonRelease-3>", lambda event: _view_area_by_button3(rectangle_id))
+    funcid_canvas_draw_view_rectangle = main_window.canvas.bind(
+        "<Motion>", lambda event: _draw_view_rectangle(event, rectangle_id), "+"
+    )
+    main_window.canvas.bind(
+        "<ButtonRelease-1>",
+        lambda event: _view_area_after_button1_release(rectangle_id, funcid_canvas_draw_view_rectangle),
+    )
+    main_window.canvas.bind(
+        "<ButtonRelease-3>",
+        lambda event: _view_area_after_button3_release(rectangle_id, funcid_canvas_draw_view_rectangle),
+    )
 
 
 def _draw_view_rectangle(event, rectangle_id) -> None:  # Called by Motion-event.
@@ -323,10 +331,10 @@ def _draw_view_rectangle(event, rectangle_id) -> None:  # Called by Motion-event
         main_window.canvas.coords(rectangle_id, rectangle_coords[0], rectangle_coords[1], event_x, event_y)
 
 
-def _view_area_by_button3(rectangle_id) -> None:
+def _view_area_after_button3_release(rectangle_id, funcid_canvas_draw_view_rectangle) -> None:
     rectangle_coords = main_window.canvas.coords(rectangle_id)
     if rectangle_coords[0] != rectangle_coords[2] and rectangle_coords[1] != rectangle_coords[3]:
-        _view_area(rectangle_id)
+        _view_area_after_button1_release(rectangle_id, funcid_canvas_draw_view_rectangle)
     else:
         main_window.canvas.delete(rectangle_id)
         overlapping_canvas_ids = main_window.canvas.find_overlapping(
@@ -338,28 +346,26 @@ def _view_area_by_button3(rectangle_id) -> None:
             if "grid_line" not in tags:
                 item_found = True
         if not item_found:
-            __show_menu(rectangle_coords)
-        main_window.canvas.unbind("<Motion>")
-        main_window.canvas.unbind("<ButtonRelease-1>")
-        main_window.canvas.unbind("<ButtonRelease-3>")
-        # Restore the original binding (Button-1 is bound to start_view_rectangle(), when "view area"-Button was used):
-        main_window.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
-        main_window.canvas.bind("<Motion>", store_mouse_position)
+            _show_canvas_background_menu(rectangle_coords)
+        _restore_binding(funcid_canvas_draw_view_rectangle)
 
 
-def _view_area(
-    rectangle_id,
-) -> None:  # Called by Button-1("view area"-button)/Button-3(view area per right mouse-button)-Release-Event.
-    main_window.grid_drawer.remove_grid()
-    complete_rectangle = main_window.canvas.coords(rectangle_id)
-    view_rectangle(complete_rectangle, check_fit=False)
-    main_window.canvas.delete(rectangle_id)
-    main_window.canvas.unbind("<Motion>")
+def _restore_binding(funcid_canvas_draw_view_rectangle):
+    main_window.canvas.unbind("<Motion>", funcid_canvas_draw_view_rectangle)
     main_window.canvas.unbind("<ButtonRelease-1>")
     main_window.canvas.unbind("<ButtonRelease-3>")
     # Restore the original binding (Button-1 is bound to start_view_rectangle(), when "view area"-Button was used):
     main_window.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
-    main_window.canvas.bind("<Motion>", store_mouse_position)
+
+
+def _view_area_after_button1_release(
+    rectangle_id, funcid_canvas_draw_view_rectangle
+) -> None:  # Called by Button-1("view area"-button) or Button-3(view area per right mouse-button)-Release-Event.
+    main_window.grid_drawer.remove_grid()
+    complete_rectangle = main_window.canvas.coords(rectangle_id)
+    view_rectangle(complete_rectangle, check_fit=False)
+    main_window.canvas.delete(rectangle_id)
+    _restore_binding(funcid_canvas_draw_view_rectangle)
     main_window.grid_drawer.draw_grid()
 
 
@@ -678,7 +684,7 @@ def shift_visible_center_to_window_center(new_visible_center_string) -> None:
     _move_canvas_point_from_to(new_visible_center, actual_visible_center)
 
 
-def __show_menu(zoom_coords) -> None:
+def _show_canvas_background_menu(zoom_coords) -> None:
     canvas_menue_entries_list_with_hide = ["Change background color", "Hide grid"]
     canvas_menue_entries_list_with_show = ["Change background color", "Show grid"]
     if main_window.show_grid is True:

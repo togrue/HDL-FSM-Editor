@@ -561,7 +561,6 @@ def _end_transition_insertion_by_modifying_bindings(transition_draw_funcid) -> N
     # Restore bindings:
     main_window.root.unbind_all("<Escape>")
     main_window.canvas.unbind("<Motion>", transition_draw_funcid)
-    main_window.canvas.bind("<Motion>", canvas_editing.store_mouse_position)
     main_window.canvas.bind("<Button-1>", transition_start)
     main_window.root.bind_all("<Escape>", lambda event: canvas_modify_bindings.switch_to_move_mode())
 

@@ -197,7 +197,7 @@ class ConditionAction:
         if self.frame_enter_func_id is not None:
             self.frame_id.unbind("<Enter>", self.frame_enter_func_id)
             self.frame_enter_func_id = None
-        self.canvas_enter_func_id = main_window.canvas.bind("<Motion>", lambda event: self.deactivate_frame())
+        self.canvas_enter_func_id = main_window.canvas.bind("<Motion>", lambda event: self.deactivate_frame(), "+")
 
     def select_window(self) -> None:
         self.frame_id.configure(borderwidth=1, style="WindowSelected.TFrame")
@@ -208,7 +208,6 @@ class ConditionAction:
         self.deselect_window()
         if self.canvas_enter_func_id is not None:
             main_window.canvas.unbind("<Motion>", self.canvas_enter_func_id)
-            main_window.canvas.bind("<Motion>", canvas_editing.store_mouse_position)
             self.canvas_enter_func_id = None
         self.frame_enter_func_id = self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
         self.shrink_box()
