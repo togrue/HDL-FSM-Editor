@@ -4,8 +4,6 @@ that the resulting file will only differ from the read file
 if the user added/removed/moved any schematic-element or
 changed any text/name/contol-information. Any scrolling, zooming
 will not create a different file content.
-The "include timestamp in generated HDL" must be switched off if
-the file shall not change.
 """
 
 import canvas_editing
