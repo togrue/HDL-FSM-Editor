@@ -56,7 +56,9 @@ VHDL_KEYWORD_PATTERNS = [
         r'report\s*".*?"',
     )
 ]
-DATATYPE_PATTERNS = [re.compile(r" " + re.escape(k) + r" ", re.IGNORECASE) for k in constants.VHDL_KEYWORDS["datatype"]]
+DATATYPE_PATTERNS = [
+    re.compile(r" " + re.escape(k) + r" ", re.IGNORECASE) for k in constants.VHDL_HIGHLIGHT_PATTERN_DICT["datatype"]
+]
 
 
 class CustomText(tk.Text):
@@ -180,23 +182,25 @@ class CustomText(tk.Text):
         linting.recreate_keyword_list_of_unused_signals()
         linting.update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment()
 
-    def update_highlight_tags(self, fontsize, keyword_type_list) -> None:
-        for keyword_type in keyword_type_list:
-            self.tag_delete(keyword_type)
-            for keyword in main_window.keywords[keyword_type]:
+    def update_highlight_tags(self, fontsize, highlight_tag_name_list) -> None:
+        for highlight_tag_name in highlight_tag_name_list:
+            self.tag_delete(highlight_tag_name)
+            for keyword in main_window.highlight_pattern_dict[highlight_tag_name]:
                 if self.text_type == "comment":  # State comment text
                     if keyword == "comment":  # keywords "not_read", "not_written" are ignored.
-                        self.add_highlight_tag_for_single_keyword(keyword_type, keyword)
+                        self.add_highlight_tag_for_single_keyword(highlight_tag_name, keyword)
                 else:
-                    self.add_highlight_tag_for_single_keyword(keyword_type, keyword)
+                    self.add_highlight_tag_for_single_keyword(highlight_tag_name, keyword)
             if self.text_type in ("condition", "action", "comment"):
                 self.tag_configure(
-                    keyword_type,
-                    foreground=config.KEYWORD_COLORS[keyword_type],
+                    highlight_tag_name,
+                    foreground=config.KEYWORD_COLORS[highlight_tag_name],
                     font=("Courier", int(fontsize), "normal"),
                 )  # int() is necessary, because fontsize can be a "real" number.
             else:
-                self.tag_configure(keyword_type, foreground=config.KEYWORD_COLORS[keyword_type], font=("Courier", 10))
+                self.tag_configure(
+                    highlight_tag_name, foreground=config.KEYWORD_COLORS[highlight_tag_name], font=("Courier", 10)
+                )
 
     def add_highlight_tag_for_single_keyword(self, keyword_type, keyword) -> None:
         copy_of_text = self.get("1.0", tk.END + "- 1 chars")

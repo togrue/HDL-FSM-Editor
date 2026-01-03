@@ -115,7 +115,7 @@ date_of_hdl_file2_shown_in_hdl_tab: float = 0.0
 include_timestamp_in_output: tk.BooleanVar
 _check_version_result: str = ""
 
-keywords: dict[str, list[str]] = constants.VHDL_KEYWORDS
+highlight_pattern_dict: dict[str, list[str]] = constants.VHDL_HIGHLIGHT_PATTERN_DICT
 
 
 def read_message() -> None:
@@ -1119,10 +1119,10 @@ def _cursor_move_log_tab(*_) -> None:
 
 
 def switch_language_mode() -> None:
-    global keywords
+    global highlight_pattern_dict
     new_language = language.get()
     if new_language == "VHDL":
-        keywords = constants.VHDL_KEYWORDS
+        highlight_pattern_dict = constants.VHDL_HIGHLIGHT_PATTERN_DICT
         # enable 2 files mode
         select_file_number_text.set(2)
         _select_file_number_radio_button1.grid(row=0, column=2, sticky=tk.E)
@@ -1144,7 +1144,7 @@ def switch_language_mode() -> None:
 = File with Entity and Architecture\n$name\t= Entity Name"
         )
     else:  # "Verilog" or "SystemVerilog"
-        keywords = constants.VERILOG_KEYWORDS
+        highlight_pattern_dict = constants.VERILOG_HIGHLIGHT_PATTERN_DICT
         # Control: disable 2 files mode
         select_file_number_text.set(1)
         _select_file_number_radio_button1.grid_forget()

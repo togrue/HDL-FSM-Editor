@@ -8,8 +8,8 @@ import main_window
 
 
 def recreate_keyword_list_of_unused_signals() -> None:
-    main_window.keywords["not_read"].clear()
-    main_window.keywords["not_written"].clear()
+    main_window.highlight_pattern_dict["not_read"].clear()
+    main_window.highlight_pattern_dict["not_written"].clear()
 
     variables_to_write = _get_all_read_variables()
     variables_to_read = _get_all_written_variables()
@@ -19,8 +19,8 @@ def recreate_keyword_list_of_unused_signals() -> None:
     variables_to_read, variables_to_write = _detect_not_written_constants(variables_to_read, variables_to_write)
     variables_to_write = _remove_port_types(variables_to_write)
     variables_to_read, variables_to_write = _remove_generics(variables_to_read, variables_to_write)
-    main_window.keywords["not_written"] += variables_to_write
-    main_window.keywords["not_read"] += variables_to_read
+    main_window.highlight_pattern_dict["not_written"] += variables_to_write
+    main_window.highlight_pattern_dict["not_read"] += variables_to_read
 
 
 def _get_all_read_variables():
@@ -45,7 +45,7 @@ def _detect_not_read_input_ports(variables_to_write):
     for input_port in main_window.interface_ports_text.readable_ports_list:
         if input_port not in variables_to_write:
             if input_port != main_window.clock_signal_name.get():
-                main_window.keywords["not_read"].append(input_port)
+                main_window.highlight_pattern_dict["not_read"].append(input_port)
         else:
             # Inputs must not be written:
             variables_to_write.remove(input_port)
@@ -55,7 +55,7 @@ def _detect_not_read_input_ports(variables_to_write):
 def _detect_not_written_output_ports(variables_to_read, variables_to_write):
     for output in main_window.interface_ports_text.writable_ports_list:
         if output not in variables_to_read:
-            main_window.keywords["not_written"].append(output)
+            main_window.highlight_pattern_dict["not_written"].append(output)
         else:
             # Outputs must not be read:
             variables_to_read.remove(output)
@@ -76,9 +76,9 @@ def _detect_not_written_not_read_signals(variables_to_read, variables_to_write):
             variables_to_read.remove(signal)
             variables_to_write.remove(signal)
         elif signal in variables_to_read:
-            main_window.keywords["not_read"].append(signal)
+            main_window.highlight_pattern_dict["not_read"].append(signal)
         else:
-            main_window.keywords["not_written"].append(signal)
+            main_window.highlight_pattern_dict["not_written"].append(signal)
     return variables_to_read, variables_to_write
 
 
@@ -92,7 +92,7 @@ def _detect_not_written_constants(variables_to_read, variables_to_write):
         if constant in variables_to_read:
             variables_to_read.remove(constant)
         if constant not in variables_to_write:  # Then the constant is not read.
-            main_window.keywords["not_read"].append(constant)
+            main_window.highlight_pattern_dict["not_read"].append(constant)
         else:
             variables_to_write.remove(constant)
     return variables_to_read, variables_to_write
