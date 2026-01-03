@@ -186,9 +186,9 @@ class CustomText(tk.Text):
         # highlight_tag_name is in ["control", "datatype", "function", "not_read", "not_written", "comment"]
         for highlight_tag_name in highlight_tag_name_list:
             self.tag_delete(highlight_tag_name)
-            for keyword in main_window.highlight_pattern_dict[highlight_tag_name]:
+            for highlight_search_pattern in main_window.highlight_pattern_dict[highlight_tag_name]:
                 if self.text_type != "comment":  # State comment text
-                    self.add_highlight_tag_for_single_keyword(highlight_tag_name, keyword)
+                    self._add_highlight_tag_for_single_pattern(highlight_tag_name, highlight_search_pattern)
             if self.text_type in ("condition", "action", "comment"):
                 self.tag_configure(
                     highlight_tag_name,
@@ -200,14 +200,16 @@ class CustomText(tk.Text):
                     highlight_tag_name, foreground=config.HIGHLIGHT_COLORS[highlight_tag_name], font=("Courier", 10)
                 )
 
-    def add_highlight_tag_for_single_keyword(self, keyword_type, keyword) -> None:
+    def _add_highlight_tag_for_single_pattern(self, keyword_type, highlight_search_pattern) -> None:
         copy_of_text = self.get("1.0", tk.END + "- 1 chars")
         if copy_of_text == "":
             return
         copy_of_text = self.replace_strings_and_attributes_by_blanks(copy_of_text)
         while True:
             if keyword_type == "comment":
-                match_object = re.search(keyword, copy_of_text, flags=re.IGNORECASE | re.MULTILINE | re.DOTALL)
+                match_object = re.search(
+                    highlight_search_pattern, copy_of_text, flags=re.IGNORECASE | re.MULTILINE | re.DOTALL
+                )
                 if not match_object:
                     break
                 if match_object.start() == match_object.end():
@@ -228,7 +230,7 @@ class CustomText(tk.Text):
                 # For example for the keyword '.' the match is not removed.
                 # So a check was inserted which checks if the text has been modified here.
                 search_string = (
-                    "([^a-zA-Z0-9_]|^)" + keyword + "([^a-zA-Z0-9_]|$)"
+                    "([^a-zA-Z0-9_]|^)" + highlight_search_pattern + "([^a-zA-Z0-9_]|$)"
                 )  # Prevent a hit, when the keyword is part of another word.
                 try:
                     match_object = re.search(search_string, copy_of_text, flags=re.IGNORECASE)
@@ -237,9 +239,13 @@ class CustomText(tk.Text):
                     match_object = None
                 if not match_object:
                     break
-                match_start, match_end = self.remove_surrounding_characters_from_the_match(match_object, keyword)
+                match_start, match_end = self.remove_surrounding_characters_from_the_match(
+                    match_object, highlight_search_pattern
+                )
                 old_text = copy_of_text
-                copy_of_text = copy_of_text[:match_start] + " " * len(keyword) + copy_of_text[match_end:]
+                copy_of_text = (
+                    copy_of_text[:match_start] + " " * len(highlight_search_pattern) + copy_of_text[match_end:]
+                )
                 if copy_of_text == old_text:
                     break
                 self.tag_add(keyword_type, "1.0 + " + str(match_start) + " chars", "1.0 + " + str(match_end) + " chars")
