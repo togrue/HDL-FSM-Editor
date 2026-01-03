@@ -194,12 +194,12 @@ class CustomText(tk.Text):
             if self.text_type in ("condition", "action", "comment"):
                 self.tag_configure(
                     highlight_tag_name,
-                    foreground=config.KEYWORD_COLORS[highlight_tag_name],
+                    foreground=config.HIGHLIGHT_COLORS[highlight_tag_name],
                     font=("Courier", int(fontsize), "normal"),
                 )  # int() is necessary, because fontsize can be a "real" number.
             else:
                 self.tag_configure(
-                    highlight_tag_name, foreground=config.KEYWORD_COLORS[highlight_tag_name], font=("Courier", 10)
+                    highlight_tag_name, foreground=config.HIGHLIGHT_COLORS[highlight_tag_name], font=("Courier", 10)
                 )
 
     def add_highlight_tag_for_single_keyword(self, keyword_type, keyword) -> None:

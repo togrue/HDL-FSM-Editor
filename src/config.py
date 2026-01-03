@@ -4,7 +4,7 @@ This file contains constants that don't change during runtime.
 """
 
 # Syntax Highlighting Colors
-KEYWORD_COLORS = {
+HIGHLIGHT_COLORS = {
     "not_read": "orange",
     "not_written": "red",
     "control": "green4",
