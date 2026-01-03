@@ -5,8 +5,8 @@ The code was copied and extended from https://stackoverflow.com/questions/406175
 import os
 import re
 import subprocess
+import tempfile
 import tkinter as tk
-from tkinter import messagebox
 
 import canvas_editing
 import config
@@ -123,23 +123,18 @@ class CustomText(tk.Text):
         return "break"  # This prevents the "Tab" to be inserted in the text.
 
     def edit_in_external_editor(self) -> None:
-        file_name = "hdl-fsm-editor.tmp.vhd" if main_window.language.get() == "VHDL" else "hdl-fsm-editor.tmp.v"
-        with open(file_name, "w", encoding="utf-8") as fileobject:
-            fileobject.write(self.get("1.0", tk.END + "- 1 chars"))
+        with tempfile.NamedTemporaryFile(
+            suffix=".vhd" if main_window.language.get() == "VHDL" else ".v", delete=False, mode="w", encoding="utf-8"
+        ) as tf:
+            tf.write(self.get("1.0", "end-1c"))
+            tmpname = tf.name
         try:
-            edit_cmd = main_window.edit_cmd.get().split()
-            edit_cmd.append(file_name)
-            process = subprocess.Popen(edit_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        except FileNotFoundError:
-            messagebox.showerror("Error", "Error when running " + main_window.edit_cmd.get() + " " + file_name)
-            return
-        while True:
-            poll = process.poll()
-            if poll is not None:
-                break
-        with open(file_name, encoding="utf-8") as fileobject:
-            new_text = fileobject.read()
-        os.remove(file_name)
+            cmd = main_window.edit_cmd.get().split() + [tmpname]
+            subprocess.run(cmd, check=False)  # blocks efficiently
+            with open(tmpname, encoding="utf-8") as f:
+                new_text = f.read()
+        finally:
+            os.unlink(tmpname)
         self.delete("1.0", tk.END)
         self.insert("1.0", new_text)
         self.format()
