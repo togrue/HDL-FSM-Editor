@@ -9,14 +9,54 @@ import tkinter as tk
 from tkinter import messagebox
 
 import canvas_editing
-import codegen.hdl_generation_architecture_state_actions as hdl_generation_architecture_state_actions
-import codegen.hdl_generation_library as hdl_generation_library
 import config
 import constants
 import file_handling
 import global_actions_combinatorial
 import linting
 import main_window
+from codegen import hdl_generation_architecture_state_actions, hdl_generation_library
+
+FUNCTION_DECL_RE = re.compile(r"function\s+(\w+)", re.IGNORECASE)
+VHDL_ATTRIBUTE_RE = re.compile(r"\w+\s+'\s+\w+", re.IGNORECASE)
+LOOP_INDEX_RE = re.compile(r"\sfor\s+(.+?)\s+in\s", re.IGNORECASE | re.DOTALL)
+PROCESS_RE = re.compile(r"process(\s|\().*?\sbegin\s.*?\send\s+process(\s*;|\s.*?;)", re.IGNORECASE | re.DOTALL)
+VARIABLE_DECL_RE = re.compile(r"\svariable\s+(.*?):.*?;", re.IGNORECASE | re.DOTALL)
+ASSIGN_RHS_RE = re.compile(r"=.*?;", re.IGNORECASE | re.DOTALL)
+ALWAYS_RE = re.compile(r"always\s*@.*?begin", re.IGNORECASE | re.DOTALL)
+WITH_SELECT_RE = re.compile(r"with\s+.*?\s+select", re.IGNORECASE | re.DOTALL)
+NOT_ASSIGNMENTS_RE = re.compile(r"^[^=]*?;", re.IGNORECASE | re.MULTILINE)
+VHDL_KEYWORD_PATTERNS = [
+    re.compile(p, re.IGNORECASE)
+    for p in constants.VHDL_KEYWORDS_FOR_SIGNAL_HANDLING
+    + (
+        r" process[^;]*?begin ",
+        r" end\s+?process\s*?;",
+        r" process .*?$",
+        r" end\s+?case\s*?;",
+        r" end\s+?if\s*?;",
+        r" end\s*?;",
+        r" end\s+",
+        r"\(",
+        r"\)",
+        r"\+",
+        r"\*",
+        r"true",
+        r"false",
+        r"-",
+        r"/",
+        r"%",
+        r"&",
+        r"=>",
+        r"' . '",
+        r" [0-9]+ ",
+        r'[^\\s]"[0-9,a-f,A-F]+"',
+        r'"[0,1]+"',
+        r"report\s*'.*?'",
+        r'report\s*".*?"',
+    )
+]
+DATATYPE_PATTERNS = [re.compile(r" " + re.escape(k) + r" ", re.IGNORECASE) for k in constants.VHDL_KEYWORDS["datatype"]]
 
 
 class CustomText(tk.Text):
@@ -82,7 +122,7 @@ class CustomText(tk.Text):
 
     def edit_in_external_editor(self) -> None:
         file_name = "hdl-fsm-editor.tmp.vhd" if main_window.language.get() == "VHDL" else "hdl-fsm-editor.tmp.v"
-        with open(file_name, "w") as fileobject:
+        with open(file_name, "w", encoding="utf-8") as fileobject:
             fileobject.write(self.get("1.0", tk.END + "- 1 chars"))
         try:
             edit_cmd = main_window.edit_cmd.get().split()
@@ -95,7 +135,7 @@ class CustomText(tk.Text):
             poll = process.poll()
             if poll is not None:
                 break
-        with open(file_name) as fileobject:
+        with open(file_name, encoding="utf-8") as fileobject:
             new_text = fileobject.read()
         os.remove(file_name)
         self.delete("1.0", tk.END)
@@ -339,9 +379,8 @@ class CustomText(tk.Text):
     def _fill_function_names_list(self):
         self.function_names_list = []
         copy_of_text = self.get("1.0", tk.END + "- 1 chars")
-        search_for_function_declarations = r"function\s+(\w+)"
         while True:
-            match = re.search(search_for_function_declarations, copy_of_text, flags=re.IGNORECASE)
+            match = FUNCTION_DECL_RE.search(copy_of_text)
             if match:
                 if match.start() == match.end():
                     break
@@ -351,7 +390,6 @@ class CustomText(tk.Text):
                 copy_of_text = re.sub(match.group(0), "", copy_of_text)
             else:
                 break
-        return
 
     def _remove_vhdl_attributes(self, text):
         search_for_attributes = r"\w+\s+'\s+\w+"  # remove signal-name and attribute; example: "paddr ' range"
@@ -369,9 +407,8 @@ class CustomText(tk.Text):
 
     def _remove_loop_indices(self, text):
         # Suchen nach "for   in"
-        search_for_loop_indizes = r"\sfor\s+(.+?)\s+in\s"
         while True:
-            match = re.search(search_for_loop_indizes, text, flags=re.IGNORECASE)
+            match = LOOP_INDEX_RE.search(text)
             if match:
                 if match.start() == match.end():
                     break
@@ -399,10 +436,9 @@ class CustomText(tk.Text):
 
     def _split(self, text):
         process_list = []
-        search_for_processes = r"process(\s|\().*?\sbegin\s.*?\send\s+process(\s*;|\s.*?;)"
         text_before_process_list = []
         while True:
-            match = re.search(search_for_processes, text, flags=re.IGNORECASE)
+            match = PROCESS_RE.search(text)
             if match:
                 if match.start() == match.end():
                     break
@@ -415,9 +451,8 @@ class CustomText(tk.Text):
 
     def _remove_variable_declarations(self, process):
         all_variable_names = []
-        search_for_variable_declaration = r"\svariable\s+(.*?):.*?;"
         while True:
-            match = re.search(search_for_variable_declaration, process, flags=re.IGNORECASE)
+            match = VARIABLE_DECL_RE.search(process)
             if match:
                 if match.start() == match.end():
                     break
@@ -481,35 +516,10 @@ class CustomText(tk.Text):
         return text
 
     def __remove_keywords_from_vhdl(self, text):
-        for keyword in constants.VHDL_KEYWORDS_FOR_SIGNAL_HANDLING + (
-            " process[^;]*?begin ",  # Remove complete process headers, if some exist.
-            " end\\s+?process\\s*?;",  # remove end of process, before ...
-            " process .*?$",  # ... when not complete process headers exist, remove until a return is found.
-            " end\\s+?case\\s*?;",
-            " end\\s+?if\\s*?;",
-            " end\\s*?;",
-            " end\\s+",
-            "\\(",
-            "\\)",
-            "\\+",
-            "\\*",
-            "true",
-            "false",
-            "-",
-            "/",
-            "%",
-            "&",
-            "=>",  # something like "others =>"
-            "' . '",  # something like the std_logic value ' 1 ' or ' 0 '
-            " [0-9]+ ",  # something like " 123 "
-            '[^\\s]"[0-9,a-f,A-F]+"',  # something like X"1234"
-            '"[0,1]+"',  # something like "1011"
-            "report\\s*'.*?'",  # Remove strings from report-commands (they might contain ';')
-            'report\\s*".*?"',  # Remove strings from report-commands (they might contain ';')
-        ):
-            text = re.sub(keyword, "  ", text, flags=re.I)  # Keep the blanks the keyword is surrounded by.
-        for keyword in constants.VHDL_KEYWORDS["datatype"]:
-            text = re.sub(" " + keyword + " ", "  ", text, flags=re.I)  # Keep the blanks the keyword is surrounded by.
+        for pattern in VHDL_KEYWORD_PATTERNS:
+            text = pattern.sub("  ", text)  # Keep the blanks the keyword is surrounded by.
+        for pattern in DATATYPE_PATTERNS:
+            text = pattern.sub("  ", text)  # Keep the blanks the keyword is surrounded by.
         return text
 
     def __remove_keywords_from_verilog(self, text):
@@ -553,9 +563,8 @@ class CustomText(tk.Text):
         if main_window.language.get() != "VHDL":
             return text
         all_procedure_calls = []
-        search_for_not_assignments = "^[^=]*?;"
         while True:
-            match = re.search(search_for_not_assignments, text, flags=re.IGNORECASE)
+            match = NOT_ASSIGNMENTS_RE.search(text)
             if match:
                 if match.start() == match.end():
                     break
@@ -595,10 +604,9 @@ class CustomText(tk.Text):
 
     def __add_read_variables_from_with_select_blocks_to_read_variables_of_all_windows(self, text):
         if main_window.language.get() == "VHDL":
-            with_select_search_pattern = "with\\s+.*?\\s+select"
             all_with_selects = []
             while True:  # Collect all with_selects and remove them from text.
-                match = re.search(with_select_search_pattern, text, flags=re.IGNORECASE)
+                match = WITH_SELECT_RE.search(text)
                 if match:
                     if match.start() == match.end():
                         break
@@ -689,9 +697,8 @@ class CustomText(tk.Text):
         return text
 
     def __add_read_variables_from_assignments_to_read_variables_of_all_windows(self, text):
-        right_hand_side_search_pattern = "=.*?;"
         while True:  # Collect all right hand sides and remove them from text.
-            match = re.search(right_hand_side_search_pattern, text, flags=re.IGNORECASE)
+            match = ASSIGN_RHS_RE.search(text)
             if match:
                 # remove not only the match but also complete ":=" or "<=":
                 if match.start() - 1 == match.end():
@@ -711,7 +718,7 @@ class CustomText(tk.Text):
 
     def __add_read_variables_from_always_statements_to_read_variables_of_all_windows(self, text):
         while True:
-            match = re.search(r"always\s*@.*?begin", text, flags=re.IGNORECASE)
+            match = ALWAYS_RE.search(text)
             if match:
                 if match.start() == match.end():
                     break
@@ -731,9 +738,8 @@ class CustomText(tk.Text):
                 break
         return text
 
-    def highlight_item(self, hdl_item_type, object_identifier, number_of_line) -> None:
+    def highlight_item(self, _, __, number_of_line) -> None:
         self.tag_add("highlight", str(number_of_line) + ".0", str(number_of_line + 1) + ".0")
-        # self.tag_config("highlight", background="#e9e9e9")
         self.tag_config("highlight", background="orange")
         self.see(str(number_of_line) + ".0")
         self.focus_set()
