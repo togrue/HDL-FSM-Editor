@@ -200,13 +200,13 @@ class CustomText(tk.Text):
                     highlight_tag_name, foreground=config.HIGHLIGHT_COLORS[highlight_tag_name], font=("Courier", 10)
                 )
 
-    def _add_highlight_tag_for_single_pattern(self, keyword_type, highlight_search_pattern) -> None:
+    def _add_highlight_tag_for_single_pattern(self, highlight_tag_name, highlight_search_pattern) -> None:
         copy_of_text = self.get("1.0", tk.END + "- 1 chars")
         if copy_of_text == "":
             return
         copy_of_text = self.replace_strings_and_attributes_by_blanks(copy_of_text)
         while True:
-            if keyword_type == "comment":
+            if highlight_tag_name == "comment":
                 match_object = re.search(
                     highlight_search_pattern, copy_of_text, flags=re.IGNORECASE | re.MULTILINE | re.DOTALL
                 )
@@ -248,7 +248,9 @@ class CustomText(tk.Text):
                 )
                 if copy_of_text == old_text:
                     break
-                self.tag_add(keyword_type, "1.0 + " + str(match_start) + " chars", "1.0 + " + str(match_end) + " chars")
+                self.tag_add(
+                    highlight_tag_name, "1.0 + " + str(match_start) + " chars", "1.0 + " + str(match_end) + " chars"
+                )
 
     def replace_strings_and_attributes_by_blanks(self, copy_of_text):
         for search_string in ["'image", "'length", '".*?"', "'.*?'"]:
