@@ -7,7 +7,6 @@ from tkinter import font, messagebox
 
 import canvas_modify_bindings
 import condition_action_handling
-import config
 import custom_text
 import global_actions
 import global_actions_combinatorial
@@ -585,7 +584,6 @@ def _modify_font_sizes_of_all_canvas_items(factor) -> None:
                 for highlight_tag_name in main_window.highlight_pattern_dict:
                     state_action_handling.MyText.mytext_dict[i].text_id.tag_configure(
                         highlight_tag_name,
-                        foreground=config.KEYWORD_COLORS[highlight_tag_name],
                         font=("Courier", int(fontsize), "normal"),
                     )
             elif i in state_comment.StateComment.dictionary:
@@ -594,7 +592,6 @@ def _modify_font_sizes_of_all_canvas_items(factor) -> None:
                 for highlight_tag_name in main_window.highlight_pattern_dict:
                     state_comment.StateComment.dictionary[i].text_id.tag_configure(
                         highlight_tag_name,
-                        foreground=config.KEYWORD_COLORS[highlight_tag_name],
                         font=("Courier", int(fontsize), "normal"),
                     )
             elif i in condition_action_handling.ConditionAction.dictionary:
@@ -613,12 +610,10 @@ def _modify_font_sizes_of_all_canvas_items(factor) -> None:
                 for highlight_tag_name in main_window.highlight_pattern_dict:
                     condition_action_handling.ConditionAction.dictionary[i].condition_id.tag_configure(
                         highlight_tag_name,
-                        foreground=config.KEYWORD_COLORS[highlight_tag_name],
                         font=("Courier", int(fontsize), "normal"),
                     )
                     condition_action_handling.ConditionAction.dictionary[i].action_id.tag_configure(
                         highlight_tag_name,
-                        foreground=config.KEYWORD_COLORS[highlight_tag_name],
                         font=("Courier", int(fontsize), "normal"),
                     )
             elif i in global_actions.GlobalActions.dictionary:
@@ -633,12 +628,10 @@ def _modify_font_sizes_of_all_canvas_items(factor) -> None:
                 for highlight_tag_name in main_window.highlight_pattern_dict:
                     global_actions.GlobalActions.dictionary[i].text_before_id.tag_configure(
                         highlight_tag_name,
-                        foreground=config.KEYWORD_COLORS[highlight_tag_name],
                         font=("Courier", int(fontsize), "normal"),
                     )
                     global_actions.GlobalActions.dictionary[i].text_after_id.tag_configure(
                         highlight_tag_name,
-                        foreground=config.KEYWORD_COLORS[highlight_tag_name],
                         font=("Courier", int(fontsize), "normal"),
                     )
             elif i in global_actions_combinatorial.GlobalActionsCombinatorial.dictionary:
@@ -651,7 +644,6 @@ def _modify_font_sizes_of_all_canvas_items(factor) -> None:
                 for highlight_tag_name in main_window.highlight_pattern_dict:
                     global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[i].text_id.tag_configure(
                         highlight_tag_name,
-                        foreground=config.KEYWORD_COLORS[highlight_tag_name],
                         font=("Courier", int(fontsize), "normal"),
                     )
             elif i in state_actions_default.StateActionsDefault.dictionary:
@@ -664,7 +656,6 @@ def _modify_font_sizes_of_all_canvas_items(factor) -> None:
                 for highlight_tag_name in main_window.highlight_pattern_dict:
                     state_actions_default.StateActionsDefault.dictionary[i].text_id.tag_configure(
                         highlight_tag_name,
-                        foreground=config.KEYWORD_COLORS[highlight_tag_name],
                         font=("Courier", int(fontsize), "normal"),
                     )
             else:
