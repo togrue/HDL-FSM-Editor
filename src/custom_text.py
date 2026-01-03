@@ -183,13 +183,11 @@ class CustomText(tk.Text):
         linting.update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment()
 
     def update_highlight_tags(self, fontsize, highlight_tag_name_list) -> None:
+        # highlight_tag_name is in ["control", "datatype", "function", "not_read", "not_written", "comment"]
         for highlight_tag_name in highlight_tag_name_list:
             self.tag_delete(highlight_tag_name)
             for keyword in main_window.highlight_pattern_dict[highlight_tag_name]:
-                if self.text_type == "comment":  # State comment text
-                    if keyword == "comment":  # keywords "not_read", "not_written" are ignored.
-                        self.add_highlight_tag_for_single_keyword(highlight_tag_name, keyword)
-                else:
+                if self.text_type != "comment":  # State comment text
                     self.add_highlight_tag_for_single_keyword(highlight_tag_name, keyword)
             if self.text_type in ("condition", "action", "comment"):
                 self.tag_configure(
