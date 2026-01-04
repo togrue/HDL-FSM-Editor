@@ -436,7 +436,7 @@ class CustomText(tk.Text):
             process, written_variables = self._remove_written_variables(process, all_variable_names)
             process, read_variables = self._remove_read_variables(process, all_variable_names)
             process_list[p_number] = process
-            self._check_variables(all_variable_names, written_variables, read_variables)
+            self._add_to_read_or_written_variables_of_all_windows(all_variable_names, written_variables, read_variables)
         new_text = ""
         for i, text_before in enumerate(text_before_process_list):
             new_text += text_before + process_list[i]
@@ -506,15 +506,15 @@ class CustomText(tk.Text):
         read_variables = list(set(read_variables))  # remove duplicates
         return process, read_variables
 
-    def _check_variables(self, all_variable_names, written_variables, read_variables):
+    def _add_to_read_or_written_variables_of_all_windows(self, all_variable_names, written_variables, read_variables):
         for variable_name in all_variable_names:
-            if variable_name not in written_variables + read_variables or variable_name not in written_variables:
-                CustomText.read_variables_of_all_windows[self] += [variable_name]  # will be colored red
+            if variable_name not in written_variables:
+                CustomText.read_variables_of_all_windows[self] += [variable_name]  # may be be colored red
             else:
-                CustomText.written_variables_of_all_windows[self] += [variable_name]  # will be colored yellow
+                CustomText.written_variables_of_all_windows[self] += [variable_name]  # may be colored yellow
         for read_or_written_variable in written_variables + read_variables:
             if read_or_written_variable not in all_variable_names:
-                CustomText.read_variables_of_all_windows[self] += [read_or_written_variable]  # will be colored red
+                CustomText.read_variables_of_all_windows[self] += [read_or_written_variable]  # may be colored red
 
     def __remove_keywords(self, text):
         if main_window.language.get() == "VHDL":
