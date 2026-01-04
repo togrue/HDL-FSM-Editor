@@ -74,6 +74,7 @@ class CustomText(tk.Text):
         """A text widget that report on internal widget commands"""
         tk.Text.__init__(self, *args, **kwargs)
         self.text_type = text_type
+        self.after_identifier = None
         # create a proxy for the underlying widget
         self._orig = self._w + "_orig"
         self.tk.call("rename", self._w, self._orig)
@@ -141,7 +142,9 @@ class CustomText(tk.Text):
 
     def format_after_idle(self) -> None:
         if self.text_type != "log":
-            self.after_idle(self.format)
+            if self.after_identifier is not None:
+                self.after_cancel(self.after_identifier)
+            self.after_identifier = self.after(300, self.format)
 
     def format(self) -> None:
         text = self.get("1.0", tk.END)
