@@ -149,8 +149,7 @@ class CustomText(tk.Text):
     def format(self) -> None:
         text = self.get("1.0", tk.END)
         self.__update_size_of_text_box(text)
-        self.__update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows()
-        self.update_highlighting()
+        self.update_custom_text_class_signals_list()
 
     def __update_size_of_text_box(self, text) -> None:
         nr_of_lines = 0
@@ -292,6 +291,13 @@ class CustomText(tk.Text):
 
     def update_custom_text_class_signals_list(self) -> None:
         all_signal_declarations = self.get("1.0", tk.END).lower()
+        all_signal_declarations = hdl_generation_library.remove_comments_and_returns(all_signal_declarations)
+        all_signal_declarations = hdl_generation_library.remove_functions(all_signal_declarations)
+        all_signal_declarations = hdl_generation_library.remove_type_declarations(all_signal_declarations)
+        # For VHDL processes in "global actions combinatorial":
+        all_signal_declarations = re.sub(r"process\s*\(.*?\)", "", all_signal_declarations)
+        # Only needed for VHDL:
+        all_signal_declarations = hdl_generation_library.surround_character_by_blanks(":", all_signal_declarations)
         self.signals_list = hdl_generation_library.get_all_declared_signal_names(all_signal_declarations)
         self.constants_list = hdl_generation_library.get_all_declared_constant_names(all_signal_declarations)
         self.__update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows()
@@ -357,7 +363,7 @@ class CustomText(tk.Text):
             )
             # Store the remaining variable names and remove duplicates from the list:
             # print("written-variables = ", list(set(text.split())))
-            CustomText.written_variables_of_all_windows[self] = list(set(text.split()))
+            CustomText.written_variables_of_all_windows[self] += list(set(text.split()))
             # When the ";" is missing, then the right hand side with "<=" could not be found and erased.
             # So remove "<=" and ":=" from these lists:
             if "<=" in CustomText.read_variables_of_all_windows[self]:
@@ -371,6 +377,8 @@ class CustomText(tk.Text):
                 CustomText.read_variables_of_all_windows[self].remove(";")
             if "," in CustomText.read_variables_of_all_windows[self]:
                 CustomText.read_variables_of_all_windows[self].remove(",")
+            if ";" in CustomText.written_variables_of_all_windows[self]:  # Happens at VHDL-"null" assignments.
+                CustomText.written_variables_of_all_windows[self].remove(";")
             if "<=" in CustomText.written_variables_of_all_windows[self]:
                 CustomText.written_variables_of_all_windows[self].remove("<=")
             if ":=" in CustomText.written_variables_of_all_windows[self]:
@@ -430,32 +438,33 @@ class CustomText(tk.Text):
         return text
 
     def _add_uncomplete_vhdl_variables_to_read_or_written_variables_of_all_windows(self, text):
-        text_before_process_list, process_list, remaining_text = self._split(text)
-        for p_number, process in enumerate(process_list):
+        text_list, proc_list, remaining_text = self._split_in_lists_of_text_and_processes(text)
+        for p_number, process in enumerate(proc_list):
             process, all_variable_names = self._remove_variable_declarations(process)
             process, written_variables = self._remove_written_variables(process, all_variable_names)
             process, read_variables = self._remove_read_variables(process, all_variable_names)
-            process_list[p_number] = process
+            proc_list[p_number] = process
             self._add_to_read_or_written_variables_of_all_windows(all_variable_names, written_variables, read_variables)
         new_text = ""
-        for i, text_before in enumerate(text_before_process_list):
-            new_text += text_before + process_list[i]
+        # Reconstruct the text from text_list and the modified processes from proc_list:
+        for i, text_before in enumerate(text_list):
+            new_text += text_before + proc_list[i]
         return new_text + remaining_text
 
-    def _split(self, text):
-        process_list = []
-        text_before_process_list = []
+    def _split_in_lists_of_text_and_processes(self, text):
+        proc_list = []
+        text_list = []
         while True:
             match = PROCESS_RE.search(text)
             if match:
                 if match.start() == match.end():
                     break
-                text_before_process_list.append(text[: match.start()])
-                process_list.append(text[match.start() : match.end()])
+                text_list.append(text[: match.start()])
+                proc_list.append(text[match.start() : match.end()])
                 text = text[match.end() :]  # remove before-match and match from text
             else:
                 break
-        return text_before_process_list, process_list, text
+        return text_list, proc_list, text
 
     def _remove_variable_declarations(self, process):
         all_variable_names = []
@@ -507,14 +516,18 @@ class CustomText(tk.Text):
         return process, read_variables
 
     def _add_to_read_or_written_variables_of_all_windows(self, all_variable_names, written_variables, read_variables):
-        for variable_name in all_variable_names:
-            if variable_name not in written_variables:
-                CustomText.read_variables_of_all_windows[self] += [variable_name]  # may be be colored red
-            else:
-                CustomText.written_variables_of_all_windows[self] += [variable_name]  # may be colored yellow
-        for read_or_written_variable in written_variables + read_variables:
-            if read_or_written_variable not in all_variable_names:
-                CustomText.read_variables_of_all_windows[self] += [read_or_written_variable]  # may be colored red
+        for process_variable_name in all_variable_names:
+            # if process_variable_name not in written_variables:
+            #     CustomText.read_variables_of_all_windows[self] += [process_variable_name]  # may be be colored red
+            # elif process_variable_name not in read_variables:
+            #     CustomText.written_variables_of_all_windows[self] += [process_variable_name]  # may be colored yellow
+            if process_variable_name in read_variables:
+                CustomText.read_variables_of_all_windows[self] += [process_variable_name]  # may be be colored red
+            if process_variable_name in written_variables:
+                CustomText.written_variables_of_all_windows[self] += [process_variable_name]  # may be colored yellow
+        for used_variable_name in written_variables + read_variables:
+            if used_variable_name not in all_variable_names:
+                CustomText.read_variables_of_all_windows[self] += [used_variable_name]  # may be colored red
 
     def __remove_keywords(self, text):
         if main_window.language.get() == "VHDL":

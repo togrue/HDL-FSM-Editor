@@ -15,6 +15,8 @@ import state_comment
 
 from .exceptions import GenerationError
 
+BLOCK_COMMENT_RE = re.compile(r"\/\*.*?\*\/", flags=re.DOTALL)
+
 
 def indent_text_by_the_given_number_of_tabs(number_of_tabs, text) -> str:
     keep_newline_at_each_line_end = True
@@ -832,14 +834,14 @@ def remove_functions(hdl_text):
 def remove_type_declarations(hdl_text):
     text = re.sub(
         r"(^|\s+)type\s+\w+\s+is\s+.*;", "", hdl_text
-    )  # Regular expression for VHDL and Verilog function declaration
+    )  # Regular expression for VHDL and Verilog type declaration
     return text
 
 
 def remove_vhdl_block_comments(list_string):
     # block comments are replaced by blanks, so all remaining text holds its position.
     while True:
-        match_object = re.search(r"/\*.*?\*/", list_string, flags=re.DOTALL)
+        match_object = BLOCK_COMMENT_RE.search(list_string)
         if match_object is None:
             break
         if match_object.start() == match_object.end():
@@ -890,13 +892,7 @@ def surround_character_by_blanks(character, all_port_declarations_without_commen
 
 
 def get_all_declared_signal_names(all_signal_declarations) -> list:
-    all_signal_declarations = remove_comments_and_returns(all_signal_declarations)
-    all_signal_declarations = remove_functions(all_signal_declarations)
-    all_signal_declarations = remove_type_declarations(all_signal_declarations)
-    all_signal_declarations_separated = surround_character_by_blanks(
-        ":", all_signal_declarations
-    )  # only needed for VHDL
-    signal_declaration_list = all_signal_declarations_separated.split(";")
+    signal_declaration_list = all_signal_declarations.split(";")
     signal_list = []
     for declaration in signal_declaration_list:
         if declaration != "" and not declaration.isspace():
@@ -910,18 +906,13 @@ def get_all_declared_signal_names(all_signal_declarations) -> list:
 
 
 def get_all_declared_constant_names(all_signal_declarations) -> list:
-    all_signal_declarations_without_comments = remove_comments_and_returns(all_signal_declarations)
-    all_signal_declarations_separated = surround_character_by_blanks(
-        ":", all_signal_declarations_without_comments
-    )  # only needed for VHDL
-    split_char = ";"
-    signal_declaration_list = all_signal_declarations_separated.split(split_char)
+    signal_declaration_list = all_signal_declarations.split(";")
     constant_list = []
     for declaration in signal_declaration_list:
         if declaration != "" and not declaration.isspace():
-            signals = _get_all_constant_names(declaration)
-            if signals != "":
-                constant_list.extend(signals.split(","))
+            constants = _get_all_constant_names(declaration)
+            if constants != "":
+                constant_list.extend(constants.split(","))
     return constant_list
 
 
