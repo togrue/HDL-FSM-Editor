@@ -7,8 +7,18 @@ import custom_text
 import global_actions_combinatorial
 import main_window
 
+recreate_after_id = None
+update_highlight_tags_id = None
+
 
 def recreate_keyword_list_of_unused_signals() -> None:
+    global recreate_after_id
+    if recreate_after_id is not None:
+        main_window.root.after_cancel(recreate_after_id)
+    recreate_after_id = main_window.root.after(300, _recreate_keyword_list_of_unused_signals_after_idle)
+
+
+def _recreate_keyword_list_of_unused_signals_after_idle() -> None:
     main_window.highlight_pattern_dict["not_read"].clear()
     main_window.highlight_pattern_dict["not_written"].clear()
 
@@ -118,6 +128,15 @@ def _remove_generics(variables_to_read, variables_to_write):
 
 
 def update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment() -> None:
+    global update_highlight_tags_id
+    if update_highlight_tags_id is not None:
+        main_window.root.after_cancel(update_highlight_tags_id)
+    update_highlight_tags_id = main_window.root.after(
+        300, _update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment_after_idle
+    )
+
+
+def _update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment_after_idle() -> None:
     # Comment must be the last, because in the range of a comment all other tags are deleted:
     for text_ref in custom_text.CustomText.read_variables_of_all_windows:
         text_ref.update_highlight_tags(canvas_editing.fontsize, ["not_read", "not_written", "comment"])
