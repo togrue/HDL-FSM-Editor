@@ -12,6 +12,7 @@ from pathlib import Path
 from tkinter import messagebox, ttk
 from tkinter.filedialog import askdirectory, askopenfilename
 
+import canvas_delete
 import canvas_editing
 import canvas_modify_bindings
 import compile_handling
@@ -828,7 +829,7 @@ def create_diagram_notebook_tab() -> None:
     plus_button.bind("<Button-1>", lambda event: canvas_editing.zoom_plus())
     minus_button.bind("<Button-1>", lambda event: canvas_editing.zoom_minus())
 
-    canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+    canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete(canvas))
     canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
     canvas.bind("<Motion>", canvas_editing.store_mouse_position)
     canvas.bind("<Control-MouseWheel>", canvas_editing.zoom_wheel)  # MouseWheel used at Windows.

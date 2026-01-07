@@ -5,6 +5,7 @@ Class for combinatorial actions independent from the state machine
 import tkinter as tk
 from tkinter import ttk
 
+import canvas_delete
 import canvas_editing
 import canvas_modify_bindings
 import custom_text
@@ -56,7 +57,10 @@ class GlobalActionsCombinatorial:
         self.text_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
         self.text_id.bind("<FocusIn>", lambda event: main_window.canvas.unbind_all("<Delete>"))
         self.text_id.bind(
-            "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+            "<FocusOut>",
+            lambda event: main_window.canvas.bind_all(
+                "<Delete>", lambda event: canvas_delete.CanvasDelete(main_window.canvas)
+            ),
         )
 
         self.label.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E))

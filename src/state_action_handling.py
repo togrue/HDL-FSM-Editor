@@ -5,6 +5,7 @@ Handles the state action of a single state.
 import tkinter as tk
 from tkinter import ttk
 
+import canvas_delete
 import canvas_editing
 import custom_text
 import main_window
@@ -60,7 +61,10 @@ class MyText:
         self.text_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
         self.text_id.bind("<FocusIn>", lambda event: main_window.canvas.unbind_all("<Delete>"))
         self.text_id.bind(
-            "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+            "<FocusOut>",
+            lambda event: main_window.canvas.bind_all(
+                "<Delete>", lambda event: canvas_delete.CanvasDelete(main_window.canvas)
+            ),
         )
 
         self.label_id.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E))

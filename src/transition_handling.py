@@ -5,6 +5,7 @@ This module handles the transitions in the diagram.
 import math
 import tkinter as tk
 
+import canvas_delete
 import canvas_editing
 import canvas_modify_bindings
 import condition_action_handling
@@ -756,7 +757,7 @@ def _update_priority(transition_tag, text_box) -> None:
     main_window.canvas.tag_raise(transition_tag + "priority", transition_tag + "rectangle")
     undo_handling.design_has_changed()
     main_window.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
-    main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+    main_window.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete(main_window.canvas))
 
 
 def _abort_edit_text(transition_tag, text_box, old_text) -> None:
@@ -766,7 +767,7 @@ def _abort_edit_text(transition_tag, text_box, old_text) -> None:
     main_window.canvas.tag_raise(transition_tag + "rectangle", transition_tag)
     main_window.canvas.tag_raise(transition_tag + "priority", transition_tag + "rectangle")
     main_window.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
-    main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+    main_window.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete(main_window.canvas))
 
 
 def show_menu(event, transition_id) -> None:

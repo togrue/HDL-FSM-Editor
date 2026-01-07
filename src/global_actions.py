@@ -5,6 +5,7 @@ Handles the global actions window in the diagram.
 import tkinter as tk
 from tkinter import ttk
 
+import canvas_delete
 import canvas_editing
 import canvas_modify_bindings
 import custom_text
@@ -80,11 +81,17 @@ class GlobalActions:
         self.text_after_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
         self.text_before_id.bind("<FocusIn>", lambda event: main_window.canvas.unbind_all("<Delete>"))
         self.text_before_id.bind(
-            "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+            "<FocusOut>",
+            lambda event: main_window.canvas.bind_all(
+                "<Delete>", lambda event: canvas_delete.CanvasDelete(main_window.canvas)
+            ),
         )
         self.text_after_id.bind("<FocusIn>", lambda event: main_window.canvas.unbind_all("<Delete>"))
         self.text_after_id.bind(
-            "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+            "<FocusOut>",
+            lambda event: main_window.canvas.bind_all(
+                "<Delete>", lambda event: canvas_delete.CanvasDelete(main_window.canvas)
+            ),
         )
 
         self.label_before.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E))

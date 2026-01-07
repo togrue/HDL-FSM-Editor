@@ -6,6 +6,7 @@ This class handles the condition&action box which can be activated for each tran
 import tkinter as tk
 from tkinter import ttk
 
+import canvas_delete
 import canvas_editing
 import custom_text
 import main_window
@@ -94,11 +95,17 @@ class ConditionAction:
         self.condition_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
         self.action_id.bind("<FocusIn>", lambda event: main_window.canvas.unbind_all("<Delete>"))
         self.action_id.bind(
-            "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+            "<FocusOut>",
+            lambda event: main_window.canvas.bind_all(
+                "<Delete>", lambda event: canvas_delete.CanvasDelete(main_window.canvas)
+            ),
         )
         self.condition_id.bind("<FocusIn>", lambda event: main_window.canvas.unbind_all("<Delete>"))
         self.condition_id.bind(
-            "<FocusOut>", lambda event: main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+            "<FocusOut>",
+            lambda event: main_window.canvas.bind_all(
+                "<Delete>", lambda event: canvas_delete.CanvasDelete(main_window.canvas)
+            ),
         )
         # Define layout:
         self.show_complete_box()

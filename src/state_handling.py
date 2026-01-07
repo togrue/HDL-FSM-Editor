@@ -5,6 +5,7 @@ This module contains all methods for inserting states.
 import tkinter as tk
 from tkinter import messagebox
 
+import canvas_delete
 import canvas_editing
 import constants
 import main_window
@@ -255,7 +256,7 @@ def _update_state_name(text_id, text_box) -> None:
             _resize_state(state_tag, text_id)
     undo_handling.design_has_changed()
     main_window.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
-    main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+    main_window.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete(main_window.canvas))
     tags = main_window.canvas.gettags(state_tag)
     for t in tags:
         if t.endswith("_start"):
@@ -287,7 +288,7 @@ def _abort_edit_text(text_id, text_box, old_text) -> None:
     main_window.canvas.itemconfig(text_id, text=old_text)
     text_box.destroy()
     main_window.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
-    main_window.canvas.bind_all("<Delete>", lambda event: canvas_editing.delete())
+    main_window.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete(main_window.canvas))
 
 
 def _show_new_state_name(new_text, text_id) -> None:
