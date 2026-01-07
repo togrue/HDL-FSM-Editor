@@ -74,6 +74,8 @@ class CustomText(tk.Text):
         """A text widget that report on internal widget commands"""
         tk.Text.__init__(self, *args, **kwargs)
         self.text_type = text_type
+        # text_type is in:
+        # ["package","generics","ports","variable","condition","generated","action","declarations","log","comment"]
         self.after_identifier = None
         # create a proxy for the underlying widget
         self._orig = self._w + "_orig"
@@ -96,7 +98,7 @@ class CustomText(tk.Text):
         self.readable_ports_list = []
         self.writable_ports_list = []
         self.generics_list = []
-        self.port_types_list = []  # Only used at object main_window.interface_ports_text
+        self.port_types_list = []  # Used by interface_ports_text, needed for removing port types at linting.
         self.function_names_list = []
         CustomText.read_variables_of_all_windows[self] = []
         CustomText.written_variables_of_all_windows[self] = []
@@ -149,7 +151,14 @@ class CustomText(tk.Text):
     def format(self) -> None:
         text = self.get("1.0", tk.END)
         self.__update_size_of_text_box(text)
-        self.update_custom_text_class_signals_list()
+        if self.text_type in ("declarations", "variable", "action"):
+            self.update_custom_text_class_signals_list()
+        elif self.text_type == "ports":
+            self.update_custom_text_class_ports_list()
+        elif self.text_type == "generics":
+            self.update_custom_text_class_generics_list()
+        self._update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows()
+        self._update_highlighting_in_all_texts()
 
     def __update_size_of_text_box(self, text) -> None:
         nr_of_lines = 0
@@ -174,28 +183,43 @@ class CustomText(tk.Text):
             self.config(width=max_line_length)
             self.config(height=nr_of_lines)
 
-    def update_highlighting(self) -> None:
+    def _update_highlighting_in_all_texts(self) -> None:
+        # The tags "control", "datatype", "function" must only be updated in this CustomText object:
         self.update_highlight_tags(canvas_editing.fontsize, ["control", "datatype", "function"])
         linting.recreate_keyword_list_of_unused_signals()
+        # The tags "not_read", "not_written", and "comment" must be updated in all CustomText objects:
         linting.update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment()
 
     def update_highlight_tags(self, fontsize, highlight_tag_name_list) -> None:
+        """
+        Updates only in this text. Called when text is changed by:
+        - format()
+        - starting the tool (only for highlighting the predefined VHDL library statements in Interface/Packages)
+        - after opening a file
+        - after undo/redo
+        - after editing in external editor
+        - after loading HDL into HDL-Tab
+        - after HDL generation
+        """
         # highlight_tag_name is in ["control", "datatype", "function", "not_read", "not_written", "comment"]
         for highlight_tag_name in highlight_tag_name_list:
             self.tag_delete(highlight_tag_name)
-            for highlight_search_pattern in main_window.highlight_pattern_dict[highlight_tag_name]:
-                if self.text_type != "comment":  # State comment text
-                    self._add_highlight_tag_for_single_pattern(highlight_tag_name, highlight_search_pattern)
-            if self.text_type in ("condition", "action", "comment"):
-                self.tag_configure(
-                    highlight_tag_name,
-                    foreground=config.HIGHLIGHT_COLORS[highlight_tag_name],
-                    font=("Courier", int(fontsize), "normal"),
-                )  # int() is necessary, because fontsize can be a "real" number.
-            else:
-                self.tag_configure(
-                    highlight_tag_name, foreground=config.HIGHLIGHT_COLORS[highlight_tag_name], font=("Courier", 10)
-                )
+            self._tag_add_highlight_tag(highlight_tag_name)
+            self._tag_configure_highlight_tag(highlight_tag_name, fontsize)
+
+    def _tag_add_highlight_tag(self, highlight_tag_name) -> None:
+        for highlight_search_pattern in main_window.highlight_pattern_dict[highlight_tag_name]:
+            if self.text_type != "comment":  # State comment text
+                self._add_highlight_tag_for_single_pattern(highlight_tag_name, highlight_search_pattern)
+
+    def _tag_configure_highlight_tag(self, highlight_tag_name, fontsize) -> None:
+        if self.text_type not in ("condition", "action", "comment"):
+            fontsize = 10  # Fixed fontsize for declaration text boxes.
+        self.tag_configure(
+            highlight_tag_name,
+            foreground=config.HIGHLIGHT_COLORS[highlight_tag_name],
+            font=("Courier", int(fontsize), "normal"),
+        )  # int() is necessary, because fontsize can be a "real" number.
 
     def _add_highlight_tag_for_single_pattern(self, highlight_tag_name, highlight_search_pattern) -> None:
         copy_of_text = self.get("1.0", tk.END + "- 1 chars")
@@ -275,35 +299,26 @@ class CustomText(tk.Text):
 
     def undo(self) -> None:
         # self.edit_undo() # causes a second "undo", as Ctrl-z automatically starts edit_undo()
-        self.after_idle(self.update_declaration_lists)
         self.format_after_idle()
 
     def redo(self) -> None:
         self.edit_redo()
-        self.after_idle(self.update_declaration_lists)
         self.format_after_idle()
 
-    def update_declaration_lists(self) -> None:
-        if self == main_window.internals_architecture_text:
-            self.update_custom_text_class_signals_list()
-        elif self == main_window.interface_ports_text:
-            self.update_custom_text_class_ports_list()
-
     def update_custom_text_class_signals_list(self) -> None:
+        # ["package","generics","ports","variable","condition","generated","action","declarations","log","comment"]
         all_signal_declarations = self.get("1.0", tk.END).lower()
         all_signal_declarations = hdl_generation_library.remove_comments_and_returns(all_signal_declarations)
         all_signal_declarations = hdl_generation_library.remove_functions(all_signal_declarations)
         all_signal_declarations = hdl_generation_library.remove_type_declarations(all_signal_declarations)
+        all_signal_declarations = hdl_generation_library.surround_character_by_blanks(":", all_signal_declarations)
         # For VHDL processes in "global actions combinatorial":
         all_signal_declarations = re.sub(r"process\s*\(.*?\)", "", all_signal_declarations)
-        # Only needed for VHDL:
-        all_signal_declarations = hdl_generation_library.surround_character_by_blanks(":", all_signal_declarations)
-        self.signals_list = hdl_generation_library.get_all_declared_signal_names(all_signal_declarations)
-        self.constants_list = hdl_generation_library.get_all_declared_constant_names(all_signal_declarations)
-        self.__update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows()
-        self.update_highlighting()
 
-    def update_custom_text_class_ports_list(self) -> None:  # Only called for self==main_window.interface_ports_text
+        self.signals_list = hdl_generation_library.get_all_declared_signal_and_variable_names(all_signal_declarations)
+        self.constants_list = hdl_generation_library.get_all_declared_constant_names(all_signal_declarations)
+
+    def update_custom_text_class_ports_list(self) -> None:  # Needed at self==main_window.interface_ports_text
         all_port_declarations = self.get("1.0", tk.END).lower()
         self.readable_ports_list = hdl_generation_architecture_state_actions.get_all_readable_ports(
             all_port_declarations, check=False
@@ -317,7 +332,7 @@ class CustomText(tk.Text):
         all_generic_declarations = main_window.interface_generics_text.get("1.0", tk.END).lower()
         self.generics_list = hdl_generation_architecture_state_actions.get_all_generic_names(all_generic_declarations)
 
-    def __update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows(self) -> None:
+    def _update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows(self) -> None:
         CustomText.read_variables_of_all_windows[self] = []
         CustomText.written_variables_of_all_windows[self] = []
         text = self.get("1.0", tk.END + "- 1 chars")

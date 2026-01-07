@@ -891,7 +891,7 @@ def surround_character_by_blanks(character, all_port_declarations_without_commen
     return re.sub(search_character, " " + character + " ", all_port_declarations_without_comments)
 
 
-def get_all_declared_signal_names(all_signal_declarations) -> list:
+def get_all_declared_signal_and_variable_names(all_signal_declarations) -> list:
     signal_declaration_list = all_signal_declarations.split(";")
     signal_list = []
     for declaration in signal_declaration_list:
