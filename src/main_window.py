@@ -377,7 +377,7 @@ def create_control_notebook_tab() -> None:
     _generate_path_entry.grid(row=2, column=1, sticky="ew")
     generate_path_button.grid(row=2, column=2, sticky="ew")
 
-    _select_file_number_label = ttk.Label(control_frame, text="Select for generation:", padding=5)
+    _select_file_number_label = ttk.Label(control_frame, text="Generation attributes:", padding=5)
     _select_file_number_frame = ttk.Frame(control_frame)
     _select_file_number_label.grid(row=3, column=0, sticky=tk.W)
     _select_file_number_frame.grid(row=3, column=1, sticky=(tk.W, tk.E))
