@@ -41,22 +41,23 @@ class CanvasDelete:
         return ids
 
     def _delete_item(self, canvas_id):
-        if self.canvas.type(canvas_id) is None:
+        item_type = self.canvas.type(canvas_id)
+        if item_type is None:
             # This item i is a member of the list stored in ids but was already deleted,
             # when one of the items earlier in the list was deleted.
             return
         tags_of_item_i = self.canvas.gettags(canvas_id)
         if self._item_is_a_not_deletable_object(canvas_id, tags_of_item_i):
             return
-        if self.canvas.type(canvas_id) == "polygon":
+        if item_type == "polygon":
             self._delete_reset_entry(tags_of_item_i)
-        elif self.canvas.type(canvas_id) == "window":
+        elif item_type == "window":
             self._delete_window(tags_of_item_i)
-        elif self.canvas.type(canvas_id) == "oval":
+        elif item_type == "oval":
             self._delete_state(tags_of_item_i, canvas_id)
-        elif self.canvas.type(canvas_id) == "rectangle":
+        elif item_type == "rectangle":
             self._delete_connector_or_transition(tags_of_item_i)
-        elif self.canvas.type(canvas_id) == "line":
+        elif item_type == "line":
             self._delete_transition_line(tags_of_item_i)
         else:
             messagebox.showerror(
@@ -150,20 +151,20 @@ class CanvasDelete:
                 main_window.global_action_combinatorial_button.config(state=tk.NORMAL)
             elif tag.startswith("connection"):  # connection<n>_start
                 connection = tag[0:-6]
-                connection_tags = main_window.canvas.gettags(connection)
+                connection_tags = self.canvas.gettags(connection)
                 for connection_tag in connection_tags:
                     if connection_tag.startswith("connected_to_state"):
                         state = connection_tag[13:]  # delete tag "connection<n>_end" at state.
-                        main_window.canvas.dtag(state, tag[0:-6] + "_end")
-                main_window.canvas.delete(tag[0:-6])  # delete connection
+                        self.canvas.dtag(state, tag[0:-6] + "_end")
+                self.canvas.delete(tag[0:-6])  # delete connection
             elif tag.startswith("ca_connection"):  # ca_connection<n>_anchor
                 ca_connection = tag[0:-7]
-                ca_connection_tags = main_window.canvas.gettags(ca_connection)
+                ca_connection_tags = self.canvas.gettags(ca_connection)
                 for ca_connection_tag in ca_connection_tags:
                     if ca_connection_tag.startswith("connected_to_transition"):
                         transition = ca_connection_tag[13:]  # delete tag "ca_connection<n>_end" at state.
-                        main_window.canvas.dtag(transition, tag[0:-7] + "_end")
-                main_window.canvas.delete(tag[0:-7])  # delete connection
+                        self.canvas.dtag(transition, tag[0:-7] + "_end")
+                self.canvas.delete(tag[0:-7])  # delete connection
             self.design_was_changed = True
 
     def _delete_state(self, tags_of_item_i, canvas_id):
@@ -177,33 +178,9 @@ class CanvasDelete:
                 self.canvas.delete(connection + "_start")  # delete action window
                 self.canvas.dtag(canvas_id, connection + "_end")  # delete connection<n>_end tag from state
             elif tag.startswith("transition") and tag.endswith("_end"):  # transition<n>_end
-                transition = tag[0:-4]
-                transition_tags = self.canvas.gettags(transition)
-                for transition_tag in transition_tags:
-                    if transition_tag.startswith("coming_from_"):
-                        state = transition_tag[12:]
-                        self.canvas.dtag(state, transition + "_start")
-                        self._adapt_visibility_of_priority_rectangles_at_state(state)
-                    elif transition_tag.startswith("ca_connection"):
-                        condition_action_tag = transition_tag[:-4]
-                        self.canvas.delete(condition_action_tag + "_anchor")  # delete the window
-                        self.canvas.delete(condition_action_tag)  # delete the line to the window
-                self.canvas.delete(transition)
-                self.canvas.delete(transition + "rectangle")  # delete priority rectangle
-                self.canvas.delete(transition + "priority")  # delete priority
+                self._delete_ending_transition(tag)
             elif tag.startswith("transition") and tag.endswith("_start"):  # transition<n>_start
-                transition = tag[0:-6]
-                transition_tags = self.canvas.gettags(transition)
-                for transition_tag in transition_tags:
-                    if transition_tag.startswith("going_to_"):
-                        state = transition_tag[9:]
-                        self.canvas.dtag(state, transition + "_end")
-                    elif transition_tag.startswith("ca_connection"):
-                        condition_action_tag = transition_tag[:-4]
-                        self.canvas.delete(condition_action_tag + "_anchor")
-                self.canvas.delete(transition)
-                self.canvas.delete(transition + "rectangle")  # delete priority rectangle
-                self.canvas.delete(transition + "priority")  # delete priority
+                self._delete_starting_transition(tag)
             elif tag.endswith("comment_line_end"):
                 canvas_id_of_comment_line = tag[:-4]
                 canvas_id_of_comment = tag[:-9]
@@ -216,32 +193,9 @@ class CanvasDelete:
             if tag.startswith("connector"):
                 self.canvas.delete(tag)  # delete connector
             elif tag.startswith("transition") and tag.endswith("_end"):  # transition<n>_end
-                transition = tag[0:-4]
-                transition_tags = self.canvas.gettags(transition)
-                for transition_tag in transition_tags:
-                    if transition_tag.startswith("coming_from_"):
-                        state = transition_tag[12:]
-                        self.canvas.dtag(state, transition + "_start")
-                        self._adapt_visibility_of_priority_rectangles_at_state(state)
-                    elif transition_tag.startswith("ca_connection"):
-                        condition_action_tag = transition_tag[:-4]
-                        self.canvas.delete(condition_action_tag + "_anchor")
-                self.canvas.delete(transition)
-                self.canvas.delete(transition + "rectangle")  # delete priority rectangle
-                self.canvas.delete(transition + "priority")  # delete priority
+                self._delete_ending_transition(tag)
             elif tag.startswith("transition") and tag.endswith("_start"):  # transition<n>_start
-                transition = tag[0:-6]
-                transition_tags = self.canvas.gettags(transition)
-                for transition_tag in transition_tags:
-                    if transition_tag.startswith("going_to_"):
-                        state = transition_tag[9:]
-                        self.canvas.dtag(state, transition + "_end")
-                    elif transition_tag.startswith("ca_connection"):
-                        condition_action_tag = transition_tag[:-4]
-                        self.canvas.delete(condition_action_tag + "_anchor")
-                self.canvas.delete(transition)
-                self.canvas.delete(transition + "rectangle")  # delete priority rectangle
-                self.canvas.delete(transition + "priority")  # delete priority
+                self._delete_starting_transition(tag)
         self.design_was_changed = True
 
     def _delete_transition_line(self, tags_of_item_i):
@@ -264,6 +218,36 @@ class CanvasDelete:
                 self.canvas.dtag(end_state, transition + "_end")
         self._adapt_visibility_of_priority_rectangles_at_state(start_state)
         self.design_was_changed = True
+
+    def _delete_ending_transition(self, tag):
+        transition = tag[0:-4]
+        transition_tags = self.canvas.gettags(transition)
+        for transition_tag in transition_tags:
+            if transition_tag.startswith("coming_from_"):
+                state = transition_tag[12:]
+                self.canvas.dtag(state, transition + "_start")
+                self._adapt_visibility_of_priority_rectangles_at_state(state)
+            elif transition_tag.startswith("ca_connection"):
+                condition_action_tag = transition_tag[:-4]
+                self.canvas.delete(condition_action_tag + "_anchor")  # delete the window
+                self.canvas.delete(condition_action_tag)  # delete the line to the window
+        self.canvas.delete(transition)
+        self.canvas.delete(transition + "rectangle")  # delete priority rectangle
+        self.canvas.delete(transition + "priority")  # delete priority
+
+    def _delete_starting_transition(self, tag):
+        transition = tag[0:-6]
+        transition_tags = self.canvas.gettags(transition)
+        for transition_tag in transition_tags:
+            if transition_tag.startswith("going_to_"):
+                state = transition_tag[9:]
+                self.canvas.dtag(state, transition + "_end")
+            elif transition_tag.startswith("ca_connection"):
+                condition_action_tag = transition_tag[:-4]
+                self.canvas.delete(condition_action_tag + "_anchor")
+        self.canvas.delete(transition)
+        self.canvas.delete(transition + "rectangle")  # delete priority rectangle
+        self.canvas.delete(transition + "priority")  # delete priority
 
     def _adapt_visibility_of_priority_rectangles_at_state(self, start_state) -> None:
         tags_of_start_state = self.canvas.gettags(start_state)
