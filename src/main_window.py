@@ -123,12 +123,9 @@ def read_message() -> None:
         source = urllib.request.urlopen("http://www.hdl-fsm-editor.de/message.txt")
         message = source.read()
         _read_message_result = message.decode()
-        # print(message.decode())
     except urllib.error.URLError:
         _read_message_result = "No message was found."
-        # print("No message was found.")
     except ConnectionRefusedError:
-        # pass
         _read_message_result = ""
     print(_read_message_result)
     _copy_message_into_log_tab(_read_message_result)
@@ -182,8 +179,6 @@ def _close_tool() -> None:
             # Check if save was successful (current_file is not empty)
             if project_manager.current_file == "":
                 return
-
-    # Clean up temp file and exit
     if os.path.isfile(project_manager.current_file + ".tmp"):
         os.remove(project_manager.current_file + ".tmp")
     sys.exit()
@@ -198,7 +193,6 @@ def _get_resource_path(resource_name: str) -> Path:
 
 def create_root() -> None:
     global root
-    # The top window:
     root = tk.Tk()
     root.withdraw()  # Because it could be batch-mode because of "-generate_hdl" switch.
 
@@ -252,7 +246,7 @@ def create_menu_bar() -> None:
     search_string.set("")
     replace_string = tk.StringVar()
     replace_string.set("")
-    search_frame = ttk.Frame(menue_frame, borderwidth=2)  # , relief=RAISED)
+    search_frame = ttk.Frame(menue_frame, borderwidth=2)
     search_button = ttk.Button(
         search_frame,
         text="Find",
@@ -292,11 +286,9 @@ def create_menu_bar() -> None:
     file_menu_button.grid(row=0, column=0)
     hdl_menu_button.grid(row=0, column=1)
     tool_title.grid(row=0, column=2)
-    search_frame.grid(row=0, column=3)  # , sticky=tk.E)
-    info_menu_button.grid(row=0, column=4)  # , sticky=tk.E)
+    search_frame.grid(row=0, column=3)
+    info_menu_button.grid(row=0, column=4)
     menue_frame.columnconfigure(2, weight=1)
-    # menue_frame.columnconfigure(3, weight=1)
-    # menue_frame.columnconfigure(4, weight=1)
 
     # Bindings of the menus:
     root.bind_all("<Control-o>", lambda event: file_handling.open_file())
@@ -537,15 +529,14 @@ def create_interface_notebook_tab() -> None:
     interface_package_text.bind("<Control-Z>", lambda event: interface_package_text.edit_redo())
     interface_package_text.bind("<Control-e>", lambda event: interface_package_text.edit_in_external_editor())
     interface_package_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-    interface_package_text.bind("<Key>", lambda event, id=interface_package_text: _handle_key(event, id))
     _interface_package_scroll = ttk.Scrollbar(
         _interface_package_frame, orient=tk.VERTICAL, cursor="arrow", command=interface_package_text.yview
     )
     interface_package_text.config(yscrollcommand=_interface_package_scroll.set)
-    _interface_package_label.grid(row=0, column=0, sticky="wns")  # "W" nötig, damit Text links bleibt
+    _interface_package_label.grid(row=0, column=0, sticky="wns")
     interface_package_info.grid(row=0, column=0, sticky=tk.E)
-    interface_package_text.grid(row=1, column=0, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
-    _interface_package_scroll.grid(row=1, column=1, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
+    interface_package_text.grid(row=1, column=0, sticky="nsew")
+    _interface_package_scroll.grid(row=1, column=1, sticky="nsew")
     paned_window_interface.add(_interface_package_frame, weight=1)
 
     interface_generics_frame = ttk.Frame(paned_window_interface)
@@ -561,7 +552,6 @@ def create_interface_notebook_tab() -> None:
     interface_generics_text.bind("<Control-Z>", lambda event: interface_generics_text.edit_redo())
     interface_generics_text.bind("<Control-e>", lambda event: interface_generics_text.edit_in_external_editor())
     interface_generics_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-    interface_generics_text.bind("<Key>", lambda event, id=interface_generics_text: _handle_key_at_generics(id))
     interface_generics_scroll = ttk.Scrollbar(
         interface_generics_frame, orient=tk.VERTICAL, cursor="arrow", command=interface_generics_text.yview
     )
@@ -569,7 +559,7 @@ def create_interface_notebook_tab() -> None:
     _interface_generics_label.grid(row=0, column=0, sticky="wns")
     interface_generics_info.grid(row=0, column=0, sticky=tk.E)
     interface_generics_text.grid(row=1, column=0, sticky="nsew")
-    interface_generics_scroll.grid(row=1, column=1, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
+    interface_generics_scroll.grid(row=1, column=1, sticky="nsew")
     paned_window_interface.add(interface_generics_frame, weight=1)
 
     interface_ports_frame = ttk.Frame(paned_window_interface)
@@ -586,7 +576,6 @@ def create_interface_notebook_tab() -> None:
     interface_ports_text.bind("<Control-Z>", lambda event: interface_ports_text.redo())
     interface_ports_text.bind("<Control-e>", lambda event: interface_ports_text.edit_in_external_editor())
     interface_ports_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-    interface_ports_text.bind("<Key>", lambda event, id=interface_ports_text: _handle_key_at_ports(id))
     interface_ports_scroll = ttk.Scrollbar(
         interface_ports_frame, orient=tk.VERTICAL, cursor="arrow", command=interface_ports_text.yview
     )
@@ -594,7 +583,7 @@ def create_interface_notebook_tab() -> None:
     _interface_ports_label.grid(row=0, column=0, sticky=tk.W)
     interface_ports_info.grid(row=0, column=0, sticky=tk.E)
     interface_ports_text.grid(row=1, column=0, sticky="nsew")
-    interface_ports_scroll.grid(row=1, column=1, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
+    interface_ports_scroll.grid(row=1, column=1, sticky="nsew")
     paned_window_interface.add(interface_ports_frame, weight=1)
 
     notebook.add(paned_window_interface, sticky="nsew", text=GuiTab.INTERFACE.value)
@@ -625,15 +614,14 @@ def create_internals_notebook_tab() -> None:
     internals_package_text.bind("<Control-Z>", lambda event: internals_package_text.edit_redo())
     internals_package_text.bind("<Control-e>", lambda event: internals_package_text.edit_in_external_editor())
     internals_package_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-    internals_package_text.bind("<Key>", lambda event, id=internals_package_text: _handle_key(event, id))
     _internals_package_scroll = ttk.Scrollbar(
         _internals_package_frame, orient=tk.VERTICAL, cursor="arrow", command=internals_package_text.yview
     )
     internals_package_text.config(yscrollcommand=_internals_package_scroll.set)
-    _internals_package_label.grid(row=0, column=0, sticky=tk.W)  # "W" nötig, damit Text links bleibt
+    _internals_package_label.grid(row=0, column=0, sticky=tk.W)
     interface_package_info.grid(row=0, column=0, sticky=tk.E)
-    internals_package_text.grid(row=1, column=0, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
-    _internals_package_scroll.grid(row=1, column=1, sticky="nsew")  # "W,E" nötig, damit Text tatsächlich breiter wird
+    internals_package_text.grid(row=1, column=0, sticky="nsew")
+    _internals_package_scroll.grid(row=1, column=1, sticky="nsew")
     paned_window_internals.add(_internals_package_frame, weight=1)
 
     internals_architecture_frame = ttk.Frame(paned_window_internals)
@@ -654,9 +642,6 @@ def create_internals_notebook_tab() -> None:
     internals_architecture_text.bind("<Control-Z>", lambda event: internals_architecture_text.redo())
     internals_architecture_text.bind("<Control-e>", lambda event: internals_architecture_text.edit_in_external_editor())
     internals_architecture_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-    internals_architecture_text.bind(
-        "<Key>", lambda event, id=internals_architecture_text: _handle_key_at_declarations(id)
-    )
     internals_architecture_scroll = ttk.Scrollbar(
         internals_architecture_frame, orient=tk.VERTICAL, cursor="arrow", command=internals_architecture_text.yview
     )
@@ -664,9 +649,7 @@ def create_internals_notebook_tab() -> None:
     _internals_architecture_label.grid(row=0, column=0, sticky=tk.W)
     interface_architecture_info.grid(row=0, column=0, sticky=tk.E)
     internals_architecture_text.grid(row=1, column=0, sticky="nsew")
-    internals_architecture_scroll.grid(
-        row=1, column=1, sticky="nsew"
-    )  # "W,E" nötig, damit Text tatsächlich breiter wird
+    internals_architecture_scroll.grid(row=1, column=1, sticky="nsew")
     paned_window_internals.add(internals_architecture_frame, weight=1)
 
     internals_process_clocked_frame = ttk.Frame(paned_window_internals)
@@ -689,9 +672,6 @@ def create_internals_notebook_tab() -> None:
         "<Control-e>", lambda event: internals_process_clocked_text.edit_in_external_editor()
     )
     internals_process_clocked_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-    internals_process_clocked_text.bind(
-        "<Key>", lambda event, id=internals_process_clocked_text: _handle_key_at_declarations(id)
-    )
     internals_process_clocked_scroll = ttk.Scrollbar(
         internals_process_clocked_frame,
         orient=tk.VERTICAL,
@@ -702,9 +682,7 @@ def create_internals_notebook_tab() -> None:
     _internals_process_clocked_label.grid(row=0, column=0, sticky=tk.W)
     interface_process_clocked_info.grid(row=0, column=0, sticky=tk.E)
     internals_process_clocked_text.grid(row=1, column=0, sticky="nsew")
-    internals_process_clocked_scroll.grid(
-        row=1, column=1, sticky="nsew"
-    )  # "W,E" nötig, damit Text tatsächlich breiter wird
+    internals_process_clocked_scroll.grid(row=1, column=1, sticky="nsew")
     paned_window_internals.add(internals_process_clocked_frame, weight=1)
 
     internals_process_combinatorial_frame = ttk.Frame(paned_window_internals)
@@ -727,9 +705,6 @@ def create_internals_notebook_tab() -> None:
         "<Control-e>", lambda event: internals_process_combinatorial_text.edit_in_external_editor()
     )
     internals_process_combinatorial_text.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-    internals_process_combinatorial_text.bind(
-        "<Key>", lambda event, id=internals_process_combinatorial_text: _handle_key_at_declarations(id)
-    )
     internals_process_combinatorial_scroll = ttk.Scrollbar(
         internals_process_combinatorial_frame,
         orient=tk.VERTICAL,
@@ -740,9 +715,7 @@ def create_internals_notebook_tab() -> None:
     _internals_process_combinatorial_label.grid(row=0, column=0, sticky=tk.W)
     interface_process_combinatorial_info.grid(row=0, column=0, sticky=tk.E)
     internals_process_combinatorial_text.grid(row=1, column=0, sticky="nsew")
-    internals_process_combinatorial_scroll.grid(
-        row=1, column=1, sticky="nsew"
-    )  # "W,E" nötig, damit Text tatsächlich breiter wird
+    internals_process_combinatorial_scroll.grid(row=1, column=1, sticky="nsew")
     paned_window_internals.add(internals_process_combinatorial_frame, weight=1)
 
     notebook.add(paned_window_internals, sticky="nsew", text=GuiTab.INTERNALS.value)
@@ -1170,27 +1143,6 @@ def switch_language_mode() -> None:
         else:
             compile_cmd.set("iverilog -g2012 -o $name $file; vvp $name")
         _compile_cmd_docu.config(text="Variables for compile command:\n$file\t= Module-File\n$name\t= Module Name")
-
-
-def _handle_key(event, custom_text_ref) -> None:
-    custom_text_ref.after_idle(
-        custom_text_ref.update_highlight_tags, canvas_editing.fontsize, ["control", "datatype", "function", "comment"]
-    )
-
-
-def _handle_key_at_ports(custom_text_ref) -> None:
-    custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_ports_list)
-    custom_text_ref.after_idle(custom_text_ref.update_highlighting)
-
-
-def _handle_key_at_generics(custom_text_ref) -> None:
-    custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_generics_list)
-    custom_text_ref.after_idle(custom_text_ref.update_highlighting)
-
-
-def _handle_key_at_declarations(custom_text_ref) -> None:
-    custom_text_ref.after_idle(custom_text_ref.update_custom_text_class_signals_list)
-    custom_text_ref.after_idle(custom_text_ref.update_highlighting)
 
 
 def _show_path_has_changed(*_) -> None:
