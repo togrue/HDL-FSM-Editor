@@ -478,6 +478,17 @@ def create_control_notebook_tab() -> None:
 
     notebook.add(control_frame, sticky="nsew", text=GuiTab.CONTROL.value)
 
+    project_manager.entry_widgets = [
+        {"stringvar": module_name, "entry": _module_name_entry},
+        {"stringvar": generate_path_value, "entry": _generate_path_entry},
+        {"stringvar": reset_signal_name, "entry": _reset_signal_name_entry},
+        {"stringvar": clock_signal_name, "entry": _clock_signal_name_entry},
+        {"stringvar": compile_cmd, "entry": _compile_cmd_entry},
+        {"stringvar": edit_cmd, "entry": _edit_cmd_entry},
+        {"stringvar": additional_sources_value, "entry": _additional_sources_entry},
+        {"stringvar": working_directory_value, "entry": _working_directory_entry},
+    ]
+
 
 def _set_path() -> None:
     path = askdirectory(title="Select directory for generated HDL")
@@ -831,7 +842,7 @@ def create_diagram_notebook_tab() -> None:
 
     canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete(canvas))
     canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
-    canvas.bind("<Motion>", canvas_editing.store_mouse_position)
+    canvas.bind("<Motion>", canvas_delete.CanvasDelete.store_mouse_position)
     canvas.bind("<Control-MouseWheel>", canvas_editing.zoom_wheel)  # MouseWheel used at Windows.
     canvas.bind("<Control-Button-4>", canvas_editing.zoom_wheel)  # MouseWheel-Scroll-Up used at Linux.
     canvas.bind("<Control-Button-5>", canvas_editing.zoom_wheel)  # MouseWheel-Scroll-Down used at Linux.
@@ -1224,17 +1235,3 @@ def set_word_boundaries() -> None:
     # information see http://www.tcl.tk/man/tcl8.5/TclCmd/library.htm#M19
     root.tk.call("set", "tcl_wordchars", "[a-zA-Z0-9_]")
     root.tk.call("set", "tcl_nonwordchars", "[^a-zA-Z0-9_]")
-
-
-def get_entry_widget_info() -> list:
-    entry_widgets = [
-        {"stringvar": module_name, "entry": _module_name_entry},
-        {"stringvar": generate_path_value, "entry": _generate_path_entry},
-        {"stringvar": reset_signal_name, "entry": _reset_signal_name_entry},
-        {"stringvar": clock_signal_name, "entry": _clock_signal_name_entry},
-        {"stringvar": compile_cmd, "entry": _compile_cmd_entry},
-        {"stringvar": edit_cmd, "entry": _edit_cmd_entry},
-        {"stringvar": additional_sources_value, "entry": _additional_sources_entry},
-        {"stringvar": working_directory_value, "entry": _working_directory_entry},
-    ]
-    return entry_widgets

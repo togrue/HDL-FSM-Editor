@@ -6,7 +6,6 @@ all its connected parts.
 import tkinter as tk
 from tkinter import messagebox
 
-import canvas_editing
 import condition_action_handling
 import custom_text
 import global_actions
@@ -22,6 +21,9 @@ import undo_handling
 class CanvasDelete:
     """This class provides all methods needed to delete a Canvas item and all its connected parts."""
 
+    canvas_x_coordinate = 0
+    canvas_y_coordinate = 0
+
     def __init__(self, canvas):
         self.canvas = canvas
         self.design_was_changed = False
@@ -33,10 +35,10 @@ class CanvasDelete:
 
     def _find_items_to_delete(self):
         ids = self.canvas.find_overlapping(
-            canvas_editing.canvas_x_coordinate - 2,
-            canvas_editing.canvas_y_coordinate - 2,
-            canvas_editing.canvas_x_coordinate + 2,
-            canvas_editing.canvas_y_coordinate + 2,
+            CanvasDelete.canvas_x_coordinate - 2,
+            CanvasDelete.canvas_y_coordinate - 2,
+            CanvasDelete.canvas_x_coordinate + 2,
+            CanvasDelete.canvas_y_coordinate + 2,
         )
         return ids
 
@@ -260,3 +262,8 @@ class CanvasDelete:
         if number_of_outgoing_transitions == 1:
             self.canvas.itemconfigure(tag_of_outgoing_transition + "rectangle", state=tk.HIDDEN)
             self.canvas.itemconfigure(tag_of_outgoing_transition + "priority", state=tk.HIDDEN)
+
+    @classmethod
+    def store_mouse_position(cls, event) -> None:
+        cls.canvas_x_coordinate = main_window.canvas.canvasx(event.x)
+        cls.canvas_y_coordinate = main_window.canvas.canvasy(event.y)

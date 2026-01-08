@@ -16,6 +16,7 @@ import state_actions_default
 import state_comment
 import undo_handling
 from constants import GuiTab
+from project_manager import project_manager
 
 
 class FindReplace:
@@ -84,8 +85,7 @@ class FindReplace:
 
     def _search_in_all_entry_widgets(self):
         continue_search = True
-        entry_widget_infos = main_window.get_entry_widget_info()
-        for entry_widget_info in entry_widget_infos:
+        for entry_widget_info in project_manager.entry_widgets:
             if continue_search:
                 continue_search = self._search_in_entry_widget(entry_widget_info)
         return continue_search

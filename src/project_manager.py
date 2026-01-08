@@ -14,11 +14,22 @@ class ProjectManager:
         # File management
         self._current_file: str = ""
         self._previous_file: str = ""
+        self._entry_widgets: list = []  # To store references to entry widgets
 
     @property
-    def project(self) -> Project:
-        """Direct access to the project state."""
-        return self._project
+    def entry_widgets(self) -> list:
+        """Get the list of entry widgets."""
+        return self._entry_widgets
+
+    @entry_widgets.setter
+    def entry_widgets(self, value: list) -> None:
+        """Set the list of entry widgets."""
+        self._entry_widgets = value
+
+    # @property
+    # def project(self) -> Project:
+    #     """Direct access to the project state."""
+    #     return self._project
 
     @property
     def current_file(self) -> str:
