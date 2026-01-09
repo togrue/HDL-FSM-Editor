@@ -104,5 +104,7 @@ class WriteDataCreator:
                 index_of_tags = 2
             else:
                 index_of_tags = 1
-            design_dictionary[element_name] = sorted(design_dictionary[element_name], key=lambda x: x[index_of_tags][0])
+            design_dictionary[element_name] = sorted(
+                design_dictionary[element_name], key=lambda x, idx=index_of_tags: x[idx][0]
+            )
         return design_dictionary
