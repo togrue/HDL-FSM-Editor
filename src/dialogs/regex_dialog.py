@@ -59,7 +59,10 @@ class RegexDialog(simpledialog.Dialog):
             self.pattern_entry.configure(style="InvalidRegex.TEntry")
 
     def body(self, master: tk.Frame) -> tk.Widget | None:
-        """Create the dialog body. Return the widget that should have initial focus."""
+        """
+        Overrides body() of simpledialog.Dialog.
+        Create the dialog body. Return the widget that should have initial focus.
+        """
         # Header
         ttk.Label(
             master,
@@ -115,7 +118,10 @@ class RegexDialog(simpledialog.Dialog):
         return self.pattern_entry  # Return widget that should have initial focus
 
     def apply(self) -> None:
-        """Process the dialog data and set the result."""
+        """
+        Overrides apply() of simpledialog.Dialog.
+        Process the dialog data and set the result.
+        """
         self.result = RegexConfig(
             pattern=self.pattern_entry.get(),
             filename_group=self.filename_entry.get(),
