@@ -301,7 +301,7 @@ def create_control_notebook_tab() -> None:
     diagram_background_color_entry.grid(row=11, column=1, sticky="ew")
     diagram_background_color_button.grid(row=11, column=2, sticky="ew")
     _diagram_background_color_error = ttk.Label(control_frame, text="", padding=5)
-    project_manager._diagram_background_color_error = _diagram_background_color_error
+    project_manager.diagram_background_color_error = _diagram_background_color_error
     _diagram_background_color_error.grid(row=12, column=1, sticky=tk.W)
 
     project_manager.notebook.add(control_frame, sticky="nsew", text=GuiTab.CONTROL.value)
