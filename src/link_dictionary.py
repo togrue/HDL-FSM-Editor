@@ -16,10 +16,11 @@ line-number and file-name are determined and the corresponding entry of the Link
 
 import tkinter as tk
 
-import codegen.hdl_generation as hdl_generation
 import main_window
+from codegen import hdl_generation
 from codegen.hdl_generation_config import GenerationConfig
 from constants import GuiTab
+from project_manager import project_manager
 
 
 class LinkDictionary:
@@ -46,7 +47,7 @@ class LinkDictionary:
         if hdl_item_type == "Control-Tab":
             self.link_dict[file_name][file_line_number] = {
                 "tab_name": GuiTab.CONTROL,
-                "widget_reference": main_window,
+                "widget_reference": main_window,  # TODO: das hier ist Quatsch, oder ?!
                 "hdl_item_type": hdl_item_name,
                 "object_identifier": "",
                 "number_of_line": "",
@@ -94,16 +95,16 @@ class LinkDictionary:
         widget.highlight_item(hdl_item_type, object_identifier, number_of_line)
 
     def jump_to_hdl(self, selected_file, file_line_number) -> None:
-        if main_window.select_file_number_text.get() == 2:
+        if project_manager.select_file_number_text.get() == 2:
             gen_config = GenerationConfig.from_main_window()
             file_name_architecture = gen_config.get_architecture_file()
             if file_name_architecture and selected_file == file_name_architecture:
                 file_line_number += hdl_generation.last_line_number_of_file1
         main_window.show_tab(GuiTab.GENERATED_HDL)
-        main_window.hdl_frame_text.highlight_item("", "", file_line_number)
-        main_window.hdl_frame_text.config(state="normal")
-        main_window.hdl_frame_text.focus_set()
-        main_window.hdl_frame_text.config(state="disabled")
+        project_manager.hdl_frame_text.highlight_item("", "", file_line_number)
+        project_manager.hdl_frame_text.config(state="normal")
+        project_manager.hdl_frame_text.focus_set()
+        project_manager.hdl_frame_text.config(state="disabled")
 
     def clear_link_dict(self, file_name) -> None:
         if file_name in self.link_dict:

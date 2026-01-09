@@ -5,6 +5,11 @@ Constants for all modules of HDL-FSM-Editor
 # from enum import StrEnum # StrEnum does not exist in Linux Mint
 from enum import Enum
 
+VERSION = "5.9"
+header_string = (
+    "HDL-FSM-Editor\nVersion " + VERSION + "\nCreated by Matthias Schweikart\nContact: matthias.schweikart@gmx.de"
+)
+
 VHDL_HIGHLIGHT_PATTERN_DICT = {
     "not_read": ["dummy_entry_so_that_this_list_is_no_empty"],
     "not_written": ["dummy_entry_so_that_this_list_is_no_empty"],

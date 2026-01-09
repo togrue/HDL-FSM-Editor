@@ -7,6 +7,7 @@ from tkinter import font, messagebox
 
 import canvas_modify_bindings
 import condition_action_handling
+import constants
 import global_actions
 import global_actions_combinatorial
 import main_window
@@ -14,6 +15,7 @@ import move_handling_initialization
 import state_action_handling
 import state_actions_default
 import state_comment
+from project_manager import project_manager
 from widgets.OptionMenu import OptionMenu
 
 # import inspect
@@ -34,21 +36,21 @@ def create_font_for_state_names() -> None:  # Called once by create_diagram_note
 
 
 def translate_window_event_coordinates_in_rounded_canvas_coordinates(event) -> list:
-    canvas_grid_x_coordinate = main_window.canvas.canvasx(event.x, gridspacing=state_radius)
-    canvas_grid_y_coordinate = main_window.canvas.canvasy(event.y, gridspacing=state_radius)
+    canvas_grid_x_coordinate = project_manager.canvas.canvasx(event.x, gridspacing=state_radius)
+    canvas_grid_y_coordinate = project_manager.canvas.canvasy(event.y, gridspacing=state_radius)
     return [canvas_grid_x_coordinate, canvas_grid_y_coordinate]
 
 
 def translate_window_event_coordinates_in_exact_canvas_coordinates(event) -> list:
     canvas_grid_x_coordinate, canvas_grid_y_coordinate = (
-        main_window.canvas.canvasx(event.x),
-        main_window.canvas.canvasy(event.y),
+        project_manager.canvas.canvasx(event.x),
+        project_manager.canvas.canvasy(event.y),
     )
     return [canvas_grid_x_coordinate, canvas_grid_y_coordinate]
 
 
 def adapt_visibility_of_priority_rectangles_at_state(start_state) -> None:
-    tags_of_start_state = main_window.canvas.gettags(start_state)
+    tags_of_start_state = project_manager.canvas.gettags(start_state)
     number_of_outgoing_transitions = 0
     tag_of_outgoing_transition = ""
     for start_state_tag in tags_of_start_state:
@@ -56,22 +58,22 @@ def adapt_visibility_of_priority_rectangles_at_state(start_state) -> None:
             number_of_outgoing_transitions += 1
             tag_of_outgoing_transition = start_state_tag.replace("_start", "")
     if number_of_outgoing_transitions == 1:
-        main_window.canvas.itemconfigure(tag_of_outgoing_transition + "rectangle", state=tk.HIDDEN)
-        main_window.canvas.itemconfigure(tag_of_outgoing_transition + "priority", state=tk.HIDDEN)
+        project_manager.canvas.itemconfigure(tag_of_outgoing_transition + "rectangle", state=tk.HIDDEN)
+        project_manager.canvas.itemconfigure(tag_of_outgoing_transition + "priority", state=tk.HIDDEN)
 
 
 def start_view_rectangle(event) -> None:
     [event_x, event_y] = translate_window_event_coordinates_in_exact_canvas_coordinates(event)
-    rectangle_id = main_window.canvas.create_rectangle(event_x, event_y, event_x, event_y, dash=(3, 5))
-    main_window.canvas.tag_raise(rectangle_id, "all")
-    funcid_canvas_draw_view_rectangle = main_window.canvas.bind(
+    rectangle_id = project_manager.canvas.create_rectangle(event_x, event_y, event_x, event_y, dash=(3, 5))
+    project_manager.canvas.tag_raise(rectangle_id, "all")
+    funcid_canvas_draw_view_rectangle = project_manager.canvas.bind(
         "<Motion>", lambda event: _draw_view_rectangle(event, rectangle_id), "+"
     )
-    main_window.canvas.bind(
+    project_manager.canvas.bind(
         "<ButtonRelease-1>",
         lambda event: _view_area_after_button1_release(rectangle_id, funcid_canvas_draw_view_rectangle),
     )
-    main_window.canvas.bind(
+    project_manager.canvas.bind(
         "<ButtonRelease-3>",
         lambda event: _view_area_after_button3_release(rectangle_id, funcid_canvas_draw_view_rectangle),
     )
@@ -79,23 +81,23 @@ def start_view_rectangle(event) -> None:
 
 def _draw_view_rectangle(event, rectangle_id) -> None:  # Called by Motion-event.
     [event_x, event_y] = translate_window_event_coordinates_in_exact_canvas_coordinates(event)
-    rectangle_coords = main_window.canvas.coords(rectangle_id)
+    rectangle_coords = project_manager.canvas.coords(rectangle_id)
     if event_x > rectangle_coords[0] and event_y > rectangle_coords[1]:
-        main_window.canvas.coords(rectangle_id, rectangle_coords[0], rectangle_coords[1], event_x, event_y)
+        project_manager.canvas.coords(rectangle_id, rectangle_coords[0], rectangle_coords[1], event_x, event_y)
 
 
 def _view_area_after_button3_release(rectangle_id, funcid_canvas_draw_view_rectangle) -> None:
-    rectangle_coords = main_window.canvas.coords(rectangle_id)
+    rectangle_coords = project_manager.canvas.coords(rectangle_id)
     if rectangle_coords[0] != rectangle_coords[2] and rectangle_coords[1] != rectangle_coords[3]:
         _view_area_after_button1_release(rectangle_id, funcid_canvas_draw_view_rectangle)
     else:
-        main_window.canvas.delete(rectangle_id)
-        overlapping_canvas_ids = main_window.canvas.find_overlapping(
+        project_manager.canvas.delete(rectangle_id)
+        overlapping_canvas_ids = project_manager.canvas.find_overlapping(
             rectangle_coords[0] - 5, rectangle_coords[1] - 5, rectangle_coords[0] + 5, rectangle_coords[1] + 5
         )
         item_found = False
         for canvas_id in overlapping_canvas_ids:
-            tags = main_window.canvas.gettags(canvas_id)
+            tags = project_manager.canvas.gettags(canvas_id)
             if "grid_line" not in tags:
                 item_found = True
         if not item_found:
@@ -104,46 +106,46 @@ def _view_area_after_button3_release(rectangle_id, funcid_canvas_draw_view_recta
 
 
 def _restore_binding(funcid_canvas_draw_view_rectangle):
-    main_window.canvas.unbind("<Motion>", funcid_canvas_draw_view_rectangle)
-    main_window.canvas.unbind("<ButtonRelease-1>")
-    main_window.canvas.unbind("<ButtonRelease-3>")
+    project_manager.canvas.unbind("<Motion>", funcid_canvas_draw_view_rectangle)
+    project_manager.canvas.unbind("<ButtonRelease-1>")
+    project_manager.canvas.unbind("<ButtonRelease-3>")
     # Restore the original binding (Button-1 is bound to start_view_rectangle(), when "view area"-Button was used):
-    main_window.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
+    project_manager.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
 
 
 def _view_area_after_button1_release(
     rectangle_id, funcid_canvas_draw_view_rectangle
 ) -> None:  # Called by Button-1("view area"-button) or Button-3(view area per right mouse-button)-Release-Event.
-    main_window.grid_drawer.remove_grid()
-    complete_rectangle = main_window.canvas.coords(rectangle_id)
+    project_manager.grid_drawer.remove_grid()
+    complete_rectangle = project_manager.canvas.coords(rectangle_id)
     view_rectangle(complete_rectangle, check_fit=False)
-    main_window.canvas.delete(rectangle_id)
+    project_manager.canvas.delete(rectangle_id)
     _restore_binding(funcid_canvas_draw_view_rectangle)
-    main_window.grid_drawer.draw_grid()
+    project_manager.grid_drawer.draw_grid()
 
 
 def view_all() -> None:
-    main_window.grid_drawer.remove_grid()
-    complete_rectangle = main_window.canvas.bbox("all")
+    project_manager.grid_drawer.remove_grid()
+    complete_rectangle = project_manager.canvas.bbox("all")
     if complete_rectangle is not None:
         view_rectangle(complete_rectangle, check_fit=True)
-    main_window.canvas.update_idletasks()  # helps to get "after_idle" in view_rectangle() ready?!
-    main_window.canvas.after_idle(
-        main_window.grid_drawer.draw_grid
+    project_manager.canvas.update_idletasks()  # helps to get "after_idle" in view_rectangle() ready?!
+    project_manager.canvas.after_idle(
+        project_manager.grid_drawer.draw_grid
     )  # "after_idle" is needed because view_rectangle calls decrement_font_size_if_window_is_too_wide after idle.
 
 
 def view_rectangle(complete_rectangle, check_fit) -> None:
     if complete_rectangle[2] - complete_rectangle[0] != 0 and complete_rectangle[3] - complete_rectangle[1] != 0:
         visible_rectangle = [
-            main_window.canvas.canvasx(0),
-            main_window.canvas.canvasy(0),
-            main_window.canvas.canvasx(main_window.canvas.winfo_width()),
-            main_window.canvas.canvasy(main_window.canvas.winfo_height()),
+            project_manager.canvas.canvasx(0),
+            project_manager.canvas.canvasy(0),
+            project_manager.canvas.canvasx(project_manager.canvas.winfo_width()),
+            project_manager.canvas.canvasy(project_manager.canvas.winfo_height()),
         ]
         factor = _calculate_zoom_factor(complete_rectangle, visible_rectangle)
         too_big = False
-        actual_rectangle = main_window.canvas.bbox("all")
+        actual_rectangle = project_manager.canvas.bbox("all")
         for coord in actual_rectangle:
             # The Canvas which is used, has a scrollregion +/-100000, so here this limit
             # is checked (unclear if really necessary):
@@ -155,7 +157,7 @@ def view_rectangle(complete_rectangle, check_fit) -> None:
             _move_canvas_point_from_to(complete_center, visible_center)
             canvas_zoom(complete_center, factor)
             if check_fit:
-                main_window.canvas.after_idle(_decrement_font_size_if_window_is_too_wide)
+                project_manager.canvas.after_idle(_decrement_font_size_if_window_is_too_wide)
         else:
             messagebox.showerror("Fatal", "Zoom factor is too big.")
     canvas_modify_bindings.switch_to_move_mode()
@@ -163,12 +165,12 @@ def view_rectangle(complete_rectangle, check_fit) -> None:
 
 def _decrement_font_size_if_window_is_too_wide() -> None:
     visible_rectangle = [
-        main_window.canvas.canvasx(0),
-        main_window.canvas.canvasy(0),
-        main_window.canvas.canvasx(main_window.canvas.winfo_width()),
-        main_window.canvas.canvasy(main_window.canvas.winfo_height()),
+        project_manager.canvas.canvasx(0),
+        project_manager.canvas.canvasy(0),
+        project_manager.canvas.canvasx(project_manager.canvas.winfo_width()),
+        project_manager.canvas.canvasy(project_manager.canvas.winfo_height()),
     ]
-    complete_rectangle = main_window.canvas.bbox("all")
+    complete_rectangle = project_manager.canvas.bbox("all")
     if (
         (
             complete_rectangle[0] < visible_rectangle[0]
@@ -183,7 +185,7 @@ def _decrement_font_size_if_window_is_too_wide() -> None:
         _move_canvas_point_from_to(complete_center, visible_center)
         zoom_factor = (fontsize - 1) / fontsize
         canvas_zoom(complete_center, zoom_factor)
-        main_window.canvas.after_idle(_decrement_font_size_if_window_is_too_wide)
+        project_manager.canvas.after_idle(_decrement_font_size_if_window_is_too_wide)
 
 
 def _determine_center_of_rectangle(rectangle_coords) -> list:
@@ -191,8 +193,8 @@ def _determine_center_of_rectangle(rectangle_coords) -> list:
 
 
 def _move_canvas_point_from_to(complete_center, visible_center) -> None:
-    main_window.canvas.scan_mark(int(complete_center[0]), int(complete_center[1]))
-    main_window.canvas.scan_dragto(int(visible_center[0]), int(visible_center[1]), gain=1)
+    project_manager.canvas.scan_mark(int(complete_center[0]), int(complete_center[1]))
+    project_manager.canvas.scan_dragto(int(visible_center[0]), int(visible_center[1]), gain=1)
 
 
 def _calculate_zoom_factor(complete_rectangle, visible_rectangle):
@@ -207,8 +209,8 @@ def _calculate_zoom_factor(complete_rectangle, visible_rectangle):
 
 
 def zoom_wheel(event) -> None:
-    main_window.canvas.grid_remove()  # Make the grid invisible, but remember all options for the the next grid() call.
-    main_window.grid_drawer.remove_grid()
+    project_manager.canvas.grid_remove()  # Make the grid invisible, but remember all options for the the next grid() call.
+    project_manager.grid_drawer.remove_grid()
     # event.delta: attribute of the mouse wheel under Windows and MacOs.
     # One "felt step" at the mouse wheel gives this value:
     # Windows: delta=+/-120 ; MacOS: delta=+/-1 ; Linux: delta=0
@@ -220,41 +222,41 @@ def zoom_wheel(event) -> None:
         factor = 1.1
     zoom_center = translate_window_event_coordinates_in_exact_canvas_coordinates(event)
     canvas_zoom(zoom_center, factor)
-    main_window.grid_drawer.draw_grid()
+    project_manager.grid_drawer.draw_grid()
     canvas_modify_bindings.switch_to_move_mode()
-    main_window.canvas.grid()
+    project_manager.canvas.grid()
 
 
 def zoom_plus() -> None:
-    main_window.canvas.grid_remove()  # Make the canvas invisible.
-    main_window.grid_drawer.remove_grid()
+    project_manager.canvas.grid_remove()  # Make the canvas invisible.
+    project_manager.grid_drawer.remove_grid()
     factor = 1.1
     visible_rectangle = [
-        main_window.canvas.canvasx(0),
-        main_window.canvas.canvasy(0),
-        main_window.canvas.canvasx(main_window.canvas.winfo_width()),
-        main_window.canvas.canvasy(main_window.canvas.winfo_height()),
+        project_manager.canvas.canvasx(0),
+        project_manager.canvas.canvasy(0),
+        project_manager.canvas.canvasx(project_manager.canvas.winfo_width()),
+        project_manager.canvas.canvasy(project_manager.canvas.winfo_height()),
     ]
     visible_center = _determine_center_of_rectangle(visible_rectangle)
     canvas_zoom(visible_center, factor)
-    main_window.grid_drawer.draw_grid()
-    main_window.canvas.grid()
+    project_manager.grid_drawer.draw_grid()
+    project_manager.canvas.grid()
 
 
 def zoom_minus() -> None:
-    main_window.canvas.grid_remove()  # Make the canvas invisible.
-    main_window.grid_drawer.remove_grid()
+    project_manager.canvas.grid_remove()  # Make the canvas invisible.
+    project_manager.grid_drawer.remove_grid()
     factor = 1 / 1.1
     visible_rectangle = [
-        main_window.canvas.canvasx(0),
-        main_window.canvas.canvasy(0),
-        main_window.canvas.canvasx(main_window.canvas.winfo_width()),
-        main_window.canvas.canvasy(main_window.canvas.winfo_height()),
+        project_manager.canvas.canvasx(0),
+        project_manager.canvas.canvasy(0),
+        project_manager.canvas.canvasx(project_manager.canvas.winfo_width()),
+        project_manager.canvas.canvasy(project_manager.canvas.winfo_height()),
     ]
     visible_center = _determine_center_of_rectangle(visible_rectangle)
     canvas_zoom(visible_center, factor)
-    main_window.grid_drawer.draw_grid()
-    main_window.canvas.grid()
+    project_manager.grid_drawer.draw_grid()
+    project_manager.canvas.grid()
 
 
 def canvas_zoom(zoom_center, zoom_factor) -> None:
@@ -264,7 +266,7 @@ def canvas_zoom(zoom_center, zoom_factor) -> None:
         fontsize_rounded_down += 1
     if fontsize_rounded_down != 0:
         zoom_factor = fontsize_rounded_down / fontsize
-        main_window.canvas.scale(
+        project_manager.canvas.scale(
             "all", 0, 0, zoom_factor, zoom_factor
         )  # Scaling must use xoffset=0 and yoffset=0 to preserve the gridspacing of state_radius.
         _scroll_canvas_to_show_the_zoom_center(zoom_center, zoom_factor)
@@ -274,16 +276,16 @@ def canvas_zoom(zoom_center, zoom_factor) -> None:
 
 def _scroll_canvas_to_show_the_zoom_center(zoom_center, zoom_factor) -> None:
     new_position_of_zoom_center = [coord * zoom_factor for coord in zoom_center]
-    main_window.canvas.scan_mark(
+    project_manager.canvas.scan_mark(
         int(new_position_of_zoom_center[0]), int(new_position_of_zoom_center[1])
     )  # Mark the point of the canvas, which serves as anchor for the shift.
-    main_window.canvas.scan_dragto(int(zoom_center[0]), int(zoom_center[1]), gain=1)
+    project_manager.canvas.scan_dragto(int(zoom_center[0]), int(zoom_center[1]), gain=1)
 
 
 def _adapt_scroll_bars(factor) -> None:
-    scrollregion_strings = main_window.canvas.cget("scrollregion").split()
+    scrollregion_strings = project_manager.canvas.cget("scrollregion").split()
     scrollregion_scaled = [int(float(x) * factor) for x in scrollregion_strings]
-    main_window.canvas.configure(scrollregion=scrollregion_scaled)
+    project_manager.canvas.configure(scrollregion=scrollregion_scaled)
 
 
 def _adapt_global_size_variables(factor) -> None:
@@ -297,28 +299,28 @@ def _adapt_global_size_variables(factor) -> None:
 
 
 def scroll_start(event) -> None:
-    main_window.grid_drawer.remove_grid()
-    main_window.canvas.scan_mark(event.x, event.y)
+    project_manager.grid_drawer.remove_grid()
+    project_manager.canvas.scan_mark(event.x, event.y)
 
 
 def scroll_move(event) -> None:
-    main_window.canvas.scan_dragto(event.x, event.y, gain=1)
+    project_manager.canvas.scan_dragto(event.x, event.y, gain=1)
 
 
 def scroll_end(event) -> None:
-    main_window.grid_drawer.draw_grid()
+    project_manager.grid_drawer.draw_grid()
 
 
 def scroll_wheel(event) -> None:
-    main_window.grid_drawer.remove_grid()
-    main_window.canvas.scan_mark(event.x, event.y)
+    project_manager.grid_drawer.remove_grid()
+    project_manager.canvas.scan_mark(event.x, event.y)
     delta_y = 0
     if event.num == 5 or event.delta < 0:  # scroll down
         delta_y = -10
     elif event.num == 4 or event.delta >= 0:  # scroll up
         delta_y = +10
-    main_window.canvas.scan_dragto(event.x, event.y + delta_y, gain=1)
-    main_window.grid_drawer.draw_grid()
+    project_manager.canvas.scan_dragto(event.x, event.y + delta_y, gain=1)
+    project_manager.grid_drawer.draw_grid()
 
 
 def _modify_font_sizes_of_all_canvas_items(factor) -> None:
@@ -329,13 +331,13 @@ def _modify_font_sizes_of_all_canvas_items(factor) -> None:
     label_fontsize *= factor
     used_label_fontsize = max(label_fontsize, 1)
     state_name_font.configure(size=int(fontsize))
-    canvas_ids = main_window.canvas.find_all()
+    canvas_ids = project_manager.canvas.find_all()
     for i in canvas_ids:
-        if main_window.canvas.type(i) == "window":
+        if project_manager.canvas.type(i) == "window":
             if i in state_action_handling.MyText.mytext_dict:
                 state_action_handling.MyText.mytext_dict[i].label_id.configure(font=("Arial", int(used_label_fontsize)))
                 state_action_handling.MyText.mytext_dict[i].text_id.configure(font=("Courier", int(fontsize)))
-                for highlight_tag_name in main_window.highlight_pattern_dict:
+                for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
                     state_action_handling.MyText.mytext_dict[i].text_id.tag_configure(
                         highlight_tag_name,
                         font=("Courier", int(fontsize), "normal"),
@@ -343,7 +345,7 @@ def _modify_font_sizes_of_all_canvas_items(factor) -> None:
             elif i in state_comment.StateComment.dictionary:
                 state_comment.StateComment.dictionary[i].label_id.configure(font=("Arial", int(used_label_fontsize)))
                 state_comment.StateComment.dictionary[i].text_id.configure(font=("Courier", int(fontsize)))
-                for highlight_tag_name in main_window.highlight_pattern_dict:
+                for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
                     state_comment.StateComment.dictionary[i].text_id.tag_configure(
                         highlight_tag_name,
                         font=("Courier", int(fontsize), "normal"),
@@ -361,7 +363,7 @@ def _modify_font_sizes_of_all_canvas_items(factor) -> None:
                 condition_action_handling.ConditionAction.dictionary[i].action_id.configure(
                     font=("Courier", int(fontsize))
                 )
-                for highlight_tag_name in main_window.highlight_pattern_dict:
+                for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
                     condition_action_handling.ConditionAction.dictionary[i].condition_id.tag_configure(
                         highlight_tag_name,
                         font=("Courier", int(fontsize), "normal"),
@@ -379,7 +381,7 @@ def _modify_font_sizes_of_all_canvas_items(factor) -> None:
                 )
                 global_actions.GlobalActions.dictionary[i].text_before_id.configure(font=("Courier", int(fontsize)))
                 global_actions.GlobalActions.dictionary[i].text_after_id.configure(font=("Courier", int(fontsize)))
-                for highlight_tag_name in main_window.highlight_pattern_dict:
+                for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
                     global_actions.GlobalActions.dictionary[i].text_before_id.tag_configure(
                         highlight_tag_name,
                         font=("Courier", int(fontsize), "normal"),
@@ -395,7 +397,7 @@ def _modify_font_sizes_of_all_canvas_items(factor) -> None:
                 global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[i].text_id.configure(
                     font=("Courier", int(fontsize))
                 )
-                for highlight_tag_name in main_window.highlight_pattern_dict:
+                for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
                     global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[i].text_id.tag_configure(
                         highlight_tag_name,
                         font=("Courier", int(fontsize), "normal"),
@@ -407,7 +409,7 @@ def _modify_font_sizes_of_all_canvas_items(factor) -> None:
                 state_actions_default.StateActionsDefault.dictionary[i].text_id.configure(
                     font=("Courier", int(fontsize))
                 )
-                for highlight_tag_name in main_window.highlight_pattern_dict:
+                for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
                     state_actions_default.StateActionsDefault.dictionary[i].text_id.tag_configure(
                         highlight_tag_name,
                         font=("Courier", int(fontsize), "normal"),
@@ -418,10 +420,10 @@ def _modify_font_sizes_of_all_canvas_items(factor) -> None:
 
 def get_visible_center_as_string() -> str:
     visible_rectangle = [
-        main_window.canvas.canvasx(0),
-        main_window.canvas.canvasy(0),
-        main_window.canvas.canvasx(main_window.canvas.winfo_width()),
-        main_window.canvas.canvasy(main_window.canvas.winfo_height()),
+        project_manager.canvas.canvasx(0),
+        project_manager.canvas.canvasy(0),
+        project_manager.canvas.canvasx(project_manager.canvas.winfo_width()),
+        project_manager.canvas.canvasy(project_manager.canvas.winfo_height()),
     ]
     visible_center = _determine_center_of_rectangle(visible_rectangle)
     visible_center_string = ""
@@ -436,10 +438,10 @@ def shift_visible_center_to_window_center(new_visible_center_string) -> None:
     for entry in new_visible_center_string_array:
         new_visible_center.append(float(entry))
     actual_visible_rectangle = [
-        main_window.canvas.canvasx(0),
-        main_window.canvas.canvasy(0),
-        main_window.canvas.canvasx(main_window.canvas.winfo_width()),
-        main_window.canvas.canvasy(main_window.canvas.winfo_height()),
+        project_manager.canvas.canvasx(0),
+        project_manager.canvas.canvasy(0),
+        project_manager.canvas.canvasx(project_manager.canvas.winfo_width()),
+        project_manager.canvas.canvasy(project_manager.canvas.winfo_height()),
     ]
     actual_visible_center = _determine_center_of_rectangle(actual_visible_rectangle)
     _move_canvas_point_from_to(new_visible_center, actual_visible_center)
@@ -448,12 +450,12 @@ def shift_visible_center_to_window_center(new_visible_center_string) -> None:
 def _show_canvas_background_menu(zoom_coords) -> None:
     canvas_menue_entries_list_with_hide = ["Change background color", "Hide grid"]
     canvas_menue_entries_list_with_show = ["Change background color", "Show grid"]
-    if main_window.show_grid is True:
+    if project_manager.grid_drawershow_grid is True:
         canvas_menue_entries_list = canvas_menue_entries_list_with_hide
     else:
         canvas_menue_entries_list = canvas_menue_entries_list_with_show
     menu = OptionMenu(
-        main_window.canvas,
+        project_manager.canvas,
         canvas_menue_entries_list,
         height=2,
         bg="lightgrey",
@@ -461,7 +463,7 @@ def _show_canvas_background_menu(zoom_coords) -> None:
         activestyle="dotbox",
         relief=tk.RAISED,
     )
-    menue_window = main_window.canvas.create_window(zoom_coords[0], zoom_coords[1], window=menu)
+    menue_window = project_manager.canvas.create_window(zoom_coords[0], zoom_coords[1], window=menu)
     menu.bind("<Button-1>", lambda event: __evaluate_menu(menue_window, menu))
     menu.bind("<Leave>", lambda event: __close_menu(menue_window, menu))
 
@@ -471,14 +473,14 @@ def __evaluate_menu(menue_window, menu) -> None:
     if "Change background color" in selected_entry:
         main_window.choose_bg_color()
     elif "Hide grid" in selected_entry:
-        main_window.show_grid = False
-        main_window.grid_drawer.remove_grid()
+        project_manager.grid_drawer.show_grid = False
+        project_manager.grid_drawer.remove_grid()
     elif "Show grid" in selected_entry:
-        main_window.show_grid = True
-        main_window.grid_drawer.draw_grid()
+        project_manager.grid_drawer.show_grid = True
+        project_manager.grid_drawer.draw_grid()
     __close_menu(menue_window, menu)
 
 
 def __close_menu(menue_window, menu) -> None:
     menu.destroy()
-    main_window.canvas.delete(menue_window)
+    project_manager.canvas.delete(menue_window)

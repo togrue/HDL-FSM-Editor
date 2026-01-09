@@ -17,7 +17,7 @@ import state_comment
 import tag_plausibility
 from codegen.hdl_generation_config import GenerationConfig
 from constants import GuiTab
-from link_dictionary import link_dict
+from project_manager import project_manager
 
 from .exceptions import GenerationError
 from .list_separation_check import ListSeparationCheck
@@ -57,7 +57,7 @@ def _generate_hdl(config: GenerationConfig, write_to_file: bool, state_tag_list_
         raise GenerationError(
             "Error", ["The database is corrupt. Therefore, no HDL is generated.", "See details at STDOUT."]
         )
-    if main_window.root.title().endswith("*"):
+    if project_manager.root.title().endswith("*"):
         file_handling.save()
 
     # Create header with timestamp if enabled
@@ -73,9 +73,9 @@ def _generate_hdl(config: GenerationConfig, write_to_file: bool, state_tag_list_
 def _create_hdl(config, header, write_to_file, state_tag_list_sorted) -> None:
     file_name, file_name_architecture = _get_file_names(config)
 
-    link_dict().clear_link_dict(file_name)
+    project_manager.link_dict_ref.clear_link_dict(file_name)
     if file_name_architecture:
-        link_dict().clear_link_dict(file_name_architecture)
+        project_manager.link_dict_ref.clear_link_dict(file_name_architecture)
     file_line_number = 3  # Line 1 = Filename, Line 2 = Header
 
     if config.language == "VHDL":
@@ -103,36 +103,31 @@ def _create_hdl(config, header, write_to_file, state_tag_list_sorted) -> None:
 
 # TODO: This should not be here!
 def _copy_hdl_into_generated_hdl_tab(hdl, file_name, file_name_architecture) -> None:
-    main_window.date_of_hdl_file_shown_in_hdl_tab = os.path.getmtime(file_name)
+    project_manager.date_of_hdl_file_shown_in_hdl_tab = os.path.getmtime(file_name)
     if file_name_architecture != "":
-        main_window.date_of_hdl_file2_shown_in_hdl_tab = os.path.getmtime(file_name_architecture)
-    main_window.hdl_frame_text.config(state=tk.NORMAL)
-    main_window.hdl_frame_text.delete("1.0", tk.END)
-    main_window.hdl_frame_text.insert("1.0", hdl)
-    main_window.hdl_frame_text.update_highlight_tags(
+        project_manager.date_of_hdl_file2_shown_in_hdl_tab = os.path.getmtime(file_name_architecture)
+    project_manager.hdl_frame_text.config(state=tk.NORMAL)
+    project_manager.hdl_frame_text.delete("1.0", tk.END)
+    project_manager.hdl_frame_text.insert("1.0", hdl)
+    project_manager.hdl_frame_text.update_highlight_tags(
         10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
     )
-    main_window.hdl_frame_text.config(state=tk.DISABLED)
-    # Bring the notebook tab with the hdl into the foreground:
-    # notebook_ids = main_window.notebook.tabs()
-    # for id in notebook_ids:
-    #     if main_window.notebook.tab(id, option="text")==GuiTab.HDL.value:
-    #         main_window.notebook.select(id)
+    project_manager.hdl_frame_text.config(state=tk.DISABLED)
     main_window.show_tab(GuiTab.GENERATED_HDL)
 
 
 def _create_entity(config, file_name, file_line_number) -> tuple:
     entity = ""
 
-    package_statements = hdl_generation_library.get_text_from_text_widget(main_window.interface_package_text)
+    package_statements = hdl_generation_library.get_text_from_text_widget(project_manager.interface_package_text)
     entity += package_statements
     number_of_new_lines = package_statements.count("\n")
-    link_dict().add(
+    project_manager.link_dict_ref.add(
         file_name,
         file_line_number,
         "custom_text_in_interface_tab",
         number_of_new_lines,
-        main_window.interface_package_text,
+        project_manager.interface_package_text,
     )
     file_line_number += number_of_new_lines
 
@@ -140,10 +135,10 @@ def _create_entity(config, file_name, file_line_number) -> tuple:
     file_line_number += 1
 
     entity += "entity " + config.module_name + " is\n"
-    link_dict().add(file_name, file_line_number, "Control-Tab", 1, "module_name")
+    project_manager.link_dict_ref.add(file_name, file_line_number, "Control-Tab", 1, "module_name")
     file_line_number += 1
 
-    generic_declarations = hdl_generation_library.get_text_from_text_widget(main_window.interface_generics_text)
+    generic_declarations = hdl_generation_library.get_text_from_text_widget(project_manager.interface_generics_text)
     generic_declarations = ListSeparationCheck(generic_declarations, "VHDL").get_fixed_list()
     if generic_declarations != "":
         generic_declarations = (
@@ -153,17 +148,17 @@ def _create_entity(config, file_name, file_line_number) -> tuple:
         )
         file_line_number += 1  # switch to first line with generic value.
         number_of_new_lines = generic_declarations.count("\n") - 2  # Subtract first and last line
-        link_dict().add(
+        project_manager.link_dict_ref.add(
             file_name,
             file_line_number,
             "custom_text_in_interface_tab",
             number_of_new_lines,
-            main_window.interface_generics_text,
+            project_manager.interface_generics_text,
         )
         file_line_number += number_of_new_lines + 1
     entity += generic_declarations
 
-    port_declarations = hdl_generation_library.get_text_from_text_widget(main_window.interface_ports_text)
+    port_declarations = hdl_generation_library.get_text_from_text_widget(project_manager.interface_ports_text)
     port_declarations = ListSeparationCheck(port_declarations, "VHDL").get_fixed_list()
     if port_declarations != "":
         port_declarations = (
@@ -173,12 +168,12 @@ def _create_entity(config, file_name, file_line_number) -> tuple:
         )
         file_line_number += 1  # switch to first line with port.
         number_of_new_lines = port_declarations.count("\n") - 2  # Subtract first and last line
-        link_dict().add(
+        project_manager.link_dict_ref.add(
             file_name,
             file_line_number,
             "custom_text_in_interface_tab",
             number_of_new_lines,
-            main_window.interface_ports_text,
+            project_manager.interface_ports_text,
         )
         file_line_number += number_of_new_lines + 1
     entity += port_declarations
@@ -192,10 +187,10 @@ def _create_module_ports(config, file_name, file_line_number) -> tuple:
     module = ""
     file_line_number = 3  # Line 1 = Filename, Line 2 = Header
     module += "module " + config.module_name + "\n"
-    link_dict().add(file_name, file_line_number, "Control-Tab", 1, "module_name")
+    project_manager.link_dict_ref.add(file_name, file_line_number, "Control-Tab", 1, "module_name")
     file_line_number += 1
 
-    parameters = hdl_generation_library.get_text_from_text_widget(main_window.interface_generics_text)
+    parameters = hdl_generation_library.get_text_from_text_widget(project_manager.interface_generics_text)
     parameters = ListSeparationCheck(parameters, "Verilog").get_fixed_list()
     if parameters != "":
         parameters = (
@@ -205,28 +200,28 @@ def _create_module_ports(config, file_name, file_line_number) -> tuple:
         )
         file_line_number += 1  # switch to first line with parameters.
         number_of_new_lines = parameters.count("\n") - 2  # Subtract first and last line
-        link_dict().add(
+        project_manager.link_dict_ref.add(
             file_name,
             file_line_number,
             "custom_text_in_interface_tab",
             number_of_new_lines,
-            main_window.interface_generics_text,
+            project_manager.interface_generics_text,
         )
         file_line_number += number_of_new_lines + 1
         module += parameters
 
-    ports = hdl_generation_library.get_text_from_text_widget(main_window.interface_ports_text)
+    ports = hdl_generation_library.get_text_from_text_widget(project_manager.interface_ports_text)
     ports = ListSeparationCheck(ports, "Verilog").get_fixed_list()
     if ports != "":
         ports = "    (\n" + hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, ports) + "    );\n"
         number_of_new_lines = ports.count("\n") - 2  # Subtract first and last line
         file_line_number += 1  # switch to first line with port.
-        link_dict().add(
+        project_manager.link_dict_ref.add(
             file_name,
             file_line_number,
             "custom_text_in_interface_tab",
             number_of_new_lines,
-            main_window.interface_ports_text,
+            project_manager.interface_ports_text,
         )
         file_line_number += number_of_new_lines + 1
         module += ports
@@ -251,8 +246,10 @@ def _write_hdl_file(config, write_to_file, header, entity, architecture, path_na
             with open(path_name, "w", encoding="utf-8") as fileobject:
                 fileobject.write(content)
         last_line_number_of_file1 = content.count("\n") + 1  # For example: 3 lines are separated by 2 returns.
-        main_window.size_of_file1_line_number = len(str(last_line_number_of_file1)) + 2  # "+2" because of string ": "
-        main_window.size_of_file2_line_number = 0
+        project_manager.size_of_file1_line_number = (
+            len(str(last_line_number_of_file1)) + 2
+        )  # "+2" because of string ": "
+        project_manager.size_of_file2_line_number = 0
         content_with_numbers = _add_line_numbers(content)
     else:
         content1 = "-- Filename: " + name_of_file + "\n"
@@ -262,7 +259,9 @@ def _write_hdl_file(config, write_to_file, header, entity, architecture, path_na
             with open(path_name, "w", encoding="utf-8") as fileobject:
                 fileobject.write(content1)
         last_line_number_of_file1 = content1.count("\n") + 1  # For example: 3 lines are separated by 2 returns.
-        main_window.size_of_file1_line_number = len(str(last_line_number_of_file1)) + 2  # "+2" because of string ": "
+        project_manager.size_of_file1_line_number = (
+            len(str(last_line_number_of_file1)) + 2
+        )  # "+2" because of string ": "
         _, name_of_architecture_file = os.path.split(path_name_architecture)
         content2 = "-- Filename: " + name_of_architecture_file + "\n"
         content2 += header
@@ -273,7 +272,7 @@ def _write_hdl_file(config, write_to_file, header, entity, architecture, path_na
         content_with_numbers1 = _add_line_numbers(content1)
         content_with_numbers2 = _add_line_numbers(content2)
         content_with_numbers = content_with_numbers1 + content_with_numbers2
-        main_window.size_of_file2_line_number = (
+        project_manager.size_of_file2_line_number = (
             len(str(content_with_numbers.count("\n"))) + 2
         )  # "+2" because of string ": "
     return content_with_numbers
@@ -310,10 +309,10 @@ def _create_sorted_state_tag_list(is_script_mode) -> list:
     state_tag_dict_with_prio = {}
     state_tag_list = []
     reg_ex_for_state_tag = re.compile("^state[0-9]+$")
-    for canvas_id in main_window.canvas.find_all():
-        for tag in main_window.canvas.gettags(canvas_id):
+    for canvas_id in project_manager.canvas.find_all():
+        for tag in project_manager.canvas.gettags(canvas_id):
             if reg_ex_for_state_tag.match(tag):
-                single_element_list = main_window.canvas.find_withtag(tag + "_comment")
+                single_element_list = project_manager.canvas.find_withtag(tag + "_comment")
                 if not single_element_list:
                     state_tag_list.append(tag)
                 else:
@@ -334,7 +333,7 @@ def _create_sorted_state_tag_list(is_script_mode) -> list:
                                     print(
                                         "Warning in HDL-FSM-Editor: "
                                         + "The state '"
-                                        + main_window.canvas.itemcget(tag + "_name", "text")
+                                        + project_manager.canvas.itemcget(tag + "_name", "text")
                                         + "' uses the order-number "
                                         + first_line_of_state_comments
                                         + " which is already used at another state."
@@ -343,7 +342,7 @@ def _create_sorted_state_tag_list(is_script_mode) -> list:
                                     messagebox.showwarning(
                                         "Warning in HDL-FSM-Editor",
                                         "The state '"
-                                        + main_window.canvas.itemcget(tag + "_name", "text")
+                                        + project_manager.canvas.itemcget(tag + "_name", "text")
                                         + "' uses the order-number "
                                         + first_line_of_state_comments
                                         + " which is already used at another state.",

@@ -9,9 +9,9 @@ import canvas_delete
 import canvas_editing
 import canvas_modify_bindings
 import custom_text
-import main_window
 import move_handling_canvas_window
 import undo_handling
+from project_manager import project_manager
 
 
 class GlobalActionsCombinatorial:
@@ -27,7 +27,7 @@ class GlobalActionsCombinatorial:
         self.difference_y = 0
 
         self.frame_id = ttk.Frame(
-            main_window.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="GlobalActionsWindow.TFrame"
+            project_manager.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="GlobalActionsWindow.TFrame"
         )
         self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
         self.frame_id.bind("<Leave>", lambda event: self.deactivate_frame())
@@ -55,11 +55,11 @@ class GlobalActionsCombinatorial:
         self.text_id.bind("<Control-s>", lambda event: self.update_text())
         self.text_id.bind("<Control-g>", lambda event: self.update_text())
         self.text_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-        self.text_id.bind("<FocusIn>", lambda event: main_window.canvas.unbind_all("<Delete>"))
+        self.text_id.bind("<FocusIn>", lambda event: project_manager.canvas.unbind_all("<Delete>"))
         self.text_id.bind(
             "<FocusOut>",
-            lambda event: main_window.canvas.bind_all(
-                "<Delete>", lambda event: canvas_delete.CanvasDelete(main_window.canvas)
+            lambda event: project_manager.canvas.bind_all(
+                "<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas)
             ),
         )
 
@@ -67,7 +67,7 @@ class GlobalActionsCombinatorial:
         self.text_id.grid(row=1, column=0, sticky=(tk.E, tk.W))
 
         # Create canvas window for frame and text:
-        self.window_id = main_window.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
+        self.window_id = project_manager.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
 
         self.frame_id.bind(
             "<Button-1>",
@@ -92,7 +92,7 @@ class GlobalActionsCombinatorial:
         self.text_content = self.text_id.get("1.0", tk.END)
 
     def tag(self) -> None:
-        main_window.canvas.itemconfigure(self.window_id, tag="global_actions_combinatorial1")
+        project_manager.canvas.itemconfigure(self.window_id, tag="global_actions_combinatorial1")
 
     def activate_frame(self) -> None:
         self.activate_window()
@@ -115,8 +115,8 @@ class GlobalActionsCombinatorial:
     def move_to(self, event_x, event_y, first) -> None:
         if first:
             # Calculate the difference between the "anchor" point and the event:
-            coords = main_window.canvas.coords(self.window_id)
+            coords = project_manager.canvas.coords(self.window_id)
             self.difference_x, self.difference_y = -event_x + coords[0], -event_y + coords[1]
         # Keep the distance between event and anchor point constant:
         event_x, event_y = event_x + self.difference_x, event_y + self.difference_y
-        main_window.canvas.coords(self.window_id, event_x, event_y)
+        project_manager.canvas.coords(self.window_id, event_x, event_y)

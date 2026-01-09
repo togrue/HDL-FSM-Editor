@@ -11,11 +11,11 @@ import custom_text
 import global_actions
 import global_actions_combinatorial
 import global_actions_handling
-import main_window
 import reset_entry_handling
 import state_action_handling
 import state_actions_default
 import undo_handling
+from project_manager import project_manager
 
 
 class CanvasDelete:
@@ -88,7 +88,7 @@ class CanvasDelete:
                 self.canvas.delete(tag)  # delete polygon
                 self.canvas.delete("reset_text")  # delete text item
                 reset_entry_handling.reset_entry_number = 0
-                main_window.reset_entry_button.config(state=tk.NORMAL)
+                project_manager.reset_entry_button.config(state=tk.NORMAL)
                 self.design_was_changed = True
             elif tag.startswith("transition") and tag.endswith("_start"):  # transition<n>_start
                 transition = tag[0:-6]
@@ -116,7 +116,7 @@ class CanvasDelete:
                 del custom_text.CustomText.written_variables_of_all_windows[ref.text_id]
                 self.canvas.delete(tag)  # delete window
                 global_actions_handling.state_actions_default_number = 0
-                main_window.state_action_default_button.config(state=tk.NORMAL)
+                project_manager.state_action_default_button.config(state=tk.NORMAL)
             elif tag.startswith("state_action"):
                 ref = state_action_handling.MyText.mytext_dict[item_id[0]]
                 del custom_text.CustomText.read_variables_of_all_windows[ref.text_id]
@@ -143,14 +143,14 @@ class CanvasDelete:
                 del custom_text.CustomText.written_variables_of_all_windows[ref.text_after_id]
                 self.canvas.delete(tag)  # delete window
                 global_actions_handling.global_actions_clocked_number = 0
-                main_window.global_action_clocked_button.config(state=tk.NORMAL)
+                project_manager.global_action_clocked_button.config(state=tk.NORMAL)
             elif tag == "global_actions_combinatorial1":
                 ref = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[item_id[0]]
                 del custom_text.CustomText.read_variables_of_all_windows[ref.text_id]
                 del custom_text.CustomText.written_variables_of_all_windows[ref.text_id]
                 self.canvas.delete(tag)  # delete window
                 global_actions_handling.global_actions_combinatorial_number = 0
-                main_window.global_action_combinatorial_button.config(state=tk.NORMAL)
+                project_manager.global_action_combinatorial_button.config(state=tk.NORMAL)
             elif tag.startswith("connection"):  # connection<n>_start
                 connection = tag[0:-6]
                 connection_tags = self.canvas.gettags(connection)
@@ -265,5 +265,5 @@ class CanvasDelete:
 
     @classmethod
     def store_mouse_position(cls, event) -> None:
-        cls.canvas_x_coordinate = main_window.canvas.canvasx(event.x)
-        cls.canvas_y_coordinate = main_window.canvas.canvasy(event.y)
+        cls.canvas_x_coordinate = project_manager.canvas.canvasx(event.x)
+        cls.canvas_y_coordinate = project_manager.canvas.canvasy(event.y)

@@ -14,8 +14,8 @@ import constants
 import file_handling
 import global_actions_combinatorial
 import linting
-import main_window
 from codegen import hdl_generation_architecture_state_actions, hdl_generation_library
+from project_manager import project_manager
 
 FUNCTION_DECL_RE = re.compile(r"function\s+(\w+)", re.IGNORECASE)
 VHDL_ATTRIBUTE_RE = re.compile(r"\w+\s+'\s+\w+", re.IGNORECASE)
@@ -127,12 +127,15 @@ class CustomText(tk.Text):
 
     def edit_in_external_editor(self) -> None:
         with tempfile.NamedTemporaryFile(
-            suffix=".vhd" if main_window.language.get() == "VHDL" else ".v", delete=False, mode="w", encoding="utf-8"
+            suffix=".vhd" if project_manager.language.get() == "VHDL" else ".v",
+            delete=False,
+            mode="w",
+            encoding="utf-8",
         ) as tf:
             tf.write(self.get("1.0", "end-1c"))
             tmpname = tf.name
         try:
-            cmd = main_window.edit_cmd.get().split() + [tmpname]
+            cmd = project_manager.edit_cmd.get().split() + [tmpname]
             subprocess.run(cmd, check=False)  # blocks efficiently
             with open(tmpname, encoding="utf-8") as f:
                 new_text = f.read()
@@ -165,13 +168,13 @@ class CustomText(tk.Text):
         nr_of_characters_in_line = 0
         max_line_length = 0
         if self not in [
-            main_window.interface_generics_text,
-            main_window.interface_package_text,
-            main_window.interface_ports_text,
-            main_window.internals_architecture_text,
-            main_window.internals_process_clocked_text,
-            main_window.internals_process_combinatorial_text,
-            main_window.internals_package_text,
+            project_manager.interface_generics_text,
+            project_manager.interface_package_text,
+            project_manager.interface_ports_text,
+            project_manager.internals_architecture_text,
+            project_manager.internals_process_clocked_text,
+            project_manager.internals_process_combinatorial_text,
+            project_manager.internals_package_text,
         ]:
             for c in text:
                 if c != "\n":
@@ -208,7 +211,7 @@ class CustomText(tk.Text):
             self._tag_configure_highlight_tag(highlight_tag_name, fontsize)
 
     def _tag_add_highlight_tag(self, highlight_tag_name) -> None:
-        for highlight_search_pattern in main_window.highlight_pattern_dict[highlight_tag_name]:
+        for highlight_search_pattern in linting.highlight_pattern_dict[highlight_tag_name]:
             if self.text_type != "comment":  # State comment text
                 self._add_highlight_tag_for_single_pattern(highlight_tag_name, highlight_search_pattern)
 
@@ -318,7 +321,7 @@ class CustomText(tk.Text):
         self.signals_list = hdl_generation_library.get_all_declared_signal_and_variable_names(all_signal_declarations)
         self.constants_list = hdl_generation_library.get_all_declared_constant_names(all_signal_declarations)
 
-    def update_custom_text_class_ports_list(self) -> None:  # Needed at self==main_window.interface_ports_text
+    def update_custom_text_class_ports_list(self) -> None:  # Needed at self==project_manager.interface_ports_text
         all_port_declarations = self.get("1.0", tk.END).lower()
         self.readable_ports_list = hdl_generation_architecture_state_actions.get_all_readable_ports(
             all_port_declarations, check=False
@@ -329,7 +332,7 @@ class CustomText(tk.Text):
         self.port_types_list = hdl_generation_architecture_state_actions.get_all_port_types(all_port_declarations)
 
     def update_custom_text_class_generics_list(self) -> None:
-        all_generic_declarations = main_window.interface_generics_text.get("1.0", tk.END).lower()
+        all_generic_declarations = project_manager.interface_generics_text.get("1.0", tk.END).lower()
         self.generics_list = hdl_generation_architecture_state_actions.get_all_generic_names(all_generic_declarations)
 
     def _update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows(self) -> None:
@@ -339,16 +342,16 @@ class CustomText(tk.Text):
         text = hdl_generation_library.convert_hdl_lines_into_a_searchable_string(text)
         if text.isspace():
             return
-        if main_window.language.get() == "VHDL" and self == main_window.internals_architecture_text:
+        if project_manager.language.get() == "VHDL" and self == project_manager.internals_architecture_text:
             self._fill_function_names_list()
-        if main_window.language.get() == "VHDL":
+        if project_manager.language.get() == "VHDL":
             text = self._remove_loop_indices(text)
-        if main_window.language.get() == "VHDL" and self._text_is_global_actions_combinatorial():
+        if project_manager.language.get() == "VHDL" and self._text_is_global_actions_combinatorial():
             # "processes" are possible in this text, which might contain "uncomplete" variable usage:
             text = self._add_uncomplete_vhdl_variables_to_read_or_written_variables_of_all_windows(text)
         text = self.__remove_keywords(text)
         text = self._remove_vhdl_attributes(text)
-        if main_window.language.get() == "VHDL":
+        if project_manager.language.get() == "VHDL":
             text = re.sub(r"\..*?\s", " ", text)  # remove all record-element-names from their signal/variable names
         if self.text_type == "condition":
             text = self.__remove_condition_keywords(text)
@@ -385,7 +388,7 @@ class CustomText(tk.Text):
                 CustomText.read_variables_of_all_windows[self].remove("<=")
             if ":=" in CustomText.read_variables_of_all_windows[self]:
                 CustomText.read_variables_of_all_windows[self].remove(":=")
-            for function_name in main_window.internals_architecture_text.function_names_list:
+            for function_name in project_manager.internals_architecture_text.function_names_list:
                 if function_name in CustomText.read_variables_of_all_windows[self]:
                     CustomText.read_variables_of_all_windows[self].remove(function_name)
             if ";" in CustomText.read_variables_of_all_windows[self]:
@@ -400,7 +403,7 @@ class CustomText(tk.Text):
                 CustomText.written_variables_of_all_windows[self].remove(":=")
 
     def _text_is_global_actions_combinatorial(self):
-        list_of_canvas_id = main_window.canvas.find_withtag("global_actions_combinatorial1")
+        list_of_canvas_id = project_manager.canvas.find_withtag("global_actions_combinatorial1")
         if list_of_canvas_id:
             canvas_id = list_of_canvas_id[0]
             if global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[canvas_id].text_id == self:
@@ -545,7 +548,7 @@ class CustomText(tk.Text):
                 CustomText.read_variables_of_all_windows[self] += [used_variable_name]  # may be colored red
 
     def __remove_keywords(self, text):
-        if main_window.language.get() == "VHDL":
+        if project_manager.language.get() == "VHDL":
             text = self.__remove_keywords_from_vhdl(text)
         else:
             text = self.__remove_keywords_from_verilog(text)
@@ -577,7 +580,7 @@ class CustomText(tk.Text):
         return text
 
     def __remove_condition_keywords(self, text):
-        if main_window.language.get() == "VHDL":
+        if project_manager.language.get() == "VHDL":
             for keyword in (" = ", " /= ", " < ", " <= ", " > ", " >= "):
                 text = re.sub(keyword, "  ", text, flags=re.I)  # Keep the blanks the keyword is surrounded by.
         else:
@@ -596,7 +599,7 @@ class CustomText(tk.Text):
         return text
 
     def __add_read_variables_from_procedure_calls_to_read_variables_of_all_windows(self, text):
-        if main_window.language.get() != "VHDL":
+        if project_manager.language.get() != "VHDL":
             return text
         all_procedure_calls = []
         while True:
@@ -620,10 +623,10 @@ class CustomText(tk.Text):
                 ):
                     # As the procedure definition may not be part of this VHDL file,
                     # it can not for sure be determined, which parameter is read and which parameter is written.
-                    if procedure_parameter in main_window.interface_ports_text.readable_ports_list:
+                    if procedure_parameter in project_manager.interface_ports_text.readable_ports_list:
                         # If a parameter is an input port, then it is read.
                         CustomText.read_variables_of_all_windows[self] += [procedure_parameter]
-                    elif procedure_parameter in main_window.interface_ports_text.writable_ports_list:
+                    elif procedure_parameter in project_manager.interface_ports_text.writable_ports_list:
                         # If a parameter is an output port, then it is written and
                         # must be added to the variable text with a pseudo assignment:
                         text += procedure_parameter + " <= ;"
@@ -639,7 +642,7 @@ class CustomText(tk.Text):
         return re.sub(r"^.*?\s", "", procedure_call.lstrip())
 
     def __add_read_variables_from_with_select_blocks_to_read_variables_of_all_windows(self, text):
-        if main_window.language.get() == "VHDL":
+        if project_manager.language.get() == "VHDL":
             all_with_selects = []
             while True:  # Collect all with_selects and remove them from text.
                 match = WITH_SELECT_RE.search(text)
@@ -659,7 +662,7 @@ class CustomText(tk.Text):
         return text
 
     def __add_read_variables_from_conditions_to_read_variables_of_all_windows(self, text):
-        if main_window.language.get() == "VHDL":
+        if project_manager.language.get() == "VHDL":
             condition_search_pattern = (
                 "^if\\s+[^;]*?\\s+then| if\\s+[^;]*?\\s+then|elsif\\s+[^;]*?\\s+then|"
                 + "^when\\s+[^;]*?\\s+else| when\\s+[^;]*?\\s+else"
@@ -680,7 +683,7 @@ class CustomText(tk.Text):
             else:
                 break
         for condition in all_conditions:
-            if main_window.language.get() == "VHDL":
+            if project_manager.language.get() == "VHDL":
                 condition = re.sub("^if| if", " ", condition, flags=re.I)
                 condition = re.sub("^elsif| elsif", " ", condition, flags=re.I)
                 condition = re.sub(" then$", " ", condition, flags=re.I)
@@ -707,7 +710,7 @@ class CustomText(tk.Text):
         return text
 
     def __add_read_variables_from_case_constructs_to_read_variables_of_all_windows(self, text):
-        if main_window.language.get() == "VHDL":
+        if project_manager.language.get() == "VHDL":
             case_search_pattern = "^case\\s+.+?\\s+is| case\\s+.+?\\s+is"
         else:
             case_search_pattern = "^case\\s*?\\(.*?\\)| case\\s*?\\(.*?\\)"  # Verilog
@@ -722,7 +725,7 @@ class CustomText(tk.Text):
             else:
                 break
         for case in all_cases:
-            if main_window.language.get() == "VHDL":
+            if project_manager.language.get() == "VHDL":
                 case = re.sub("^case | case ", "", case, flags=re.I)
                 case = re.sub(" is$", "", case, flags=re.I)
             else:

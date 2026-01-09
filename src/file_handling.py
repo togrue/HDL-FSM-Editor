@@ -27,6 +27,7 @@ import tag_plausibility
 import transition_handling
 import undo_handling
 import update_hdl_tab
+import write_data_creator
 from constants import GuiTab
 from project_manager import project_manager
 
@@ -43,6 +44,9 @@ allowed_element_names_in_design_dictionary = (
     "window_global_actions_combinatorial",
     "window_state_actions_default",
 )
+
+
+write_data_creator_ref = None
 
 
 def ask_save_unsaved_changes(title) -> str:
@@ -67,12 +71,12 @@ def save_as() -> None:
     project_manager.previous_file = project_manager.current_file
     project_manager.current_file = asksaveasfilename(
         defaultextension=".hfe",
-        initialfile=main_window.module_name.get(),
+        initialfile=project_manager.module_name.get(),
         filetypes=(("HDL-FSM-Editor files", "*.hfe"), ("all files", "*.*")),
     )
     if project_manager.current_file != () and project_manager.current_file != "":
         dir_name, file_name = os.path.split(project_manager.current_file)
-        main_window.root.title(f"{file_name} ({dir_name})")
+        project_manager.root.title(f"{file_name} ({dir_name})")
         save_in_file_new(project_manager.current_file)
 
 
@@ -82,13 +86,13 @@ def save() -> None:
     if project_manager.current_file == "":
         project_manager.current_file = asksaveasfilename(
             defaultextension=".hfe",
-            initialfile=main_window.module_name.get(),
+            initialfile=project_manager.module_name.get(),
             filetypes=(("HDL-FSM-Editor files", "*.hfe"), ("all files", "*.*")),
         )
     if project_manager.current_file != "":
         dir_name, file_name = os.path.split(project_manager.current_file)
-        main_window.root.title(f"{file_name} ({dir_name})")
-        main_window.root.after_idle(
+        project_manager.root.title(f"{file_name} ({dir_name})")
+        project_manager.root.after_idle(
             save_in_file_new, project_manager.current_file
         )  # Wait for the handling of all possible events.
 
@@ -102,7 +106,7 @@ def open_file() -> None:
 
 
 def new_design() -> bool:
-    title = main_window.root.title()
+    title = project_manager.root.title()
     if title.endswith("*"):
         action = ask_save_unsaved_changes(title)
         if action == "cancel":
@@ -118,25 +122,26 @@ def new_design() -> bool:
 
 
 def _clear_design() -> bool:
+    global write_data_creator_ref
     project_manager.current_file = ""
-    main_window.module_name.set("")
-    main_window.reset_signal_name.set("")
-    main_window.clock_signal_name.set("")
-    main_window.interface_package_text.delete("1.0", tk.END)
-    main_window.interface_generics_text.delete("1.0", tk.END)
-    main_window.interface_ports_text.delete("1.0", tk.END)
-    main_window.internals_package_text.delete("1.0", tk.END)
-    main_window.internals_architecture_text.delete("1.0", tk.END)
-    main_window.internals_process_clocked_text.delete("1.0", tk.END)
-    main_window.internals_process_combinatorial_text.delete("1.0", tk.END)
-    main_window.hdl_frame_text.config(state=tk.NORMAL)
-    main_window.hdl_frame_text.delete("1.0", tk.END)
-    main_window.hdl_frame_text.config(state=tk.DISABLED)
-    main_window.canvas.delete("all")
+    project_manager.module_name.set("")
+    project_manager.reset_signal_name.set("")
+    project_manager.clock_signal_name.set("")
+    project_manager.interface_package_text.delete("1.0", tk.END)
+    project_manager.interface_generics_text.delete("1.0", tk.END)
+    project_manager.interface_ports_text.delete("1.0", tk.END)
+    project_manager.internals_package_text.delete("1.0", tk.END)
+    project_manager.internals_architecture_text.delete("1.0", tk.END)
+    project_manager.internals_process_clocked_text.delete("1.0", tk.END)
+    project_manager.internals_process_combinatorial_text.delete("1.0", tk.END)
+    project_manager.hdl_frame_text.config(state=tk.NORMAL)
+    project_manager.hdl_frame_text.delete("1.0", tk.END)
+    project_manager.hdl_frame_text.config(state=tk.DISABLED)
+    project_manager.canvas.delete("all")
     state_handling.state_number = 0
     transition_handling.transition_number = 0
     reset_entry_handling.reset_entry_number = 0
-    main_window.reset_entry_button.config(state=tk.NORMAL)
+    project_manager.reset_entry_button.config(state=tk.NORMAL)
     connector_handling.connector_number = 0
     condition_action_handling.ConditionAction.conditionaction_id = 0
     condition_action_handling.ConditionAction.dictionary = {}
@@ -144,11 +149,11 @@ def _clear_design() -> bool:
     state_action_handling.MyText.mytext_dict = {}
     state_actions_default.StateActionsDefault.dictionary = {}
     global_actions_handling.state_actions_default_number = 0
-    main_window.state_action_default_button.config(state=tk.NORMAL)
+    project_manager.state_action_default_button.config(state=tk.NORMAL)
     global_actions_handling.global_actions_clocked_number = 0
-    main_window.global_action_clocked_button.config(state=tk.NORMAL)
+    project_manager.global_action_clocked_button.config(state=tk.NORMAL)
     global_actions_handling.global_actions_combinatorial_number = 0
-    main_window.global_action_combinatorial_button.config(state=tk.NORMAL)
+    project_manager.global_action_combinatorial_button.config(state=tk.NORMAL)
     global_actions_combinatorial.GlobalActionsCombinatorial.dictionary = {}
     global_actions.GlobalActions.dictionary = {}
     canvas_editing.state_radius = 20.0
@@ -159,10 +164,12 @@ def _clear_design() -> bool:
     canvas_editing.fontsize = 10
     canvas_editing.label_fontsize = 8
     canvas_editing.state_name_font.configure(size=int(canvas_editing.fontsize))
-    main_window.include_timestamp_in_output.set(True)
-    main_window.root.title("unnamed")
-    main_window.grid_drawer.draw_grid()
-    main_window.write_data_creator_ref.store_as_compare_object(None)
+    project_manager.include_timestamp_in_output.set(True)
+    project_manager.root.title("unnamed")
+    project_manager.grid_drawer.draw_grid()
+    if write_data_creator_ref is None:
+        write_data_creator_ref = write_data_creator.WriteDataCreator(canvas_editing.state_radius)
+    write_data_creator_ref.store_as_compare_object(None)
     return True
 
 
@@ -170,29 +177,32 @@ def _clear_design() -> bool:
 
 
 def save_in_file_new(save_filename) -> None:  # Called at saving and at every design change (writing to .tmp-file)
+    global write_data_creator_ref
+    if write_data_creator_ref is None:
+        write_data_creator_ref = write_data_creator.WriteDataCreator(canvas_editing.state_radius)
     if not save_filename.endswith(".tmp"):
-        zoom_factor = main_window.write_data_creator_ref.zoom_graphic_to_standard_size(canvas_editing.state_radius)
+        zoom_factor = write_data_creator_ref.zoom_graphic_to_standard_size(canvas_editing.state_radius)
     design_dictionary = _save_design_to_dict()
     if not save_filename.endswith(".tmp"):
-        main_window.write_data_creator_ref.zoom_graphic_back_to_actual_size(zoom_factor)
-        design_dictionary = main_window.write_data_creator_ref.round_and_sort_data(
+        write_data_creator_ref.zoom_graphic_back_to_actual_size(zoom_factor)
+        design_dictionary = write_data_creator_ref.round_and_sort_data(
             design_dictionary, allowed_element_names_in_design_dictionary
         )
-    old_cursor = main_window.root.cget(
+    old_cursor = project_manager.root.cget(
         "cursor"
     )  # may be different from "arrow" at design changes (writing to .tmp-file)
-    main_window.root.config(cursor="watch")
+    project_manager.root.config(cursor="watch")
     try:
         with open(save_filename, "w", encoding="utf-8") as fileobject:
             json.dump(design_dictionary, fileobject, indent=4, default=str, ensure_ascii=False)
         if not save_filename.endswith(".tmp") and os.path.isfile(f"{project_manager.previous_file}.tmp"):
             os.remove(f"{project_manager.previous_file}.tmp")
-        main_window.root.config(cursor=old_cursor)
+        project_manager.root.config(cursor=old_cursor)
     except Exception as _:
-        main_window.root.config(cursor=old_cursor)
+        project_manager.root.config(cursor=old_cursor)
         messagebox.showerror("Error in HDL-FSM-Editor", f"Writing to file {save_filename} caused exception ")
     if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
-        main_window.root.config(cursor=old_cursor)
+        project_manager.root.config(cursor=old_cursor)
         messagebox.showerror("Error", "The database is corrupt.\nDo not use the written file.\nSee details at STDOUT.")
 
 
@@ -208,47 +218,49 @@ def _save_design_to_dict() -> dict[str, Any]:
 
 
 def _save_control_data(design_dictionary: dict[str, Any]) -> None:
-    design_dictionary["modulename"] = main_window.module_name.get()
-    design_dictionary["language"] = main_window.language.get()
-    design_dictionary["generate_path"] = main_window.generate_path_value.get()
-    design_dictionary["additional_sources"] = main_window.additional_sources_value.get()
-    design_dictionary["working_directory"] = main_window.working_directory_value.get()
-    design_dictionary["number_of_files"] = main_window.select_file_number_text.get()
-    design_dictionary["reset_signal_name"] = main_window.reset_signal_name.get()
-    design_dictionary["clock_signal_name"] = main_window.clock_signal_name.get()
-    design_dictionary["compile_cmd"] = main_window.compile_cmd.get()
-    design_dictionary["edit_cmd"] = main_window.edit_cmd.get()
-    design_dictionary["include_timestamp_in_output"] = main_window.include_timestamp_in_output.get()
+    design_dictionary["modulename"] = project_manager.module_name.get()
+    design_dictionary["language"] = project_manager.language.get()
+    design_dictionary["generate_path"] = project_manager.generate_path_value.get()
+    design_dictionary["additional_sources"] = project_manager.additional_sources_value.get()
+    design_dictionary["working_directory"] = project_manager.working_directory_value.get()
+    design_dictionary["number_of_files"] = project_manager.select_file_number_text.get()
+    design_dictionary["reset_signal_name"] = project_manager.reset_signal_name.get()
+    design_dictionary["clock_signal_name"] = project_manager.clock_signal_name.get()
+    design_dictionary["compile_cmd"] = project_manager.compile_cmd.get()
+    design_dictionary["edit_cmd"] = project_manager.edit_cmd.get()
+    design_dictionary["include_timestamp_in_output"] = project_manager.include_timestamp_in_output.get()
 
 
 def _save_interface_data(design_dictionary: dict[str, Any]) -> None:
-    design_dictionary["interface_package"] = main_window.interface_package_text.get("1.0", f"{tk.END}-1 chars")
-    design_dictionary["interface_generics"] = main_window.interface_generics_text.get("1.0", f"{tk.END}-1 chars")
-    design_dictionary["interface_ports"] = main_window.interface_ports_text.get("1.0", f"{tk.END}-1 chars")
+    design_dictionary["interface_package"] = project_manager.interface_package_text.get("1.0", f"{tk.END}-1 chars")
+    design_dictionary["interface_generics"] = project_manager.interface_generics_text.get("1.0", f"{tk.END}-1 chars")
+    design_dictionary["interface_ports"] = project_manager.interface_ports_text.get("1.0", f"{tk.END}-1 chars")
 
 
 def _save_internals_data(design_dictionary: dict[str, Any]) -> None:
-    design_dictionary["internals_package"] = main_window.internals_package_text.get("1.0", f"{tk.END}-1 chars")
-    design_dictionary["internals_architecture"] = main_window.internals_architecture_text.get(
+    design_dictionary["internals_package"] = project_manager.internals_package_text.get("1.0", f"{tk.END}-1 chars")
+    design_dictionary["internals_architecture"] = project_manager.internals_architecture_text.get(
         "1.0", f"{tk.END}-1 chars"
     )
-    design_dictionary["internals_process"] = main_window.internals_process_clocked_text.get("1.0", f"{tk.END}-1 chars")
-    design_dictionary["internals_process_combinatorial"] = main_window.internals_process_combinatorial_text.get(
+    design_dictionary["internals_process"] = project_manager.internals_process_clocked_text.get(
+        "1.0", f"{tk.END}-1 chars"
+    )
+    design_dictionary["internals_process_combinatorial"] = project_manager.internals_process_combinatorial_text.get(
         "1.0", f"{tk.END}-1 chars"
     )
 
 
 def _save_log_config(design_dictionary: dict[str, Any]) -> None:
-    if main_window.language.get() == "VHDL":
-        design_dictionary["regex_message_find"] = main_window.regex_message_find_for_vhdl
+    if project_manager.language.get() == "VHDL":
+        design_dictionary["regex_message_find"] = project_manager.regex_message_find_for_vhdl
     else:
-        design_dictionary["regex_message_find"] = main_window.regex_message_find_for_verilog
-    design_dictionary["regex_file_name_quote"] = main_window.regex_file_name_quote
-    design_dictionary["regex_file_line_number_quote"] = main_window.regex_file_line_number_quote
+        design_dictionary["regex_message_find"] = project_manager.regex_message_find_for_verilog
+    design_dictionary["regex_file_name_quote"] = project_manager.regex_file_name_quote
+    design_dictionary["regex_file_line_number_quote"] = project_manager.regex_file_line_number_quote
 
 
 def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
-    design_dictionary["diagram_background_color"] = main_window.diagram_background_color.get()
+    design_dictionary["diagram_background_color"] = project_manager.diagram_background_color.get()
     design_dictionary["state_number"] = state_handling.state_number
     design_dictionary["transition_number"] = transition_handling.transition_number
     design_dictionary["reset_entry_number"] = reset_entry_handling.reset_entry_number
@@ -269,27 +281,27 @@ def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
     # design_dictionary["sash_positions"] = main_window.sash_positions
     for element_name in allowed_element_names_in_design_dictionary:
         design_dictionary[element_name] = []
-    items = main_window.canvas.find_all()
+    items = project_manager.canvas.find_all()
     for i in items:
-        if main_window.canvas.type(i) == "oval":
+        if project_manager.canvas.type(i) == "oval":
             design_dictionary["state"].append(
-                [main_window.canvas.coords(i), _gettags(i), main_window.canvas.itemcget(i, "fill")]
+                [project_manager.canvas.coords(i), _gettags(i), project_manager.canvas.itemcget(i, "fill")]
             )
-        elif main_window.canvas.type(i) == "text":
+        elif project_manager.canvas.type(i) == "text":
             design_dictionary["text"].append(
-                [main_window.canvas.coords(i), _gettags(i), main_window.canvas.itemcget(i, "text")]
+                [project_manager.canvas.coords(i), _gettags(i), project_manager.canvas.itemcget(i, "text")]
             )
-        elif main_window.canvas.type(i) == "line" and "grid_line" not in _gettags(i):
-            design_dictionary["line"].append([main_window.canvas.coords(i), _gettags(i)])
-        elif main_window.canvas.type(i) == "polygon":
-            design_dictionary["polygon"].append([main_window.canvas.coords(i), _gettags(i)])
-        elif main_window.canvas.type(i) == "rectangle":
-            design_dictionary["rectangle"].append([main_window.canvas.coords(i), _gettags(i)])
-        elif main_window.canvas.type(i) == "window":
+        elif project_manager.canvas.type(i) == "line" and "grid_line" not in _gettags(i):
+            design_dictionary["line"].append([project_manager.canvas.coords(i), _gettags(i)])
+        elif project_manager.canvas.type(i) == "polygon":
+            design_dictionary["polygon"].append([project_manager.canvas.coords(i), _gettags(i)])
+        elif project_manager.canvas.type(i) == "rectangle":
+            design_dictionary["rectangle"].append([project_manager.canvas.coords(i), _gettags(i)])
+        elif project_manager.canvas.type(i) == "window":
             if i in state_action_handling.MyText.mytext_dict:
                 design_dictionary["window_state_action_block"].append(
                     [
-                        main_window.canvas.coords(i),
+                        project_manager.canvas.coords(i),
                         state_action_handling.MyText.mytext_dict[i].text_id.get("1.0", f"{tk.END}-1 chars"),
                         _gettags(i),
                     ]
@@ -297,7 +309,7 @@ def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
             elif i in state_comment.StateComment.dictionary:
                 design_dictionary["window_state_comment"].append(
                     [
-                        main_window.canvas.coords(i),
+                        project_manager.canvas.coords(i),
                         state_comment.StateComment.dictionary[i].text_id.get("1.0", f"{tk.END}-1 chars"),
                         _gettags(i),
                     ]
@@ -305,7 +317,7 @@ def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
             elif i in condition_action_handling.ConditionAction.dictionary:
                 design_dictionary["window_condition_action_block"].append(
                     [
-                        main_window.canvas.coords(i),
+                        project_manager.canvas.coords(i),
                         condition_action_handling.ConditionAction.dictionary[i].condition_id.get(
                             "1.0", f"{tk.END}-1 chars"
                         ),
@@ -318,7 +330,7 @@ def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
             elif i in global_actions.GlobalActions.dictionary:
                 design_dictionary["window_global_actions"].append(
                     [
-                        main_window.canvas.coords(i),
+                        project_manager.canvas.coords(i),
                         global_actions.GlobalActions.dictionary[i].text_before_id.get("1.0", f"{tk.END}-1 chars"),
                         global_actions.GlobalActions.dictionary[i].text_after_id.get("1.0", f"{tk.END}-1 chars"),
                         _gettags(i),
@@ -327,7 +339,7 @@ def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
             elif i in global_actions_combinatorial.GlobalActionsCombinatorial.dictionary:
                 design_dictionary["window_global_actions_combinatorial"].append(
                     [
-                        main_window.canvas.coords(i),
+                        project_manager.canvas.coords(i),
                         global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[i].text_id.get(
                             "1.0", f"{tk.END}-1 chars"
                         ),
@@ -337,7 +349,7 @@ def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
             elif i in state_actions_default.StateActionsDefault.dictionary:
                 design_dictionary["window_state_actions_default"].append(
                     [
-                        main_window.canvas.coords(i),
+                        project_manager.canvas.coords(i),
                         state_actions_default.StateActionsDefault.dictionary[i].text_id.get("1.0", f"{tk.END}-1 chars"),
                         _gettags(i),
                     ]
@@ -347,10 +359,11 @@ def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
 
 
 def _gettags(i):
-    return [x for x in main_window.canvas.gettags(i) if x != "current"]
+    return [x for x in project_manager.canvas.gettags(i) if x != "current"]
 
 
 def open_file_with_name_new(read_filename, is_script_mode) -> None:
+    global write_data_creator_ref
     replaced_read_filename = read_filename
     if os.path.isfile(f"{read_filename}.tmp") and not is_script_mode:
         answer = messagebox.askyesno(
@@ -361,13 +374,15 @@ def open_file_with_name_new(read_filename, is_script_mode) -> None:
         )
         if answer is True:
             replaced_read_filename = f"{read_filename}.tmp"
-    main_window.root.config(cursor="watch")
+    project_manager.root.config(cursor="watch")
     try:
         with open(replaced_read_filename, encoding="utf-8") as fileobject:
             data = fileobject.read()
         project_manager.current_file = read_filename
         design_dictionary = json.loads(data)
-        main_window.write_data_creator_ref.store_as_compare_object(design_dictionary)
+        if write_data_creator_ref is None:
+            write_data_creator_ref = write_data_creator.WriteDataCreator(canvas_editing.state_radius)
+        write_data_creator_ref.store_as_compare_object(design_dictionary)
         _load_design_from_dict(design_dictionary)
         if os.path.isfile(f"{read_filename}.tmp") and not is_script_mode:
             os.remove(f"{read_filename}.tmp")
@@ -376,13 +391,13 @@ def open_file_with_name_new(read_filename, is_script_mode) -> None:
         undo_handling.stack = []
         # Loading the design created by "traces" some stack-entries, which are removed here:
         undo_handling.stack_write_pointer = 0
-        main_window.undo_button.config(state="disabled")
+        project_manager.undo_button.config(state="disabled")
 
         # Put the read design into stack[0]:
         undo_handling.design_has_changed()  # Initialize the stack with the read design.
-        main_window.root.update()
+        project_manager.root.update()
         dir_name, file_name = os.path.split(read_filename)
-        main_window.root.title(f"{file_name} ({dir_name})")
+        project_manager.root.title(f"{file_name} ({dir_name})")
         if not is_script_mode:
             update_ref = update_hdl_tab.UpdateHdlTab(
                 design_dictionary["language"],
@@ -391,24 +406,24 @@ def open_file_with_name_new(read_filename, is_script_mode) -> None:
                 design_dictionary["generate_path"],
                 design_dictionary["modulename"],
             )
-            main_window.date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
-            main_window.date_of_hdl_file2_shown_in_hdl_tab = update_ref.get_date_of_hdl_file2()
+            project_manager.date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
+            project_manager.date_of_hdl_file2_shown_in_hdl_tab = update_ref.get_date_of_hdl_file2()
             main_window.show_tab(GuiTab.DIAGRAM)
-            main_window.root.after_idle(canvas_editing.view_all)
-        main_window.root.config(cursor="arrow")
+            project_manager.root.after_idle(canvas_editing.view_all)
+        project_manager.root.config(cursor="arrow")
         if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
             if is_script_mode:
                 print("Error, the database is corrupt. Do not use this file.")
             else:
                 messagebox.showerror("Error", "The database is corrupt.\nDo not use this file.\nSee details at STDOUT.")
     except FileNotFoundError:
-        main_window.root.config(cursor="arrow")
+        project_manager.root.config(cursor="arrow")
         if is_script_mode:
             print("Error: File " + read_filename + " could not be found.")
         else:
             messagebox.showerror("Error", f"File {read_filename} could not be found.")
     except ValueError:  # includes JSONDecodeError
-        main_window.root.config(cursor="arrow")
+        project_manager.root.config(cursor="arrow")
         if is_script_mode:
             print("Error: File " + read_filename + " has wrong format.")
         else:
@@ -431,69 +446,71 @@ def _load_design_from_dict(design_dictionary: dict[str, Any]) -> None:
 
 def _load_control_data(design_dictionary: dict[str, Any]) -> None:
     """Load control data including module name, language, paths, and signal names."""
-    main_window.module_name.set(design_dictionary["modulename"])
-    old_language = main_window.language.get()
-    main_window.language.set(design_dictionary["language"])
+    project_manager.module_name.set(design_dictionary["modulename"])
+    old_language = project_manager.language.get()
+    project_manager.language.set(design_dictionary["language"])
     if design_dictionary["language"] != old_language:
         main_window.switch_language_mode()
-    main_window.generate_path_value.set(design_dictionary["generate_path"])
-    main_window.additional_sources_value.set(design_dictionary.get("additional_sources", ""))
-    main_window.working_directory_value.set(design_dictionary.get("working_directory", ""))
+    project_manager.generate_path_value.set(design_dictionary["generate_path"])
+    project_manager.additional_sources_value.set(design_dictionary.get("additional_sources", ""))
+    project_manager.working_directory_value.set(design_dictionary.get("working_directory", ""))
     # For Verilog and SystemVerilog, always use single file mode regardless of what's in the file
     if design_dictionary["language"] in ["Verilog", "SystemVerilog"]:
-        main_window.select_file_number_text.set(1)
+        project_manager.select_file_number_text.set(1)
     else:
-        main_window.select_file_number_text.set(design_dictionary["number_of_files"])
-    main_window.reset_signal_name.set(design_dictionary["reset_signal_name"])
-    main_window.clock_signal_name.set(design_dictionary["clock_signal_name"])
-    main_window.compile_cmd.set(design_dictionary["compile_cmd"])
-    main_window.edit_cmd.set(design_dictionary["edit_cmd"])
-    main_window.include_timestamp_in_output.set(design_dictionary.get("include_timestamp_in_output", True))
+        project_manager.select_file_number_text.set(design_dictionary["number_of_files"])
+    project_manager.reset_signal_name.set(design_dictionary["reset_signal_name"])
+    project_manager.clock_signal_name.set(design_dictionary["clock_signal_name"])
+    project_manager.compile_cmd.set(design_dictionary["compile_cmd"])
+    project_manager.edit_cmd.set(design_dictionary["edit_cmd"])
+    project_manager.include_timestamp_in_output.set(design_dictionary.get("include_timestamp_in_output", True))
 
 
 def _load_interface_data(design_dictionary: dict[str, Any]) -> None:
     """Load interface data including package, generics, and ports text."""
-    main_window.interface_package_text.insert("1.0", design_dictionary["interface_package"])
-    main_window.interface_generics_text.insert("1.0", design_dictionary["interface_generics"])
-    main_window.interface_ports_text.insert("1.0", design_dictionary["interface_ports"])
+    project_manager.interface_package_text.insert("1.0", design_dictionary["interface_package"])
+    project_manager.interface_generics_text.insert("1.0", design_dictionary["interface_generics"])
+    project_manager.interface_ports_text.insert("1.0", design_dictionary["interface_ports"])
 
     # Update highlight tags and custom text class lists
-    main_window.interface_package_text.update_highlight_tags(
+    project_manager.interface_package_text.update_highlight_tags(
         10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
     )
-    main_window.interface_generics_text.update_highlight_tags(
+    project_manager.interface_generics_text.update_highlight_tags(
         10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
     )
-    main_window.interface_ports_text.update_highlight_tags(
+    project_manager.interface_ports_text.update_highlight_tags(
         10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
     )
-    main_window.interface_generics_text.update_custom_text_class_generics_list()
-    main_window.interface_ports_text.update_custom_text_class_ports_list()
+    project_manager.interface_generics_text.update_custom_text_class_generics_list()
+    project_manager.interface_ports_text.update_custom_text_class_ports_list()
 
 
 def _load_internals_data(design_dictionary: dict[str, Any]) -> None:
     """Load internals data including package, architecture, and process text."""
-    main_window.internals_package_text.insert("1.0", design_dictionary["internals_package"])
-    main_window.internals_architecture_text.insert("1.0", design_dictionary["internals_architecture"])
-    main_window.internals_process_clocked_text.insert("1.0", design_dictionary["internals_process"])
-    main_window.internals_process_combinatorial_text.insert("1.0", design_dictionary["internals_process_combinatorial"])
+    project_manager.internals_package_text.insert("1.0", design_dictionary["internals_package"])
+    project_manager.internals_architecture_text.insert("1.0", design_dictionary["internals_architecture"])
+    project_manager.internals_process_clocked_text.insert("1.0", design_dictionary["internals_process"])
+    project_manager.internals_process_combinatorial_text.insert(
+        "1.0", design_dictionary["internals_process_combinatorial"]
+    )
 
     # Update highlight tags and custom text class lists
-    main_window.internals_package_text.update_highlight_tags(
+    project_manager.internals_package_text.update_highlight_tags(
         10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
     )
-    main_window.internals_architecture_text.update_highlight_tags(
+    project_manager.internals_architecture_text.update_highlight_tags(
         10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
     )
-    main_window.internals_process_clocked_text.update_highlight_tags(
+    project_manager.internals_process_clocked_text.update_highlight_tags(
         10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
     )
-    main_window.internals_process_combinatorial_text.update_highlight_tags(
+    project_manager.internals_process_combinatorial_text.update_highlight_tags(
         10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
     )
-    main_window.internals_architecture_text.update_custom_text_class_signals_list()
-    main_window.internals_process_clocked_text.update_custom_text_class_signals_list()
-    main_window.internals_process_combinatorial_text.update_custom_text_class_signals_list()
+    project_manager.internals_architecture_text.update_custom_text_class_signals_list()
+    project_manager.internals_process_clocked_text.update_custom_text_class_signals_list()
+    project_manager.internals_process_combinatorial_text.update_custom_text_class_signals_list()
 
 
 def _load_log_config(design_dictionary: dict[str, Any]) -> None:
@@ -501,80 +518,47 @@ def _load_log_config(design_dictionary: dict[str, Any]) -> None:
 
     if "regex_message_find" in design_dictionary:
         if design_dictionary["language"] == "VHDL":
-            main_window.regex_message_find_for_vhdl = design_dictionary["regex_message_find"]
+            project_manager.regex_message_find_for_vhdl = design_dictionary["regex_message_find"]
         else:
-            main_window.regex_message_find_for_verilog = design_dictionary["regex_message_find"]
-        main_window.regex_file_name_quote = design_dictionary["regex_file_name_quote"]
-        main_window.regex_file_line_number_quote = design_dictionary["regex_file_line_number_quote"]
+            project_manager.regex_message_find_for_verilog = design_dictionary["regex_message_find"]
+        project_manager.regex_file_name_quote = design_dictionary["regex_file_name_quote"]
+        project_manager.regex_file_line_number_quote = design_dictionary["regex_file_line_number_quote"]
 
 
 def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
     """Load canvas-related data including colors, dimensions, and UI state."""
     # Load diagram background color
-    main_window.diagram_background_color.set(design_dictionary.get("diagram_background_color", "white"))
-    main_window.canvas.configure(bg=main_window.diagram_background_color.get())
-
-    # # Load sash positions
-    # if "sash_positions" in design_dictionary:
-    #     main_window.show_tab(
-    #         GuiTab.INTERFACE
-    #     )  # The tab must be shown at least once, so that the sash_positions do not have the default-value 0.
-    #     if (
-    #         "1" in design_dictionary["sash_positions"]["interface_tab"]
-    #         and design_dictionary["sash_positions"]["interface_tab"]["1"]
-    #         < 0.9 * main_window.paned_window_interface.winfo_height()
-    #     ):
-    #         for key, value in design_dictionary["sash_positions"]["interface_tab"].items():
-    #             if (
-    #                 main_window.paned_window_interface.sashpos(0) != 0
-    #                 and main_window.paned_window_interface.sashpos(0) != 1
-    #             ):
-    #                 main_window.paned_window_interface.sashpos(int(key), value)
-    #                 main_window.sash_positions["interface_tab"][int(key)] = value
-    #     main_window.show_tab(
-    #         GuiTab.INTERNALS
-    #     )  # The tab must be shown at least once, so that the sash_positions do not have the default-value 0.
-    #     if (
-    #         "2" in design_dictionary["sash_positions"]["internals_tab"]
-    #         and design_dictionary["sash_positions"]["internals_tab"]["2"]
-    #         < 0.9 * main_window.paned_window_internals.winfo_height()
-    #     ):
-    #         for key, value in design_dictionary["sash_positions"]["internals_tab"].items():
-    #             if (
-    #                 main_window.paned_window_internals.sashpos(0) != 0
-    #                 and main_window.paned_window_internals.sashpos(0) != 1
-    #             ):
-    #                 main_window.paned_window_internals.sashpos(int(key), value)
-    #                 main_window.sash_positions["internals_tab"][int(key)] = value
+    project_manager.diagram_background_color.set(design_dictionary.get("diagram_background_color", "white"))
+    project_manager.canvas.configure(bg=project_manager.diagram_background_color.get())
 
     # Load canvas editing parameters
     state_handling.state_number = design_dictionary["state_number"]
     transition_handling.transition_number = design_dictionary["transition_number"]
     reset_entry_handling.reset_entry_number = design_dictionary["reset_entry_number"]
     if reset_entry_handling.reset_entry_number == 0:
-        main_window.reset_entry_button.config(state=tk.NORMAL)
+        project_manager.reset_entry_button.config(state=tk.NORMAL)
     else:
-        main_window.reset_entry_button.config(state=tk.DISABLED)
+        project_manager.reset_entry_button.config(state=tk.DISABLED)
     connector_handling.connector_number = design_dictionary["connector_number"]
     condition_action_handling.ConditionAction.conditionaction_id = design_dictionary["conditionaction_id"]
     state_action_handling.MyText.mytext_id = design_dictionary["mytext_id"]
     global_actions_handling.global_actions_clocked_number = design_dictionary["global_actions_number"]
     if global_actions_handling.global_actions_clocked_number == 0:
-        main_window.global_action_clocked_button.config(state=tk.NORMAL)
+        project_manager.global_action_clocked_button.config(state=tk.NORMAL)
     else:
-        main_window.global_action_clocked_button.config(state=tk.DISABLED)
+        project_manager.global_action_clocked_button.config(state=tk.DISABLED)
     global_actions_handling.state_actions_default_number = design_dictionary["state_actions_default_number"]
     if global_actions_handling.state_actions_default_number == 0:
-        main_window.state_action_default_button.config(state=tk.NORMAL)
+        project_manager.state_action_default_button.config(state=tk.NORMAL)
     else:
-        main_window.state_action_default_button.config(state=tk.DISABLED)
+        project_manager.state_action_default_button.config(state=tk.DISABLED)
     global_actions_handling.global_actions_combinatorial_number = design_dictionary[
         "global_actions_combinatorial_number"
     ]
     if global_actions_handling.global_actions_combinatorial_number == 0:
-        main_window.global_action_combinatorial_button.config(state=tk.NORMAL)
+        project_manager.global_action_combinatorial_button.config(state=tk.NORMAL)
     else:
-        main_window.global_action_combinatorial_button.config(state=tk.DISABLED)
+        project_manager.global_action_combinatorial_button.config(state=tk.DISABLED)
 
     # Load canvas visual parameters
     canvas_editing.state_radius = design_dictionary["state_radius"]
@@ -652,16 +636,18 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
         trans_id = None
         for t in tags:
             if t.startswith("connected_to_transition"):  # line to condition&action block
-                trans_id = main_window.canvas.create_line(coords, dash=(2, 2), fill="black", tags=tags, state=tk.HIDDEN)
+                trans_id = project_manager.canvas.create_line(
+                    coords, dash=(2, 2), fill="black", tags=tags, state=tk.HIDDEN
+                )
                 break
             if t.startswith("connected_to_state") or t.endswith("_comment_line"):  # line to state action/comment
-                trans_id = main_window.canvas.create_line(coords, dash=(2, 2), fill="black", tags=tags)
+                trans_id = project_manager.canvas.create_line(coords, dash=(2, 2), fill="black", tags=tags)
                 break
             if t.startswith("transition"):
                 trans_id = transition_handling.draw_transition(coords, tags)
                 break
         if trans_id is not None:
-            main_window.canvas.tag_lower(trans_id)  # Lines are always "under" anything else.
+            project_manager.canvas.tag_lower(trans_id)  # Lines are always "under" anything else.
 
     # Load rectangles (connector, priority-box)
     for definition in design_dictionary["rectangle"]:
@@ -689,14 +675,14 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
 
     # Sort the display order for the transition priorities:
     for transition_id in transition_ids:
-        main_window.canvas.tag_raise(transition_id)
+        project_manager.canvas.tag_raise(transition_id)
     for rectangle_id in ids_of_rectangles_to_raise:
-        main_window.canvas.tag_raise(rectangle_id)
+        project_manager.canvas.tag_raise(rectangle_id)
     for priority_id in priority_ids:
-        main_window.canvas.tag_raise(priority_id)
+        project_manager.canvas.tag_raise(priority_id)
     for transition_identifer in hide_priority_rectangle_list:
-        main_window.canvas.itemconfigure(f"{transition_identifer}priority", state=tk.HIDDEN)
-        main_window.canvas.itemconfigure(f"{transition_identifer}rectangle", state=tk.HIDDEN)
+        project_manager.canvas.itemconfigure(f"{transition_identifer}priority", state=tk.HIDDEN)
+        project_manager.canvas.itemconfigure(f"{transition_identifer}rectangle", state=tk.HIDDEN)
 
 
 def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
@@ -709,7 +695,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         action_ref = state_action_handling.MyText(
             coords[0] - 100, coords[1], height=1, width=8, padding=1, increment=False
         )
-        main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
+        project_manager.canvas.itemconfigure(action_ref.window_id, tag=tags)
         action_ref.text_content = text + "\n"
         action_ref.text_id.insert("1.0", text)
         action_ref.text_id.format()
@@ -720,7 +706,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         text = definition[1]
         tags = definition[2]
         comment_ref = state_comment.StateComment(coords[0] - 100, coords[1], height=1, width=8, padding=1)
-        main_window.canvas.itemconfigure(comment_ref.window_id, tag=tags)
+        project_manager.canvas.itemconfigure(comment_ref.window_id, tag=tags)
         comment_ref.text_content = text + "\n"
         comment_ref.text_id.insert("1.0", text)
         comment_ref.text_id.format()
@@ -738,7 +724,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         condition_action_ref = condition_action_handling.ConditionAction(
             coords[0], coords[1], connected_to_reset_entry, height=1, width=8, padding=1, increment=False
         )
-        main_window.canvas.itemconfigure(condition_action_ref.window_id, tag=tags)
+        project_manager.canvas.itemconfigure(condition_action_ref.window_id, tag=tags)
         condition_action_ref.condition_id.condition_text = condition + "\n"
         condition_action_ref.condition_id.insert("1.0", condition)
         condition_action_ref.condition_id.format()
@@ -765,7 +751,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         text_after = definition[2]
         tags = definition[3]
         global_actions_ref = global_actions.GlobalActions(coords[0], coords[1], height=1, width=8, padding=1)
-        main_window.canvas.itemconfigure(global_actions_ref.window_id, tag=tags)
+        project_manager.canvas.itemconfigure(global_actions_ref.window_id, tag=tags)
         global_actions_ref.text_before_id.text_before_content = text_before + "\n"
         global_actions_ref.text_before_id.insert("1.0", text_before)
         global_actions_ref.text_before_id.format()
@@ -781,7 +767,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         action_ref = global_actions_combinatorial.GlobalActionsCombinatorial(
             coords[0], coords[1], height=1, width=8, padding=1
         )
-        main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
+        project_manager.canvas.itemconfigure(action_ref.window_id, tag=tags)
         action_ref.text_content = text + "\n"
         action_ref.text_id.insert("1.0", text)
         action_ref.text_id.format()
@@ -792,7 +778,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         text = definition[1]
         tags = definition[2]
         action_ref = state_actions_default.StateActionsDefault(coords[0], coords[1], height=1, width=8, padding=1)
-        main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
+        project_manager.canvas.itemconfigure(action_ref.window_id, tag=tags)
         action_ref.text_content = text + "\n"
         action_ref.text_id.insert("1.0", text)
         action_ref.text_id.format()

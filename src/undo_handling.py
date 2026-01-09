@@ -14,7 +14,6 @@ import file_handling
 import global_actions
 import global_actions_combinatorial
 import global_actions_handling
-import main_window
 import reset_entry_handling
 import state_action_handling
 import state_actions_default
@@ -28,18 +27,18 @@ stack_write_pointer = 0
 
 
 def update_window_title() -> None:
-    title = main_window.root.title()
+    title = project_manager.root.title()
     if title == "tk":
-        main_window.root.title("unnamed")
+        project_manager.root.title("unnamed")
     elif not title.endswith("*"):
         title += "*"
-        main_window.root.title(title)
+        project_manager.root.title(title)
 
 
 def design_has_changed() -> None:
     _add_changes_to_design_stack()
     update_window_title()
-    if project_manager.current_file != "" and not main_window.root.title().startswith("unnamed"):
+    if project_manager.current_file != "" and not project_manager.root.title().startswith("unnamed"):
         # print("design_has_changed: tmp is created by =", inspect.stack()[1][3])
         file_handling.save_in_file_new(project_manager.current_file + ".tmp")
 
@@ -48,7 +47,7 @@ def undo() -> None:
     global stack_write_pointer
     # As <Control-z> is bound with the bind_all-command to the diagram, this binding must be ignored, when
     # the focus is on a customtext-widget: Then a Control-z must change the text and must not change the diagram.
-    focus = str(main_window.canvas.focus_get())
+    focus = str(project_manager.canvas.focus_get())
     if "customtext" not in focus and stack_write_pointer > 1:
         # stack_write_pointer points at an empty place in stack.
         # stack_write_pointer-1 points at the version which contains the last change
@@ -57,29 +56,29 @@ def undo() -> None:
         _set_diagram_to_version_selected_by_stack_pointer()
         stack_write_pointer += 1
         if stack_write_pointer == 1:
-            title = main_window.root.title()
+            title = project_manager.root.title()
             if title.endswith("*"):
-                main_window.root.title(title[:-1])
+                project_manager.root.title(title[:-1])
         if (
             stack_write_pointer == 1
         ):  # 1 is the next free place in the stack, 0 is the empty design, so nothing to undo is left
-            main_window.undo_button.config(state="disabled")
+            project_manager.undo_button.config(state="disabled")
             if os.path.isfile(project_manager.current_file + ".tmp"):
                 os.remove(project_manager.current_file + ".tmp")
-        main_window.redo_button.config(state="enabled")
+        project_manager.redo_button.config(state="enabled")
 
 
 def redo() -> None:
     global stack_write_pointer
     # As <Control-Z> is bound with the bind_all-command to the diagram, this binding must be ignored, when
     # the focus is on the customtext-widget: Then a Control-Z must change the text and must not change the diagram.
-    focus = str(main_window.canvas.focus_get())
+    focus = str(project_manager.canvas.focus_get())
     if "customtext" not in focus and stack_write_pointer < len(stack):
         _set_diagram_to_version_selected_by_stack_pointer()
         stack_write_pointer += 1
-        main_window.undo_button.config(state="enabled")
+        project_manager.undo_button.config(state="enabled")
     if stack_write_pointer == len(stack):
-        main_window.redo_button.config(state="disabled")
+        project_manager.redo_button.config(state="disabled")
 
 
 def _add_changes_to_design_stack() -> None:
@@ -89,8 +88,8 @@ def _add_changes_to_design_stack() -> None:
     stack.append(new_design)
     stack_write_pointer += 1
     if stack_write_pointer > 1:
-        main_window.undo_button.config(state="enabled")
-    main_window.redo_button.config(state="disabled")
+        project_manager.undo_button.config(state="enabled")
+    project_manager.redo_button.config(state="disabled")
 
 
 def _remove_stack_entries_from_write_pointer_to_the_end_of_the_stack() -> None:
@@ -102,14 +101,14 @@ def _remove_stack_entries_from_write_pointer_to_the_end_of_the_stack() -> None:
 # Maybe including some extra information as the zoom level.
 def _get_complete_design_as_text_object():
     design = ""
-    design += "modulename|" + main_window.module_name.get() + "\n"
-    design += "language|" + main_window.language.get() + "\n"
-    design += "generate_path|" + main_window.generate_path_value.get() + "\n"
-    design += "additional_sources|" + main_window.additional_sources_value.get() + "\n"
-    design += "working_directory|" + main_window.working_directory_value.get() + "\n"
-    design += "number_of_files|" + str(main_window.select_file_number_text.get()) + "\n"
-    design += "reset_signal_name|" + main_window.reset_signal_name.get() + "\n"
-    design += "clock_signal_name|" + main_window.clock_signal_name.get() + "\n"
+    design += "modulename|" + project_manager.module_name.get() + "\n"
+    design += "language|" + project_manager.language.get() + "\n"
+    design += "generate_path|" + project_manager.generate_path_value.get() + "\n"
+    design += "additional_sources|" + project_manager.additional_sources_value.get() + "\n"
+    design += "working_directory|" + project_manager.working_directory_value.get() + "\n"
+    design += "number_of_files|" + str(project_manager.select_file_number_text.get()) + "\n"
+    design += "reset_signal_name|" + project_manager.reset_signal_name.get() + "\n"
+    design += "clock_signal_name|" + project_manager.clock_signal_name.get() + "\n"
     design += "state_number|" + str(state_handling.state_number) + "\n"
     design += "transition_number|" + str(transition_handling.transition_number) + "\n"
     design += "connector_number|" + str(connector_handling.connector_number) + "\n"
@@ -127,80 +126,80 @@ def _get_complete_design_as_text_object():
     design += "fontsize|" + str(canvas_editing.fontsize) + "\n"
     design += "label_fontsize|" + str(canvas_editing.label_fontsize) + "\n"
     design += "visible_center|" + canvas_editing.get_visible_center_as_string() + "\n"
-    design += "include_timestamp_in_output|" + str(main_window.include_timestamp_in_output.get()) + "\n"
+    design += "include_timestamp_in_output|" + str(project_manager.include_timestamp_in_output.get()) + "\n"
     design += (
         "interface_package|"
-        + str(len(main_window.interface_package_text.get("1.0", tk.END)) - 1)
+        + str(len(project_manager.interface_package_text.get("1.0", tk.END)) - 1)
         + "|"
-        + main_window.interface_package_text.get("1.0", tk.END)
+        + project_manager.interface_package_text.get("1.0", tk.END)
     )
     design += (
         "interface_generics|"
-        + str(len(main_window.interface_generics_text.get("1.0", tk.END)) - 1)
+        + str(len(project_manager.interface_generics_text.get("1.0", tk.END)) - 1)
         + "|"
-        + main_window.interface_generics_text.get("1.0", tk.END)
+        + project_manager.interface_generics_text.get("1.0", tk.END)
     )
     design += (
         "interface_ports|"
-        + str(len(main_window.interface_ports_text.get("1.0", tk.END)) - 1)
+        + str(len(project_manager.interface_ports_text.get("1.0", tk.END)) - 1)
         + "|"
-        + main_window.interface_ports_text.get("1.0", tk.END)
+        + project_manager.interface_ports_text.get("1.0", tk.END)
     )
     design += (
         "internals_package|"
-        + str(len(main_window.internals_package_text.get("1.0", tk.END)) - 1)
+        + str(len(project_manager.internals_package_text.get("1.0", tk.END)) - 1)
         + "|"
-        + main_window.internals_package_text.get("1.0", tk.END)
+        + project_manager.internals_package_text.get("1.0", tk.END)
     )
     design += (
         "internals_architecture|"
-        + str(len(main_window.internals_architecture_text.get("1.0", tk.END)) - 1)
+        + str(len(project_manager.internals_architecture_text.get("1.0", tk.END)) - 1)
         + "|"
-        + main_window.internals_architecture_text.get("1.0", tk.END)
+        + project_manager.internals_architecture_text.get("1.0", tk.END)
     )
     design += (
         "internals_process|"
-        + str(len(main_window.internals_process_clocked_text.get("1.0", tk.END)) - 1)
+        + str(len(project_manager.internals_process_clocked_text.get("1.0", tk.END)) - 1)
         + "|"
-        + main_window.internals_process_clocked_text.get("1.0", tk.END)
+        + project_manager.internals_process_clocked_text.get("1.0", tk.END)
     )
     design += (
         "internals_process_combinatorial|"
-        + str(len(main_window.internals_process_combinatorial_text.get("1.0", tk.END)) - 1)
+        + str(len(project_manager.internals_process_combinatorial_text.get("1.0", tk.END)) - 1)
         + "|"
-        + main_window.internals_process_combinatorial_text.get("1.0", tk.END)
+        + project_manager.internals_process_combinatorial_text.get("1.0", tk.END)
     )
-    items = main_window.canvas.find_all()
+    items = project_manager.canvas.find_all()
     print_tags = False
     for i in items:
-        if main_window.canvas.type(i) == "oval":
+        if project_manager.canvas.type(i) == "oval":
             design += "state|"
             design += _get_coords(i)
             design += _get_tags(i)
             design += _get_fill_color(i)
             design += "\n"
-        elif main_window.canvas.type(i) == "text":
+        elif project_manager.canvas.type(i) == "text":
             design += "text|"
             design += _get_coords(i)
-            design += main_window.canvas.itemcget(i, "text") + " "
+            design += project_manager.canvas.itemcget(i, "text") + " "
             design += _get_tags(i)
             design += "\n"
-        elif main_window.canvas.type(i) == "line" and "grid_line" not in main_window.canvas.gettags(i):
+        elif project_manager.canvas.type(i) == "line" and "grid_line" not in project_manager.canvas.gettags(i):
             design += "line|"
             design += _get_coords(i)
             design += _get_tags(i)
             design += "\n"
-        elif main_window.canvas.type(i) == "polygon":
+        elif project_manager.canvas.type(i) == "polygon":
             design += "polygon|"
             design += _get_coords(i)
             design += _get_tags(i)
             design += "\n"
-        elif main_window.canvas.type(i) == "rectangle":
+        elif project_manager.canvas.type(i) == "rectangle":
             design += "rectangle|"
             design += _get_coords(i)
             design += _get_tags(i)
             design += "\n"
-        elif main_window.canvas.type(i) == "window":
+        elif project_manager.canvas.type(i) == "window":
             if i in state_action_handling.MyText.mytext_dict:
                 design += "window_state_action_block|"
                 text = state_action_handling.MyText.mytext_dict[i].text_id.get("1.0", tk.END)
@@ -246,7 +245,9 @@ def _get_complete_design_as_text_object():
                 design += _get_coords(i)
             else:
                 print(
-                    "get_complete_design_as_text_object: Fatal, unknown dictionary key ", i, main_window.canvas.type(i)
+                    "get_complete_design_as_text_object: Fatal, unknown dictionary key ",
+                    i,
+                    project_manager.canvas.type(i),
                 )
             design += _get_tags(i)
             if print_tags is True:
@@ -257,7 +258,7 @@ def _get_complete_design_as_text_object():
 
 
 def _get_coords(canvas_id) -> str:
-    coords = main_window.canvas.coords(canvas_id)
+    coords = project_manager.canvas.coords(canvas_id)
     coords_string = ""
     for c in coords:
         coords_string += str(c) + " "
@@ -265,7 +266,7 @@ def _get_coords(canvas_id) -> str:
 
 
 def _get_tags(canvas_id) -> str:
-    tags = main_window.canvas.gettags(canvas_id)
+    tags = project_manager.canvas.gettags(canvas_id)
     tags_string = ""
     for t in tags:
         if t != "current":
@@ -274,7 +275,7 @@ def _get_tags(canvas_id) -> str:
 
 
 def _get_fill_color(canvas_id):
-    color = main_window.canvas.itemcget(canvas_id, "fill")
+    color = project_manager.canvas.itemcget(canvas_id, "fill")
     return "fill=" + color + " "
 
 
@@ -287,12 +288,12 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
     state_action_handling.MyText.mytext_dict = {}
     condition_action_handling.ConditionAction.dictionary = {}
     state_comment.StateComment.dictionary = {}
-    main_window.canvas.delete("all")
+    project_manager.canvas.delete("all")
     # Bring the notebook tab with the diagram into the foreground:
-    notebook_ids = main_window.notebook.tabs()
+    notebook_ids = project_manager.notebook.tabs()
     for notebook_id in notebook_ids:
-        if main_window.notebook.tab(notebook_id, option="text") == "Graph":
-            main_window.notebook.select(notebook_id)
+        if project_manager.notebook.tab(notebook_id, option="text") == "Graph":
+            project_manager.notebook.select(notebook_id)
     # Read the design from the stack:
     design = stack[stack_write_pointer]
     # Convert the string stored in "design" into a list (but provide a return at each line end,
@@ -315,9 +316,9 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "reset_entry_number|")
             reset_entry_handling.reset_entry_number = int(rest_of_line)
             if reset_entry_handling.reset_entry_number == 0:
-                main_window.reset_entry_button.config(state=tk.NORMAL)
+                project_manager.reset_entry_button.config(state=tk.NORMAL)
             else:
-                main_window.reset_entry_button.config(state=tk.DISABLED)
+                project_manager.reset_entry_button.config(state=tk.DISABLED)
         elif lines[_line_index].startswith("connector_number|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "connector_number|")
             connector_handling.connector_number = int(rest_of_line)
@@ -331,23 +332,23 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "state_actions_default_number|")
             global_actions_handling.state_actions_default_number = int(rest_of_line)
             if global_actions_handling.state_actions_default_number == 0:
-                main_window.state_action_default_button.config(state=tk.NORMAL)
+                project_manager.state_action_default_button.config(state=tk.NORMAL)
             else:
-                main_window.state_action_default_button.config(state=tk.DISABLED)
+                project_manager.state_action_default_button.config(state=tk.DISABLED)
         elif lines[_line_index].startswith("global_actions_number|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "global_actions_number|")
             global_actions_handling.global_actions_clocked_number = int(rest_of_line)
             if global_actions_handling.global_actions_clocked_number == 0:
-                main_window.global_action_clocked_button.config(state=tk.NORMAL)
+                project_manager.global_action_clocked_button.config(state=tk.NORMAL)
             else:
-                main_window.global_action_clocked_button.config(state=tk.DISABLED)
+                project_manager.global_action_clocked_button.config(state=tk.DISABLED)
         elif lines[_line_index].startswith("global_actions_combinatorial_number|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "global_actions_combinatorial_number|")
             global_actions_handling.global_actions_combinatorial_number = int(rest_of_line)
             if global_actions_handling.global_actions_combinatorial_number == 0:
-                main_window.global_action_combinatorial_button.config(state=tk.NORMAL)
+                project_manager.global_action_combinatorial_button.config(state=tk.NORMAL)
             else:
-                main_window.global_action_combinatorial_button.config(state=tk.DISABLED)
+                project_manager.global_action_combinatorial_button.config(state=tk.DISABLED)
         elif lines[_line_index].startswith("state_radius|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "state_radius|")
             canvas_editing.state_radius = float(rest_of_line)
@@ -436,18 +437,18 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                     tags = tags + (e,)
             for t in tags:
                 if t.startswith("connected_to_transition"):  # line to condition&action block
-                    trans_id = main_window.canvas.create_line(
+                    trans_id = project_manager.canvas.create_line(
                         coords, dash=(2, 2), fill="black", tags=tags, state=tk.HIDDEN
                     )
                     break
                 if t.startswith("connected_to_state") or t.endswith("_comment_line"):  # line to state action/comment
-                    trans_id = main_window.canvas.create_line(coords, dash=(2, 2), fill="black", tags=tags)
+                    trans_id = project_manager.canvas.create_line(coords, dash=(2, 2), fill="black", tags=tags)
                     break
                 if t.startswith("transition"):
                     trans_id = transition_handling.draw_transition(coords, tags)
-                    main_window.canvas.tag_lower(trans_id)
+                    project_manager.canvas.tag_lower(trans_id)
                     break
-            main_window.canvas.tag_lower(trans_id)  # Lines are always "under" anything else.
+            project_manager.canvas.tag_lower(trans_id)  # Lines are always "under" anything else.
         elif lines[_line_index].startswith("rectangle|"):  # Used as connector or as priority entry.
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "rectangle|")
             coords = []
@@ -464,10 +465,10 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                 if t.startswith("connector"):
                     is_priority_rectangle = False
             if is_priority_rectangle:
-                rectangle_id = main_window.canvas.create_rectangle(coords, tag=tags, fill=constants.STATE_COLOR)
+                rectangle_id = project_manager.canvas.create_rectangle(coords, tag=tags, fill=constants.STATE_COLOR)
             else:
                 rectangle_id = connector_handling.draw_connector(coords, tags)
-            main_window.canvas.tag_raise(rectangle_id)  # priority rectangles are always in "foreground"
+            project_manager.canvas.tag_raise(rectangle_id)  # priority rectangles are always in "foreground"
         elif lines[_line_index].startswith("window_state_action_block|"):  # state_action
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_state_action_block|")
             text = _get_data(rest_of_line, lines)
@@ -487,7 +488,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             )
             action_ref.text_id.insert("1.0", text)
             action_ref.text_id.format()
-            main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
+            project_manager.canvas.itemconfigure(action_ref.window_id, tag=tags)
         elif lines[_line_index].startswith("window_state_comment|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_state_comment|")
             text = _get_data(rest_of_line, lines)
@@ -505,7 +506,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             comment_ref = state_comment.StateComment(coords[0] - 100, coords[1], height=1, width=8, padding=1)
             comment_ref.text_id.insert("1.0", text)
             comment_ref.text_id.format()
-            main_window.canvas.itemconfigure(comment_ref.window_id, tag=tags)
+            project_manager.canvas.itemconfigure(comment_ref.window_id, tag=tags)
         elif lines[_line_index].startswith("window_condition_action_block|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_condition_action_block|")
             condition = _get_data(rest_of_line, lines)
@@ -546,7 +547,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             ):
                 condition_action_ref.action_label.grid_forget()
                 condition_action_ref.action_id.grid_forget()
-            main_window.canvas.itemconfigure(condition_action_ref.window_id, tag=tags)
+            project_manager.canvas.itemconfigure(condition_action_ref.window_id, tag=tags)
         elif lines[_line_index].startswith("window_global_actions|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_global_actions|")
             text_before = _get_data(rest_of_line, lines)
@@ -569,7 +570,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             global_actions_ref.text_before_id.format()
             global_actions_ref.text_after_id.insert("1.0", text_after)
             global_actions_ref.text_after_id.format()
-            main_window.canvas.itemconfigure(global_actions_ref.window_id, tag=tags)
+            project_manager.canvas.itemconfigure(global_actions_ref.window_id, tag=tags)
         elif lines[_line_index].startswith("window_global_actions_combinatorial|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_global_actions_combinatorial|")
             text = _get_data(rest_of_line, lines)
@@ -589,7 +590,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             )
             action_ref.text_id.insert("1.0", text)
             action_ref.text_id.format()
-            main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
+            project_manager.canvas.itemconfigure(action_ref.window_id, tag=tags)
         elif lines[_line_index].startswith("window_state_actions_default|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_state_actions_default|")
             text = _get_data(rest_of_line, lines)
@@ -607,73 +608,73 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             action_ref = state_actions_default.StateActionsDefault(coords[0], coords[1], height=1, width=8, padding=1)
             action_ref.text_id.insert("1.0", text)
             action_ref.text_id.format()
-            main_window.canvas.itemconfigure(action_ref.window_id, tag=tags)
+            project_manager.canvas.itemconfigure(action_ref.window_id, tag=tags)
 
         elif lines[_line_index].startswith("interface_package|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "interface_package|")
             data = _get_data(rest_of_line, lines)
-            main_window.interface_package_text.delete("1.0", tk.END)
-            main_window.interface_package_text.insert("1.0", data)
-            main_window.interface_package_text.update_highlight_tags(
+            project_manager.interface_package_text.delete("1.0", tk.END)
+            project_manager.interface_package_text.insert("1.0", data)
+            project_manager.interface_package_text.update_highlight_tags(
                 10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
         elif lines[_line_index].startswith("interface_generics|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "interface_generics|")
             data = _get_data(rest_of_line, lines)
-            main_window.interface_generics_text.delete("1.0", tk.END)
-            main_window.interface_generics_text.insert("1.0", data)
-            main_window.interface_generics_text.update_highlight_tags(
+            project_manager.interface_generics_text.delete("1.0", tk.END)
+            project_manager.interface_generics_text.insert("1.0", data)
+            project_manager.interface_generics_text.update_highlight_tags(
                 10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
-            main_window.interface_generics_text.update_custom_text_class_generics_list()
+            project_manager.interface_generics_text.update_custom_text_class_generics_list()
         elif lines[_line_index].startswith("interface_ports|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "interface_ports|")
             data = _get_data(rest_of_line, lines)
-            main_window.interface_ports_text.delete("1.0", tk.END)
-            main_window.interface_ports_text.insert("1.0", data)
-            main_window.interface_ports_text.update_highlight_tags(
+            project_manager.interface_ports_text.delete("1.0", tk.END)
+            project_manager.interface_ports_text.insert("1.0", data)
+            project_manager.interface_ports_text.update_highlight_tags(
                 10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
-            main_window.interface_ports_text.update_custom_text_class_ports_list()
+            project_manager.interface_ports_text.update_custom_text_class_ports_list()
         elif lines[_line_index].startswith("internals_package|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "internals_package|")
             data = _get_data(rest_of_line, lines)
-            main_window.internals_package_text.delete("1.0", tk.END)
-            main_window.internals_package_text.insert("1.0", data)
-            main_window.internals_package_text.update_highlight_tags(
+            project_manager.internals_package_text.delete("1.0", tk.END)
+            project_manager.internals_package_text.insert("1.0", data)
+            project_manager.internals_package_text.update_highlight_tags(
                 10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
         elif lines[_line_index].startswith("internals_architecture|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "internals_architecture|")
             data = _get_data(rest_of_line, lines)
-            main_window.internals_architecture_text.delete("1.0", tk.END)
-            main_window.internals_architecture_text.insert("1.0", data)
-            main_window.internals_architecture_text.update_highlight_tags(
+            project_manager.internals_architecture_text.delete("1.0", tk.END)
+            project_manager.internals_architecture_text.insert("1.0", data)
+            project_manager.internals_architecture_text.update_highlight_tags(
                 10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
-            main_window.internals_architecture_text.update_custom_text_class_signals_list()
+            project_manager.internals_architecture_text.update_custom_text_class_signals_list()
         elif lines[_line_index].startswith("internals_process|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "internals_process|")
             data = _get_data(rest_of_line, lines)
-            main_window.internals_process_clocked_text.delete("1.0", tk.END)
-            main_window.internals_process_clocked_text.insert("1.0", data)
-            main_window.internals_process_clocked_text.update_highlight_tags(
+            project_manager.internals_process_clocked_text.delete("1.0", tk.END)
+            project_manager.internals_process_clocked_text.insert("1.0", data)
+            project_manager.internals_process_clocked_text.update_highlight_tags(
                 10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
-            main_window.internals_process_clocked_text.update_custom_text_class_signals_list()
+            project_manager.internals_process_clocked_text.update_custom_text_class_signals_list()
         elif lines[_line_index].startswith("internals_process_combinatorial|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "internals_process_combinatorial|")
             data = _get_data(rest_of_line, lines)
-            main_window.internals_process_combinatorial_text.delete("1.0", tk.END)
-            main_window.internals_process_combinatorial_text.insert("1.0", data)
-            main_window.internals_process_combinatorial_text.update_highlight_tags(
+            project_manager.internals_process_combinatorial_text.delete("1.0", tk.END)
+            project_manager.internals_process_combinatorial_text.insert("1.0", data)
+            project_manager.internals_process_combinatorial_text.update_highlight_tags(
                 10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
             )
-            main_window.internals_process_combinatorial_text.update_custom_text_class_signals_list()
+            project_manager.internals_process_combinatorial_text.update_custom_text_class_signals_list()
         _line_index += 1
     for state in list_of_states:
         canvas_editing.adapt_visibility_of_priority_rectangles_at_state(state)
-    main_window.grid_drawer.draw_grid()
+    project_manager.grid_drawer.draw_grid()
 
 
 def _remove_keyword_from_line(line, keyword):

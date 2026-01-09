@@ -6,8 +6,8 @@ import os
 import tkinter as tk
 from tkinter import messagebox
 
-import codegen.hdl_generation as hdl_generation
-import main_window
+from codegen import hdl_generation
+from project_manager import project_manager
 
 
 class UpdateHdlTab:
@@ -30,10 +30,10 @@ class UpdateHdlTab:
             hdlfilename = generate_path + "/" + module_name + ".v"
             hdlfilename_architecture = None
         # Compare modification time of HDL file against modification_time of design file (.hse):
-        main_window.hdl_frame_text.config(state=tk.NORMAL)
-        main_window.hdl_frame_text.delete("1.0", tk.END)
-        main_window.hdl_frame_text.insert("1.0", "")
-        main_window.hdl_frame_text.config(state=tk.DISABLED)
+        project_manager.hdl_frame_text.config(state=tk.NORMAL)
+        project_manager.hdl_frame_text.delete("1.0", tk.END)
+        project_manager.hdl_frame_text.insert("1.0", "")
+        project_manager.hdl_frame_text.config(state=tk.DISABLED)
         hdl = ""
         if self.__hdl_is_up_to_date(readfile, hdlfilename, hdlfilename_architecture, show_message=False):
             # print("HDL-file exists and is 'newer' than the design-file =", self.date_of_hdl_file)
@@ -60,10 +60,10 @@ class UpdateHdlTab:
                     )
             # Create hdl without writing to file for Link-Generation:
             hdl_generation.run_hdl_generation(write_to_file=False, is_script_mode=False)
-        main_window.hdl_frame_text.config(state=tk.NORMAL)
-        main_window.hdl_frame_text.insert("1.0", hdl)
-        main_window.hdl_frame_text.config(state=tk.DISABLED)
-        main_window.hdl_frame_text.update_highlight_tags(
+        project_manager.hdl_frame_text.config(state=tk.NORMAL)
+        project_manager.hdl_frame_text.insert("1.0", hdl)
+        project_manager.hdl_frame_text.config(state=tk.DISABLED)
+        project_manager.hdl_frame_text.update_highlight_tags(
             10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
         )
 

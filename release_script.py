@@ -125,21 +125,21 @@ def parse_changelog_version(override_version=None, is_release=True):
 
 def verify_version_consistency(version, is_release):
     """Verify that version in main_window.py matches CHANGELOG.md."""
-    main_window_path = Path("src/main_window.py")
+    constants_path = Path("src/constants.py")
 
-    if not main_window_path.exists():
-        print("❌ Error: src/main_window.py not found")
+    if not constants_path.exists():
+        print("❌ Error: src/constants.py not found")
         sys.exit(1)
 
-    with open(main_window_path, encoding="utf-8") as f:
+    with open(constants_path, encoding="utf-8") as f:
         content = f.read()
 
     # Find _VERSION line
-    version_pattern = r'_VERSION = "([^"]+)"'
+    version_pattern = r'VERSION = "([^"]+)"'
     match = re.search(version_pattern, content)
 
     if not match:
-        print("❌ Error: _VERSION not found in src/main_window.py")
+        print("❌ Error: VERSION not found in src/constants.py")
         sys.exit(1)
 
     file_version = match.group(1)
@@ -147,12 +147,12 @@ def verify_version_consistency(version, is_release):
     if is_release and file_version != version:
         print("❌ Error: Version mismatch!")
         print(f"   CHANGELOG.md: {version}")
-        print(f"   main_window.py: {file_version}")
+        print(f"   constants.py: {file_version}")
         sys.exit(1)
     elif not is_release and file_version != version:
         print("⚠️  Warning: Version mismatch (dev build)")
         print(f"   CHANGELOG.md: {version}")
-        print(f"   main_window.py: {file_version}")
+        print(f"   constants.py: {file_version}")
         print("   Continuing with dev build...")
 
     print(f"✅ Version consistency verified: {version}")

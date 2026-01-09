@@ -10,8 +10,8 @@ import condition_action_handling
 import global_actions
 import global_actions_combinatorial
 import global_actions_handling
-import main_window
 import state_comment
+from project_manager import project_manager
 
 from .exceptions import GenerationError
 
@@ -41,13 +41,13 @@ def _get_target_state_name(all_reset_transition_tags):
     for t in all_reset_transition_tags:
         if t.startswith("going_to_state"):
             target_state_tag = t[9:]
-    target_state_name = main_window.canvas.itemcget(target_state_tag + "_name", "text")
+    target_state_name = project_manager.canvas.itemcget(target_state_tag + "_name", "text")
     return target_state_name
 
 
 # TODO: Might be unused right now.
 def _get_target_tag_of_transition(transition_tag):
-    transition_tags = main_window.canvas.gettags(transition_tag)
+    transition_tags = project_manager.canvas.gettags(transition_tag)
     for transition_tag in transition_tags:
         if transition_tag.startswith("going_to_"):
             return transition_tag[9:]
@@ -80,7 +80,7 @@ def create_reset_condition_and_reset_action() -> list:
         condition = reference_to_reset_condition_custom_text.get(
             "1.0", tk.END + "-1 chars"
         )  # without "return" at the end
-        all_reset_transition_tags = main_window.canvas.gettags(reset_transition_tag)
+        all_reset_transition_tags = project_manager.canvas.gettags(reset_transition_tag)
         target_state_name = _get_target_state_name(all_reset_transition_tags)
         action = "state <= " + target_state_name + ";\n"
         reference_to_reset_action_custom_text = ref.action_id
@@ -93,7 +93,7 @@ def create_reset_condition_and_reset_action() -> list:
 
 
 def _get_reset_transition_tag() -> str:
-    reset_entry_tags = main_window.canvas.gettags("reset_entry")
+    reset_entry_tags = project_manager.canvas.gettags("reset_entry")
     reset_transition_tag = ""
     for t in reset_entry_tags:
         if t.startswith("transition"):  # look for transition<n>_start
@@ -102,7 +102,7 @@ def _get_reset_transition_tag() -> str:
 
 
 def _get_transition_target_condition_action(transition_tag) -> tuple[str, str, str, str]:
-    tags = main_window.canvas.gettags(transition_tag)
+    tags = project_manager.canvas.gettags(transition_tag)
     transition_condition = ""
     transition_action = ""
     condition_action_reference = ""
@@ -110,13 +110,13 @@ def _get_transition_target_condition_action(transition_tag) -> tuple[str, str, s
     for tag in tags:
         if tag.startswith("going_to_state"):
             transition_target_tag = tag[9:]
-            transition_target = main_window.canvas.itemcget(transition_target_tag + "_name", "text")
+            transition_target = project_manager.canvas.itemcget(transition_target_tag + "_name", "text")
         elif tag.startswith("going_to_connector"):
             transition_target = tag[9:]
         elif tag.startswith("ca_connection"):  # Complete tag: ca_connection<n>_end
             condition_action_number = tag[13:-4]
             condition_action_tag = "condition_action" + condition_action_number
-            condition_action_canvas_item_id = main_window.canvas.find_withtag(condition_action_tag)[0]
+            condition_action_canvas_item_id = project_manager.canvas.find_withtag(condition_action_tag)[0]
             condition_action_reference = condition_action_handling.ConditionAction.dictionary[
                 condition_action_canvas_item_id
             ]
@@ -127,12 +127,12 @@ def _get_transition_target_condition_action(transition_tag) -> tuple[str, str, s
 
 
 def _get_condition_action_reference_of_transition(transition_tag) -> None:
-    tags = main_window.canvas.gettags(transition_tag)
+    tags = project_manager.canvas.gettags(transition_tag)
     for tag in tags:
         if tag.startswith("ca_connection"):  # Complete tag: ca_connection<n>_end
             condition_action_number = tag[13:-4]
             condition_action_tag = "condition_action" + condition_action_number
-            condition_action_canvas_item_id = main_window.canvas.find_withtag(condition_action_tag)[0]
+            condition_action_canvas_item_id = project_manager.canvas.find_withtag(condition_action_tag)[0]
             condition_action_reference = condition_action_handling.ConditionAction.dictionary[
                 condition_action_canvas_item_id
             ]
@@ -143,10 +143,10 @@ def _get_condition_action_reference_of_transition(transition_tag) -> None:
 def extract_transition_specifications_from_the_graph(state_tag_list_sorted) -> list:
     transition_specifications = []
     for state_tag in state_tag_list_sorted:
-        state_name = main_window.canvas.itemcget(state_tag + "_name", "text")
-        all_tags_of_state = main_window.canvas.gettags(state_tag)
+        state_name = project_manager.canvas.itemcget(state_tag + "_name", "text")
+        all_tags_of_state = project_manager.canvas.gettags(state_tag)
         if state_tag + "_comment_line_end" in all_tags_of_state:
-            canvas_id_of_comment_window = main_window.canvas.find_withtag(state_tag + "_comment")[0]
+            canvas_id_of_comment_window = project_manager.canvas.find_withtag(state_tag + "_comment")[0]
             reference_to_state_comment_window = state_comment.StateComment.dictionary[canvas_id_of_comment_window]
             canvas_id_of_comment_text_widget = reference_to_state_comment_window.text_id
             state_comments = reference_to_state_comment_window.text_id.get("1.0", "end")
@@ -537,9 +537,9 @@ def _merge_trace_array(trace_array) -> list:
 def _get_a_list_of_all_state_tags():
     state_tag_list = []
     reg_ex_for_state_tag = re.compile("^state[0-9]+$")
-    all_canvas_items = main_window.canvas.find_all()
+    all_canvas_items = project_manager.canvas.find_all()
     for item in all_canvas_items:
-        all_tags = main_window.canvas.gettags(item)
+        all_tags = project_manager.canvas.gettags(item)
         for tag in all_tags:
             if reg_ex_for_state_tag.match(tag):
                 state_tag_list.append(tag)
@@ -551,7 +551,7 @@ def _sort_list_of_all_state_tags(list_of_all_state_tags):
     state_tag_list = []
     sorted_list_of_all_state_tags = []
     for state_tag in list_of_all_state_tags:
-        list_of_canvas_ids = main_window.canvas.find_withtag(state_tag + "_comment")
+        list_of_canvas_ids = project_manager.canvas.find_withtag(state_tag + "_comment")
         if list_of_canvas_ids:
             canvas_id_of_comment_window = list_of_canvas_ids[0]
             reference_to_state_comment_window = state_comment.StateComment.dictionary[canvas_id_of_comment_window]
@@ -731,13 +731,13 @@ def _get_all_outgoing_transitions_in_priority_order(state_tag) -> list:
 
 
 def _create_outgoing_transition_list_with_priority_information(state_tag) -> list:
-    all_tags_of_the_state = main_window.canvas.gettags(state_tag)
+    all_tags_of_the_state = project_manager.canvas.gettags(state_tag)
     transition_tag_and_priority = []
     for tag in all_tags_of_the_state:
         if tag.endswith("_start"):
             transition_tag = tag[:-6]
             transition_priority_text_tag = transition_tag + "priority"
-            transition_priority_string = main_window.canvas.itemcget(transition_priority_text_tag, "text")
+            transition_priority_string = project_manager.canvas.itemcget(transition_priority_text_tag, "text")
             transition_tag_and_priority.append([transition_tag, transition_priority_string])
     return transition_tag_and_priority
 
@@ -752,7 +752,7 @@ def _remove_priority_information(transition_tag_and_priority_sorted) -> list:
 def _check_for_equal_priorities(transition_tags_and_priority_sorted, state_tag) -> None:
     for n in range(len(transition_tags_and_priority_sorted) - 1):
         if transition_tags_and_priority_sorted[n][1] == transition_tags_and_priority_sorted[n + 1][1]:
-            object_coords = main_window.canvas.coords(state_tag)
+            object_coords = project_manager.canvas.coords(state_tag)
             canvas_editing.view_rectangle(
                 [
                     object_coords[0] - 2 * (object_coords[2] - object_coords[0]),
@@ -762,7 +762,7 @@ def _check_for_equal_priorities(transition_tags_and_priority_sorted, state_tag) 
                 ],
                 check_fit=False,
             )
-            state_name = main_window.canvas.itemcget(state_tag + "_name", "text")
+            state_name = project_manager.canvas.itemcget(state_tag + "_name", "text")
             if state_name == "":
                 state_name = "a connector"
             raise GenerationError(
@@ -783,7 +783,7 @@ def _get_transition_action(condition_action_reference):
 
 def create_global_actions_before() -> tuple[str, str] | tuple:
     if global_actions_handling.global_actions_clocked_number == 1:
-        canvas_item_id = main_window.canvas.find_withtag("global_actions1")
+        canvas_item_id = project_manager.canvas.find_withtag("global_actions1")
         ref = global_actions.GlobalActions.dictionary[canvas_item_id[0]]
         return ref.text_before_id, ref.text_before_id.get("1.0", tk.END)
     return "", ""
@@ -791,7 +791,7 @@ def create_global_actions_before() -> tuple[str, str] | tuple:
 
 def create_global_actions_after() -> tuple[str, str] | tuple:
     if global_actions_handling.global_actions_clocked_number == 1:
-        canvas_item_id = main_window.canvas.find_withtag("global_actions1")
+        canvas_item_id = project_manager.canvas.find_withtag("global_actions1")
         ref = global_actions.GlobalActions.dictionary[canvas_item_id[0]]
         return ref.text_after_id, ref.text_after_id.get("1.0", tk.END)
     return "", ""
@@ -799,21 +799,21 @@ def create_global_actions_after() -> tuple[str, str] | tuple:
 
 def create_concurrent_actions() -> tuple[str, str] | tuple:
     if global_actions_handling.global_actions_combinatorial_number == 1:
-        canvas_item_id = main_window.canvas.find_withtag("global_actions_combinatorial1")
+        canvas_item_id = project_manager.canvas.find_withtag("global_actions_combinatorial1")
         ref = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[canvas_item_id[0]]
         return ref.text_id, ref.text_id.get("1.0", tk.END)
     return "", ""
 
 
 def remove_comments_and_returns(hdl_text) -> str:
-    if main_window.language.get() == "VHDL":
+    if project_manager.language.get() == "VHDL":
         hdl_text = remove_vhdl_block_comments(hdl_text)
     else:
         hdl_text = _remove_verilog_block_comments(hdl_text)
     lines_without_return = hdl_text.split("\n")
     text = ""
     for line in lines_without_return:
-        if main_window.language.get() != "VHDL":
+        if project_manager.language.get() != "VHDL":
             line_without_comment = re.sub("//.*$", "", line)
         else:
             line_without_comment = re.sub("--.*$", "", line)
@@ -918,15 +918,15 @@ def get_all_declared_constant_names(all_signal_declarations) -> list:
 
 def _get_all_signal_names(declaration):
     signal_names = ""
-    if " signal " in declaration and main_window.language.get() == "VHDL":
+    if " signal " in declaration and project_manager.language.get() == "VHDL":
         if ":" in declaration:
             signal_names = re.sub(":.*", "", declaration)
             signal_names = re.sub(" signal ", "", signal_names)
-    elif " variable " in declaration and main_window.language.get() == "VHDL":
+    elif " variable " in declaration and project_manager.language.get() == "VHDL":
         if ":" in declaration:
             signal_names = re.sub(":.*", "", declaration)
             signal_names = re.sub(" variable ", "", signal_names)
-    elif main_window.language.get() != "VHDL":
+    elif project_manager.language.get() != "VHDL":
         declaration = re.sub(" integer ", " ", declaration, flags=re.I)
         declaration = re.sub(" logic ", " ", declaration, flags=re.I)
         declaration = re.sub(" reg ", " ", declaration, flags=re.I)
@@ -937,10 +937,10 @@ def _get_all_signal_names(declaration):
 
 def _get_all_constant_names(declaration):
     constant_names = ""
-    if " constant " in declaration and main_window.language.get() == "VHDL" and ":" in declaration:
+    if " constant " in declaration and project_manager.language.get() == "VHDL" and ":" in declaration:
         constant_names = re.sub(":.*", "", declaration)
         constant_names = re.sub(" constant ", "", constant_names)
-    if " localparam " in declaration and main_window.language.get() != "VHDL":
+    if " localparam " in declaration and project_manager.language.get() != "VHDL":
         declaration = re.sub(" localparam ", " ", declaration, flags=re.I)
         constant_names = re.sub(" \\[.*?\\] ", " ", declaration)
     constant_names_without_blanks = re.sub(" ", "", constant_names)

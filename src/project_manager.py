@@ -3,18 +3,545 @@ State manager for HDL-FSM-Editor.
 This module provides a simple way to access application state throughout the application.
 """
 
-from project import Project
+import tkinter as tk
+from tkinter import ttk
+
+import custom_text
+import grid_drawing
+
+# import link_dictionary => Causes cyclic import!
+
+
+# from project import Project
 
 
 class ProjectManager:
     """Simple project manager - just holds the state and provides access."""
 
     def __init__(self) -> None:
-        self._project = Project()
-        # File management
+        # self._project = Project()
+        self._root: tk.Tk = None
         self._current_file: str = ""
-        self._previous_file: str = ""
-        self._entry_widgets: list = []  # To store references to entry widgets
+        self._notebook: ttk.Notebook
+        self._canvas: tk.Canvas
+        self._previous_file: str
+        self._entry_widgets: list  # To store references to entry widgets
+        self._reset_signal_name: tk.StringVar
+        self._clock_signal_name: tk.StringVar
+        self._generate_path_value: tk.StringVar
+        self._working_directory_value: tk.StringVar
+        self._additional_sources_value: tk.StringVar
+        self._select_file_number_text: tk.IntVar
+        self._compile_cmd: tk.Entry
+        self._compile_cmd_docu: tk.Label
+        self._edit_cmd: tk.Entry
+        self._module_name: tk.Entry
+        self._language: tk.StringVar
+        self._interface_package_text: custom_text.CustomText
+        self._interface_generics_text: custom_text.CustomText
+        self._interface_ports_text: custom_text.CustomText
+        self._internals_package_text: custom_text.CustomText
+        self._internals_architecture_text: custom_text.CustomText
+        self._internals_process_clocked_text: custom_text.CustomText
+        self._internals_process_combinatorial_text: custom_text.CustomText
+        self._interface_generics_label: ttk.Label
+        self._interface_ports_label: ttk.Label
+        self._hdl_frame_text: custom_text.CustomText
+        self._log_frame_text: custom_text.CustomText
+        self._internals_architecture_label: ttk.Label
+        self._internals_process_clocked_label: ttk.Label
+        self._internals_process_combinatorial_label: ttk.Label
+        self._diagram_background_color: tk.StringVar
+        self._diagram_background_color_error: ttk.Label
+        self._include_timestamp_in_output: tk.BooleanVar
+        self._state_action_default_button: ttk.Button
+        self._global_action_clocked_button: ttk.Button
+        self._global_action_combinatorial_button: ttk.Button
+        self._reset_entry_button: ttk.Button
+        self._grid_drawer: grid_drawing.GridDraw
+        self._undo_button: ttk.Button
+        self._redo_button: ttk.Button
+        self._regex_message_find_for_vhdl: str = "(.*?):([0-9]+):[0-9]+:.*"
+        self._regex_message_find_for_verilog: str = (
+            "(.*?):([0-9]+): .*"  # Added ' ' after the second ':', to get no hit at time stamps (i.e. 16:58:36).
+        )
+        self._regex_file_name_quote: str = "\\1"
+        self._regex_file_line_number_quote: str = "\\2"
+        self._size_of_file1_line_number: int = 0
+        self._size_of_file2_line_number: int = 0
+        self._date_of_hdl_file_shown_in_hdl_tab: float = 0.0
+        self._date_of_hdl_file2_shown_in_hdl_tab: float = 0.0
+        self._link_dict_ref = None  #: link_dictionary.LinkDictionary
+
+    @property
+    def link_dict_ref(self):  # -> link_dictionary.LinkDictionary:
+        """Get the link dictionary."""
+        return self._link_dict_ref
+
+    @link_dict_ref.setter
+    def link_dict_ref(self, value):  # value : link_dictionary.LinkDictionary) -> None:
+        """Set the link dictionary."""
+        self._link_dict_ref = value
+
+    @property
+    def date_of_hdl_file_shown_in_hdl_tab(self) -> float:
+        """Get the date of HDL file shown in HDL tab."""
+        return self._date_of_hdl_file_shown_in_hdl_tab
+
+    @date_of_hdl_file_shown_in_hdl_tab.setter
+    def date_of_hdl_file_shown_in_hdl_tab(self, value: float) -> None:
+        """Set the date of HDL file shown in HDL tab."""
+        self._date_of_hdl_file_shown_in_hdl_tab = value
+
+    @property
+    def date_of_hdl_file2_shown_in_hdl_tab(self) -> float:
+        """Get the date of HDL file 2 shown in HDL tab."""
+        return self._date_of_hdl_file2_shown_in_hdl_tab
+
+    @date_of_hdl_file2_shown_in_hdl_tab.setter
+    def date_of_hdl_file2_shown_in_hdl_tab(self, value: float) -> None:
+        """Set the date of HDL file 2 shown in HDL tab."""
+        self._date_of_hdl_file2_shown_in_hdl_tab = value
+
+    @property
+    def size_of_file1_line_number(self) -> int:
+        """Get the size of file 1 line number."""
+        return self._size_of_file1_line_number
+
+    @size_of_file1_line_number.setter
+    def size_of_file1_line_number(self, value: int) -> None:
+        """Set the size of file 1 line number."""
+        self._size_of_file1_line_number = value
+
+    @property
+    def size_of_file2_line_number(self) -> int:
+        """Get the size of file 2 line number."""
+        return self._size_of_file2_line_number
+
+    @size_of_file2_line_number.setter
+    def size_of_file2_line_number(self, value: int) -> None:
+        """Set the size of file 2 line number."""
+        self._size_of_file2_line_number = value
+
+    @property
+    def regex_file_name_quote(self) -> str:
+        """Get the regex file name quote pattern."""
+        return self._regex_file_name_quote
+
+    @regex_file_name_quote.setter
+    def regex_file_name_quote(self, value: str) -> None:
+        """Set the regex file name quote pattern."""
+        self._regex_file_name_quote = value
+
+    @property
+    def regex_file_line_number_quote(self) -> str:
+        """Get the regex file line number quote pattern."""
+        return self._regex_file_line_number_quote
+
+    @regex_file_line_number_quote.setter
+    def regex_file_line_number_quote(self, value: str) -> None:
+        """Set the regex file line number quote pattern."""
+        self._regex_file_line_number_quote = value
+
+    @property
+    def regex_message_find_for_vhdl(self) -> str:
+        """Get the regex message find pattern for VHDL."""
+        return self._regex_message_find_for_vhdl
+
+    @regex_message_find_for_vhdl.setter
+    def regex_message_find_for_vhdl(self, value: str) -> None:
+        """Set the regex message find pattern for VHDL."""
+        self._regex_message_find_for_vhdl = value
+
+    @property
+    def regex_message_find_for_verilog(self) -> str:
+        """Get the regex message find pattern for Verilog."""
+        return self._regex_message_find_for_verilog
+
+    @regex_message_find_for_verilog.setter
+    def regex_message_find_for_verilog(self, value: str) -> None:
+        """Set the regex message find pattern for Verilog."""
+        self._regex_message_find_for_verilog = value
+
+    @property
+    def undo_button(self) -> ttk.Button:
+        """Get the undo button."""
+        return self._undo_button
+
+    @undo_button.setter
+    def undo_button(self, value: ttk.Button) -> None:
+        """Set the undo button."""
+        self._undo_button = value
+
+    @property
+    def redo_button(self) -> ttk.Button:
+        """Get the redo button."""
+        return self._redo_button
+
+    @redo_button.setter
+    def redo_button(self, value: ttk.Button) -> None:
+        """Set the redo button."""
+        self._redo_button = value
+
+    @property
+    def grid_drawer(self) -> grid_drawing.GridDraw:
+        """Get the grid drawer."""
+        return self._grid_drawer
+
+    @grid_drawer.setter
+    def grid_drawer(self, value: grid_drawing.GridDraw) -> None:
+        """Set the grid drawer."""
+        self._grid_drawer = value
+
+    @property
+    def reset_entry_button(self) -> ttk.Button:
+        """Get the reset entry button."""
+        return self._reset_entry_button
+
+    @reset_entry_button.setter
+    def reset_entry_button(self, value: ttk.Button) -> None:
+        """Set the reset entry button."""
+        self._reset_entry_button = value
+
+    @property
+    def global_action_clocked_button(self) -> ttk.Button:
+        """Get the global action clocked button."""
+        return self._global_action_clocked_button
+
+    @global_action_clocked_button.setter
+    def global_action_clocked_button(self, value: ttk.Button) -> None:
+        """Set the global action clocked button."""
+        self._global_action_clocked_button = value
+
+    @property
+    def global_action_combinatorial_button(self) -> ttk.Button:
+        """Get the global action combinatorial button."""
+        return self._global_action_combinatorial_button
+
+    @global_action_combinatorial_button.setter
+    def global_action_combinatorial_button(self, value: ttk.Button) -> None:
+        """Set the global action combinatorial button."""
+        self._global_action_combinatorial_button = value
+
+    @property
+    def state_action_default_button(self) -> ttk.Button:
+        """Get the state action default button."""
+        return self._state_action_default_button
+
+    @state_action_default_button.setter
+    def state_action_default_button(self, value: ttk.Button) -> None:
+        """Set the state action default button."""
+        self._state_action_default_button = value
+
+    @property
+    def include_timestamp_in_output(self) -> tk.BooleanVar:
+        """Get the include timestamp in output BooleanVar."""
+        return self._include_timestamp_in_output
+
+    @include_timestamp_in_output.setter
+    def include_timestamp_in_output(self, value: tk.BooleanVar) -> None:
+        """Set the include timestamp in output BooleanVar."""
+        self._include_timestamp_in_output = value
+
+    @property
+    def diagram_background_color_error(self) -> tk.Label:
+        """Get the diagram background color error Label."""
+        return self._diagram_background_color_error
+
+    @diagram_background_color_error.setter
+    def diagram_background_color_error(self, value: tk.Label) -> None:
+        """Set the diagram background color error Label."""
+        self._diagram_background_color_error = value
+
+    @property
+    def diagram_background_color(self) -> tk.StringVar:
+        """Get the diagram background color StringVar."""
+        return self._diagram_background_color
+
+    @diagram_background_color.setter
+    def diagram_background_color(self, value: tk.StringVar) -> None:
+        """Set the diagram background color StringVar."""
+        self._diagram_background_color = value
+
+    @property
+    def canvas(self) -> tk.Canvas:
+        """Get the canvas widget."""
+        return self._canvas
+
+    @canvas.setter
+    def canvas(self, value: tk.Canvas) -> None:
+        """Set the canvas widget."""
+        self._canvas = value
+
+    @property
+    def notebook(self) -> tk.ttk.Notebook:
+        """Get the notebook widget."""
+        return self._notebook
+
+    @notebook.setter
+    def notebook(self, value: tk.ttk.Notebook) -> None:
+        """Set the notebook widget."""
+        self._notebook = value
+
+    @property
+    def root(self) -> tk.Tk:
+        """Get the root Tk widget."""
+        return self._root
+
+    @root.setter
+    def root(self, value: tk.Tk) -> None:
+        """Set the root Tk widget."""
+        self._root = value
+
+    @property
+    def internals_architecture_label(self) -> tk.Label:
+        """Get the internals architecture Label widget."""
+        return self._internals_architecture_label
+
+    @internals_architecture_label.setter
+    def internals_architecture_label(self, value: tk.Label) -> None:
+        """Set the internals architecture Label widget."""
+        self._internals_architecture_label = value
+
+    @property
+    def internals_process_clocked_label(self) -> tk.Label:
+        """Get the internals process clocked Label widget."""
+        return self._internals_process_clocked_label
+
+    @internals_process_clocked_label.setter
+    def internals_process_clocked_label(self, value: tk.Label) -> None:
+        """Set the internals process clocked Label widget."""
+        self._internals_process_clocked_label = value
+
+    @property
+    def internals_process_combinatorial_label(self) -> tk.Label:
+        """Get the internals process combinatorial Label widget."""
+        return self._internals_process_combinatorial_label
+
+    @internals_process_combinatorial_label.setter
+    def internals_process_combinatorial_label(self, value: tk.Label) -> None:
+        """Set the internals process combinatorial Label widget."""
+        self._internals_process_combinatorial_label = value
+
+    @property
+    def log_frame_text(self) -> tk.Entry:
+        """Get the log frame Entry widget."""
+        return self._log_frame_text
+
+    @log_frame_text.setter
+    def log_frame_text(self, value: tk.Entry) -> None:
+        """Set the log frame Entry widget."""
+        self._log_frame_text = value
+
+    @property
+    def hdl_frame_text(self) -> tk.Entry:
+        """Get the HDL frame Entry widget."""
+        return self._hdl_frame_text
+
+    @hdl_frame_text.setter
+    def hdl_frame_text(self, value: tk.Entry) -> None:
+        """Set the HDL frame Entry widget."""
+        self._hdl_frame_text = value
+
+    @property
+    def interface_ports_label(self) -> tk.Label:
+        """Get the interface ports Label widget."""
+        return self._interface_ports_label
+
+    @interface_ports_label.setter
+    def interface_ports_label(self, value: tk.Label) -> None:
+        """Set the interface ports Label widget."""
+        self._interface_ports_label = value
+
+    @property
+    def interface_generics_label(self) -> tk.Label:
+        """Get the interface generics Label widget."""
+        return self._interface_generics_label
+
+    @interface_generics_label.setter
+    def interface_generics_label(self, value: tk.Label) -> None:
+        """Set the interface generics Label widget."""
+        self._interface_generics_label = value
+
+    @property
+    def interface_generics_text(self) -> tk.Entry:
+        """Get the interface generics Entry widget."""
+        return self._interface_generics_text
+
+    @interface_generics_text.setter
+    def interface_generics_text(self, value: tk.Entry) -> None:
+        """Set the interface generics Entry widget."""
+        self._interface_generics_text = value
+
+    @property
+    def interface_ports_text(self) -> tk.Entry:
+        """Get the interface ports Entry widget."""
+        return self._interface_ports_text
+
+    @interface_ports_text.setter
+    def interface_ports_text(self, value: tk.Entry) -> None:
+        """Set the interface ports Entry widget."""
+        self._interface_ports_text = value
+
+    @property
+    def internals_package_text(self) -> tk.Entry:
+        """Get the internals package Entry widget."""
+        return self._internals_package_text
+
+    @internals_package_text.setter
+    def internals_package_text(self, value: tk.Entry) -> None:
+        """Set the internals package Entry widget."""
+        self._internals_package_text = value
+
+    @property
+    def internals_architecture_text(self) -> tk.Entry:
+        """Get the internals architecture Entry widget."""
+        return self._internals_architecture_text
+
+    @internals_architecture_text.setter
+    def internals_architecture_text(self, value: tk.Entry) -> None:
+        """Set the internals architecture Entry widget."""
+        self._internals_architecture_text = value
+
+    @property
+    def internals_process_combinatorial_text(self) -> tk.Entry:
+        """Get the internals process combinatorial Entry widget."""
+        return self._internals_process_combinatorial_text
+
+    @internals_process_combinatorial_text.setter
+    def internals_process_combinatorial_text(self, value: tk.Entry) -> None:
+        """Set the internals process combinatorial Entry widget."""
+        self._internals_process_combinatorial_text = value
+
+    @property
+    def internals_process_clocked_text(self) -> tk.Entry:
+        """Get the internals process clocked Entry widget."""
+        return self._internals_process_clocked_text
+
+    @internals_process_clocked_text.setter
+    def internals_process_clocked_text(self, value: tk.Entry) -> None:
+        """Set the internals process clocked Entry widget."""
+        self._internals_process_clocked_text = value
+
+    @property
+    def interface_package_text(self) -> tk.Entry:
+        """Get the interface package Entry widget."""
+        return self._interface_package_text
+
+    @interface_package_text.setter
+    def interface_package_text(self, value: tk.Entry) -> None:
+        """Set the interface package Entry widget."""
+        self._interface_package_text = value
+
+    @property
+    def language(self) -> tk.StringVar:
+        """Get the language StringVar."""
+        return self._language
+
+    @language.setter
+    def language(self, value: tk.StringVar) -> None:
+        """Set the language StringVar."""
+        self._language = value
+
+    @property
+    def module_name(self) -> tk.Entry:
+        """Get the module name Entry widget."""
+        return self._module_name
+
+    @module_name.setter
+    def module_name(self, value: tk.Entry) -> None:
+        """Set the module name Entry widget."""
+        self._module_name = value
+
+    @property
+    def edit_cmd(self) -> tk.Entry:
+        """Get the edit command Entry widget."""
+        return self._edit_cmd
+
+    @edit_cmd.setter
+    def edit_cmd(self, value: tk.Entry) -> None:
+        """Set the edit command Entry widget."""
+        self._edit_cmd = value
+
+    @property
+    def compile_cmd_docu(self) -> tk.Label:
+        """Get the compile command documentation Label widget."""
+        return self._compile_cmd_docu
+
+    @compile_cmd_docu.setter
+    def compile_cmd_docu(self, value: tk.Label) -> None:
+        """Set the compile command documentation Label widget."""
+        self._compile_cmd_docu = value
+
+    @property
+    def compile_cmd(self) -> tk.Entry:
+        """Get the compile command Entry widget."""
+        return self._compile_cmd
+
+    @compile_cmd.setter
+    def compile_cmd(self, value: tk.Entry) -> None:
+        """Set the compile command Entry widget."""
+        self._compile_cmd = value
+
+    @property
+    def select_file_number_text(self) -> tk.IntVar:
+        """Get the select file number IntVar."""
+        return self._select_file_number_text
+
+    @select_file_number_text.setter
+    def select_file_number_text(self, value: tk.IntVar) -> None:
+        """Set the select file number IntVar."""
+        self._select_file_number_text = value
+
+    @property
+    def working_directory_value(self) -> tk.StringVar:
+        """Get the reset signal name StringVar."""
+        return self._working_directory_value
+
+    @working_directory_value.setter
+    def working_directory_value(self, value: tk.StringVar) -> None:
+        """Set the reset signal name StringVar."""
+        self._working_directory_value = value
+
+    @property
+    def additional_sources_value(self) -> tk.StringVar:
+        """Get the additional sources StringVar."""
+        return self._additional_sources_value
+
+    @additional_sources_value.setter
+    def additional_sources_value(self, value: tk.StringVar) -> None:
+        """Set the additional sources StringVar."""
+        self._additional_sources_value = value
+
+    @property
+    def generate_path_value(self) -> tk.StringVar:
+        """Get the reset signal name StringVar."""
+        return self._generate_path_value
+
+    @generate_path_value.setter
+    def generate_path_value(self, value: tk.StringVar) -> None:
+        """Set the reset signal name StringVar."""
+        self._generate_path_value = value
+
+    @property
+    def reset_signal_name(self) -> tk.StringVar:
+        """Get the reset signal name StringVar."""
+        return self._reset_signal_name
+
+    @reset_signal_name.setter
+    def reset_signal_name(self, value: tk.StringVar) -> None:
+        """Set the reset signal name StringVar."""
+        self._reset_signal_name = value
+
+    @property
+    def clock_signal_name(self) -> tk.StringVar:
+        """Get the clock signal name StringVar."""
+        return self._clock_signal_name
+
+    @clock_signal_name.setter
+    def clock_signal_name(self, value: tk.StringVar) -> None:
+        """Set the clock signal name StringVar."""
+        self._clock_signal_name = value
 
     @property
     def entry_widgets(self) -> list:
@@ -51,24 +578,24 @@ class ProjectManager:
         """Set the previous file path."""
         self._previous_file = value
 
-    def get(self, attr_name: str, default=None):
-        """Get a state attribute."""
-        return getattr(self._project, attr_name, default)
+    # def get(self, attr_name: str, default=None):
+    #     """Get a state attribute."""
+    #     return getattr(self._project, attr_name, default)
 
-    def set(self, attr_name: str, value) -> None:
-        """Set a state attribute."""
-        setattr(self._project, attr_name, value)
+    # def set(self, attr_name: str, value) -> None:
+    #     """Set a state attribute."""
+    #     setattr(self._project, attr_name, value)
 
-    def update(self, **kwargs) -> None:
-        """Update multiple state attributes."""
-        for key, value in kwargs.items():
-            self.set(key, value)
+    # def update(self, **kwargs) -> None:
+    #     """Update multiple state attributes."""
+    #     for key, value in kwargs.items():
+    #         self.set(key, value)
 
-    def reset(self) -> None:
-        """Reset state to initial values."""
-        self._project = Project()
-        self._current_file = ""
-        self._previous_file = ""
+    # def reset(self) -> None:
+    #     """Reset state to initial values."""
+    #     self._project = Project()
+    #     self._current_file = ""
+    #     self._previous_file = ""
 
 
 project_manager = ProjectManager()

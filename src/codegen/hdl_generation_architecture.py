@@ -2,45 +2,46 @@
 This module provides a method for creating the architecture part of a VHDL file.
 """
 
-import codegen.hdl_generation_architecture_state_actions as hdl_generation_architecture_state_actions
-import codegen.hdl_generation_architecture_state_sequence as hdl_generation_architecture_state_sequence
-import codegen.hdl_generation_library as hdl_generation_library
-import main_window
-from link_dictionary import link_dict
+from codegen import (
+    hdl_generation_architecture_state_actions,
+    hdl_generation_architecture_state_sequence,
+    hdl_generation_library,
+)
+from project_manager import project_manager
 
 
 def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> None:
     architecture = ""
 
-    package_statements = hdl_generation_library.get_text_from_text_widget(main_window.internals_package_text)
+    package_statements = hdl_generation_library.get_text_from_text_widget(project_manager.internals_package_text)
     architecture += package_statements
     number_of_new_lines = package_statements.count("\n")
-    link_dict().add(
+    project_manager.link_dict_ref.add(
         file_name,
         file_line_number,
         "custom_text_in_internals_tab",
         number_of_new_lines,
-        main_window.internals_package_text,
+        project_manager.internals_package_text,
     )
     file_line_number += number_of_new_lines
 
     architecture += "\n"
-    architecture += "architecture fsm of " + main_window.module_name.get() + " is\n"
+    architecture += "architecture fsm of " + project_manager.module_name.get() + " is\n"
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(
         1, _create_type_definition_for_the_state_signal(state_tag_list_sorted)
     )
     architecture += "    signal state : t_state;\n"
     file_line_number += 4
 
-    signal_declarations = hdl_generation_library.get_text_from_text_widget(main_window.internals_architecture_text)
+    signal_declarations = hdl_generation_library.get_text_from_text_widget(project_manager.internals_architecture_text)
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, signal_declarations)
     number_of_new_lines = signal_declarations.count("\n")
-    link_dict().add(
+    project_manager.link_dict_ref.add(
         file_name,
         file_line_number,
         "custom_text_in_internals_tab",
         number_of_new_lines,
-        main_window.internals_architecture_text,
+        project_manager.internals_architecture_text,
     )
     file_line_number += number_of_new_lines
 
@@ -48,23 +49,25 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> N
     file_line_number += 1
     architecture += (
         "    p_states: process ("
-        + main_window.reset_signal_name.get()
+        + project_manager.reset_signal_name.get()
         + ", "
-        + main_window.clock_signal_name.get()
+        + project_manager.clock_signal_name.get()
         + ")\n"
     )
-    link_dict().add(file_name, file_line_number, "Control-Tab", 1, "reset_and_clock_signal_name")
+    project_manager.link_dict_ref.add(file_name, file_line_number, "Control-Tab", 1, "reset_and_clock_signal_name")
     file_line_number += 1
 
-    variable_declarations = hdl_generation_library.get_text_from_text_widget(main_window.internals_process_clocked_text)
+    variable_declarations = hdl_generation_library.get_text_from_text_widget(
+        project_manager.internals_process_clocked_text
+    )
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, variable_declarations)
     number_of_new_lines = variable_declarations.count("\n")
-    link_dict().add(
+    project_manager.link_dict_ref.add(
         file_name,
         file_line_number,
         "custom_text_in_internals_tab",
         number_of_new_lines,
-        main_window.internals_process_clocked_text,
+        project_manager.internals_process_clocked_text,
     )
     file_line_number += number_of_new_lines
 
@@ -87,7 +90,7 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> N
                 architecture += "           " + line + "\n"
         architecture += "        then\n"
     number_of_new_lines = reset_condition.count("\n") + 1  # No return after the last line of the condition
-    link_dict().add(
+    project_manager.link_dict_ref.add(
         file_name,
         file_line_number,
         "custom_text_in_diagram_tab",
@@ -101,7 +104,7 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> N
     # and therefore cannot be linked:
     file_line_number += 1
     number_of_new_lines = reset_action.count("\n") - 1
-    link_dict().add(
+    project_manager.link_dict_ref.add(
         file_name,
         file_line_number,
         "custom_text_in_diagram_tab",
@@ -110,8 +113,8 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> N
     )
     file_line_number += number_of_new_lines
 
-    architecture += "        elsif rising_edge(" + main_window.clock_signal_name.get() + ") then\n"
-    link_dict().add(file_name, file_line_number, "Control-Tab", 1, "reset_and_clock_signal_name")
+    architecture += "        elsif rising_edge(" + project_manager.clock_signal_name.get() + ") then\n"
+    project_manager.link_dict_ref.add(file_name, file_line_number, "Control-Tab", 1, "reset_and_clock_signal_name")
     file_line_number += 1
 
     reference_to_global_actions_before_custom_text, global_actions_before = (
@@ -124,7 +127,7 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> N
         # and therefore cannot be linked:
         file_line_number += 1
         number_of_new_lines = global_actions_before.count("\n") - 1
-        link_dict().add(
+        project_manager.link_dict_ref.add(
             file_name,
             file_line_number,
             "custom_text_in_diagram_tab",
@@ -156,7 +159,7 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> N
         # and therefore cannot be linked:
         file_line_number += 1
         number_of_new_lines = global_actions_after.count("\n") - 1
-        link_dict().add(
+        project_manager.link_dict_ref.add(
             file_name,
             file_line_number,
             "custom_text_in_diagram_tab",
@@ -181,7 +184,7 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> N
         # the user, and therefore cannot be linked:
         file_line_number += 1
         number_of_new_lines = concurrent_actions.count("\n") - 1
-        link_dict().add(
+        project_manager.link_dict_ref.add(
             file_name,
             file_line_number,
             "custom_text_in_diagram_tab",
@@ -197,7 +200,7 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> N
 
 def _create_type_definition_for_the_state_signal(state_tag_list_sorted) -> None:
     list_of_all_state_names = [
-        main_window.canvas.itemcget(state_tag + "_name", "text") for state_tag in state_tag_list_sorted
+        project_manager.canvas.itemcget(state_tag + "_name", "text") for state_tag in state_tag_list_sorted
     ]
     if list_of_all_state_names != []:
         type_definition = "type t_state is ("

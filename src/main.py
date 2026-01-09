@@ -7,10 +7,11 @@ import sys
 from os.path import exists
 from tkinter import messagebox, ttk
 
-import codegen.hdl_generation as hdl_generation
+import constants
 import file_handling
 import main_window
 import undo_handling
+from codegen import hdl_generation
 from project_manager import project_manager
 
 
@@ -20,7 +21,7 @@ def _setup_application_ui() -> None:
     main_window.create_root()
 
     # Configure application styling
-    style = ttk.Style(main_window.root)
+    style = ttk.Style(project_manager.root)
     style.theme_use("default")
     # style.theme_use('clam')
     # style.theme_use('winnative')
@@ -100,13 +101,13 @@ def _parse_and_process_arguments() -> None:
         else:
             # Load the file
             project_manager.current_file = args.filename
-            main_window.root.title("new")
+            project_manager.root.title("new")
             file_handling.new_design()
             if args.generate_hdl:
                 file_handling.open_file_with_name_new(args.filename, is_script_mode=True)
             else:
                 file_handling.open_file_with_name_new(args.filename, is_script_mode=False)
-            main_window.canvas.bind("<Visibility>", lambda _event: main_window.view_all_after_window_is_built())
+            project_manager.canvas.bind("<Visibility>", lambda _event: main_window.view_all_after_window_is_built())
 
     # Handle batch generation
     if args.generate_hdl:
@@ -116,14 +117,14 @@ def _parse_and_process_arguments() -> None:
 
 def _main() -> None:
     """Main entry point for HDL-FSM-Editor."""
-    print(main_window.header_string)
+    print(constants.header_string)
 
     _setup_application_ui()
 
     _parse_and_process_arguments()
 
     main_window.show_window()
-    main_window.root.mainloop()
+    project_manager.root.mainloop()
 
 
 if __name__ == "__main__":

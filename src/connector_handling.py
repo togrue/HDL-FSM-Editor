@@ -4,8 +4,8 @@ Methods for the handling of the connectors
 
 import canvas_editing
 import constants
-import main_window
 import undo_handling
+from project_manager import project_manager
 
 connector_number = 0
 difference_x = 0
@@ -17,14 +17,14 @@ def insert_connector(event) -> None:
     connector_number += 1
     # Translate the window coordinate into the canvas coordinate (the Canvas is bigger than the window):
     event_x, event_y = canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(event)
-    overlapping_items = main_window.canvas.find_overlapping(
+    overlapping_items = project_manager.canvas.find_overlapping(
         event_x - canvas_editing.state_radius / 2,
         event_y - canvas_editing.state_radius / 2,
         event_x + canvas_editing.state_radius / 2,
         event_y + canvas_editing.state_radius / 2,
     )
     for overlapping_item in overlapping_items:
-        if "grid_line" not in main_window.canvas.gettags(overlapping_item):
+        if "grid_line" not in project_manager.canvas.gettags(overlapping_item):
             return
     coords = (
         event_x - canvas_editing.state_radius / 4,
@@ -38,12 +38,12 @@ def insert_connector(event) -> None:
 
 
 def draw_connector(coords, tags):
-    connector_id = main_window.canvas.create_rectangle(coords, fill=constants.CONNECTOR_COLOR, tags=tags)
-    main_window.canvas.tag_bind(
-        connector_id, "<Enter>", lambda event, id=connector_id: main_window.canvas.itemconfig(id, width=2)
+    connector_id = project_manager.canvas.create_rectangle(coords, fill=constants.CONNECTOR_COLOR, tags=tags)
+    project_manager.canvas.tag_bind(
+        connector_id, "<Enter>", lambda event, id=connector_id: project_manager.canvas.itemconfig(id, width=2)
     )
-    main_window.canvas.tag_bind(
-        connector_id, "<Leave>", lambda event, id=connector_id: main_window.canvas.itemconfig(id, width=1)
+    project_manager.canvas.tag_bind(
+        connector_id, "<Leave>", lambda event, id=connector_id: project_manager.canvas.itemconfig(id, width=1)
     )
     return connector_id
 
@@ -52,7 +52,7 @@ def move_to(event_x, event_y, rectangle_id, first, last) -> None:
     global difference_x, difference_y
     if first is True:
         # Calculate the difference between the "anchor" point and the event:
-        coords = main_window.canvas.coords(rectangle_id)
+        coords = project_manager.canvas.coords(rectangle_id)
         middle_point = _calculate_middle_point(coords)
         difference_x, difference_y = -event_x + middle_point[0], -event_y + middle_point[1]
     # Keep the distance between event and anchor point constant:
@@ -73,7 +73,7 @@ def _calculate_middle_point(coords) -> list:
 
 
 def _determine_edge_length_of_the_rectangle(rectangle_id):
-    rectangle_coords = main_window.canvas.coords(rectangle_id)
+    rectangle_coords = project_manager.canvas.coords(rectangle_id)
     edge_length = rectangle_coords[2] - rectangle_coords[0]
     return edge_length
 
@@ -87,4 +87,4 @@ def _calculate_new_lower_right_corner_of_the_rectangle(event_x, event_y, edge_le
 
 
 def _move_rectangle_in_canvas(rectangle_id, new_upper_left_corner, new_lower_right_corner) -> None:
-    main_window.canvas.coords(rectangle_id, *new_upper_left_corner, *new_lower_right_corner)
+    project_manager.canvas.coords(rectangle_id, *new_upper_left_corner, *new_lower_right_corner)

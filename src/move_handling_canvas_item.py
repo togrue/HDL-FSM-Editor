@@ -3,11 +3,11 @@ A MoveHandlingCanvasItem object is created, when the user moves a state (touchin
 """
 
 import canvas_modify_bindings
-import main_window
 import move_handling
 import move_handling_finish
 import move_handling_initialization
 import undo_handling
+from project_manager import project_manager
 
 
 class MoveHandlingCanvasItem:
@@ -30,8 +30,8 @@ class MoveHandlingCanvasItem:
         )
 
         # Create a binding for the now following movements of the mouse and for finishing the moving:
-        self.funcid_motion = main_window.canvas.tag_bind(self.canvas_id, "<Motion>", self._motion)
-        self.funcid_release = main_window.canvas.tag_bind(self.canvas_id, "<ButtonRelease-1>", self._release)
+        self.funcid_motion = project_manager.canvas.tag_bind(self.canvas_id, "<Motion>", self._motion)
+        self.funcid_release = project_manager.canvas.tag_bind(self.canvas_id, "<ButtonRelease-1>", self._release)
 
     def _motion(self, motion_event):
         move_handling.move_to_coordinates(
@@ -43,8 +43,8 @@ class MoveHandlingCanvasItem:
         )
 
     def _release(self, release_event):
-        main_window.canvas.tag_unbind(self.canvas_id, "<Motion>", self.funcid_motion)
-        main_window.canvas.tag_unbind(self.canvas_id, "<ButtonRelease-1>", self.funcid_release)
+        project_manager.canvas.tag_unbind(self.canvas_id, "<Motion>", self.funcid_motion)
+        project_manager.canvas.tag_unbind(self.canvas_id, "<ButtonRelease-1>", self.funcid_release)
         move_handling.move_to_coordinates(
             release_event.x,
             release_event.y,

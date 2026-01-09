@@ -10,7 +10,6 @@ import canvas_editing
 import condition_action_handling
 import global_actions
 import global_actions_combinatorial
-import main_window
 import state_action_handling
 import state_actions_default
 import state_comment
@@ -51,13 +50,13 @@ class FindReplace:
             messagebox.showinfo("HDL-FSM-Editor", "Number of hits = " + str(self.number_of_hits_all))
 
     def _search_in_diagram(self) -> bool:
-        all_canvas_items = main_window.canvas.find_all()
+        all_canvas_items = project_manager.canvas.find_all()
         continue_search = True
         for item in all_canvas_items:
-            if main_window.canvas.type(item) == "window":
+            if project_manager.canvas.type(item) == "window":
                 text_ids = self._get_text_ids_of_canvas_window(item)
                 continue_search = self._search_in_all_text_fields_of_canvas_window(item, text_ids)
-            elif main_window.canvas.type(item) == "text":
+            elif project_manager.canvas.type(item) == "text":
                 continue_search = self._search_in_canvas_text(item)
             if continue_search is False:
                 break
@@ -66,18 +65,24 @@ class FindReplace:
     def _search_in_all_text_fields(self) -> bool:
         continue_search = True
         text_fields = []
-        if main_window.language.get() == "VHDL":
-            text_fields.append({"tab": GuiTab.INTERFACE, "ref": main_window.interface_package_text, "update": "Ports"})
-        text_fields.append({"tab": GuiTab.INTERFACE, "ref": main_window.interface_generics_text, "update": "Generics"})
-        text_fields.append({"tab": GuiTab.INTERFACE, "ref": main_window.interface_ports_text, "update": "Ports"})
-        if main_window.language.get() == "VHDL":
-            text_fields.append({"tab": GuiTab.INTERNALS, "ref": main_window.internals_package_text, "update": ""})
-        text_fields.append({"tab": GuiTab.INTERNALS, "ref": main_window.internals_architecture_text, "update": ""})
-        text_fields.append({"tab": GuiTab.INTERNALS, "ref": main_window.internals_process_clocked_text, "update": ""})
+        if project_manager.language.get() == "VHDL":
+            text_fields.append(
+                {"tab": GuiTab.INTERFACE, "ref": project_manager.interface_package_text, "update": "Ports"}
+            )
         text_fields.append(
-            {"tab": GuiTab.INTERNALS, "ref": main_window.internals_process_combinatorial_text, "update": ""}
+            {"tab": GuiTab.INTERFACE, "ref": project_manager.interface_generics_text, "update": "Generics"}
         )
-        text_fields.append({"tab": GuiTab.GENERATED_HDL, "ref": main_window.hdl_frame_text, "update": ""})
+        text_fields.append({"tab": GuiTab.INTERFACE, "ref": project_manager.interface_ports_text, "update": "Ports"})
+        if project_manager.language.get() == "VHDL":
+            text_fields.append({"tab": GuiTab.INTERNALS, "ref": project_manager.internals_package_text, "update": ""})
+        text_fields.append({"tab": GuiTab.INTERNALS, "ref": project_manager.internals_architecture_text, "update": ""})
+        text_fields.append(
+            {"tab": GuiTab.INTERNALS, "ref": project_manager.internals_process_clocked_text, "update": ""}
+        )
+        text_fields.append(
+            {"tab": GuiTab.INTERNALS, "ref": project_manager.internals_process_combinatorial_text, "update": ""}
+        )
+        text_fields.append({"tab": GuiTab.GENERATED_HDL, "ref": project_manager.hdl_frame_text, "update": ""})
         for text_field in text_fields:
             if continue_search:
                 continue_search = self._search_in_text_field(text_field)
@@ -117,7 +122,7 @@ class FindReplace:
         return continue_search
 
     def _search_in_canvas_text(self, item) -> bool:
-        text = main_window.canvas.itemcget(item, "text")
+        text = project_manager.canvas.itemcget(item, "text")
         start = 0
         continue_search = True
         while True:
@@ -130,16 +135,16 @@ class FindReplace:
                 replace_pattern_escaped = re.escape(self.replace_pattern)
                 self.number_of_hits_all += len(re.findall(search_pattern_escaped, text, flags=re.IGNORECASE))
                 text = re.sub(search_pattern_escaped, replace_pattern_escaped, text, flags=re.IGNORECASE)
-                main_window.canvas.itemconfigure(item, text=text)
+                project_manager.canvas.itemconfigure(item, text=text)
                 start = len(text)  # The search-pattern cannot be found again in the next loop.
             else:
                 self.number_of_hits_all += 1
                 self._move_in_foreground(GuiTab.DIAGRAM)
-                main_window.canvas.select_from(item, hit_begin)
-                main_window.canvas.select_to(item, hit_begin + len(self.search_pattern) - 1)
-                object_coords = main_window.canvas.bbox(item)
+                project_manager.canvas.select_from(item, hit_begin)
+                project_manager.canvas.select_to(item, hit_begin + len(self.search_pattern) - 1)
+                object_coords = project_manager.canvas.bbox(item)
                 canvas_editing.view_rectangle(object_coords, check_fit=False)
-                object_center = main_window.canvas.coords(item)
+                object_center = project_manager.canvas.coords(item)
                 canvas_editing.canvas_zoom(object_center, 0.25)
                 continue_search = messagebox.askyesno("Continue", "Find next")
                 if continue_search is False:
@@ -187,7 +192,7 @@ class FindReplace:
                 text_field["ref"].tag_configure("hit", background="blue")
                 start = index + " + " + str(count.get()) + " chars"
                 if text_field["tab"] == GuiTab.DIAGRAM:
-                    object_coords = main_window.canvas.bbox(text_field["window_id"])
+                    object_coords = project_manager.canvas.bbox(text_field["window_id"])
                     object_coords_new = []
                     object_coords_new.append(object_coords[0] - 100)
                     object_coords_new.append(object_coords[1] - 100)
@@ -235,7 +240,7 @@ class FindReplace:
         return continue_search
 
     def _move_in_foreground(self, tab: GuiTab) -> None:
-        notebook_ids = main_window.notebook.tabs()
+        notebook_ids = project_manager.notebook.tabs()
         for notebook_id in notebook_ids:
-            if main_window.notebook.tab(notebook_id, option="text") == tab.value:
-                main_window.notebook.select(notebook_id)
+            if project_manager.notebook.tab(notebook_id, option="text") == tab.value:
+                project_manager.notebook.select(notebook_id)

@@ -8,9 +8,9 @@ from tkinter import ttk
 import canvas_delete
 import canvas_editing
 import custom_text
-import main_window
 import move_handling_canvas_window
 import undo_handling
+from project_manager import project_manager
 
 
 class MyText:
@@ -30,7 +30,7 @@ class MyText:
         self.line_id = None
         # Create frame:
         self.frame_id = ttk.Frame(
-            main_window.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="StateActionsWindow.TFrame"
+            project_manager.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="StateActionsWindow.TFrame"
         )
         self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
         self.frame_id.bind("<Leave>", lambda event: self.deactivate_frame())
@@ -59,11 +59,11 @@ class MyText:
         self.text_id.bind("<Control-s>", lambda event: self.update_text())
         self.text_id.bind("<Control-g>", lambda event: self.update_text())
         self.text_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-        self.text_id.bind("<FocusIn>", lambda event: main_window.canvas.unbind_all("<Delete>"))
+        self.text_id.bind("<FocusIn>", lambda event: project_manager.canvas.unbind_all("<Delete>"))
         self.text_id.bind(
             "<FocusOut>",
-            lambda event: main_window.canvas.bind_all(
-                "<Delete>", lambda event: canvas_delete.CanvasDelete(main_window.canvas)
+            lambda event: project_manager.canvas.bind_all(
+                "<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas)
             ),
         )
 
@@ -71,7 +71,7 @@ class MyText:
         self.text_id.grid(column=0, row=1, sticky=(tk.S, tk.W, tk.E))
 
         # Create canvas window for frame and text:
-        self.window_id = main_window.canvas.create_window(menu_x + 100, menu_y, window=self.frame_id, anchor=tk.W)
+        self.window_id = project_manager.canvas.create_window(menu_x + 100, menu_y, window=self.frame_id, anchor=tk.W)
 
         self.frame_id.bind(
             "<Button-1>",
@@ -85,17 +85,17 @@ class MyText:
         MyText.mytext_dict[self.window_id] = self
 
     def tag(self) -> None:
-        main_window.canvas.itemconfigure(
+        project_manager.canvas.itemconfigure(
             self.window_id,
             tag=("state_action" + str(MyText.mytext_id), "connection" + str(MyText.mytext_id) + "_start"),
         )
 
     def connect_to_state(self, menu_x, menu_y, state_id) -> None:
         # Draw a line from the state to the action block which is added to the state:
-        state_coords = main_window.canvas.coords(state_id)
-        main_window.canvas.addtag_withtag("connection" + str(MyText.mytext_id) + "_end", state_id)
-        state_tags = main_window.canvas.gettags(state_id)
-        self.line_id = main_window.canvas.create_line(
+        state_coords = project_manager.canvas.coords(state_id)
+        project_manager.canvas.addtag_withtag("connection" + str(MyText.mytext_id) + "_end", state_id)
+        state_tags = project_manager.canvas.gettags(state_id)
+        self.line_id = project_manager.canvas.create_line(
             menu_x + 100,
             menu_y,
             (state_coords[2] + state_coords[0]) / 2,
@@ -103,7 +103,7 @@ class MyText:
             dash=(2, 2),
             tag=("connection" + str(MyText.mytext_id), "connected_to_" + state_tags[0]),
         )
-        main_window.canvas.tag_lower(self.line_id, state_id)
+        project_manager.canvas.tag_lower(self.line_id, state_id)
 
     def _edit_in_external_editor(self):
         self.text_id.edit_in_external_editor()
@@ -136,17 +136,17 @@ class MyText:
     def move_to(self, event_x, event_y, first) -> None:
         if first:
             # Calculate the difference between the "anchor" point and the event:
-            coords = main_window.canvas.coords(self.window_id)
+            coords = project_manager.canvas.coords(self.window_id)
             self.difference_x, self.difference_y = -event_x + coords[0], -event_y + coords[1]
         # Keep the distance between event and anchor point constant:
         event_x, event_y = event_x + self.difference_x, event_y + self.difference_y
-        main_window.canvas.coords(self.window_id, event_x, event_y)
+        project_manager.canvas.coords(self.window_id, event_x, event_y)
         # Move the connection line:
-        window_tags = main_window.canvas.gettags(self.window_id)
+        window_tags = project_manager.canvas.gettags(self.window_id)
         for t in window_tags:
             if t.startswith("connection"):
                 line_tag = t[:-6]
-                line_coords = main_window.canvas.coords(line_tag)
+                line_coords = project_manager.canvas.coords(line_tag)
                 line_coords[0] = event_x
                 line_coords[1] = event_y
-                main_window.canvas.coords(line_tag, line_coords)
+                project_manager.canvas.coords(line_tag, line_coords)

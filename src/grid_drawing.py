@@ -3,7 +3,6 @@ This class draws a grid into the canvas.
 """
 
 import canvas_editing
-import main_window
 
 
 class GridDraw:
@@ -13,12 +12,13 @@ class GridDraw:
 
     def __init__(self, canvas) -> None:
         self.canvas = canvas
+        self.show_grid = True
 
     def remove_grid(self) -> None:
         self.canvas.delete("grid_line")
 
     def draw_grid(self) -> None:
-        if main_window.show_grid is True:
+        if self.show_grid is True:
             visible_window = [
                 self.canvas.canvasx(0),
                 self.canvas.canvasy(0),

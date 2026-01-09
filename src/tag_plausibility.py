@@ -4,7 +4,7 @@ This class checks the tags of all graphical elements if they fit together.
 
 import re
 
-import main_window
+from project_manager import project_manager
 
 
 class TagPlausibility:
@@ -84,20 +84,22 @@ class TagPlausibility:
         state_comment_dict_list,
         state_comment_line_dict_list,
     ) -> None:
-        canvas_items = main_window.canvas.find_all()
+        canvas_items = project_manager.canvas.find_all()
         for canvas_item in canvas_items:
-            if main_window.canvas.type(canvas_item) == "oval":  # "state"-circle
+            if project_manager.canvas.type(canvas_item) == "oval":  # "state"-circle
                 state_dict_list.append(self.__create_state_dict(canvas_item))
-            elif main_window.canvas.type(canvas_item) == "polygon" and "reset_entry" in main_window.canvas.gettags(
+            elif project_manager.canvas.type(
                 canvas_item
-            ):
+            ) == "polygon" and "reset_entry" in project_manager.canvas.gettags(canvas_item):
                 self.__fill_reset_dict(canvas_item, reset_dict)
-            elif main_window.canvas.type(canvas_item) == "polygon" and "polygon_for_move" in main_window.canvas.gettags(
+            elif project_manager.canvas.type(
                 canvas_item
-            ):
+            ) == "polygon" and "polygon_for_move" in project_manager.canvas.gettags(canvas_item):
                 pass
-            elif main_window.canvas.type(canvas_item) == "rectangle":  # "priority"-rectangle or "connector"-rectangle
-                rectangle_tags = main_window.canvas.gettags(canvas_item)
+            elif (
+                project_manager.canvas.type(canvas_item) == "rectangle"
+            ):  # "priority"-rectangle or "connector"-rectangle
+                rectangle_tags = project_manager.canvas.gettags(canvas_item)
                 rectangle_was_identified = False
                 for rectangle_tag in rectangle_tags:
                     if rectangle_tag.startswith("transition") and rectangle_tag.endswith("rectangle"):
@@ -113,15 +115,15 @@ class TagPlausibility:
                         + " because it has these unknown tags:",
                         rectangle_tags,
                     )
-            elif main_window.canvas.type(canvas_item) == "line" and "grid_line" in main_window.canvas.gettags(
+            elif project_manager.canvas.type(canvas_item) == "line" and "grid_line" in project_manager.canvas.gettags(
                 canvas_item
             ):
                 pass
-            elif main_window.canvas.type(canvas_item) == "line" and "grid_line" not in main_window.canvas.gettags(
+            elif project_manager.canvas.type(
                 canvas_item
-            ):
+            ) == "line" and "grid_line" not in project_manager.canvas.gettags(canvas_item):
                 line_was_identified = False
-                line_tags = main_window.canvas.gettags(canvas_item)
+                line_tags = project_manager.canvas.gettags(canvas_item)
                 for line_tag in line_tags:
                     if line_tag.startswith("transition"):
                         line_was_identified = True
@@ -145,9 +147,9 @@ class TagPlausibility:
                         + " because it has these unknown tags:",
                         line_tags,
                     )
-            elif main_window.canvas.type(canvas_item) == "text":
+            elif project_manager.canvas.type(canvas_item) == "text":
                 text_was_identified = False
-                text_tags = main_window.canvas.gettags(canvas_item)
+                text_tags = project_manager.canvas.gettags(canvas_item)
                 for text_tag in text_tags:
                     if text_tag.startswith("state"):
                         text_was_identified = True
@@ -166,9 +168,9 @@ class TagPlausibility:
                         + " because it has these unknown tags:",
                         text_tags,
                     )
-            elif main_window.canvas.type(canvas_item) == "window":
+            elif project_manager.canvas.type(canvas_item) == "window":
                 window_was_identified = False
-                window_tags = main_window.canvas.gettags(canvas_item)
+                window_tags = project_manager.canvas.gettags(canvas_item)
                 for window_tag in window_tags:
                     if (
                         window_tag == "global_actions1"
@@ -194,13 +196,13 @@ class TagPlausibility:
             else:
                 print(
                     "Fatal in TagPlausibility-Checks: a Canvas item was found, which has an not expected type:",
-                    main_window.canvas.type(canvas_item),
+                    project_manager.canvas.type(canvas_item),
                 )
 
     def __fill_reset_dict(self, canvas_item, reset_dict) -> None:
         reset_outgoing_transitions_list = []
         reset_incoming_transitions_list = []
-        reset_tags = main_window.canvas.gettags(canvas_item)
+        reset_tags = project_manager.canvas.gettags(canvas_item)
         for reset_tag in reset_tags:
             if reset_tag == "current":
                 pass
@@ -221,7 +223,7 @@ class TagPlausibility:
         state_incoming_transitions_list = []
         state_action_line_list = []
         state_comment_line_list = []
-        state_tags = main_window.canvas.gettags(canvas_item)
+        state_tags = project_manager.canvas.gettags(canvas_item)
         for state_tag in state_tags:
             if state_tag == "current":
                 pass
@@ -344,7 +346,7 @@ class TagPlausibility:
         #                      "state_action_line_identifier" : "connection"<integer>)
         # state_action tags: ('state_action1', 'connection1_start')
         state_action_dict = {}
-        state_action_tags = main_window.canvas.gettags(canvas_item)
+        state_action_tags = project_manager.canvas.gettags(canvas_item)
         for state_action_tag in state_action_tags:
             if state_action_tag == "current":
                 pass
@@ -385,7 +387,7 @@ class TagPlausibility:
         #                           "state_identifier"             : "state"<integer>)
         # state_action_line tags: ('connection1', 'connected_to_state1')
         state_action_line_dict = {}
-        state_action_line_tags = main_window.canvas.gettags(canvas_item)
+        state_action_line_tags = project_manager.canvas.gettags(canvas_item)
         for state_action_line_tag in state_action_line_tags:
             if state_action_line_tag == "current":
                 pass
@@ -426,7 +428,7 @@ class TagPlausibility:
         #                       "state_comment_line_identifier" : "state"<integer>"_comment_line")
         # state_comment tags: ('state1_comment', 'state1_comment_line_start')
         state_comment_dict = {}
-        state_comment_tags = main_window.canvas.gettags(canvas_item)  # canvas_item is a canvas-window
+        state_comment_tags = project_manager.canvas.gettags(canvas_item)  # canvas_item is a canvas-window
         for state_comment_tag in state_comment_tags:
             if state_comment_tag == "current":
                 pass
@@ -462,7 +464,7 @@ class TagPlausibility:
         # state_comment_line_dict = ("state_comment_line_identifier" : "state"<integer>"_comment_line")
         # state_comment_line tags: ("state1_comment_line", )
         state_comment_line_dict = {}
-        state_comment_line_tags = main_window.canvas.gettags(canvas_item)
+        state_comment_line_tags = project_manager.canvas.gettags(canvas_item)
         for state_comment_line_tag in state_comment_line_tags:
             if state_comment_line_tag == "current":
                 pass
@@ -496,7 +498,7 @@ class TagPlausibility:
         #                    "transition_end_state_name"   : ["<state-name>"|""],
         #                    "ca_connection_identifier"    : "ca_connection"<integer>} <-- This entry is optional
         transition_dict = {}
-        line_tags = main_window.canvas.gettags(canvas_item)
+        line_tags = project_manager.canvas.gettags(canvas_item)
         for transition_tag in line_tags:
             if transition_tag == "current":
                 pass
@@ -505,17 +507,17 @@ class TagPlausibility:
             elif transition_tag.startswith("coming_from_"):
                 state_identifier = re.sub(r"coming_from_", "", transition_tag)
                 transition_dict["transition_start_state"] = state_identifier
-                hits = main_window.canvas.find_withtag(state_identifier + "_name")
+                hits = project_manager.canvas.find_withtag(state_identifier + "_name")
                 if hits:
-                    transition_dict["transition_start_state_name"] = main_window.canvas.itemcget(hits[0], "text")
+                    transition_dict["transition_start_state_name"] = project_manager.canvas.itemcget(hits[0], "text")
                 else:
                     transition_dict["transition_start_state_name"] = ""
             elif transition_tag.startswith("going_to_"):
                 state_identifier = re.sub(r"going_to_", "", transition_tag)
                 transition_dict["transition_end_state"] = state_identifier
-                hits = main_window.canvas.find_withtag(state_identifier + "_name")
+                hits = project_manager.canvas.find_withtag(state_identifier + "_name")
                 if hits:
-                    transition_dict["transition_end_state_name"] = main_window.canvas.itemcget(hits[0], "text")
+                    transition_dict["transition_end_state_name"] = project_manager.canvas.itemcget(hits[0], "text")
                 else:
                     transition_dict["transition_end_state_name"] = ""
             elif transition_tag.startswith("ca_connection"):
@@ -563,7 +565,7 @@ class TagPlausibility:
         connector_dict = {}
         connector_outgoing_tranistions_list = []
         connector_incoming_transitions_list = []
-        connector_tags = main_window.canvas.gettags(canvas_item)
+        connector_tags = project_manager.canvas.gettags(canvas_item)
         for connector_tag in connector_tags:
             if connector_tag == "current":
                 pass
@@ -611,7 +613,7 @@ class TagPlausibility:
         #                   "ca_connection_identifier"      : "ca_connection"<integer>,
         #                   "connected_to_reset_transition" : ""} <-- This entry is optional.
         ca_window_dict = {}
-        window_tags = main_window.canvas.gettags(canvas_item)
+        window_tags = project_manager.canvas.gettags(canvas_item)
         for window_tag in window_tags:
             if window_tag == "current":
                 pass
@@ -675,7 +677,7 @@ class TagPlausibility:
 
     def __create_ca_anchor_line_dict(self, canvas_item) -> dict:
         ca_anchor_line_dict = {}
-        line_tags = main_window.canvas.gettags(canvas_item)
+        line_tags = project_manager.canvas.gettags(canvas_item)
         for ca_connection_tag in line_tags:
             if ca_connection_tag == "current":
                 pass
@@ -708,13 +710,13 @@ class TagPlausibility:
                 )
 
     def __create_entry_in_shown_state_name_dict(self, canvas_item, shown_state_name_dict) -> None:
-        text_tags = main_window.canvas.gettags(canvas_item)  # The canvas_item identifies a text box.
+        text_tags = project_manager.canvas.gettags(canvas_item)  # The canvas_item identifies a text box.
         for text_tag in text_tags:
             if text_tag == "current":
                 pass
             elif text_tag.startswith("state"):  # The complete text_tag is "state8_name" for example.
                 state_identifier = re.sub("_name", "", text_tag)
-                shown_state_name = main_window.canvas.itemcget(text_tag, "text")  # i.e. "idle".
+                shown_state_name = project_manager.canvas.itemcget(text_tag, "text")  # i.e. "idle".
                 shown_state_name_dict[state_identifier] = shown_state_name
             else:
                 print(
@@ -725,13 +727,13 @@ class TagPlausibility:
                 )
 
     def __create_entry_in_transition_priority_dict(self, canvas_item, transition_priority_dict) -> None:
-        text_tags = main_window.canvas.gettags(canvas_item)
+        text_tags = project_manager.canvas.gettags(canvas_item)
         for text_tag in text_tags:
             if text_tag == "current":
                 pass
             elif text_tag.startswith("transition"):
                 transition_name = re.sub("priority", "", text_tag)
-                transition_priority = main_window.canvas.itemcget(text_tag, "text")
+                transition_priority = project_manager.canvas.itemcget(text_tag, "text")
                 transition_priority_dict[transition_name] = transition_priority
             else:
                 print(
@@ -934,7 +936,7 @@ class TagPlausibility:
                         found_transition = True
                 if not found_transition:
                     self.tag_status_is_okay = False
-                    main_window.canvas.dtag(connector_dict["connector_identifier"], outgoing_transition + "_start")
+                    project_manager.canvas.dtag(connector_dict["connector_identifier"], outgoing_transition + "_start")
                     print(
                         "Fatal in TagPlausibility-Checks: The connector "
                         + connector_dict["connector_identifier"]
@@ -1006,7 +1008,7 @@ class TagPlausibility:
                 # connected transition with a condition-action-window was also removed.
                 # But the anchor-line of the condition-action-window stayed in the database.
                 # Such "lost" lines are removed here without any message:
-                main_window.canvas.delete(ca_connection_identifier)
+                project_manager.canvas.delete(ca_connection_identifier)
             else:
                 if number_of_connected_condition_action_windows == 0:
                     self.tag_status_is_okay = False

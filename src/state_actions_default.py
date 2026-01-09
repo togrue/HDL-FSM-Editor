@@ -9,9 +9,9 @@ import canvas_delete
 import canvas_editing
 import canvas_modify_bindings
 import custom_text
-import main_window
 import move_handling_canvas_window
 import undo_handling
+from project_manager import project_manager
 
 
 class StateActionsDefault:
@@ -24,7 +24,7 @@ class StateActionsDefault:
     def __init__(self, menu_x, menu_y, height, width, padding) -> None:
         self.text_content = None
         self.frame_id = ttk.Frame(
-            main_window.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="StateActionsWindow.TFrame"
+            project_manager.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="StateActionsWindow.TFrame"
         )  # , borderwidth=10)
         self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
         self.frame_id.bind("<Leave>", lambda event: self.deactivate_frame())
@@ -52,11 +52,11 @@ class StateActionsDefault:
         self.text_id.bind("<Control-s>", lambda event: self.update_text())
         self.text_id.bind("<Control-g>", lambda event: self.update_text())
         self.text_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-        self.text_id.bind("<FocusIn>", lambda event: main_window.canvas.unbind_all("<Delete>"))
+        self.text_id.bind("<FocusIn>", lambda event: project_manager.canvas.unbind_all("<Delete>"))
         self.text_id.bind(
             "<FocusOut>",
-            lambda event: main_window.canvas.bind_all(
-                "<Delete>", lambda event: canvas_delete.CanvasDelete(main_window.canvas)
+            lambda event: project_manager.canvas.bind_all(
+                "<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas)
             ),
         )
 
@@ -68,7 +68,7 @@ class StateActionsDefault:
         self.move_rectangle = None
 
         # Create canvas window for frame and text:
-        self.window_id = main_window.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
+        self.window_id = project_manager.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
 
         self.frame_id.bind(
             "<Button-1>",
@@ -82,7 +82,7 @@ class StateActionsDefault:
         canvas_modify_bindings.switch_to_move_mode()
 
     def tag(self) -> None:
-        main_window.canvas.itemconfigure(self.window_id, tag="state_actions_default")
+        project_manager.canvas.itemconfigure(self.window_id, tag="state_actions_default")
 
     def _edit_in_external_editor(self):
         self.text_id.edit_in_external_editor()
@@ -115,8 +115,8 @@ class StateActionsDefault:
     def move_to(self, event_x, event_y, first) -> None:
         if first:
             # Calculate the difference between the "anchor" point and the event:
-            coords = main_window.canvas.coords(self.window_id)
+            coords = project_manager.canvas.coords(self.window_id)
             self.difference_x, self.difference_y = -event_x + coords[0], -event_y + coords[1]
         # Keep the distance between event and anchor point constant:
         event_x, event_y = event_x + self.difference_x, event_y + self.difference_y
-        main_window.canvas.coords(self.window_id, event_x, event_y)
+        project_manager.canvas.coords(self.window_id, event_x, event_y)

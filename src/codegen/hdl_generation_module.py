@@ -5,11 +5,12 @@ module for generating the logic inside a Verilog design.
 import math
 import re
 
-import codegen.hdl_generation_architecture_state_actions as hdl_generation_architecture_state_actions
-import codegen.hdl_generation_architecture_state_sequence as hdl_generation_architecture_state_sequence
-import codegen.hdl_generation_library as hdl_generation_library
-import main_window
-from link_dictionary import link_dict
+from codegen import (
+    hdl_generation_architecture_state_actions,
+    hdl_generation_architecture_state_sequence,
+    hdl_generation_library,
+)
+from project_manager import project_manager
 
 from .exceptions import GenerationError
 
@@ -20,15 +21,15 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted) -> N
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_signal_type_definition)
     file_line_number += state_signal_type_definition.count("\n")
 
-    signal_declarations = hdl_generation_library.get_text_from_text_widget(main_window.internals_architecture_text)
+    signal_declarations = hdl_generation_library.get_text_from_text_widget(project_manager.internals_architecture_text)
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, signal_declarations)
     number_of_new_lines = signal_declarations.count("\n")
-    link_dict().add(
+    project_manager.link_dict_ref.add(
         file_name,
         file_line_number,
         "custom_text_in_internals_tab",
         number_of_new_lines,
-        main_window.internals_architecture_text,
+        project_manager.internals_architecture_text,
     )
     file_line_number += number_of_new_lines
 
@@ -40,26 +41,28 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted) -> N
 
     architecture += (
         "    always @(posedge "
-        + main_window.clock_signal_name.get()
+        + project_manager.clock_signal_name.get()
         + " or "
         + _get_reset_edge(reset_condition)
         + " "
-        + main_window.reset_signal_name.get()
+        + project_manager.reset_signal_name.get()
         + ") begin: p_states\n"
     )
-    link_dict().add(file_name, file_line_number, "Control-Tab", 1, "reset_and_clock_signal_name")
+    project_manager.link_dict_ref.add(file_name, file_line_number, "Control-Tab", 1, "reset_and_clock_signal_name")
     file_line_number += 1
 
-    variable_declarations = hdl_generation_library.get_text_from_text_widget(main_window.internals_process_clocked_text)
+    variable_declarations = hdl_generation_library.get_text_from_text_widget(
+        project_manager.internals_process_clocked_text
+    )
     if variable_declarations != "":
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, variable_declarations)
         number_of_new_lines = variable_declarations.count("\n")
-        link_dict().add(
+        project_manager.link_dict_ref.add(
             file_name,
             file_line_number,
             "custom_text_in_internals_tab",
             number_of_new_lines,
-            main_window.internals_process_clocked_text,
+            project_manager.internals_process_clocked_text,
         )
         file_line_number += number_of_new_lines
 
@@ -74,7 +77,7 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted) -> N
                 architecture += "            " + line + "\n"
         architecture += "        ) begin\n"
     number_of_new_lines = reset_condition.count("\n") + 1  # No return after the last line of the condition
-    link_dict().add(
+    project_manager.link_dict_ref.add(
         file_name,
         file_line_number,
         "custom_text_in_diagram_tab",
@@ -86,7 +89,7 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted) -> N
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, reset_action)
     file_line_number += 1  # There is always a "state <=  ..." assignment which must be skipped
     number_of_new_lines = reset_action.count("\n") - 1
-    link_dict().add(
+    project_manager.link_dict_ref.add(
         file_name,
         file_line_number,
         "custom_text_in_diagram_tab",
@@ -105,7 +108,7 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted) -> N
         file_line_number += 1
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, global_actions_before)
         number_of_new_lines = global_actions_before.count("\n") - 1
-        link_dict().add(
+        project_manager.link_dict_ref.add(
             file_name,
             file_line_number,
             "custom_text_in_diagram_tab",
@@ -136,7 +139,7 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted) -> N
         file_line_number += 1
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, global_actions_after)
         number_of_new_lines = global_actions_after.count("\n") - 1
-        link_dict().add(
+        project_manager.link_dict_ref.add(
             file_name,
             file_line_number,
             "custom_text_in_diagram_tab",
@@ -160,7 +163,7 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted) -> N
         file_line_number += 1
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, concurrent_actions)
         number_of_new_lines = concurrent_actions.count("\n") - 1
-        link_dict().add(
+        project_manager.link_dict_ref.add(
             file_name,
             file_line_number,
             "custom_text_in_diagram_tab",
@@ -175,10 +178,10 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted) -> N
 
 def _create_signal_declaration_for_the_state_variable(state_tag_list_sorted) -> str:
     list_of_all_state_names = [
-        main_window.canvas.itemcget(state_tag + "_name", "text") for state_tag in state_tag_list_sorted
+        project_manager.canvas.itemcget(state_tag + "_name", "text") for state_tag in state_tag_list_sorted
     ]
     number_of_states = len(list_of_all_state_names)
-    if main_window.language.get() == "Verilog":
+    if project_manager.language.get() == "Verilog":
         bit_width_number_of_states = math.ceil(math.log(number_of_states, 2))
         high_index = bit_width_number_of_states - 1
         signal_declaration = "reg [" + str(high_index) + ":0] state;\n"

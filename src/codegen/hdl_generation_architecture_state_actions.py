@@ -5,11 +5,10 @@ All methods needed for the state action process in VHDL or Verilog
 import re
 import tkinter as tk
 
-import codegen.hdl_generation_library as hdl_generation_library
-import main_window
 import state_action_handling
 import state_actions_default
-from link_dictionary import link_dict
+from codegen import hdl_generation_library
+from project_manager import project_manager
 
 from .exceptions import GenerationError
 
@@ -25,9 +24,9 @@ def create_state_action_process(file_name, file_line_number, state_tag_list_sort
         _create_a_list_with_all_possible_sensitivity_entries()
     )  # from Interface/Ports and from Internals/Architecture Declarations
     variable_declarations = hdl_generation_library.get_text_from_text_widget(
-        main_window.internals_process_combinatorial_text
+        project_manager.internals_process_combinatorial_text
     )
-    if main_window.language.get() == "VHDL":
+    if project_manager.language.get() == "VHDL":
         state_action_process, file_line_number = _create_state_action_process_for_vhdl(
             file_name,
             file_line_number,
@@ -69,12 +68,12 @@ def _create_state_action_process_for_vhdl(
     state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, variable_declarations)
     number_of_lines = variable_declarations.count("\n")
     if number_of_lines != 0:
-        link_dict().add(
+        project_manager.link_dict_ref.add(
             file_name,
             file_line_number,
             "custom_text_in_internals_tab",
             number_of_lines,
-            main_window.internals_process_combinatorial_text,
+            project_manager.internals_process_combinatorial_text,
         )
         file_line_number += number_of_lines
     state_action_process += "begin\n"
@@ -83,12 +82,12 @@ def _create_state_action_process_for_vhdl(
     state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, default_state_actions)
     number_of_lines = default_state_actions.count("\n")
     if number_of_lines != 0:
-        item_ids = main_window.canvas.find_withtag("state_actions_default")
+        item_ids = project_manager.canvas.find_withtag("state_actions_default")
         reference_to_default_state_actions_custom_text = state_actions_default.StateActionsDefault.dictionary[
             item_ids[0]
         ]
         file_line_number += 1  # default_state_actions starts always with "-- Default State Actions:"
-        link_dict().add(
+        project_manager.link_dict_ref.add(
             file_name,
             file_line_number,
             "custom_text_in_diagram_tab",
@@ -106,7 +105,9 @@ def _create_state_action_process_for_vhdl(
         state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, when_entry)
         file_line_number += 1  # A when_entry starts always with "when ..."
         number_of_lines = when_entry.count("\n")
-        link_dict().add(file_name, file_line_number, "custom_text_in_diagram_tab", number_of_lines - 1, state_action[2])
+        project_manager.link_dict_ref.add(
+            file_name, file_line_number, "custom_text_in_diagram_tab", number_of_lines - 1, state_action[2]
+        )
         file_line_number += number_of_lines - 1
 
     state_action_process += "    end case;\n"
@@ -133,24 +134,24 @@ def _create_state_action_process_for_verilog(
     if variable_declarations != "":
         state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, variable_declarations)
         number_of_new_lines = variable_declarations.count("\n")
-        link_dict().add(
+        project_manager.link_dict_ref.add(
             file_name,
             file_line_number,
             "custom_text_in_internals_tab",
             number_of_new_lines,
-            main_window.internals_process_combinatorial_text,
+            project_manager.internals_process_combinatorial_text,
         )
         file_line_number += number_of_new_lines
 
     state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, default_state_actions)
     number_of_lines = default_state_actions.count("\n")
     if number_of_lines != 0:
-        item_ids = main_window.canvas.find_withtag("state_actions_default")
+        item_ids = project_manager.canvas.find_withtag("state_actions_default")
         reference_to_default_state_actions_custom_text = state_actions_default.StateActionsDefault.dictionary[
             item_ids[0]
         ]
         file_line_number += 1  # default_state_actions starts always with "-- Default State Actions:"
-        link_dict().add(
+        project_manager.link_dict_ref.add(
             file_name,
             file_line_number,
             "custom_text_in_diagram_tab",
@@ -171,7 +172,7 @@ def _create_state_action_process_for_verilog(
             file_line_number += 2
         else:
             file_line_number += 1  # A when_entry starts always with "<State-Name: ..."
-            link_dict().add(
+            project_manager.link_dict_ref.add(
                 file_name,
                 file_line_number,
                 "custom_text_in_diagram_tab",
@@ -189,9 +190,9 @@ def _create_state_action_process_for_verilog(
 
 
 def _create_a_list_with_all_possible_sensitivity_entries() -> list:
-    all_port_declarations = main_window.interface_ports_text.get("1.0", tk.END).lower()
+    all_port_declarations = project_manager.interface_ports_text.get("1.0", tk.END).lower()
     readable_ports_list = get_all_readable_ports(all_port_declarations, check=True)
-    all_signal_declarations = main_window.internals_architecture_text.get("1.0", tk.END).lower()
+    all_signal_declarations = project_manager.internals_architecture_text.get("1.0", tk.END).lower()
     signals_list = _get_all_signals(all_signal_declarations)
     signals_list.extend(readable_ports_list)
     return signals_list
@@ -202,18 +203,18 @@ def _create_state_action_list(state_tag_list_sorted):
     for state_tag in state_tag_list_sorted:
         state_action = "null;\n"
         state_action_reference = None
-        for tag_of_state in main_window.canvas.gettags(state_tag):
+        for tag_of_state in project_manager.canvas.gettags(state_tag):
             if tag_of_state.startswith("connection") and tag_of_state.endswith(
                 "_end"
             ):  # This is a tag which exists only at states.
                 connection_name = tag_of_state[:-4]
-                state_action_id = main_window.canvas.find_withtag(connection_name + "_start")
+                state_action_id = project_manager.canvas.find_withtag(connection_name + "_start")
                 if state_action_id != ():
                     ref = state_action_handling.MyText.mytext_dict[state_action_id[0]]
                     state_action = ref.text_id.get("1.0", tk.END)
                     state_action_reference = ref.text_id
                     break
-        state_name = main_window.canvas.itemcget(state_tag + "_name", "text")
+        state_name = project_manager.canvas.itemcget(state_tag + "_name", "text")
         state_action_list.append([state_name, state_action, state_action_reference])
     return state_action_list
 
@@ -249,17 +250,17 @@ def _remove_left_hand_sides(state_action):
 
 
 def _get_default_state_actions() -> str:
-    item_ids = main_window.canvas.find_withtag("state_actions_default")
+    item_ids = project_manager.canvas.find_withtag("state_actions_default")
     if item_ids == ():
         return ""
     else:
         ref = state_actions_default.StateActionsDefault.dictionary[item_ids[0]]
-        comment = "--" if main_window.language.get() == "VHDL" else "//"
+        comment = "--" if project_manager.language.get() == "VHDL" else "//"
         return comment + " Default State Actions:\n" + ref.text_id.get("1.0", tk.END)
 
 
 def _create_when_entry(state_action):
-    if main_window.language.get() == "VHDL":
+    if project_manager.language.get() == "VHDL":
         when_entry = "when " + state_action[0] + "=>\n"
         when_entry += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_action[1])
     else:
@@ -302,7 +303,7 @@ def _create_list_of_declarations(all_declarations):
     all_declarations_separated = hdl_generation_library.surround_character_by_blanks(
         ":", all_declarations_without_comments
     )  # only needed for VHDL
-    split_char = ";" if main_window.language.get() == "VHDL" else ","
+    split_char = ";" if project_manager.language.get() == "VHDL" else ","
     return all_declarations_separated.split(split_char)
 
 
@@ -329,7 +330,7 @@ def get_all_generic_names(all_generic_declarations) -> list:
     generic_name_list = []
     for declaration in generic_declaration_list:
         if declaration != "" and not declaration.isspace():
-            if main_window.language.get() == "VHDL":
+            if project_manager.language.get() == "VHDL":
                 generic_name = re.sub(" : .*", "", declaration, flags=re.I | re.DOTALL)
                 generic_name = re.sub(r"(^|\s+)constant ", "", generic_name, flags=re.I | re.DOTALL)
                 generic_name = re.sub("\\s", "", generic_name)
@@ -342,7 +343,7 @@ def get_all_generic_names(all_generic_declarations) -> list:
 
 def _get_all_readable_port_names(declaration, check) -> str:
     port_names = ""
-    if " in " in declaration and main_window.language.get() == "VHDL":
+    if " in " in declaration and project_manager.language.get() == "VHDL":
         if ":" not in declaration:
             if check is True:
                 raise GenerationError(
@@ -354,7 +355,7 @@ def _get_all_readable_port_names(declaration, check) -> str:
                 )
         else:
             port_names = re.sub(":.*", "", declaration)
-    elif " input " in declaration and main_window.language.get() != "VHDL":
+    elif " input " in declaration and project_manager.language.get() != "VHDL":
         declaration = re.sub(" input ", " ", declaration, flags=re.I)
         declaration = re.sub(" reg ", " ", declaration, flags=re.I)
         declaration = re.sub(" logic ", " ", declaration, flags=re.I)
@@ -367,10 +368,10 @@ def _get_all_readable_port_names(declaration, check) -> str:
 
 def _get_all_writable_port_names(declaration) -> str:
     port_names = ""
-    if " out " in declaration and main_window.language.get() == "VHDL":
+    if " out " in declaration and project_manager.language.get() == "VHDL":
         if ":" in declaration:
             port_names = re.sub(":.*", "", declaration)
-    elif " output " in declaration and main_window.language.get() != "VHDL":
+    elif " output " in declaration and project_manager.language.get() != "VHDL":
         declaration = re.sub(" output ", " ", declaration, flags=re.I)
         declaration = re.sub(" reg ", " ", declaration, flags=re.I)
         declaration = re.sub(" logic ", " ", declaration, flags=re.I)
@@ -401,7 +402,7 @@ def _get_all_signals(all_signal_declarations) -> list:
         signal_declaration_list
     )  # needed for search of " signal "
     signals_list = []
-    if main_window.language.get() == "VHDL":
+    if project_manager.language.get() == "VHDL":
         for declaration in signal_declaration_list_extended:
             if declaration != "" and not declaration.isspace():
                 if " signal " not in declaration and " constant " not in declaration:
