@@ -155,19 +155,19 @@ def _clear_design() -> bool:
     project_manager.global_action_combinatorial_button.config(state=tk.NORMAL)
     global_actions_combinatorial.GlobalActionsCombinatorial.dictionary = {}
     global_actions.GlobalActions.dictionary = {}
-    canvas_editing.state_radius = 20.0
-    canvas_editing.priority_distance = 14
-    canvas_editing.reset_entry_size = 40
+    project_manager.state_radius = 20.0
+    project_manager.priority_distance = 14
+    project_manager.reset_entry_size = 40
     canvas_editing.canvas_x_coordinate = 0
     canvas_editing.canvas_y_coordinate = 0
-    canvas_editing.fontsize = 10
-    canvas_editing.label_fontsize = 8
-    canvas_editing.state_name_font.configure(size=int(canvas_editing.fontsize))
+    project_manager.fontsize = 10
+    project_manager.label_fontsize = 8
+    project_manager.state_name_font.configure(size=int(project_manager.fontsize))
     project_manager.include_timestamp_in_output.set(True)
     project_manager.root.title("unnamed")
     project_manager.grid_drawer.draw_grid()
     if write_data_creator_ref is None:
-        write_data_creator_ref = write_data_creator.WriteDataCreator(canvas_editing.state_radius)
+        write_data_creator_ref = write_data_creator.WriteDataCreator(project_manager.state_radius)
     write_data_creator_ref.store_as_compare_object(None)
     return True
 
@@ -178,9 +178,9 @@ def _clear_design() -> bool:
 def save_in_file_new(save_filename) -> None:  # Called at saving and at every design change (writing to .tmp-file)
     global write_data_creator_ref
     if write_data_creator_ref is None:
-        write_data_creator_ref = write_data_creator.WriteDataCreator(canvas_editing.state_radius)
+        write_data_creator_ref = write_data_creator.WriteDataCreator(project_manager.state_radius)
     if not save_filename.endswith(".tmp"):
-        zoom_factor = write_data_creator_ref.zoom_graphic_to_standard_size(canvas_editing.state_radius)
+        zoom_factor = write_data_creator_ref.zoom_graphic_to_standard_size(project_manager.state_radius)
     design_dictionary = _save_design_to_dict()
     if not save_filename.endswith(".tmp"):
         write_data_creator_ref.zoom_graphic_back_to_actual_size(zoom_factor)
@@ -271,11 +271,11 @@ def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
     design_dictionary["global_actions_combinatorial_number"] = (
         global_actions_handling.global_actions_combinatorial_number
     )
-    design_dictionary["state_radius"] = canvas_editing.state_radius
-    design_dictionary["reset_entry_size"] = canvas_editing.reset_entry_size
-    design_dictionary["priority_distance"] = canvas_editing.priority_distance
-    design_dictionary["fontsize"] = canvas_editing.fontsize
-    design_dictionary["label_fontsize"] = canvas_editing.label_fontsize
+    design_dictionary["state_radius"] = project_manager.state_radius
+    design_dictionary["reset_entry_size"] = project_manager.reset_entry_size
+    design_dictionary["priority_distance"] = project_manager.priority_distance
+    design_dictionary["fontsize"] = project_manager.fontsize
+    design_dictionary["label_fontsize"] = project_manager.label_fontsize
     # design_dictionary["visible_center"] = canvas_editing.get_visible_center_as_string()
     # design_dictionary["sash_positions"] = main_window.sash_positions
     for element_name in allowed_element_names_in_design_dictionary:
@@ -380,7 +380,7 @@ def open_file_with_name_new(read_filename, is_script_mode) -> None:
         project_manager.current_file = read_filename
         design_dictionary = json.loads(data)
         if write_data_creator_ref is None:
-            write_data_creator_ref = write_data_creator.WriteDataCreator(canvas_editing.state_radius)
+            write_data_creator_ref = write_data_creator.WriteDataCreator(project_manager.state_radius)
         write_data_creator_ref.store_as_compare_object(design_dictionary)
         _load_design_from_dict(design_dictionary)
         if os.path.isfile(f"{read_filename}.tmp") and not is_script_mode:
@@ -560,12 +560,12 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
         project_manager.global_action_combinatorial_button.config(state=tk.DISABLED)
 
     # Load canvas visual parameters
-    canvas_editing.state_radius = design_dictionary["state_radius"]
-    canvas_editing.reset_entry_size = int(design_dictionary["reset_entry_size"])  # stored as float in dictionary
-    canvas_editing.priority_distance = int(design_dictionary["priority_distance"])  # stored as float in dictionary
-    canvas_editing.fontsize = design_dictionary["fontsize"]
-    canvas_editing.state_name_font.configure(size=int(canvas_editing.fontsize))
-    canvas_editing.label_fontsize = design_dictionary["label_fontsize"]
+    project_manager.state_radius = design_dictionary["state_radius"]
+    project_manager.reset_entry_size = int(design_dictionary["reset_entry_size"])  # stored as float in dictionary
+    project_manager.priority_distance = int(design_dictionary["priority_distance"])  # stored as float in dictionary
+    project_manager.fontsize = design_dictionary["fontsize"]
+    project_manager.state_name_font.configure(size=int(project_manager.fontsize))
+    project_manager.label_fontsize = design_dictionary["label_fontsize"]
     # canvas_editing.shift_visible_center_to_window_center(design_dictionary["visible_center"])
     canvas_editing.shift_visible_center_to_window_center(canvas_editing.get_visible_center_as_string())
 

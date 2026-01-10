@@ -49,8 +49,8 @@ def move_to(event_x, event_y, transition_id, point, first, move_list, last) -> N
     # Keep the distance between event and anchor point constant:
     event_x, event_y = event_x + _difference_x, event_y + _difference_y
     if last is True:
-        event_x = canvas_editing.state_radius * round(event_x / canvas_editing.state_radius)
-        event_y = canvas_editing.state_radius * round(event_y / canvas_editing.state_radius)
+        event_x = project_manager.state_radius * round(event_x / project_manager.state_radius)
+        event_y = project_manager.state_radius * round(event_y / project_manager.state_radius)
     all_transition_tags = project_manager.canvas.gettags(transition_id)
     for single_transition_tag in all_transition_tags:
         if (
@@ -94,7 +94,7 @@ def move_to(event_x, event_y, transition_id, point, first, move_list, last) -> N
             # Calculates the position of the priority rectangle by shortening the vector from the
             # event (= first point of transition) to the second point of the transition.
             [priority_middle_x, priority_middle_y, _, _] = vector_handling.shorten_vector(
-                start_state_radius + canvas_editing.priority_distance,
+                start_state_radius + project_manager.priority_distance,
                 event_x,
                 event_y,
                 0,
@@ -111,7 +111,7 @@ def move_to(event_x, event_y, transition_id, point, first, move_list, last) -> N
             # vector must be shortened additionally by the start state radius,
             # to keep the priority outside of the start-state.
             [priority_middle_x, priority_middle_y, _, _] = vector_handling.shorten_vector(
-                start_state_radius + canvas_editing.priority_distance,
+                start_state_radius + project_manager.priority_distance,
                 transition_coords[0],
                 transition_coords[1],
                 0,
@@ -211,10 +211,10 @@ def get_point_to_move(item_id, event_x, event_y) -> str:
             )
     if number_of_points == 4:
         return_value = ""
-        if distance_event_to_point[0] < 2 * canvas_editing.state_radius:
+        if distance_event_to_point[0] < 2 * project_manager.state_radius:
             return_value = "start"
         if (
-            distance_event_to_point[3] < 2 * canvas_editing.state_radius
+            distance_event_to_point[3] < 2 * project_manager.state_radius
             and distance_event_to_point[3] < distance_event_to_point[0]
         ):
             return_value = "end"
@@ -223,10 +223,10 @@ def get_point_to_move(item_id, event_x, event_y) -> str:
         return return_value
     if number_of_points == 3:
         return_value = ""
-        if distance_event_to_point[0] < 2 * canvas_editing.state_radius:
+        if distance_event_to_point[0] < 2 * project_manager.state_radius:
             return_value = "start"
         if (
-            distance_event_to_point[2] < 2 * canvas_editing.state_radius
+            distance_event_to_point[2] < 2 * project_manager.state_radius
             and distance_event_to_point[2] < distance_event_to_point[0]
         ):
             return_value = "end"
@@ -330,7 +330,7 @@ def shorten_to_state_border(transition_tag) -> None:
         # Move priority rectangle:
         start_state_radius = abs(start_state_coords[2] - start_state_coords[0]) / 2
         [priority_middle_x, priority_middle_y, _, _] = vector_handling.shorten_vector(
-            0 + canvas_editing.priority_distance,
+            0 + project_manager.priority_distance,
             transition_coords[0],
             transition_coords[1],
             0,
@@ -665,7 +665,7 @@ def draw_priority_number(coords, transition_priority, tag_of_priority_number, ta
         coords,
         text=transition_priority,
         tag=tag_of_priority_number,
-        font=canvas_editing.state_name_font,
+        font=project_manager.state_name_font,
     )
     project_manager.canvas.tag_bind(
         canvas_id_priority_text,
@@ -694,7 +694,7 @@ def _configure_visibility_of_priority_rectangles(priority_dict):
 def _determine_position_of_priority_rectangle(transition_coords):
     # Determine middle of the priority rectangle position by calculating a shortened transition:
     priority_middle_x, priority_middle_y, _, _ = vector_handling.shorten_vector(
-        canvas_editing.priority_distance,
+        project_manager.priority_distance,
         transition_coords[0],
         transition_coords[1],
         0,
@@ -850,7 +850,7 @@ def _evaluate_menu(event, window, listbox, menu_x, menu_y, transition_id) -> Non
         # Calculates the position of the priority rectangle by shortening the distance between the first point of
         # the transition and the second point of the transition.
         [priority_middle_x, priority_middle_y, _, _] = vector_handling.shorten_vector(
-            canvas_editing.priority_distance, new_coords[0], new_coords[1], 0, new_coords[2], new_coords[3], 1, 0
+            project_manager.priority_distance, new_coords[0], new_coords[1], 0, new_coords[2], new_coords[3], 1, 0
         )
         [rectangle_width_half, rectangle_height_half] = _get_rectangle_dimensions(transition_tag + "rectangle")
         project_manager.canvas.coords(

@@ -6,7 +6,6 @@ import tkinter as tk
 from tkinter import ttk
 
 import canvas_delete
-import canvas_editing
 import canvas_modify_bindings
 import custom_text
 import move_handling_canvas_window
@@ -36,7 +35,7 @@ class GlobalActions:
         self.label_before = ttk.Label(
             self.frame_id,
             text="Global actions clocked (executed before running the state machine):",
-            font=("Arial", int(canvas_editing.label_fontsize)),
+            font=("Arial", int(project_manager.label_fontsize)),
             style="GlobalActionsWindow.TLabel",
         )
         self.label_before.bind("<Enter>", lambda event: self.activate_window())
@@ -44,7 +43,7 @@ class GlobalActions:
         self.label_after = ttk.Label(
             self.frame_id,
             text="Global actions clocked (executed after running the state machine):",
-            font=("Arial", int(canvas_editing.label_fontsize)),
+            font=("Arial", int(project_manager.label_fontsize)),
             style="GlobalActionsWindow.TLabel",
         )
         self.label_after.bind("<Enter>", lambda event: self.activate_window())
@@ -56,7 +55,7 @@ class GlobalActions:
             width=width,
             undo=True,
             maxundo=-1,
-            font=("Courier", int(canvas_editing.fontsize)),
+            font=("Courier", int(project_manager.fontsize)),
         )
         self.text_after_id = custom_text.CustomText(
             self.frame_id,
@@ -65,7 +64,7 @@ class GlobalActions:
             width=width,
             undo=True,
             maxundo=-1,
-            font=("Courier", int(canvas_editing.fontsize)),
+            font=("Courier", int(project_manager.fontsize)),
         )
         self.text_before_id.bind("<Control-z>", lambda event: self.text_before_id.undo())
         self.text_before_id.bind("<Control-Z>", lambda event: self.text_before_id.redo())

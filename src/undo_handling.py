@@ -120,11 +120,11 @@ def _get_complete_design_as_text_object():
     design += (
         "global_actions_combinatorial_number|" + str(global_actions_handling.global_actions_combinatorial_number) + "\n"
     )
-    design += "reset_entry_size|" + str(canvas_editing.reset_entry_size) + "\n"
-    design += "state_radius|" + str(canvas_editing.state_radius) + "\n"
-    design += "priority_distance|" + str(canvas_editing.priority_distance) + "\n"
-    design += "fontsize|" + str(canvas_editing.fontsize) + "\n"
-    design += "label_fontsize|" + str(canvas_editing.label_fontsize) + "\n"
+    design += "reset_entry_size|" + str(project_manager.reset_entry_size) + "\n"
+    design += "state_radius|" + str(project_manager.state_radius) + "\n"
+    design += "priority_distance|" + str(project_manager.priority_distance) + "\n"
+    design += "fontsize|" + str(project_manager.fontsize) + "\n"
+    design += "label_fontsize|" + str(project_manager.label_fontsize) + "\n"
     design += "visible_center|" + canvas_editing.get_visible_center_as_string() + "\n"
     design += "include_timestamp_in_output|" + str(project_manager.include_timestamp_in_output.get()) + "\n"
     design += (
@@ -351,21 +351,21 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                 project_manager.global_action_combinatorial_button.config(state=tk.DISABLED)
         elif lines[_line_index].startswith("state_radius|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "state_radius|")
-            canvas_editing.state_radius = float(rest_of_line)
+            project_manager.state_radius = float(rest_of_line)
         elif lines[_line_index].startswith("reset_entry_size|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "reset_entry_size|")
-            canvas_editing.reset_entry_size = int(float(rest_of_line))
+            project_manager.reset_entry_size = int(float(rest_of_line))
         elif lines[_line_index].startswith("priority_distance|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "priority_distance|")
-            canvas_editing.priority_distance = int(float(rest_of_line))
+            project_manager.priority_distance = int(float(rest_of_line))
         elif lines[_line_index].startswith("fontsize|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "fontsize|")
             fontsize = float(rest_of_line)
-            canvas_editing.fontsize = fontsize
-            canvas_editing.state_name_font.configure(size=int(fontsize))
+            project_manager.fontsize = fontsize
+            project_manager.state_name_font.configure(size=int(fontsize))
         elif lines[_line_index].startswith("label_fontsize|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "label_fontsize|")
-            canvas_editing.label_fontsize = float(rest_of_line)
+            project_manager.label_fontsize = float(rest_of_line)
         elif lines[_line_index].startswith("visible_center|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "visible_center|")
             canvas_editing.shift_visible_center_to_window_center(rest_of_line)

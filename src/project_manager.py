@@ -7,7 +7,8 @@ import tkinter as tk
 from tkinter import ttk
 
 import custom_text
-import grid_drawing
+
+# import grid_drawing
 
 # import link_dictionary => Causes cyclic import!
 
@@ -58,7 +59,7 @@ class ProjectManager:
         self._global_action_clocked_button: ttk.Button = None
         self._global_action_combinatorial_button: ttk.Button = None
         self._reset_entry_button: ttk.Button = None
-        self._grid_drawer: grid_drawing.GridDraw = None
+        self._grid_drawer = None  # : grid_drawing.GridDraw
         self._undo_button: ttk.Button = None
         self._redo_button: ttk.Button = None
         self._regex_message_find_for_vhdl: str = "(.*?):([0-9]+):[0-9]+:.*"
@@ -79,6 +80,72 @@ class ProjectManager:
         self._tab_hdl_ref = None  #: tab_hdl.TabHDL
         self._tab_log_ref = None  #: tab_log.TabLog
         self._menu_bar_ref = None  #: menu_bar.MenuBar
+        self._state_radius = 20.0
+        self._priority_distance = 30
+        self._reset_entry_size = 40
+        self._fontsize = 10
+        self._label_fontsize = 8
+        self._state_name_font = None
+
+    @property
+    def state_radius(self) -> float:
+        """Get the state radius."""
+        return self._state_radius
+
+    @state_radius.setter
+    def state_radius(self, value: float) -> None:
+        """Set the state radius."""
+        self._state_radius = value
+
+    @property
+    def priority_distance(self) -> float:
+        """Get the priority distance."""
+        return self._priority_distance
+
+    @priority_distance.setter
+    def priority_distance(self, value: float) -> None:
+        """Set the priority distance."""
+        self._priority_distance = value
+
+    @property
+    def reset_entry_size(self) -> float:
+        """Get the reset entry size."""
+        return self._reset_entry_size
+
+    @reset_entry_size.setter
+    def reset_entry_size(self, value: float) -> None:
+        """Set the reset entry size."""
+        self._reset_entry_size = value
+
+    @property
+    def fontsize(self) -> int:
+        """Get the font size."""
+        return self._fontsize
+
+    @fontsize.setter
+    def fontsize(self, value: int) -> None:
+        """Set the font size."""
+        self._fontsize = value
+
+    @property
+    def state_name_font(self):
+        """Get the state name font."""
+        return self._state_name_font
+
+    @state_name_font.setter
+    def state_name_font(self, value) -> None:
+        """Set the state name font."""
+        self._state_name_font = value
+
+    @property
+    def label_fontsize(self) -> int:
+        """Get the label font size."""
+        return self._label_fontsize
+
+    @label_fontsize.setter
+    def label_fontsize(self, value: int) -> None:
+        """Set the label font size."""
+        self._label_fontsize = value
 
     @property
     def menu_bar_ref(self):  # -> menu_bar.MenuBar:
@@ -261,12 +328,12 @@ class ProjectManager:
         self._redo_button = value
 
     @property
-    def grid_drawer(self) -> grid_drawing.GridDraw:
+    def grid_drawer(self):  # -> grid_drawing.GridDraw:
         """Get the grid drawer."""
         return self._grid_drawer
 
     @grid_drawer.setter
-    def grid_drawer(self, value: grid_drawing.GridDraw) -> None:
+    def grid_drawer(self, value):  # -> None:
         """Set the grid drawer."""
         self._grid_drawer = value
 

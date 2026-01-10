@@ -6,7 +6,6 @@ import tkinter as tk
 from tkinter import ttk
 
 import canvas_delete
-import canvas_editing
 import custom_text
 import move_handling_canvas_window
 import undo_handling
@@ -38,7 +37,7 @@ class MyText:
         self.label_id = ttk.Label(
             self.frame_id,
             text="State actions (combinatorial): ",
-            font=("Arial", int(canvas_editing.label_fontsize)),
+            font=("Arial", int(project_manager.label_fontsize)),
             style="StateActionsWindow.TLabel",
         )
         self.label_id.bind("<Enter>", lambda event: self.activate_window())
@@ -51,7 +50,7 @@ class MyText:
             width=width,
             undo=True,
             maxundo=-1,
-            font=("Courier", int(canvas_editing.fontsize)),
+            font=("Courier", int(project_manager.fontsize)),
         )
         self.text_id.bind("<Control-z>", lambda event: self.text_id.undo())
         self.text_id.bind("<Control-Z>", lambda event: self.text_id.redo())

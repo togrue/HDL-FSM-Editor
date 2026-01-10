@@ -18,19 +18,19 @@ def insert_connector(event) -> None:
     # Translate the window coordinate into the canvas coordinate (the Canvas is bigger than the window):
     event_x, event_y = canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(event)
     overlapping_items = project_manager.canvas.find_overlapping(
-        event_x - canvas_editing.state_radius / 2,
-        event_y - canvas_editing.state_radius / 2,
-        event_x + canvas_editing.state_radius / 2,
-        event_y + canvas_editing.state_radius / 2,
+        event_x - project_manager.state_radius / 2,
+        event_y - project_manager.state_radius / 2,
+        event_x + project_manager.state_radius / 2,
+        event_y + project_manager.state_radius / 2,
     )
     for overlapping_item in overlapping_items:
         if "grid_line" not in project_manager.canvas.gettags(overlapping_item):
             return
     coords = (
-        event_x - canvas_editing.state_radius / 4,
-        event_y - canvas_editing.state_radius / 4,
-        event_x + canvas_editing.state_radius / 4,
-        event_y + canvas_editing.state_radius / 4,
+        event_x - project_manager.state_radius / 4,
+        event_y - project_manager.state_radius / 4,
+        event_x + project_manager.state_radius / 4,
+        event_y + project_manager.state_radius / 4,
     )
     tag = "connector" + str(connector_number)
     draw_connector(coords, tag)
@@ -58,8 +58,8 @@ def move_to(event_x, event_y, rectangle_id, first, last) -> None:
     # Keep the distance between event and anchor point constant:
     event_x, event_y = event_x + difference_x, event_y + difference_y
     if last is True:
-        event_x = canvas_editing.state_radius * round(event_x / canvas_editing.state_radius)
-        event_y = canvas_editing.state_radius * round(event_y / canvas_editing.state_radius)
+        event_x = project_manager.state_radius * round(event_x / project_manager.state_radius)
+        event_y = project_manager.state_radius * round(event_y / project_manager.state_radius)
     edge_length = _determine_edge_length_of_the_rectangle(rectangle_id)
     new_upper_left_corner = _calculate_new_upper_left_corner_of_the_rectangle(event_x, event_y, edge_length)
     new_lower_right_corner = _calculate_new_lower_right_corner_of_the_rectangle(event_x, event_y, edge_length)

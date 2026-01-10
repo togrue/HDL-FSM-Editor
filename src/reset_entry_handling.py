@@ -36,7 +36,7 @@ def _create_reset_entry(canvas_grid_coordinates_of_the_event) -> None:
     reset_entry_polygon = _move_reset_entry_polygon_to_event(canvas_grid_coordinates_of_the_event, reset_entry_polygon)
     draw_reset_entry(reset_entry_polygon, "reset_entry")
     draw_reset_entry_text(
-        canvas_grid_coordinates_of_the_event[0] - 4 * canvas_editing.reset_entry_size / 5,
+        canvas_grid_coordinates_of_the_event[0] - 4 * project_manager.reset_entry_size / 5,
         canvas_grid_coordinates_of_the_event[1],
         text="Reset",
         tag="reset_text",
@@ -59,7 +59,7 @@ def draw_reset_entry_text(coord_x, coord_y, text, tag):
         coord_y,
         text=text,
         tag=tag,
-        font=canvas_editing.state_name_font,
+        font=project_manager.state_name_font,
     )
 
 
@@ -69,7 +69,7 @@ def _create_polygon_shape_for_reset_entry() -> list[list]:
     # point_corner       = [+32, 0]   connect-point for transition
     # lower_right_corner = [+20,+12]
     # lower_left_corner  = [-20,+12]
-    size = canvas_editing.reset_entry_size
+    size = project_manager.reset_entry_size
     # Coordinates when the mouse-pointer is at point_corner of the polygon:
     upper_left_corner = [-size / 2 - 4 * size / 5, -3 * size / 10]
     upper_right_corner = [+size / 2 - 4 * size / 5, -3 * size / 10]
@@ -96,8 +96,8 @@ def move_to(event_x, event_y, polygon_id, first, last) -> None:
     # Keep the distance between event and anchor point constant:
     event_x, event_y = event_x + _difference_x, event_y + _difference_y
     if last is True:
-        event_x = canvas_editing.state_radius * round(event_x / canvas_editing.state_radius)
-        event_y = canvas_editing.state_radius * round(event_y / canvas_editing.state_radius)
+        event_x = project_manager.state_radius * round(event_x / project_manager.state_radius)
+        event_y = project_manager.state_radius * round(event_y / project_manager.state_radius)
     width = _determine_width_of_the_polygon(polygon_id)
     height = _determine_height_of_the_polygon(polygon_id)
     new_upper_left_corner = _calculate_new_upper_left_corner_of_the_polygon(event_x, event_y, width, height)

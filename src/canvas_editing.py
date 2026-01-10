@@ -20,23 +20,22 @@ from widgets.OptionMenu import OptionMenu
 # import inspect
 
 # Global variables:
-state_radius = 20.0
-priority_distance = 30
-reset_entry_size = 40
-fontsize = 10
-label_fontsize = 8
-state_name_font = None
+# state_radius = 20.0
+# priority_distance = 30
+# reset_entry_size = 40
+# fontsize = 10
+# label_fontsize = 8
+# state_name_font = None
 
 
 def create_font_for_state_names() -> None:  # Called once by create_diagram_notebook_tab().
-    global state_name_font
-    state_name_font = font.Font(font="TkDefaultFont")
-    state_name_font.configure(size=int(fontsize))
+    project_manager.state_name_font = font.Font(font="TkDefaultFont")
+    project_manager.state_name_font.configure(size=int(project_manager.fontsize))
 
 
 def translate_window_event_coordinates_in_rounded_canvas_coordinates(event) -> list:
-    canvas_grid_x_coordinate = project_manager.canvas.canvasx(event.x, gridspacing=state_radius)
-    canvas_grid_y_coordinate = project_manager.canvas.canvasy(event.y, gridspacing=state_radius)
+    canvas_grid_x_coordinate = project_manager.canvas.canvasx(event.x, gridspacing=project_manager.state_radius)
+    canvas_grid_y_coordinate = project_manager.canvas.canvasy(event.y, gridspacing=project_manager.state_radius)
     return [canvas_grid_x_coordinate, canvas_grid_y_coordinate]
 
 
@@ -177,12 +176,12 @@ def _decrement_font_size_if_window_is_too_wide() -> None:
             or complete_rectangle[2] > visible_rectangle[2]
             or complete_rectangle[3] > visible_rectangle[3]
         )
-        and fontsize != 1  # When fontsize==1 then zoom_factor calculates to 0, which makes no sense.
+        and project_manager.fontsize != 1  # When fontsize==1 then zoom_factor calculates to 0, which makes no sense.
     ):
         complete_center = _determine_center_of_rectangle(complete_rectangle)
         visible_center = _determine_center_of_rectangle(visible_rectangle)
         _move_canvas_point_from_to(complete_center, visible_center)
-        zoom_factor = (fontsize - 1) / fontsize
+        zoom_factor = (project_manager.fontsize - 1) / project_manager.fontsize
         canvas_zoom(complete_center, zoom_factor)
         project_manager.canvas.after_idle(_decrement_font_size_if_window_is_too_wide)
 
@@ -260,11 +259,11 @@ def zoom_minus() -> None:
 
 def canvas_zoom(zoom_center, zoom_factor) -> None:
     # Modify factor, so that fontsize is always an integer:
-    fontsize_rounded_down = int(fontsize * zoom_factor)
-    if zoom_factor > 1 and fontsize_rounded_down == fontsize:
+    fontsize_rounded_down = int(project_manager.fontsize * zoom_factor)
+    if zoom_factor > 1 and fontsize_rounded_down == project_manager.fontsize:
         fontsize_rounded_down += 1
     if fontsize_rounded_down != 0:
-        zoom_factor = fontsize_rounded_down / fontsize
+        zoom_factor = fontsize_rounded_down / project_manager.fontsize
         project_manager.canvas.scale(
             "all", 0, 0, zoom_factor, zoom_factor
         )  # Scaling must use xoffset=0 and yoffset=0 to preserve the gridspacing of state_radius.
@@ -288,12 +287,9 @@ def _adapt_scroll_bars(factor) -> None:
 
 
 def _adapt_global_size_variables(factor) -> None:
-    global state_radius
-    global priority_distance
-    global reset_entry_size
-    state_radius = factor * state_radius  # publish new state radius
-    priority_distance = factor * priority_distance
-    reset_entry_size = factor * reset_entry_size
+    project_manager.state_radius = factor * project_manager.state_radius  # publish new state radius
+    project_manager.priority_distance = factor * project_manager.priority_distance
+    project_manager.reset_entry_size = factor * project_manager.reset_entry_size
     _modify_font_sizes_of_all_canvas_items(factor)
 
 
@@ -323,31 +319,32 @@ def scroll_wheel(event) -> None:
 
 
 def _modify_font_sizes_of_all_canvas_items(factor) -> None:
-    global fontsize
-    global label_fontsize
-    global state_name_font
-    fontsize *= factor
-    label_fontsize *= factor
-    used_label_fontsize = max(label_fontsize, 1)
-    state_name_font.configure(size=int(fontsize))
+    project_manager.fontsize *= factor
+    project_manager.label_fontsize *= factor
+    used_label_fontsize = max(project_manager.label_fontsize, 1)
+    project_manager.state_name_font.configure(size=int(project_manager.fontsize))
     canvas_ids = project_manager.canvas.find_all()
     for i in canvas_ids:
         if project_manager.canvas.type(i) == "window":
             if i in state_action_handling.MyText.mytext_dict:
                 state_action_handling.MyText.mytext_dict[i].label_id.configure(font=("Arial", int(used_label_fontsize)))
-                state_action_handling.MyText.mytext_dict[i].text_id.configure(font=("Courier", int(fontsize)))
+                state_action_handling.MyText.mytext_dict[i].text_id.configure(
+                    font=("Courier", int(project_manager.fontsize))
+                )
                 for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
                     state_action_handling.MyText.mytext_dict[i].text_id.tag_configure(
                         highlight_tag_name,
-                        font=("Courier", int(fontsize), "normal"),
+                        font=("Courier", int(project_manager.fontsize), "normal"),
                     )
             elif i in state_comment.StateComment.dictionary:
                 state_comment.StateComment.dictionary[i].label_id.configure(font=("Arial", int(used_label_fontsize)))
-                state_comment.StateComment.dictionary[i].text_id.configure(font=("Courier", int(fontsize)))
+                state_comment.StateComment.dictionary[i].text_id.configure(
+                    font=("Courier", int(project_manager.fontsize))
+                )
                 for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
                     state_comment.StateComment.dictionary[i].text_id.tag_configure(
                         highlight_tag_name,
-                        font=("Courier", int(fontsize), "normal"),
+                        font=("Courier", int(project_manager.fontsize), "normal"),
                     )
             elif i in condition_action_handling.ConditionAction.dictionary:
                 condition_action_handling.ConditionAction.dictionary[i].condition_label.configure(
@@ -357,19 +354,19 @@ def _modify_font_sizes_of_all_canvas_items(factor) -> None:
                     font=("Arial", int(used_label_fontsize))
                 )
                 condition_action_handling.ConditionAction.dictionary[i].condition_id.configure(
-                    font=("Courier", int(fontsize))
+                    font=("Courier", int(project_manager.fontsize))
                 )
                 condition_action_handling.ConditionAction.dictionary[i].action_id.configure(
-                    font=("Courier", int(fontsize))
+                    font=("Courier", int(project_manager.fontsize))
                 )
                 for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
                     condition_action_handling.ConditionAction.dictionary[i].condition_id.tag_configure(
                         highlight_tag_name,
-                        font=("Courier", int(fontsize), "normal"),
+                        font=("Courier", int(project_manager.fontsize), "normal"),
                     )
                     condition_action_handling.ConditionAction.dictionary[i].action_id.tag_configure(
                         highlight_tag_name,
-                        font=("Courier", int(fontsize), "normal"),
+                        font=("Courier", int(project_manager.fontsize), "normal"),
                     )
             elif i in global_actions.GlobalActions.dictionary:
                 global_actions.GlobalActions.dictionary[i].label_before.configure(
@@ -378,40 +375,44 @@ def _modify_font_sizes_of_all_canvas_items(factor) -> None:
                 global_actions.GlobalActions.dictionary[i].label_after.configure(
                     font=("Arial", int(used_label_fontsize))
                 )
-                global_actions.GlobalActions.dictionary[i].text_before_id.configure(font=("Courier", int(fontsize)))
-                global_actions.GlobalActions.dictionary[i].text_after_id.configure(font=("Courier", int(fontsize)))
+                global_actions.GlobalActions.dictionary[i].text_before_id.configure(
+                    font=("Courier", int(project_manager.fontsize))
+                )
+                global_actions.GlobalActions.dictionary[i].text_after_id.configure(
+                    font=("Courier", int(project_manager.fontsize))
+                )
                 for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
                     global_actions.GlobalActions.dictionary[i].text_before_id.tag_configure(
                         highlight_tag_name,
-                        font=("Courier", int(fontsize), "normal"),
+                        font=("Courier", int(project_manager.fontsize), "normal"),
                     )
                     global_actions.GlobalActions.dictionary[i].text_after_id.tag_configure(
                         highlight_tag_name,
-                        font=("Courier", int(fontsize), "normal"),
+                        font=("Courier", int(project_manager.fontsize), "normal"),
                     )
             elif i in global_actions_combinatorial.GlobalActionsCombinatorial.dictionary:
                 global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[i].label.configure(
                     font=("Arial", int(used_label_fontsize))
                 )
                 global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[i].text_id.configure(
-                    font=("Courier", int(fontsize))
+                    font=("Courier", int(project_manager.fontsize))
                 )
                 for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
                     global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[i].text_id.tag_configure(
                         highlight_tag_name,
-                        font=("Courier", int(fontsize), "normal"),
+                        font=("Courier", int(project_manager.fontsize), "normal"),
                     )
             elif i in state_actions_default.StateActionsDefault.dictionary:
                 state_actions_default.StateActionsDefault.dictionary[i].label.configure(
                     font=("Arial", int(used_label_fontsize))
                 )
                 state_actions_default.StateActionsDefault.dictionary[i].text_id.configure(
-                    font=("Courier", int(fontsize))
+                    font=("Courier", int(project_manager.fontsize))
                 )
                 for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
                     state_actions_default.StateActionsDefault.dictionary[i].text_id.tag_configure(
                         highlight_tag_name,
-                        font=("Courier", int(fontsize), "normal"),
+                        font=("Courier", int(project_manager.fontsize), "normal"),
                     )
             else:
                 print("canvas_editing: Fatal, unknown dictionary key ", i)

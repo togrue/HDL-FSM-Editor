@@ -2,7 +2,6 @@
 Methods needed for highlighting signals, which are not read, not written, not defined
 """
 
-import canvas_editing
 import constants
 import custom_text
 import global_actions_combinatorial
@@ -143,7 +142,7 @@ def update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment() 
 def _update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment_after_idle() -> None:
     # Comment must be the last, because in the range of a comment all other tags are deleted:
     for text_ref in custom_text.CustomText.read_variables_of_all_windows:
-        text_ref.update_highlight_tags(canvas_editing.fontsize, ["not_read", "not_written", "comment"])
+        text_ref.update_highlight_tags(project_manager.fontsize, ["not_read", "not_written", "comment"])
     text_refs_fixed = [
         project_manager.interface_generics_text,
         project_manager.interface_package_text,

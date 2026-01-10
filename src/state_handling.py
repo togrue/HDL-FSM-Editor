@@ -55,8 +55,8 @@ def _calculate_center(coords) -> list:
 
 
 def _move_center_to_grid(new_center_x, new_center_y):
-    new_center_x = canvas_editing.state_radius * round(new_center_x / canvas_editing.state_radius)
-    new_center_y = canvas_editing.state_radius * round(new_center_y / canvas_editing.state_radius)
+    new_center_x = project_manager.state_radius * round(new_center_x / project_manager.state_radius)
+    new_center_y = project_manager.state_radius * round(new_center_y / project_manager.state_radius)
     return new_center_x, new_center_y
 
 
@@ -79,10 +79,10 @@ def get_canvas_id_of_state_name(state_id):
 
 def _state_overlaps(event_x, event_y) -> bool:
     overlapping_items = project_manager.canvas.find_overlapping(
-        event_x - canvas_editing.state_radius,
-        event_y - canvas_editing.state_radius,
-        event_x + canvas_editing.state_radius,
-        event_y + canvas_editing.state_radius,
+        event_x - project_manager.state_radius,
+        event_y - project_manager.state_radius,
+        event_x + project_manager.state_radius,
+        event_y + project_manager.state_radius,
     )
     for overlapping_item in overlapping_items:
         if "grid_line" not in project_manager.canvas.gettags(overlapping_item):
@@ -119,7 +119,7 @@ def draw_state_name(event_x, event_y, text, tags):
         event_y,
         text=text,
         tags=tags,
-        font=canvas_editing.state_name_font,
+        font=project_manager.state_name_font,
     )
     project_manager.canvas.tag_bind(
         text_id,
@@ -151,10 +151,10 @@ def insert_state(event) -> None:
         return
     draw_state_circle(
         [
-            event_x - canvas_editing.state_radius,
-            event_y - canvas_editing.state_radius,
-            event_x + canvas_editing.state_radius,
-            event_y + canvas_editing.state_radius,
+            event_x - project_manager.state_radius,
+            event_y - project_manager.state_radius,
+            event_x + project_manager.state_radius,
+            event_y + project_manager.state_radius,
         ],
         constants.STATE_COLOR,
         "state" + str(state_number),
@@ -307,8 +307,8 @@ def _resize_state(state_tag, text_id) -> None:
     text_width = (
         size[2] - size[0] + 15
     )  # Make the text a little bit bigger, so that it does not touch the state circle.
-    if text_width < 2 * canvas_editing.state_radius:
-        text_width = 2 * canvas_editing.state_radius
+    if text_width < 2 * project_manager.state_radius:
+        text_width = 2 * project_manager.state_radius
     difference = text_width - state_width
     state_coords[0] = state_coords[0] - difference // 2
     state_coords[1] = state_coords[1] - difference // 2

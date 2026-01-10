@@ -92,10 +92,10 @@ def _create_a_list_of_overlapping_items_near_the_mouse_click_location(event_x, e
             # The cursor is inside a state, in this case moving shall use MoveHandlingCanvasItem.
             return []
     overlapping_items = project_manager.canvas.find_overlapping(
-        event_x - canvas_editing.state_radius / 4,
-        event_y - canvas_editing.state_radius / 4,
-        event_x + canvas_editing.state_radius / 4,
-        event_y + canvas_editing.state_radius / 4,
+        event_x - project_manager.state_radius / 4,
+        event_y - project_manager.state_radius / 4,
+        event_x + project_manager.state_radius / 4,
+        event_y + project_manager.state_radius / 4,
     )
     for overlapping_item in overlapping_items:
         if "grid_line" not in project_manager.canvas.gettags(

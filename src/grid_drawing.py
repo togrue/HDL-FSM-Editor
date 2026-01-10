@@ -2,7 +2,7 @@
 This class draws a grid into the canvas.
 """
 
-import canvas_editing
+from project_manager import project_manager
 
 
 class GridDraw:
@@ -25,7 +25,7 @@ class GridDraw:
                 self.canvas.canvasx(self.canvas.winfo_width()),
                 self.canvas.canvasy(self.canvas.winfo_height()),
             ]
-            grid_size = canvas_editing.state_radius
+            grid_size = project_manager.state_radius
             if grid_size > 8:
                 self.__draw_horizontal_grid(grid_size, visible_window)
                 self.__draw_vertical_grid(grid_size, visible_window)

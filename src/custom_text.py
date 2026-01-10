@@ -8,7 +8,6 @@ import subprocess
 import tempfile
 import tkinter as tk
 
-import canvas_editing
 import config
 import constants
 import file_handling
@@ -188,7 +187,7 @@ class CustomText(tk.Text):
 
     def _update_highlighting_in_all_texts(self) -> None:
         # The tags "control", "datatype", "function" must only be updated in this CustomText object:
-        self.update_highlight_tags(canvas_editing.fontsize, ["control", "datatype", "function"])
+        self.update_highlight_tags(project_manager.fontsize, ["control", "datatype", "function"])
         linting.recreate_keyword_list_of_unused_signals()
         # The tags "not_read", "not_written", and "comment" must be updated in all CustomText objects:
         linting.update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment()

@@ -7,7 +7,6 @@ import tkinter as tk
 from tkinter import ttk
 
 import canvas_delete
-import canvas_editing
 import custom_text
 import move_handling_canvas_window
 import undo_handling
@@ -47,7 +46,7 @@ class ConditionAction:
         self.condition_label = ttk.Label(
             self.frame_id,
             text="Transition condition: ",
-            font=("Arial", int(canvas_editing.label_fontsize)),
+            font=("Arial", int(project_manager.label_fontsize)),
             style="Window.TLabel",
         )
         self.condition_label.bind("<Enter>", lambda event: self.select_window())
@@ -55,7 +54,7 @@ class ConditionAction:
         self.action_label = ttk.Label(
             self.frame_id,
             text=label_action_text,
-            font=("Arial", int(canvas_editing.label_fontsize)),
+            font=("Arial", int(project_manager.label_fontsize)),
             style="Window.TLabel",
         )
         self.action_label.bind("<Enter>", lambda event: self.select_window())
@@ -68,7 +67,7 @@ class ConditionAction:
             width=width,
             undo=True,
             maxundo=-1,
-            font=("Courier", int(canvas_editing.fontsize)),
+            font=("Courier", int(project_manager.fontsize)),
         )
         self.condition_id = custom_text.CustomText(
             self.frame_id,
@@ -78,7 +77,7 @@ class ConditionAction:
             width=width,
             undo=True,
             maxundo=-1,
-            font=("Courier", int(canvas_editing.fontsize)),
+            font=("Courier", int(project_manager.fontsize)),
         )
         # Create bindings for Undo/Redo:
         self.action_id.bind("<Control-z>", lambda event: self.action_id.undo())
