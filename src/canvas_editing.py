@@ -19,14 +19,6 @@ from widgets.OptionMenu import OptionMenu
 
 # import inspect
 
-# Global variables:
-# state_radius = 20.0
-# priority_distance = 30
-# reset_entry_size = 40
-# fontsize = 10
-# label_fontsize = 8
-# state_name_font = None
-
 
 def create_font_for_state_names() -> None:  # Called once by create_diagram_notebook_tab().
     project_manager.state_name_font = font.Font(font="TkDefaultFont")
