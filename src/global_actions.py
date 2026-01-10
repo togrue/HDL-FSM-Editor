@@ -129,14 +129,14 @@ class GlobalActions:
 
     def update_before(self):
         # Update self.text_before_content, so that the <Leave>-check in deactivate_frame() does not signal a design-
-        # change and that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
-        # To ensure this, save_in_file_new() waits for idle.
+        # change and that save_in_file() already reads the new text, entered into the textbox before Control-s/g.
+        # To ensure this, save_in_file() waits for idle.
         self.text_before_content = self.text_before_id.get("1.0", tk.END)
 
     def update_after(self):
         # Update self.text_after_content, so that the <Leave>-check in deactivate_frame() does not signal a design-
-        # change and that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
-        # To ensure this, save_in_file_new() waits for idle.
+        # change and that save_in_file() already reads the new text, entered into the textbox before Control-s/g.
+        # To ensure this, save_in_file() waits for idle.
         self.text_after_content = self.text_after_id.get("1.0", tk.END)
 
     def tag(self) -> None:

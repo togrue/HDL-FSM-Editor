@@ -142,14 +142,14 @@ class ConditionAction:
 
     def update_action(self):
         # Update self.action_text, so that the <Leave>-check in deactivate() does not signal a design-change and
-        # that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
-        # To ensure this, save_in_file_new() waits for idle.
+        # that save_in_file() already reads the new text, entered into the textbox before Control-s/g.
+        # To ensure this, save_in_file() waits for idle.
         self.action_text = self.action_id.get("1.0", tk.END)
 
     def update_condition(self):
         # Update self.condition_text, so that the <Leave>-check in deactivate() does not signal a design-change and
-        # that save_in_file_new() already reads the new text, entered into the textbox before Control-s/g.
-        # To ensure this, save_in_file_new() waits for idle.
+        # that save_in_file() already reads the new text, entered into the textbox before Control-s/g.
+        # To ensure this, save_in_file() waits for idle.
         self.condition_text = self.condition_id.get("1.0", tk.END)
 
     def show_complete_box(self) -> None:

@@ -30,22 +30,7 @@ import write_data_creator
 from constants import GuiTab
 from project_manager import project_manager
 
-allowed_element_names_in_design_dictionary = (
-    "state",
-    "text",
-    "line",
-    "polygon",
-    "rectangle",
-    "window_state_action_block",
-    "window_state_comment",
-    "window_condition_action_block",
-    "window_global_actions",
-    "window_global_actions_combinatorial",
-    "window_state_actions_default",
-)
-
-
-write_data_creator_ref = None
+_write_data_creator_ref = None  # Nur lokal verwendet, kann in Attrbute umgewandelt werden.
 
 
 def ask_save_unsaved_changes(title) -> str:
@@ -76,7 +61,7 @@ def save_as() -> None:
     if project_manager.current_file != () and project_manager.current_file != "":
         dir_name, file_name = os.path.split(project_manager.current_file)
         project_manager.root.title(f"{file_name} ({dir_name})")
-        save_in_file_new(project_manager.current_file)
+        save_in_file(project_manager.current_file)
 
 
 def save() -> None:
@@ -92,7 +77,7 @@ def save() -> None:
         dir_name, file_name = os.path.split(project_manager.current_file)
         project_manager.root.title(f"{file_name} ({dir_name})")
         project_manager.root.after_idle(
-            save_in_file_new, project_manager.current_file
+            save_in_file, project_manager.current_file
         )  # Wait for the handling of all possible events.
 
 
@@ -101,7 +86,7 @@ def open_file() -> None:
     if filename_new != "":
         success = new_design()
         if success:
-            open_file_with_name_new(filename_new, is_script_mode=False)
+            open_file_with_name(filename_new, is_script_mode=False)
 
 
 def new_design() -> bool:
@@ -121,7 +106,7 @@ def new_design() -> bool:
 
 
 def _clear_design() -> bool:
-    global write_data_creator_ref
+    global _write_data_creator_ref
     project_manager.current_file = ""
     project_manager.module_name.set("")
     project_manager.reset_signal_name.set("")
@@ -166,25 +151,38 @@ def _clear_design() -> bool:
     project_manager.include_timestamp_in_output.set(True)
     project_manager.root.title("unnamed")
     project_manager.grid_drawer.draw_grid()
-    if write_data_creator_ref is None:
-        write_data_creator_ref = write_data_creator.WriteDataCreator(project_manager.state_radius)
-    write_data_creator_ref.store_as_compare_object(None)
+    if _write_data_creator_ref is None:
+        _write_data_creator_ref = write_data_creator.WriteDataCreator(project_manager.state_radius)
+    _write_data_creator_ref.store_as_compare_object(None)
     return True
 
 
 ########################################################################################################################
 
 
-def save_in_file_new(save_filename) -> None:  # Called at saving and at every design change (writing to .tmp-file)
-    global write_data_creator_ref
-    if write_data_creator_ref is None:
-        write_data_creator_ref = write_data_creator.WriteDataCreator(project_manager.state_radius)
+def save_in_file(save_filename) -> None:  # Called at saving and at every design change (writing to .tmp-file)
+    global _write_data_creator_ref
+    allowed_element_names_in_design_dictionary = (
+        "state",
+        "text",
+        "line",
+        "polygon",
+        "rectangle",
+        "window_state_action_block",
+        "window_state_comment",
+        "window_condition_action_block",
+        "window_global_actions",
+        "window_global_actions_combinatorial",
+        "window_state_actions_default",
+    )
+    if _write_data_creator_ref is None:
+        _write_data_creator_ref = write_data_creator.WriteDataCreator(project_manager.state_radius)
     if not save_filename.endswith(".tmp"):
-        zoom_factor = write_data_creator_ref.zoom_graphic_to_standard_size(project_manager.state_radius)
-    design_dictionary = _save_design_to_dict()
+        zoom_factor = _write_data_creator_ref.zoom_graphic_to_standard_size(project_manager.state_radius)
+    design_dictionary = _save_design_to_dict(allowed_element_names_in_design_dictionary)
     if not save_filename.endswith(".tmp"):
-        write_data_creator_ref.zoom_graphic_back_to_actual_size(zoom_factor)
-        design_dictionary = write_data_creator_ref.round_and_sort_data(
+        _write_data_creator_ref.zoom_graphic_back_to_actual_size(zoom_factor)
+        design_dictionary = _write_data_creator_ref.round_and_sort_data(
             design_dictionary, allowed_element_names_in_design_dictionary
         )
     old_cursor = project_manager.root.cget(
@@ -205,13 +203,13 @@ def save_in_file_new(save_filename) -> None:  # Called at saving and at every de
         messagebox.showerror("Error", "The database is corrupt.\nDo not use the written file.\nSee details at STDOUT.")
 
 
-def _save_design_to_dict() -> dict[str, Any]:
+def _save_design_to_dict(allowed_element_names_in_design_dictionary) -> dict[str, Any]:
     design_dictionary = {}
     _save_control_data(design_dictionary)
     _save_interface_data(design_dictionary)
     _save_internals_data(design_dictionary)
     _save_log_config(design_dictionary)
-    _save_canvas_data(design_dictionary)
+    _save_canvas_data(design_dictionary, allowed_element_names_in_design_dictionary)
 
     return design_dictionary
 
@@ -258,7 +256,7 @@ def _save_log_config(design_dictionary: dict[str, Any]) -> None:
     design_dictionary["regex_file_line_number_quote"] = project_manager.regex_file_line_number_quote
 
 
-def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
+def _save_canvas_data(design_dictionary: dict[str, Any], allowed_element_names_in_design_dictionary) -> None:
     design_dictionary["diagram_background_color"] = project_manager.diagram_background_color.get()
     design_dictionary["state_number"] = state_handling.state_number
     design_dictionary["transition_number"] = transition_handling.transition_number
@@ -361,8 +359,8 @@ def _gettags(i):
     return [x for x in project_manager.canvas.gettags(i) if x != "current"]
 
 
-def open_file_with_name_new(read_filename, is_script_mode) -> None:
-    global write_data_creator_ref
+def open_file_with_name(read_filename, is_script_mode) -> None:
+    global _write_data_creator_ref
     replaced_read_filename = read_filename
     if os.path.isfile(f"{read_filename}.tmp") and not is_script_mode:
         answer = messagebox.askyesno(
@@ -379,9 +377,9 @@ def open_file_with_name_new(read_filename, is_script_mode) -> None:
             data = fileobject.read()
         project_manager.current_file = read_filename
         design_dictionary = json.loads(data)
-        if write_data_creator_ref is None:
-            write_data_creator_ref = write_data_creator.WriteDataCreator(project_manager.state_radius)
-        write_data_creator_ref.store_as_compare_object(design_dictionary)
+        if _write_data_creator_ref is None:
+            _write_data_creator_ref = write_data_creator.WriteDataCreator(project_manager.state_radius)
+        _write_data_creator_ref.store_as_compare_object(design_dictionary)
         _load_design_from_dict(design_dictionary)
         if os.path.isfile(f"{read_filename}.tmp") and not is_script_mode:
             os.remove(f"{read_filename}.tmp")

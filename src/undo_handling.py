@@ -40,7 +40,7 @@ def design_has_changed() -> None:
     update_window_title()
     if project_manager.current_file != "" and not project_manager.root.title().startswith("unnamed"):
         # print("design_has_changed: tmp is created by =", inspect.stack()[1][3])
-        file_handling.save_in_file_new(project_manager.current_file + ".tmp")
+        file_handling.save_in_file(project_manager.current_file + ".tmp")
 
 
 def undo() -> None:

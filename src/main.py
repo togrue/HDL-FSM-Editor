@@ -56,9 +56,9 @@ def _parse_and_process_arguments() -> None:
             project_manager.root.title("new")
             file_handling.new_design()
             if args.generate_hdl:
-                file_handling.open_file_with_name_new(args.filename, is_script_mode=True)
+                file_handling.open_file_with_name(args.filename, is_script_mode=True)
             else:
-                file_handling.open_file_with_name_new(args.filename, is_script_mode=False)
+                file_handling.open_file_with_name(args.filename, is_script_mode=False)
             project_manager.canvas.bind("<Visibility>", lambda _event: main_window.view_all_after_window_is_built())
 
     # Handle batch generation
