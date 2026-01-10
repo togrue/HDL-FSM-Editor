@@ -39,7 +39,7 @@ def move_to_coordinates(event_x, event_y, move_list, first, move_to_grid):
         elif item_type == "line":
             transition_handling.move_to(event_x, event_y, item_id, item_point_to_move, first, move_list, move_to_grid)
         elif item_type == "rectangle":
-            connector_handling.move_to(event_x, event_y, item_id, first, move_to_grid)
+            connector_handling.ConnectorInsertion.move_to(event_x, event_y, item_id, first, move_to_grid)
         elif item_type == "window":
             if item_id in state_action_handling.MyText.mytext_dict:
                 ref = state_action_handling.MyText.mytext_dict[item_id]
@@ -102,8 +102,8 @@ def _connector_moved_too_close_to_other_object(move_list, event_x, event_y) -> b
         ):
             # Keep the distance between event and anchor point constant:
             event_x_mod, event_y_mod = (
-                event_x + connector_handling.difference_x,
-                event_y + connector_handling.difference_y,
+                event_x + connector_handling.ConnectorInsertion.difference_x,
+                event_y + connector_handling.ConnectorInsertion.difference_y,
             )
             event_x_mod = project_manager.state_radius * round(
                 event_x_mod / project_manager.state_radius

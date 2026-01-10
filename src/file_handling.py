@@ -141,7 +141,7 @@ def _clear_design() -> bool:
     transition_handling.transition_number = 0
     reset_entry_handling.reset_entry_number = 0
     project_manager.reset_entry_button.config(state=tk.NORMAL)
-    connector_handling.connector_number = 0
+    connector_handling.ConnectorInsertion.connector_number = 0
     condition_action_handling.ConditionAction.conditionaction_id = 0
     condition_action_handling.ConditionAction.dictionary = {}
     state_action_handling.MyText.mytext_id = 0
@@ -263,7 +263,7 @@ def _save_canvas_data(design_dictionary: dict[str, Any]) -> None:
     design_dictionary["state_number"] = state_handling.state_number
     design_dictionary["transition_number"] = transition_handling.transition_number
     design_dictionary["reset_entry_number"] = reset_entry_handling.reset_entry_number
-    design_dictionary["connector_number"] = connector_handling.connector_number
+    design_dictionary["connector_number"] = connector_handling.ConnectorInsertion.connector_number
     design_dictionary["conditionaction_id"] = condition_action_handling.ConditionAction.conditionaction_id
     design_dictionary["mytext_id"] = state_action_handling.MyText.mytext_id
     design_dictionary["global_actions_number"] = global_actions_handling.global_actions_clocked_number
@@ -538,7 +538,7 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
         project_manager.reset_entry_button.config(state=tk.NORMAL)
     else:
         project_manager.reset_entry_button.config(state=tk.DISABLED)
-    connector_handling.connector_number = design_dictionary["connector_number"]
+    connector_handling.ConnectorInsertion.connector_number = design_dictionary["connector_number"]
     condition_action_handling.ConditionAction.conditionaction_id = design_dictionary["conditionaction_id"]
     state_action_handling.MyText.mytext_id = design_dictionary["mytext_id"]
     global_actions_handling.global_actions_clocked_number = design_dictionary["global_actions_number"]
@@ -660,7 +660,7 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
             rectangle_id = transition_handling.draw_priority_rectangle(coords, tags)
             ids_of_rectangles_to_raise.append(rectangle_id)
         else:
-            connector_handling.draw_connector(coords, tags)
+            connector_handling.ConnectorInsertion.draw_connector(coords, tags)
             number_of_outgoing_transitions = 0
             for tag in tags:
                 if tag.startswith("transition") and tag.endswith("_start"):
