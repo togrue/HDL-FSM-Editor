@@ -5,7 +5,7 @@ HDL-FSM-Editor: A tool for modeling FSMs
 import argparse
 import sys
 from os.path import exists
-from tkinter import messagebox, ttk
+from tkinter import messagebox
 
 import constants
 import file_handling
@@ -17,55 +17,8 @@ from project_manager import project_manager
 
 def _setup_application_ui() -> None:
     """Set up the main application UI components."""
-
-    main_window.create_root()
-
-    # Configure application styling
-    style = ttk.Style(project_manager.root)
-    style.theme_use("default")
-    # style.theme_use('clam')
-    # style.theme_use('winnative')
-    # style.theme_use('alt')
-    # style.theme_use('classic')
-    # style.theme_use('vista')
-    # style.theme_use('xpnative')
-    style.configure("Window.TFrame", background="PaleTurquoise2")
-    style.configure("Window.TLabel", background="PaleTurquoise2")
-    style.configure("WindowSelected.TFrame", background="PaleTurquoise3")
-    style.configure("WindowSelected.TLabel", background="PaleTurquoise3")
-    style.configure("Window.TMenubutton")
-    style.configure("StateActionsWindow.TFrame", background="cyan2")
-    style.configure("StateActionsWindow.TLabel", background="cyan2")
-    style.configure("StateActionsWindowSelected.TFrame", background="turquoise1")
-    style.configure("StateActionsWindowSelected.TLabel", background="turquoise1")
-    style.configure("GlobalActionsWindow.TFrame", background="PaleGreen2")
-    style.configure("GlobalActionsWindow.TLabel", background="PaleGreen2")
-    style.configure("GlobalActionsWindowSelected.TFrame", background="lawn green")
-    style.configure("GlobalActionsWindowSelected.TLabel", background="lawn green")
-    style.configure("DefaultStateActions.TButton", background="cyan2")
-    style.configure("GlobalActionsClocked.TButton", background="PaleGreen2")
-    style.configure("GlobalActionsCombinatorial.TButton", background="PaleGreen2")
-    style.configure("NewState.TButton", background="SkyBlue1")
-    style.configure("NewTransition.TButton", background="deep sky blue")
-    style.configure("NewConnector.TButton", background="orchid1")
-    style.configure("ResetEntry.TButton", background="IndianRed1")
-    style.configure("View.TButton", background="lemon chiffon")
-    style.configure("Undo.TButton")
-    style.configure("Redo.TButton")
-    style.configure("Find.TButton")
-    style.configure("Path.TButton")
-
-    # Create UI components
+    main_window.create_gui()
     main_window.set_word_boundaries()
-    main_window.create_notebook()
-    main_window.create_control_notebook_tab()
-    main_window.create_interface_notebook_tab()
-    main_window.create_internals_notebook_tab()
-    main_window.create_diagram_notebook_tab()
-    main_window.create_hdl_notebook_tab()
-    main_window.create_log_notebook_tab()
-    main_window.create_menu_bar()
-
     # Initialize undo/redo system
     undo_handling.design_has_changed()
 
@@ -77,7 +30,6 @@ def _parse_and_process_arguments() -> None:
     parser.add_argument("--no-version-check", action="store_true", help="Skip version check at startup")
     parser.add_argument("--no-message", action="store_true", help="Skip message check at startup")
     parser.add_argument("--generate-hdl", action="store_true", help="Generate HDL and exit")
-
     args = parser.parse_args()
 
     # Handle version and message checks
@@ -118,12 +70,9 @@ def _parse_and_process_arguments() -> None:
 def _main() -> None:
     """Main entry point for HDL-FSM-Editor."""
     print(constants.header_string)
-
     _setup_application_ui()
-
     _parse_and_process_arguments()
-
-    main_window.show_window()
+    project_manager.root.wm_deiconify()
     project_manager.root.mainloop()
 
 

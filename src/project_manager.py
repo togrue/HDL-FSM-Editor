@@ -22,45 +22,45 @@ class ProjectManager:
         # self._project = Project()
         self._root: tk.Tk = None
         self._current_file: str = ""
-        self._notebook: ttk.Notebook
-        self._canvas: tk.Canvas
-        self._previous_file: str
-        self._entry_widgets: list  # To store references to entry widgets
-        self._reset_signal_name: tk.StringVar
-        self._clock_signal_name: tk.StringVar
-        self._generate_path_value: tk.StringVar
-        self._working_directory_value: tk.StringVar
-        self._additional_sources_value: tk.StringVar
-        self._select_file_number_text: tk.IntVar
-        self._compile_cmd: tk.Entry
-        self._compile_cmd_docu: tk.Label
-        self._edit_cmd: tk.Entry
-        self._module_name: tk.Entry
-        self._language: tk.StringVar
-        self._interface_package_text: custom_text.CustomText
-        self._interface_generics_text: custom_text.CustomText
-        self._interface_ports_text: custom_text.CustomText
-        self._internals_package_text: custom_text.CustomText
-        self._internals_architecture_text: custom_text.CustomText
-        self._internals_process_clocked_text: custom_text.CustomText
-        self._internals_process_combinatorial_text: custom_text.CustomText
-        self._interface_generics_label: ttk.Label
-        self._interface_ports_label: ttk.Label
-        self._hdl_frame_text: custom_text.CustomText
-        self._log_frame_text: custom_text.CustomText
-        self._internals_architecture_label: ttk.Label
-        self._internals_process_clocked_label: ttk.Label
-        self._internals_process_combinatorial_label: ttk.Label
-        self._diagram_background_color: tk.StringVar
-        self._diagram_background_color_error: ttk.Label
-        self._include_timestamp_in_output: tk.BooleanVar
-        self._state_action_default_button: ttk.Button
-        self._global_action_clocked_button: ttk.Button
-        self._global_action_combinatorial_button: ttk.Button
-        self._reset_entry_button: ttk.Button
-        self._grid_drawer: grid_drawing.GridDraw
-        self._undo_button: ttk.Button
-        self._redo_button: ttk.Button
+        self._notebook: ttk.Notebook = None
+        self._canvas: tk.Canvas = None
+        self._previous_file: str = ""
+        self._entry_widgets: list = []  # To store references to entry widgets
+        self._reset_signal_name: tk.StringVar = None
+        self._clock_signal_name: tk.StringVar = None
+        self._generate_path_value: tk.StringVar = None
+        self._working_directory_value: tk.StringVar = None
+        self._additional_sources_value: tk.StringVar = None
+        self._select_file_number_text: tk.IntVar = None
+        self._compile_cmd: tk.Entry = None
+        self._compile_cmd_docu: tk.Label = None
+        self._edit_cmd: tk.Entry = None
+        self._module_name: tk.Entry = None
+        self._language: tk.StringVar = None
+        self._interface_package_text: custom_text.CustomText = None
+        self._interface_generics_text: custom_text.CustomText = None
+        self._interface_ports_text: custom_text.CustomText = None
+        self._internals_package_text: custom_text.CustomText = None
+        self._internals_architecture_text: custom_text.CustomText = None
+        self._internals_process_clocked_text: custom_text.CustomText = None
+        self._internals_process_combinatorial_text: custom_text.CustomText = None
+        self._interface_generics_label: ttk.Label = None
+        self._interface_ports_label: ttk.Label = None
+        self._hdl_frame_text: custom_text.CustomText = None
+        self._log_frame_text: custom_text.CustomText = None
+        self._internals_architecture_label: ttk.Label = None
+        self._internals_process_clocked_label: ttk.Label = None
+        self._internals_process_combinatorial_label: ttk.Label = None
+        self._diagram_background_color: tk.StringVar = None
+        self._diagram_background_color_error: ttk.Label = None
+        self._include_timestamp_in_output: tk.BooleanVar = None
+        self._state_action_default_button: ttk.Button = None
+        self._global_action_clocked_button: ttk.Button = None
+        self._global_action_combinatorial_button: ttk.Button = None
+        self._reset_entry_button: ttk.Button = None
+        self._grid_drawer: grid_drawing.GridDraw = None
+        self._undo_button: ttk.Button = None
+        self._redo_button: ttk.Button = None
         self._regex_message_find_for_vhdl: str = "(.*?):([0-9]+):[0-9]+:.*"
         self._regex_message_find_for_verilog: str = (
             "(.*?):([0-9]+): .*"  # Added ' ' after the second ':', to get no hit at time stamps (i.e. 16:58:36).
@@ -72,6 +72,83 @@ class ProjectManager:
         self._date_of_hdl_file_shown_in_hdl_tab: float = 0.0
         self._date_of_hdl_file2_shown_in_hdl_tab: float = 0.0
         self._link_dict_ref = None  #: link_dictionary.LinkDictionary
+        self._tab_control_ref = None  #: tab_control.TabControl
+        self._tab_interface_ref = None  #: tab_interface.TabInterface
+        self._tab_internals_ref = None  #: tab_internals.TabInternals
+        self._tab_diagram_ref = None  #: tab_diagram.TabDiagram
+        self._tab_hdl_ref = None  #: tab_hdl.TabHDL
+        self._tab_log_ref = None  #: tab_log.TabLog
+        self._menu_bar_ref = None  #: menu_bar.MenuBar
+
+    @property
+    def menu_bar_ref(self):  # -> menu_bar.MenuBar:
+        """Get the menu bar reference."""
+        return self._menu_bar_ref
+
+    @menu_bar_ref.setter
+    def menu_bar_ref(self, value):  # value : menu_bar.MenuBar) -> None:
+        """Set the menu bar reference."""
+        self._menu_bar_ref = value
+
+    @property
+    def tab_log_ref(self):  # -> tab_log.TabLog:
+        """Get the tab log reference."""
+        return self._tab_log_ref
+
+    @tab_log_ref.setter
+    def tab_log_ref(self, value):  # value : tab_log.TabLog) -> None:
+        """Set the tab log reference."""
+        self._tab_log_ref = value
+
+    @property
+    def tab_hdl_ref(self):  # -> tab_hdl.TabHDL:
+        """Get the tab HDL reference."""
+        return self._tab_hdl_ref
+
+    @tab_hdl_ref.setter
+    def tab_hdl_ref(self, value):  # value : tab_hdl.TabHDL) -> None:
+        """Set the tab HDL reference."""
+        self._tab_hdl_ref = value
+
+    @property
+    def tab_diagram_ref(self):  # -> tab_diagram.TabDiagram:
+        """Get the tab diagram reference."""
+        return self._tab_diagram_ref
+
+    @tab_diagram_ref.setter
+    def tab_diagram_ref(self, value):  # value : tab_diagram.TabDiagram) -> None:
+        """Set the tab diagram reference."""
+        self._tab_diagram_ref = value
+
+    @property
+    def tab_internals_ref(self):  # -> tab_internals.TabInternals:
+        """Get the tab internals reference."""
+        return self._tab_internals_ref
+
+    @tab_internals_ref.setter
+    def tab_internals_ref(self, value):  # value : tab_internals.TabInternals) -> None:
+        """Set the tab internals reference."""
+        self._tab_internals_ref = value
+
+    @property
+    def tab_interface_ref(self):  # -> tab_interface.TabInterface:
+        """Get the tab interface reference."""
+        return self._tab_interface_ref
+
+    @tab_interface_ref.setter
+    def tab_interface_ref(self, value):  # value : tab_interface.TabInterface) -> None:
+        """Set the tab interface reference."""
+        self._tab_interface_ref = value
+
+    @property
+    def tab_control_ref(self):  # -> tab_control.TabControl:
+        """Get the tab control reference."""
+        return self._tab_control_ref
+
+    @tab_control_ref.setter
+    def tab_control_ref(self, value):  # value : tab_control.TabControl) -> None:
+        """Set the tab control reference."""
+        self._tab_control_ref = value
 
     @property
     def link_dict_ref(self):  # -> link_dictionary.LinkDictionary:

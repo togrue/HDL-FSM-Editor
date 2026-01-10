@@ -29,8 +29,7 @@ class LinkDictionary:
      the generated HDL to the graphical source of the line.
     """
 
-    def __init__(self, root) -> None:
-        self.root = root
+    def __init__(self) -> None:
         self.link_dict = {}
 
     def add(
@@ -91,7 +90,7 @@ class LinkDictionary:
         hdl_item_type = self.link_dict[selected_file][file_line_number]["hdl_item_type"]
         object_identifier = self.link_dict[selected_file][file_line_number]["object_identifier"]
         number_of_line = self.link_dict[selected_file][file_line_number]["number_of_line"]
-        main_window.show_tab(tab_to_show)
+        project_manager.notebook.show_tab(tab_to_show)
         widget.highlight_item(hdl_item_type, object_identifier, number_of_line)
 
     def jump_to_hdl(self, selected_file, file_line_number) -> None:
@@ -100,7 +99,7 @@ class LinkDictionary:
             file_name_architecture = gen_config.get_architecture_file()
             if file_name_architecture and selected_file == file_name_architecture:
                 file_line_number += hdl_generation.last_line_number_of_file1
-        main_window.show_tab(GuiTab.GENERATED_HDL)
+        project_manager.notebook.show_tab(GuiTab.GENERATED_HDL)
         project_manager.hdl_frame_text.highlight_item("", "", file_line_number)
         project_manager.hdl_frame_text.config(state="normal")
         project_manager.hdl_frame_text.focus_set()

@@ -12,7 +12,6 @@ import codegen.hdl_generation_architecture as hdl_generation_architecture
 import codegen.hdl_generation_library as hdl_generation_library
 import codegen.hdl_generation_module as hdl_generation_module
 import file_handling
-import main_window
 import state_comment
 import tag_plausibility
 from codegen.hdl_generation_config import GenerationConfig
@@ -113,7 +112,7 @@ def _copy_hdl_into_generated_hdl_tab(hdl, file_name, file_name_architecture) -> 
         10, ["not_read", "not_written", "control", "datatype", "function", "comment"]
     )
     project_manager.hdl_frame_text.config(state=tk.DISABLED)
-    main_window.show_tab(GuiTab.GENERATED_HDL)
+    project_manager.notebook.show_tab(GuiTab.GENERATED_HDL)
 
 
 def _create_entity(config, file_name, file_line_number) -> tuple:

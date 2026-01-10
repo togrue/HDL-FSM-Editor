@@ -17,7 +17,6 @@ import custom_text
 import global_actions
 import global_actions_combinatorial
 import global_actions_handling
-import main_window
 import reset_entry_handling
 import state_action_handling
 import state_actions_default
@@ -408,7 +407,7 @@ def open_file_with_name_new(read_filename, is_script_mode) -> None:
             )
             project_manager.date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
             project_manager.date_of_hdl_file2_shown_in_hdl_tab = update_ref.get_date_of_hdl_file2()
-            main_window.show_tab(GuiTab.DIAGRAM)
+            project_manager.notebook.show_tab(GuiTab.DIAGRAM)
             project_manager.root.after_idle(canvas_editing.view_all)
         project_manager.root.config(cursor="arrow")
         if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
@@ -434,7 +433,7 @@ def _load_design_from_dict(design_dictionary: dict[str, Any]) -> None:
     custom_text.CustomText.read_variables_of_all_windows.clear()
     custom_text.CustomText.written_variables_of_all_windows.clear()
     # Bring the notebook tab with the diagram into the foreground
-    main_window.show_tab(GuiTab.DIAGRAM)
+    project_manager.notebook.show_tab(GuiTab.DIAGRAM)
 
     _load_control_data(design_dictionary)
     _load_interface_data(design_dictionary)
@@ -450,7 +449,7 @@ def _load_control_data(design_dictionary: dict[str, Any]) -> None:
     old_language = project_manager.language.get()
     project_manager.language.set(design_dictionary["language"])
     if design_dictionary["language"] != old_language:
-        main_window.switch_language_mode()
+        project_manager.tab_control_ref.switch_language_mode()
     project_manager.generate_path_value.set(design_dictionary["generate_path"])
     project_manager.additional_sources_value.set(design_dictionary.get("additional_sources", ""))
     project_manager.working_directory_value.set(design_dictionary.get("working_directory", ""))

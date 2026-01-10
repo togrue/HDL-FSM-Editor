@@ -11,13 +11,12 @@ from datetime import datetime
 from os.path import exists
 from tkinter import messagebox
 
-import main_window
 from constants import GuiTab
 from project_manager import project_manager
 
 
 def compile_hdl() -> None:
-    main_window.show_tab(GuiTab.COMPILE_MSG)
+    project_manager.notebook.show_tab(GuiTab.COMPILE_MSG)
     if (
         project_manager.working_directory_value.get() != ""
         and not project_manager.working_directory_value.get().isspace()

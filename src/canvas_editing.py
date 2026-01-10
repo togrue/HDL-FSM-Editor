@@ -10,7 +10,6 @@ import condition_action_handling
 import constants
 import global_actions
 import global_actions_combinatorial
-import main_window
 import move_handling_initialization
 import state_action_handling
 import state_actions_default
@@ -450,7 +449,7 @@ def shift_visible_center_to_window_center(new_visible_center_string) -> None:
 def _show_canvas_background_menu(zoom_coords) -> None:
     canvas_menue_entries_list_with_hide = ["Change background color", "Hide grid"]
     canvas_menue_entries_list_with_show = ["Change background color", "Show grid"]
-    if project_manager.grid_drawershow_grid is True:
+    if project_manager.grid_drawer.show_grid is True:
         canvas_menue_entries_list = canvas_menue_entries_list_with_hide
     else:
         canvas_menue_entries_list = canvas_menue_entries_list_with_show
@@ -471,7 +470,7 @@ def _show_canvas_background_menu(zoom_coords) -> None:
 def __evaluate_menu(menue_window, menu) -> None:
     selected_entry = menu.get(menu.curselection()[0])
     if "Change background color" in selected_entry:
-        main_window.choose_bg_color()
+        project_manager.tab_control_ref.choose_bg_color()
     elif "Hide grid" in selected_entry:
         project_manager.grid_drawer.show_grid = False
         project_manager.grid_drawer.remove_grid()
