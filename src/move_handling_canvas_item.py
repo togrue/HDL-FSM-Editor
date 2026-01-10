@@ -2,7 +2,7 @@
 A MoveHandlingCanvasItem object is created, when the user moves a state (touching state-circle or state-name).
 """
 
-import canvas_modify_bindings
+# import canvas_modify_bindings
 import move_handling
 import move_handling_finish
 import move_handling_initialization
@@ -11,8 +11,10 @@ from project_manager import project_manager
 
 
 class MoveHandlingCanvasItem:
+    transition_insertion_runs = False
+
     def __init__(self, event, canvas_id):
-        if canvas_modify_bindings.transition_insertion_runs:
+        if MoveHandlingCanvasItem.transition_insertion_runs:
             return  # Button-1 shall now not move any canvas item
         self.canvas_id = canvas_id
         self.move_list = move_handling_initialization.create_move_list([self.canvas_id], event.x, event.y)
