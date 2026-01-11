@@ -9,7 +9,6 @@ import canvas_editing
 import condition_action_handling
 import global_actions
 import global_actions_combinatorial
-import global_actions_handling
 import state_comment
 from project_manager import project_manager
 
@@ -782,25 +781,25 @@ def _get_transition_action(condition_action_reference):
 
 
 def create_global_actions_before() -> tuple[str, str] | tuple:
-    if global_actions_handling.global_actions_clocked_number == 1:
-        canvas_item_id = project_manager.canvas.find_withtag("global_actions1")
-        ref = global_actions.GlobalActions.dictionary[canvas_item_id[0]]
+    canvas_item_ids = project_manager.canvas.find_withtag("global_actions1")
+    if canvas_item_ids != ():
+        ref = global_actions.GlobalActions.dictionary[canvas_item_ids[0]]
         return ref.text_before_id, ref.text_before_id.get("1.0", tk.END)
     return "", ""
 
 
 def create_global_actions_after() -> tuple[str, str] | tuple:
-    if global_actions_handling.global_actions_clocked_number == 1:
-        canvas_item_id = project_manager.canvas.find_withtag("global_actions1")
-        ref = global_actions.GlobalActions.dictionary[canvas_item_id[0]]
+    canvas_item_ids = project_manager.canvas.find_withtag("global_actions1")
+    if canvas_item_ids != ():
+        ref = global_actions.GlobalActions.dictionary[canvas_item_ids[0]]
         return ref.text_after_id, ref.text_after_id.get("1.0", tk.END)
     return "", ""
 
 
 def create_concurrent_actions() -> tuple[str, str] | tuple:
-    if global_actions_handling.global_actions_combinatorial_number == 1:
-        canvas_item_id = project_manager.canvas.find_withtag("global_actions_combinatorial1")
-        ref = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[canvas_item_id[0]]
+    canvas_item_ids = project_manager.canvas.find_withtag("global_actions_combinatorial1")
+    if canvas_item_ids != ():
+        ref = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[canvas_item_ids[0]]
         return ref.text_id, ref.text_id.get("1.0", tk.END)
     return "", ""
 

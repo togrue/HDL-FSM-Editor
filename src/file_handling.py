@@ -16,7 +16,6 @@ import constants
 import custom_text
 import global_actions
 import global_actions_combinatorial
-import global_actions_handling
 import reset_entry_handling
 import state_action_handling
 import state_actions_default
@@ -132,11 +131,8 @@ def _clear_design() -> bool:
     state_action_handling.MyText.mytext_id = 0
     state_action_handling.MyText.mytext_dict = {}
     state_actions_default.StateActionsDefault.dictionary = {}
-    global_actions_handling.state_actions_default_number = 0
     project_manager.state_action_default_button.config(state=tk.NORMAL)
-    global_actions_handling.global_actions_clocked_number = 0
     project_manager.global_action_clocked_button.config(state=tk.NORMAL)
-    global_actions_handling.global_actions_combinatorial_number = 0
     project_manager.global_action_combinatorial_button.config(state=tk.NORMAL)
     global_actions_combinatorial.GlobalActionsCombinatorial.dictionary = {}
     global_actions.GlobalActions.dictionary = {}
@@ -264,11 +260,6 @@ def _save_canvas_data(design_dictionary: dict[str, Any], allowed_element_names_i
     design_dictionary["connector_number"] = connector_handling.ConnectorInsertion.connector_number
     design_dictionary["conditionaction_id"] = condition_action_handling.ConditionAction.conditionaction_id
     design_dictionary["mytext_id"] = state_action_handling.MyText.mytext_id
-    design_dictionary["global_actions_number"] = global_actions_handling.global_actions_clocked_number
-    design_dictionary["state_actions_default_number"] = global_actions_handling.state_actions_default_number
-    design_dictionary["global_actions_combinatorial_number"] = (
-        global_actions_handling.global_actions_combinatorial_number
-    )
     design_dictionary["state_radius"] = project_manager.state_radius
     design_dictionary["reset_entry_size"] = project_manager.reset_entry_size
     design_dictionary["priority_distance"] = project_manager.priority_distance
@@ -539,23 +530,6 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
     connector_handling.ConnectorInsertion.connector_number = design_dictionary["connector_number"]
     condition_action_handling.ConditionAction.conditionaction_id = design_dictionary["conditionaction_id"]
     state_action_handling.MyText.mytext_id = design_dictionary["mytext_id"]
-    global_actions_handling.global_actions_clocked_number = design_dictionary["global_actions_number"]
-    if global_actions_handling.global_actions_clocked_number == 0:
-        project_manager.global_action_clocked_button.config(state=tk.NORMAL)
-    else:
-        project_manager.global_action_clocked_button.config(state=tk.DISABLED)
-    global_actions_handling.state_actions_default_number = design_dictionary["state_actions_default_number"]
-    if global_actions_handling.state_actions_default_number == 0:
-        project_manager.state_action_default_button.config(state=tk.NORMAL)
-    else:
-        project_manager.state_action_default_button.config(state=tk.DISABLED)
-    global_actions_handling.global_actions_combinatorial_number = design_dictionary[
-        "global_actions_combinatorial_number"
-    ]
-    if global_actions_handling.global_actions_combinatorial_number == 0:
-        project_manager.global_action_combinatorial_button.config(state=tk.NORMAL)
-    else:
-        project_manager.global_action_combinatorial_button.config(state=tk.DISABLED)
 
     # Load canvas visual parameters
     project_manager.state_radius = design_dictionary["state_radius"]
@@ -747,8 +721,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         text_before = definition[1]
         text_after = definition[2]
         tags = definition[3]
-        global_actions_ref = global_actions.GlobalActions(coords[0], coords[1], height=1, width=8, padding=1)
-        project_manager.canvas.itemconfigure(global_actions_ref.window_id, tag=tags)
+        global_actions_ref = global_actions.GlobalActions(coords[0], coords[1], height=1, width=8, padding=1, tags=tags)
         global_actions_ref.text_before_id.text_before_content = text_before + "\n"
         global_actions_ref.text_before_id.insert("1.0", text_before)
         global_actions_ref.text_before_id.format()
@@ -762,9 +735,8 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         text = definition[1]
         tags = definition[2]
         action_ref = global_actions_combinatorial.GlobalActionsCombinatorial(
-            coords[0], coords[1], height=1, width=8, padding=1
+            coords[0], coords[1], height=1, width=8, padding=1, tags=tags
         )
-        project_manager.canvas.itemconfigure(action_ref.window_id, tag=tags)
         action_ref.text_content = text + "\n"
         action_ref.text_id.insert("1.0", text)
         action_ref.text_id.format()
@@ -774,8 +746,22 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         coords = definition[0]
         text = definition[1]
         tags = definition[2]
-        action_ref = state_actions_default.StateActionsDefault(coords[0], coords[1], height=1, width=8, padding=1)
-        project_manager.canvas.itemconfigure(action_ref.window_id, tag=tags)
+        action_ref = state_actions_default.StateActionsDefault(
+            coords[0], coords[1], height=1, width=8, padding=1, tags=tags
+        )
         action_ref.text_content = text + "\n"
         action_ref.text_id.insert("1.0", text)
         action_ref.text_id.format()
+
+    if project_manager.canvas.find_withtag("global_actions1") == ():
+        project_manager.global_action_clocked_button.config(state=tk.NORMAL)
+    else:
+        project_manager.global_action_clocked_button.config(state=tk.DISABLED)
+    if project_manager.canvas.find_withtag("global_actions_combinatorial1") == ():
+        project_manager.global_action_combinatorial_button.config(state=tk.NORMAL)
+    else:
+        project_manager.global_action_combinatorial_button.config(state=tk.DISABLED)
+    if project_manager.canvas.find_withtag("state_actions_default") == ():
+        project_manager.state_action_default_button.config(state=tk.NORMAL)
+    else:
+        project_manager.state_action_default_button.config(state=tk.DISABLED)

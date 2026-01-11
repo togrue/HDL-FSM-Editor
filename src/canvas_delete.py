@@ -10,7 +10,6 @@ import condition_action_handling
 import custom_text
 import global_actions
 import global_actions_combinatorial
-import global_actions_handling
 import reset_entry_handling
 import state_action_handling
 import state_actions_default
@@ -115,7 +114,6 @@ class CanvasDelete:
                 del custom_text.CustomText.read_variables_of_all_windows[ref.text_id]
                 del custom_text.CustomText.written_variables_of_all_windows[ref.text_id]
                 self.canvas.delete(tag)  # delete window
-                global_actions_handling.state_actions_default_number = 0
                 project_manager.state_action_default_button.config(state=tk.NORMAL)
             elif tag.startswith("state_action"):
                 ref = state_action_handling.MyText.mytext_dict[item_id[0]]
@@ -142,14 +140,12 @@ class CanvasDelete:
                 del custom_text.CustomText.read_variables_of_all_windows[ref.text_after_id]
                 del custom_text.CustomText.written_variables_of_all_windows[ref.text_after_id]
                 self.canvas.delete(tag)  # delete window
-                global_actions_handling.global_actions_clocked_number = 0
                 project_manager.global_action_clocked_button.config(state=tk.NORMAL)
             elif tag == "global_actions_combinatorial1":
                 ref = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[item_id[0]]
                 del custom_text.CustomText.read_variables_of_all_windows[ref.text_id]
                 del custom_text.CustomText.written_variables_of_all_windows[ref.text_id]
                 self.canvas.delete(tag)  # delete window
-                global_actions_handling.global_actions_combinatorial_number = 0
                 project_manager.global_action_combinatorial_button.config(state=tk.NORMAL)
             elif tag.startswith("connection"):  # connection<n>_start
                 connection = tag[0:-6]

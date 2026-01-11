@@ -20,7 +20,7 @@ class StateActionsDefault:
 
     dictionary = {}
 
-    def __init__(self, menu_x, menu_y, height, width, padding) -> None:
+    def __init__(self, menu_x, menu_y, height, width, padding, tags) -> None:
         self.text_content = None
         self.frame_id = ttk.Frame(
             project_manager.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="StateActionsWindow.TFrame"
@@ -67,7 +67,9 @@ class StateActionsDefault:
         self.move_rectangle = None
 
         # Create canvas window for frame and text:
-        self.window_id = project_manager.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
+        self.window_id = project_manager.canvas.create_window(
+            menu_x, menu_y, window=self.frame_id, anchor=tk.W, tags=tags
+        )
 
         self.frame_id.bind(
             "<Button-1>",

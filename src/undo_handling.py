@@ -13,7 +13,6 @@ import constants
 import file_handling
 import global_actions
 import global_actions_combinatorial
-import global_actions_handling
 import reset_entry_handling
 import state_action_handling
 import state_actions_default
@@ -115,11 +114,6 @@ def _get_complete_design_as_text_object():
     design += "reset_entry_number|" + str(reset_entry_handling.reset_entry_number) + "\n"
     design += "conditionaction_id|" + str(condition_action_handling.ConditionAction.conditionaction_id) + "\n"
     design += "mytext_id|" + str(state_action_handling.MyText.mytext_id) + "\n"
-    design += "state_actions_default_number|" + str(global_actions_handling.state_actions_default_number) + "\n"
-    design += "global_actions_number|" + str(global_actions_handling.global_actions_clocked_number) + "\n"
-    design += (
-        "global_actions_combinatorial_number|" + str(global_actions_handling.global_actions_combinatorial_number) + "\n"
-    )
     design += "reset_entry_size|" + str(project_manager.reset_entry_size) + "\n"
     design += "state_radius|" + str(project_manager.state_radius) + "\n"
     design += "priority_distance|" + str(project_manager.priority_distance) + "\n"
@@ -328,27 +322,6 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
         elif lines[_line_index].startswith("mytext_id|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "mytext_id|")
             state_action_handling.MyText.mytext_id = int(rest_of_line)
-        elif lines[_line_index].startswith("state_actions_default_number|"):
-            rest_of_line = _remove_keyword_from_line(lines[_line_index], "state_actions_default_number|")
-            global_actions_handling.state_actions_default_number = int(rest_of_line)
-            if global_actions_handling.state_actions_default_number == 0:
-                project_manager.state_action_default_button.config(state=tk.NORMAL)
-            else:
-                project_manager.state_action_default_button.config(state=tk.DISABLED)
-        elif lines[_line_index].startswith("global_actions_number|"):
-            rest_of_line = _remove_keyword_from_line(lines[_line_index], "global_actions_number|")
-            global_actions_handling.global_actions_clocked_number = int(rest_of_line)
-            if global_actions_handling.global_actions_clocked_number == 0:
-                project_manager.global_action_clocked_button.config(state=tk.NORMAL)
-            else:
-                project_manager.global_action_clocked_button.config(state=tk.DISABLED)
-        elif lines[_line_index].startswith("global_actions_combinatorial_number|"):
-            rest_of_line = _remove_keyword_from_line(lines[_line_index], "global_actions_combinatorial_number|")
-            global_actions_handling.global_actions_combinatorial_number = int(rest_of_line)
-            if global_actions_handling.global_actions_combinatorial_number == 0:
-                project_manager.global_action_combinatorial_button.config(state=tk.NORMAL)
-            else:
-                project_manager.global_action_combinatorial_button.config(state=tk.DISABLED)
         elif lines[_line_index].startswith("state_radius|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "state_radius|")
             project_manager.state_radius = float(rest_of_line)
@@ -565,12 +538,13 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                     coords.append(v)
                 except ValueError:
                     tags = tags + (e,)
-            global_actions_ref = global_actions.GlobalActions(coords[0], coords[1], height=1, width=8, padding=1)
+            global_actions_ref = global_actions.GlobalActions(
+                coords[0], coords[1], height=1, width=8, padding=1, tags=tags
+            )
             global_actions_ref.text_before_id.insert("1.0", text_before)
             global_actions_ref.text_before_id.format()
             global_actions_ref.text_after_id.insert("1.0", text_after)
             global_actions_ref.text_after_id.format()
-            project_manager.canvas.itemconfigure(global_actions_ref.window_id, tag=tags)
         elif lines[_line_index].startswith("window_global_actions_combinatorial|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_global_actions_combinatorial|")
             text = _get_data(rest_of_line, lines)
@@ -586,11 +560,10 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                 except ValueError:
                     tags = tags + (e,)
             action_ref = global_actions_combinatorial.GlobalActionsCombinatorial(
-                coords[0], coords[1], height=1, width=8, padding=1
+                coords[0], coords[1], height=1, width=8, padding=1, tags=tags
             )
             action_ref.text_id.insert("1.0", text)
             action_ref.text_id.format()
-            project_manager.canvas.itemconfigure(action_ref.window_id, tag=tags)
         elif lines[_line_index].startswith("window_state_actions_default|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_state_actions_default|")
             text = _get_data(rest_of_line, lines)
@@ -605,10 +578,11 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                     coords.append(v)
                 except ValueError:
                     tags = tags + (e,)
-            action_ref = state_actions_default.StateActionsDefault(coords[0], coords[1], height=1, width=8, padding=1)
+            action_ref = state_actions_default.StateActionsDefault(
+                coords[0], coords[1], height=1, width=8, padding=1, tags=tags
+            )
             action_ref.text_id.insert("1.0", text)
             action_ref.text_id.format()
-            project_manager.canvas.itemconfigure(action_ref.window_id, tag=tags)
 
         elif lines[_line_index].startswith("interface_package|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "interface_package|")
@@ -674,6 +648,18 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
         _line_index += 1
     for state in list_of_states:
         canvas_editing.adapt_visibility_of_priority_rectangles_at_state(state)
+    if project_manager.canvas.find_withtag("global_actions1") == ():
+        project_manager.global_action_clocked_button.config(state=tk.NORMAL)
+    else:
+        project_manager.global_action_clocked_button.config(state=tk.DISABLED)
+    if project_manager.canvas.find_withtag("global_actions_combinatorial1") == ():
+        project_manager.global_action_combinatorial_button.config(state=tk.NORMAL)
+    else:
+        project_manager.global_action_combinatorial_button.config(state=tk.DISABLED)
+    if project_manager.canvas.find_withtag("state_actions_default") == ():
+        project_manager.state_action_default_button.config(state=tk.NORMAL)
+    else:
+        project_manager.state_action_default_button.config(state=tk.DISABLED)
     project_manager.grid_drawer.draw_grid()
 
 

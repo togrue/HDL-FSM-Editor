@@ -45,22 +45,25 @@ def switch_to_reset_entry_insertion() -> None:
 def switch_to_state_action_default_insertion() -> None:
     move_handling_canvas_item.MoveHandlingCanvasItem.transition_insertion_runs = False
     #    print("switch_to_state_action_default_insertion")
-    project_manager.root.config(cursor="bogosity")
-    project_manager.canvas.bind("<Button-1>", global_actions_handling.insert_state_actions_default)
+    if project_manager.canvas.find_withtag("state_actions_default") == ():  # Only 1 global action is allowed.
+        project_manager.root.config(cursor="bogosity")
+        project_manager.canvas.bind("<Button-1>", global_actions_handling.insert_state_actions_default)
 
 
 def switch_to_global_action_clocked_insertion() -> None:
     move_handling_canvas_item.MoveHandlingCanvasItem.transition_insertion_runs = False
     #    print("switch_to_global_action_clocked_insertion")
-    project_manager.root.config(cursor="bogosity")
-    project_manager.canvas.bind("<Button-1>", global_actions_handling.insert_global_actions_clocked)
+    if project_manager.canvas.find_withtag("global_actions1") == ():  # Only 1 global action is allowed.
+        project_manager.root.config(cursor="bogosity")
+        project_manager.canvas.bind("<Button-1>", global_actions_handling.insert_global_actions_clocked)
 
 
 def switch_to_global_action_combinatorial_insertion() -> None:
     move_handling_canvas_item.MoveHandlingCanvasItem.transition_insertion_runs = False
     #    print("switch_to_global_action_combinatorial_insertion")
-    project_manager.root.config(cursor="bogosity")
-    project_manager.canvas.bind("<Button-1>", global_actions_handling.insert_global_actions_combinatorial)
+    if project_manager.canvas.find_withtag("global_actions_combinatorial1") == ():  # Only 1 global action is allowed.
+        project_manager.root.config(cursor="bogosity")
+        project_manager.canvas.bind("<Button-1>", global_actions_handling.insert_global_actions_combinatorial)
 
 
 def switch_to_move_mode() -> None:

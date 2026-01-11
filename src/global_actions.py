@@ -21,7 +21,7 @@ class GlobalActions:
     global_actions_number = 1
     dictionary = {}
 
-    def __init__(self, menu_x, menu_y, height, width, padding) -> None:
+    def __init__(self, menu_x, menu_y, height, width, padding, tags) -> None:
         self.text_before_content = None
         self.text_after_content = None
         self.difference_x = 0
@@ -99,7 +99,9 @@ class GlobalActions:
         self.text_after_id.grid(row=3, column=0, sticky=(tk.E, tk.W, tk.S))
 
         # Create canvas window for frame and text:
-        self.window_id = project_manager.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
+        self.window_id = project_manager.canvas.create_window(
+            menu_x, menu_y, window=self.frame_id, anchor=tk.W, tags=tags
+        )
 
         self.frame_id.bind(
             "<Button-1>",
@@ -138,11 +140,6 @@ class GlobalActions:
         # change and that save_in_file() already reads the new text, entered into the textbox before Control-s/g.
         # To ensure this, save_in_file() waits for idle.
         self.text_after_content = self.text_after_id.get("1.0", tk.END)
-
-    def tag(self) -> None:
-        project_manager.canvas.itemconfigure(
-            self.window_id, tag="global_actions" + str(GlobalActions.global_actions_number)
-        )
 
     def activate_frame(self) -> None:
         self.activate_window()
