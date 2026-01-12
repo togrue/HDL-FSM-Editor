@@ -8,11 +8,6 @@ from tkinter import ttk
 
 import custom_text
 
-# import grid_drawing
-
-# import link_dictionary => Causes cyclic import!
-
-
 # from project import Project
 
 
@@ -86,6 +81,17 @@ class ProjectManager:
         self._fontsize = 10
         self._label_fontsize = 8
         self._state_name_font = None
+        self._highlight_dict_ref = None  #: linting.HighLightDict
+
+    @property
+    def highlight_dict_ref(self):  # -> linting.HighLightDict:
+        """Get the highlight dictionary."""
+        return self._highlight_dict_ref
+
+    @highlight_dict_ref.setter
+    def highlight_dict_ref(self, value):  # value : linting.HighLightDict) -> None:
+        """Set the highlight dictionary."""
+        self._highlight_dict_ref = value
 
     @property
     def state_radius(self) -> float:

@@ -13,6 +13,7 @@ from tkinter import ttk
 import canvas_editing
 import constants
 import link_dictionary
+import linting
 import menu_bar
 import notebook_top
 from project_manager import project_manager
@@ -29,6 +30,7 @@ def create_gui() -> None:
     project_manager.root = root
     _configure_gui_style(root)
     project_manager.link_dict_ref = link_dictionary.LinkDictionary()
+    project_manager.highlight_dict_ref = linting.HighLightDict()
     project_manager.notebook = notebook_top.NotebookTop(row=1, column=0)
     project_manager.menu_bar_ref = menu_bar.MenuBar(row=0, column=0)
 

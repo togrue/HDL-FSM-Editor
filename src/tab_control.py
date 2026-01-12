@@ -4,7 +4,6 @@ from tkinter import ttk
 from tkinter.filedialog import askdirectory, askopenfilename
 
 import constants
-import linting
 import undo_handling
 from constants import GuiTab
 from dialogs.color_changer import ColorChanger
@@ -177,7 +176,7 @@ class TabControl:
     def switch_language_mode(self) -> None:  # also called from file_handling.py
         new_language = project_manager.language.get()
         if new_language == "VHDL":
-            linting.highlight_pattern_dict = constants.VHDL_HIGHLIGHT_PATTERN_DICT
+            project_manager.highlight_dict_ref.highlight_dict = constants.VHDL_HIGHLIGHT_PATTERN_DICT
             # enable 2 files mode
             project_manager.select_file_number_text.set(2)
             self._select_file_number_radio_button1.grid(row=0, column=2, sticky=tk.E)
@@ -205,7 +204,7 @@ class TabControl:
     = File with Entity and Architecture\n$name\t= Entity Name"
             )
         else:  # "Verilog" or "SystemVerilog"
-            linting.highlight_pattern_dict = constants.VERILOG_HIGHLIGHT_PATTERN_DICT
+            project_manager.highlight_dict_ref.highlight_dict = constants.VERILOG_HIGHLIGHT_PATTERN_DICT
             # Control: disable 2 files mode
             project_manager.select_file_number_text.set(1)
             self._select_file_number_radio_button1.grid_forget()

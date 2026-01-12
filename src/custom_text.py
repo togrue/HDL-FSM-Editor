@@ -12,7 +12,6 @@ import config
 import constants
 import file_handling
 import global_actions_combinatorial
-import linting
 from codegen import hdl_generation_architecture_state_actions, hdl_generation_library
 from project_manager import project_manager
 
@@ -75,7 +74,8 @@ class CustomText(tk.Text):
         self.text_type = text_type
         # text_type is in:
         # ["package","generics","ports","variable","condition","generated","action","declarations","log","comment"]
-        self.after_identifier = None
+        self.format_after_id = None
+        self.update_highlight_after_id = None
         # create a proxy for the underlying widget
         self._orig = self._w + "_orig"
         self.tk.call("rename", self._w, self._orig)
@@ -146,9 +146,9 @@ class CustomText(tk.Text):
 
     def format_after_idle(self) -> None:
         if self.text_type != "log":
-            if self.after_identifier is not None:
-                self.after_cancel(self.after_identifier)
-            self.after_identifier = self.after(300, self.format)
+            if self.format_after_id is not None:
+                self.after_cancel(self.format_after_id)
+            self.format_after_id = self.after(300, self.format)
 
     def format(self) -> None:
         text = self.get("1.0", tk.END)
@@ -188,9 +188,9 @@ class CustomText(tk.Text):
     def _update_highlighting_in_all_texts(self) -> None:
         # The tags "control", "datatype", "function" must only be updated in this CustomText object:
         self.update_highlight_tags(project_manager.fontsize, ["control", "datatype", "function"])
-        linting.recreate_keyword_list_of_unused_signals()
+        project_manager.highlight_dict_ref.recreate_keyword_list_of_unused_signals()
         # The tags "not_read", "not_written", and "comment" must be updated in all CustomText objects:
-        linting.update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment()
+        self.update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment()
 
     def update_highlight_tags(self, fontsize, highlight_tag_name_list) -> None:
         """
@@ -210,7 +210,7 @@ class CustomText(tk.Text):
             self._tag_configure_highlight_tag(highlight_tag_name, fontsize)
 
     def _tag_add_highlight_tag(self, highlight_tag_name) -> None:
-        for highlight_search_pattern in linting.highlight_pattern_dict[highlight_tag_name]:
+        for highlight_search_pattern in project_manager.highlight_dict_ref.highlight_pattern_dict[highlight_tag_name]:
             if self.text_type != "comment":  # State comment text
                 self._add_highlight_tag_for_single_pattern(highlight_tag_name, highlight_search_pattern)
 
@@ -781,3 +781,26 @@ class CustomText(tk.Text):
         self.tag_config("highlight", background="orange")
         self.see(str(number_of_line) + ".0")
         self.focus_set()
+
+    def update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment(self) -> None:
+        if self.update_highlight_after_id is not None:
+            project_manager.root.after_cancel(self.update_highlight_after_id)
+        self.update_highlight_after_id = project_manager.root.after(
+            300, self._update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment_after_idle
+        )
+
+    def _update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment_after_idle(self) -> None:
+        # Comment must be the last, because in the range of a comment all other tags are deleted:
+        for text_ref in CustomText.read_variables_of_all_windows:
+            text_ref.update_highlight_tags(project_manager.fontsize, ["not_read", "not_written", "comment"])
+        text_refs_fixed = [
+            project_manager.interface_generics_text,
+            project_manager.interface_package_text,
+            project_manager.interface_ports_text,
+            project_manager.internals_architecture_text,
+            project_manager.internals_process_clocked_text,
+            project_manager.internals_process_combinatorial_text,
+            project_manager.internals_package_text,
+        ]
+        for text_ref in text_refs_fixed:
+            text_ref.update_highlight_tags(10, ["not_read", "not_written", "comment"])
