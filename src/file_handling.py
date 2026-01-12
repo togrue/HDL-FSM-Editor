@@ -16,7 +16,7 @@ import constants
 import custom_text
 import global_actions
 import global_actions_combinatorial
-import reset_entry_handling
+import reset_entry
 import state_action_handling
 import state_actions_default
 import state_comment
@@ -123,7 +123,6 @@ def _clear_design() -> bool:
     project_manager.canvas.delete("all")
     state_handling.state_number = 0
     transition_handling.transition_number = 0
-    reset_entry_handling.reset_entry_number = 0
     project_manager.reset_entry_button.config(state=tk.NORMAL)
     connector_handling.ConnectorInsertion.connector_number = 0
     condition_action_handling.ConditionAction.conditionaction_id = 0
@@ -256,7 +255,6 @@ def _save_canvas_data(design_dictionary: dict[str, Any], allowed_element_names_i
     design_dictionary["diagram_background_color"] = project_manager.diagram_background_color.get()
     design_dictionary["state_number"] = state_handling.state_number
     design_dictionary["transition_number"] = transition_handling.transition_number
-    design_dictionary["reset_entry_number"] = reset_entry_handling.reset_entry_number
     design_dictionary["connector_number"] = connector_handling.ConnectorInsertion.connector_number
     design_dictionary["conditionaction_id"] = condition_action_handling.ConditionAction.conditionaction_id
     design_dictionary["mytext_id"] = state_action_handling.MyText.mytext_id
@@ -522,11 +520,6 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
     # Load canvas editing parameters
     state_handling.state_number = design_dictionary["state_number"]
     transition_handling.transition_number = design_dictionary["transition_number"]
-    reset_entry_handling.reset_entry_number = design_dictionary["reset_entry_number"]
-    if reset_entry_handling.reset_entry_number == 0:
-        project_manager.reset_entry_button.config(state=tk.NORMAL)
-    else:
-        project_manager.reset_entry_button.config(state=tk.DISABLED)
     connector_handling.ConnectorInsertion.connector_number = design_dictionary["connector_number"]
     condition_action_handling.ConditionAction.conditionaction_id = design_dictionary["conditionaction_id"]
     state_action_handling.MyText.mytext_id = design_dictionary["mytext_id"]
@@ -568,7 +561,7 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
     for definition in design_dictionary["polygon"]:
         coords = definition[0]
         tags = definition[1]
-        reset_entry_handling.draw_reset_entry(coords, tags)
+        reset_entry.ResetEntry(coords, tags)
         number_of_outgoing_transitions = 0
         for tag in tags:
             if tag.startswith("transition") and tag.endswith("_start"):
@@ -592,7 +585,7 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
         if text_is_state_name:
             state_handling.draw_state_name(coords[0], coords[1], text, tags)
         elif text_is_reset_text:
-            reset_entry_handling.draw_reset_entry_text(coords[0], coords[1], text, tags)
+            pass
         else:  # priority number
             for t in tags:
                 if t.startswith("transition"):
@@ -765,3 +758,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         project_manager.state_action_default_button.config(state=tk.NORMAL)
     else:
         project_manager.state_action_default_button.config(state=tk.DISABLED)
+    if project_manager.canvas.find_withtag("reset_entry") == ():
+        project_manager.reset_entry_button.config(state=tk.NORMAL)
+    else:
+        project_manager.reset_entry_button.config(state=tk.DISABLED)

@@ -10,7 +10,6 @@ import condition_action_handling
 import custom_text
 import global_actions
 import global_actions_combinatorial
-import reset_entry_handling
 import state_action_handling
 import state_actions_default
 import undo_handling
@@ -86,7 +85,6 @@ class CanvasDelete:
             if tag.startswith("reset_entry"):
                 self.canvas.delete(tag)  # delete polygon
                 self.canvas.delete("reset_text")  # delete text item
-                reset_entry_handling.reset_entry_number = 0
                 project_manager.reset_entry_button.config(state=tk.NORMAL)
                 self.design_was_changed = True
             elif tag.startswith("transition") and tag.endswith("_start"):  # transition<n>_start

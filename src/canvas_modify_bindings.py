@@ -38,8 +38,9 @@ def switch_to_connector_insertion() -> None:
 def switch_to_reset_entry_insertion() -> None:
     move_handling_canvas_item.MoveHandlingCanvasItem.transition_insertion_runs = False
     #    print("switch_to_reset_entry_insertion")
-    project_manager.root.config(cursor="center_ptr")
-    project_manager.canvas.bind("<Button-1>", reset_entry_handling.insert_reset_entry)
+    if project_manager.canvas.find_withtag("reset_entry") == ():  # Only 1 reset entry is allowed.
+        project_manager.root.config(cursor="center_ptr")
+        project_manager.canvas.bind("<Button-1>", reset_entry_handling.insert_reset_entry)
 
 
 def switch_to_state_action_default_insertion() -> None:

@@ -13,7 +13,7 @@ import constants
 import file_handling
 import global_actions
 import global_actions_combinatorial
-import reset_entry_handling
+import reset_entry
 import state_action_handling
 import state_actions_default
 import state_comment
@@ -111,7 +111,6 @@ def _get_complete_design_as_text_object():
     design += "state_number|" + str(state_handling.state_number) + "\n"
     design += "transition_number|" + str(transition_handling.transition_number) + "\n"
     design += "connector_number|" + str(connector_handling.ConnectorInsertion.connector_number) + "\n"
-    design += "reset_entry_number|" + str(reset_entry_handling.reset_entry_number) + "\n"
     design += "conditionaction_id|" + str(condition_action_handling.ConditionAction.conditionaction_id) + "\n"
     design += "mytext_id|" + str(state_action_handling.MyText.mytext_id) + "\n"
     design += "reset_entry_size|" + str(project_manager.reset_entry_size) + "\n"
@@ -306,13 +305,6 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
         elif lines[_line_index].startswith("transition_number|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "transition_number|")
             transition_handling.transition_number = int(rest_of_line)
-        elif lines[_line_index].startswith("reset_entry_number|"):
-            rest_of_line = _remove_keyword_from_line(lines[_line_index], "reset_entry_number|")
-            reset_entry_handling.reset_entry_number = int(rest_of_line)
-            if reset_entry_handling.reset_entry_number == 0:
-                project_manager.reset_entry_button.config(state=tk.NORMAL)
-            else:
-                project_manager.reset_entry_button.config(state=tk.DISABLED)
         elif lines[_line_index].startswith("connector_number|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "connector_number|")
             connector_handling.ConnectorInsertion.connector_number = int(rest_of_line)
@@ -370,7 +362,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                     coords.append(v)
                 except ValueError:
                     tags = tags + (e,)
-            reset_entry_handling.draw_reset_entry(coords, tags)
+            reset_entry.ResetEntry(coords, tags)
         elif lines[_line_index].startswith("text|"):  # This is a state-name or a priority-number.
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "text|")
             tags = ()
@@ -391,7 +383,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             if text_is_state_name:
                 state_handling.draw_state_name(coords[0], coords[1], text, tags)
             elif text_is_reset_text:
-                reset_entry_handling.draw_reset_entry_text(coords[0], coords[1], text, tags)
+                pass
             else:
                 for t in tags:
                     if t.startswith("transition"):
@@ -660,6 +652,10 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
         project_manager.state_action_default_button.config(state=tk.NORMAL)
     else:
         project_manager.state_action_default_button.config(state=tk.DISABLED)
+    if project_manager.canvas.find_withtag("reset_entry") == ():
+        project_manager.reset_entry_button.config(state=tk.NORMAL)
+    else:
+        project_manager.reset_entry_button.config(state=tk.DISABLED)
     project_manager.grid_drawer.draw_grid()
 
 

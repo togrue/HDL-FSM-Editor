@@ -8,7 +8,7 @@ import connector_handling
 import constants
 import global_actions
 import global_actions_combinatorial
-import reset_entry_handling
+import reset_entry
 import state_action_handling
 import state_actions_default
 import state_comment
@@ -35,7 +35,7 @@ def move_to_coordinates(event_x, event_y, move_list, first, move_to_grid):
         if item_type == "oval":
             state_handling.move_to(event_x, event_y, item_id, first, move_to_grid)
         elif item_type == "polygon":
-            reset_entry_handling.move_to(event_x, event_y, item_id, first, move_to_grid)
+            reset_entry.ResetEntry.move_to(event_x, event_y, item_id, first, move_to_grid)
         elif item_type == "line":
             transition_handling.move_to(event_x, event_y, item_id, item_point_to_move, first, move_list, move_to_grid)
         elif item_type == "rectangle":
