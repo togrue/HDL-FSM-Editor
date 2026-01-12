@@ -10,7 +10,7 @@ from tkinter.filedialog import askopenfilename, asksaveasfilename
 from typing import Any
 
 import canvas_editing
-import condition_action_handling
+import condition_action
 import connector_handling
 import constants
 import custom_text
@@ -125,8 +125,8 @@ def _clear_design() -> bool:
     transition_handling.transition_number = 0
     project_manager.reset_entry_button.config(state=tk.NORMAL)
     connector_handling.ConnectorInsertion.connector_number = 0
-    condition_action_handling.ConditionAction.conditionaction_id = 0
-    condition_action_handling.ConditionAction.dictionary = {}
+    condition_action.ConditionAction.conditionaction_id = 0
+    condition_action.ConditionAction.dictionary = {}
     state_action_handling.MyText.mytext_id = 0
     state_action_handling.MyText.mytext_dict = {}
     state_actions_default.StateActionsDefault.dictionary = {}
@@ -256,7 +256,7 @@ def _save_canvas_data(design_dictionary: dict[str, Any], allowed_element_names_i
     design_dictionary["state_number"] = state_handling.state_number
     design_dictionary["transition_number"] = transition_handling.transition_number
     design_dictionary["connector_number"] = connector_handling.ConnectorInsertion.connector_number
-    design_dictionary["conditionaction_id"] = condition_action_handling.ConditionAction.conditionaction_id
+    design_dictionary["conditionaction_id"] = condition_action.ConditionAction.conditionaction_id
     design_dictionary["mytext_id"] = state_action_handling.MyText.mytext_id
     design_dictionary["state_radius"] = project_manager.state_radius
     design_dictionary["reset_entry_size"] = project_manager.reset_entry_size
@@ -300,16 +300,12 @@ def _save_canvas_data(design_dictionary: dict[str, Any], allowed_element_names_i
                         _gettags(i),
                     ]
                 )
-            elif i in condition_action_handling.ConditionAction.dictionary:
+            elif i in condition_action.ConditionAction.dictionary:
                 design_dictionary["window_condition_action_block"].append(
                     [
                         project_manager.canvas.coords(i),
-                        condition_action_handling.ConditionAction.dictionary[i].condition_id.get(
-                            "1.0", f"{tk.END}-1 chars"
-                        ),
-                        condition_action_handling.ConditionAction.dictionary[i].action_id.get(
-                            "1.0", f"{tk.END}-1 chars"
-                        ),
+                        condition_action.ConditionAction.dictionary[i].condition_id.get("1.0", f"{tk.END}-1 chars"),
+                        condition_action.ConditionAction.dictionary[i].action_id.get("1.0", f"{tk.END}-1 chars"),
                         _gettags(i),
                     ]
                 )
@@ -521,7 +517,7 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
     state_handling.state_number = design_dictionary["state_number"]
     transition_handling.transition_number = design_dictionary["transition_number"]
     connector_handling.ConnectorInsertion.connector_number = design_dictionary["connector_number"]
-    condition_action_handling.ConditionAction.conditionaction_id = design_dictionary["conditionaction_id"]
+    condition_action.ConditionAction.conditionaction_id = design_dictionary["conditionaction_id"]
     state_action_handling.MyText.mytext_id = design_dictionary["mytext_id"]
 
     # Load canvas visual parameters
@@ -685,7 +681,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         for t in tags:
             if t == "connected_to_reset_transition":
                 connected_to_reset_entry = True
-        condition_action_ref = condition_action_handling.ConditionAction(
+        condition_action_ref = condition_action.ConditionAction(
             coords[0], coords[1], connected_to_reset_entry, height=1, width=8, padding=1, increment=False
         )
         project_manager.canvas.itemconfigure(condition_action_ref.window_id, tag=tags)

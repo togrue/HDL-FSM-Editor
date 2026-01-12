@@ -6,7 +6,7 @@ all its connected parts.
 import tkinter as tk
 from tkinter import messagebox
 
-import condition_action_handling
+import condition_action
 import custom_text
 import global_actions
 import global_actions_combinatorial
@@ -125,7 +125,7 @@ class CanvasDelete:
                     tag.replace("_comment", ""), tag + "_line_end"
                 )  # delete at state: "state"<integer>"_comment_line_end"
             elif tag.startswith("condition_action"):
-                ref = condition_action_handling.ConditionAction.dictionary[item_id[0]]
+                ref = condition_action.ConditionAction.dictionary[item_id[0]]
                 del custom_text.CustomText.read_variables_of_all_windows[ref.condition_id]
                 del custom_text.CustomText.written_variables_of_all_windows[ref.condition_id]
                 del custom_text.CustomText.read_variables_of_all_windows[ref.action_id]

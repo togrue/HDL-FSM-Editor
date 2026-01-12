@@ -7,7 +7,7 @@ import tkinter as tk
 from tkinter import messagebox
 
 import canvas_editing
-import condition_action_handling
+import condition_action
 import global_actions
 import global_actions_combinatorial
 import state_action_handling
@@ -99,9 +99,9 @@ class FindReplace:
         text_ids = []
         if item in state_action_handling.MyText.mytext_dict:
             text_ids.append(state_action_handling.MyText.mytext_dict[item].text_id)
-        elif item in condition_action_handling.ConditionAction.dictionary:
-            text_ids.append(condition_action_handling.ConditionAction.dictionary[item].condition_id)
-            text_ids.append(condition_action_handling.ConditionAction.dictionary[item].action_id)
+        elif item in condition_action.ConditionAction.dictionary:
+            text_ids.append(condition_action.ConditionAction.dictionary[item].condition_id)
+            text_ids.append(condition_action.ConditionAction.dictionary[item].action_id)
         elif item in global_actions.GlobalActions.dictionary:
             text_ids.append(global_actions.GlobalActions.dictionary[item].text_before_id)
             text_ids.append(global_actions.GlobalActions.dictionary[item].text_after_id)

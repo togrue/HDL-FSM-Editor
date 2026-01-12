@@ -6,7 +6,7 @@ import tkinter as tk
 from tkinter import font, messagebox
 
 import canvas_modify_bindings
-import condition_action_handling
+import condition_action
 import constants
 import global_actions
 import global_actions_combinatorial
@@ -338,25 +338,25 @@ def _modify_font_sizes_of_all_canvas_items(factor) -> None:
                         highlight_tag_name,
                         font=("Courier", int(project_manager.fontsize), "normal"),
                     )
-            elif i in condition_action_handling.ConditionAction.dictionary:
-                condition_action_handling.ConditionAction.dictionary[i].condition_label.configure(
+            elif i in condition_action.ConditionAction.dictionary:
+                condition_action.ConditionAction.dictionary[i].condition_label.configure(
                     font=("Arial", int(used_label_fontsize))
                 )
-                condition_action_handling.ConditionAction.dictionary[i].action_label.configure(
+                condition_action.ConditionAction.dictionary[i].action_label.configure(
                     font=("Arial", int(used_label_fontsize))
                 )
-                condition_action_handling.ConditionAction.dictionary[i].condition_id.configure(
+                condition_action.ConditionAction.dictionary[i].condition_id.configure(
                     font=("Courier", int(project_manager.fontsize))
                 )
-                condition_action_handling.ConditionAction.dictionary[i].action_id.configure(
+                condition_action.ConditionAction.dictionary[i].action_id.configure(
                     font=("Courier", int(project_manager.fontsize))
                 )
                 for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
-                    condition_action_handling.ConditionAction.dictionary[i].condition_id.tag_configure(
+                    condition_action.ConditionAction.dictionary[i].condition_id.tag_configure(
                         highlight_tag_name,
                         font=("Courier", int(project_manager.fontsize), "normal"),
                     )
-                    condition_action_handling.ConditionAction.dictionary[i].action_id.tag_configure(
+                    condition_action.ConditionAction.dictionary[i].action_id.tag_configure(
                         highlight_tag_name,
                         font=("Courier", int(project_manager.fontsize), "normal"),
                     )

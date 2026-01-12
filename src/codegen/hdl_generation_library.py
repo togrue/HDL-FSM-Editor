@@ -6,7 +6,7 @@ import re
 import tkinter as tk
 
 import canvas_editing
-import condition_action_handling
+import condition_action
 import global_actions
 import global_actions_combinatorial
 import state_comment
@@ -116,9 +116,7 @@ def _get_transition_target_condition_action(transition_tag) -> tuple[str, str, s
             condition_action_number = tag[13:-4]
             condition_action_tag = "condition_action" + condition_action_number
             condition_action_canvas_item_id = project_manager.canvas.find_withtag(condition_action_tag)[0]
-            condition_action_reference = condition_action_handling.ConditionAction.dictionary[
-                condition_action_canvas_item_id
-            ]
+            condition_action_reference = condition_action.ConditionAction.dictionary[condition_action_canvas_item_id]
             if condition_action_reference is not None:
                 transition_condition = _get_transition_condition(condition_action_reference)
                 transition_action = _get_transition_action(condition_action_reference)
@@ -132,9 +130,7 @@ def _get_condition_action_reference_of_transition(transition_tag) -> None:
             condition_action_number = tag[13:-4]
             condition_action_tag = "condition_action" + condition_action_number
             condition_action_canvas_item_id = project_manager.canvas.find_withtag(condition_action_tag)[0]
-            condition_action_reference = condition_action_handling.ConditionAction.dictionary[
-                condition_action_canvas_item_id
-            ]
+            condition_action_reference = condition_action.ConditionAction.dictionary[condition_action_canvas_item_id]
             return condition_action_reference
     return None
 

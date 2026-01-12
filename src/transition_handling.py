@@ -8,7 +8,7 @@ import tkinter as tk
 import canvas_delete
 import canvas_editing
 import canvas_modify_bindings
-import condition_action_handling
+import condition_action
 import constants
 import move_handling_initialization
 import undo_handling
@@ -811,7 +811,7 @@ def _evaluate_menu(event, window, listbox, menu_x, menu_y, transition_id) -> Non
             elif tag == "coming_from_reset_entry":
                 connected_to_reset_entry = True
         if has_condition_action is False:
-            condition_action_ref = condition_action_handling.ConditionAction(
+            condition_action_ref = condition_action.ConditionAction(
                 menu_x, menu_y, connected_to_reset_entry, height=1, width=8, padding=1, increment=True
             )
             condition_action_ref.tag(connected_to_reset_entry)

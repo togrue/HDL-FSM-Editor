@@ -5,7 +5,7 @@ Includes all methods needed, when the moving objects ends.
 import tkinter as tk
 
 import canvas_editing
-import condition_action_handling
+import condition_action
 import move_handling
 import move_handling_initialization
 import state_handling
@@ -115,7 +115,7 @@ def _update_the_tags_of_the_transition(item_ids_at_moving_end_location, transiti
         elif tag.startswith("ca_connection"):
             condition_action_tag = tag[:-4]
             condition_action_window_id = project_manager.canvas.find_withtag(condition_action_tag + "_anchor")[0]
-            ref = condition_action_handling.ConditionAction.dictionary[condition_action_window_id]
+            ref = condition_action.ConditionAction.dictionary[condition_action_window_id]
     for target_id in item_ids_at_moving_end_location:
         if project_manager.canvas.type(target_id) in ["oval", "rectangle", "polygon"]:
             target_tag = project_manager.canvas.gettags(target_id)[
@@ -199,7 +199,7 @@ def _hide_the_connection_line_of_moved_condition_action_window(move_list) -> Non
             tags = project_manager.canvas.gettags(move_list_entry[0])
             for t in tags:
                 if t.startswith("condition_action"):
-                    ref = condition_action_handling.ConditionAction.dictionary[move_list_entry[0]]
+                    ref = condition_action.ConditionAction.dictionary[move_list_entry[0]]
                     ref.hide_line()
 
 

@@ -7,7 +7,7 @@ import re
 import tkinter as tk
 
 import canvas_editing
-import condition_action_handling
+import condition_action
 import connector_handling
 import constants
 import file_handling
@@ -111,7 +111,7 @@ def _get_complete_design_as_text_object():
     design += "state_number|" + str(state_handling.state_number) + "\n"
     design += "transition_number|" + str(transition_handling.transition_number) + "\n"
     design += "connector_number|" + str(connector_handling.ConnectorInsertion.connector_number) + "\n"
-    design += "conditionaction_id|" + str(condition_action_handling.ConditionAction.conditionaction_id) + "\n"
+    design += "conditionaction_id|" + str(condition_action.ConditionAction.conditionaction_id) + "\n"
     design += "mytext_id|" + str(state_action_handling.MyText.mytext_id) + "\n"
     design += "reset_entry_size|" + str(project_manager.reset_entry_size) + "\n"
     design += "state_radius|" + str(project_manager.state_radius) + "\n"
@@ -205,12 +205,12 @@ def _get_complete_design_as_text_object():
                 design += str(len(text)) + "|"
                 design += text
                 design += _get_coords(i)
-            elif i in condition_action_handling.ConditionAction.dictionary:
+            elif i in condition_action.ConditionAction.dictionary:
                 design += "window_condition_action_block|"
-                text = condition_action_handling.ConditionAction.dictionary[i].condition_id.get("1.0", tk.END)
+                text = condition_action.ConditionAction.dictionary[i].condition_id.get("1.0", tk.END)
                 design += str(len(text)) + "|"
                 design += text
-                text = condition_action_handling.ConditionAction.dictionary[i].action_id.get("1.0", tk.END)
+                text = condition_action.ConditionAction.dictionary[i].action_id.get("1.0", tk.END)
                 design += str(len(text)) + "|"
                 design += text
                 design += _get_coords(i)
@@ -279,7 +279,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
     global _line_index
     # Remove the old design:
     state_action_handling.MyText.mytext_dict = {}
-    condition_action_handling.ConditionAction.dictionary = {}
+    condition_action.ConditionAction.dictionary = {}
     state_comment.StateComment.dictionary = {}
     project_manager.canvas.delete("all")
     # Bring the notebook tab with the diagram into the foreground:
@@ -310,7 +310,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             connector_handling.ConnectorInsertion.connector_number = int(rest_of_line)
         elif lines[_line_index].startswith("conditionaction_id|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "conditionaction_id|")
-            condition_action_handling.ConditionAction.conditionaction_id = int(rest_of_line)
+            condition_action.ConditionAction.conditionaction_id = int(rest_of_line)
         elif lines[_line_index].startswith("mytext_id|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "mytext_id|")
             state_action_handling.MyText.mytext_id = int(rest_of_line)
@@ -493,7 +493,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             for t in tags:
                 if t == "connected_to_reset_transition":
                     connected_to_reset_entry = True
-            condition_action_ref = condition_action_handling.ConditionAction(
+            condition_action_ref = condition_action.ConditionAction(
                 coords[0], coords[1], connected_to_reset_entry, height=1, width=8, padding=1, increment=False
             )
             condition_action_ref.condition_id.insert("1.0", condition)
