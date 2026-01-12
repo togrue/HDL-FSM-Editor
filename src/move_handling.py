@@ -9,7 +9,7 @@ import constants
 import global_actions
 import global_actions_combinatorial
 import reset_entry
-import state_action_handling
+import state_action
 import state_actions_default
 import state_comment
 import state_handling
@@ -41,8 +41,8 @@ def move_to_coordinates(event_x, event_y, move_list, first, move_to_grid):
         elif item_type == "rectangle":
             connector_insertion.ConnectorInsertion.move_to(event_x, event_y, item_id, first, move_to_grid)
         elif item_type == "window":
-            if item_id in state_action_handling.StateAction.mytext_dict:
-                ref = state_action_handling.StateAction.mytext_dict[item_id]
+            if item_id in state_action.StateAction.mytext_dict:
+                ref = state_action.StateAction.mytext_dict[item_id]
             elif item_id in state_comment.StateComment.dictionary:
                 ref = state_comment.StateComment.dictionary[item_id]
             elif item_id in state_actions_default.StateActionsDefault.dictionary:

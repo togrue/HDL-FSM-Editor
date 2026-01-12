@@ -10,7 +10,7 @@ import canvas_editing
 import condition_action
 import global_actions
 import global_actions_combinatorial
-import state_action_handling
+import state_action
 import state_actions_default
 import state_comment
 import undo_handling
@@ -97,8 +97,8 @@ class FindReplace:
 
     def _get_text_ids_of_canvas_window(self, item) -> list:
         text_ids = []
-        if item in state_action_handling.StateAction.mytext_dict:
-            text_ids.append(state_action_handling.StateAction.mytext_dict[item].text_id)
+        if item in state_action.StateAction.mytext_dict:
+            text_ids.append(state_action.StateAction.mytext_dict[item].text_id)
         elif item in condition_action.ConditionAction.dictionary:
             text_ids.append(condition_action.ConditionAction.dictionary[item].condition_id)
             text_ids.append(condition_action.ConditionAction.dictionary[item].action_id)

@@ -10,7 +10,7 @@ import condition_action
 import custom_text
 import global_actions
 import global_actions_combinatorial
-import state_action_handling
+import state_action
 import state_actions_default
 import undo_handling
 from project_manager import project_manager
@@ -114,7 +114,7 @@ class CanvasDelete:
                 self.canvas.delete(tag)  # delete window
                 project_manager.state_action_default_button.config(state=tk.NORMAL)
             elif tag.startswith("state_action"):
-                ref = state_action_handling.StateAction.mytext_dict[item_id[0]]
+                ref = state_action.StateAction.mytext_dict[item_id[0]]
                 del custom_text.CustomText.read_variables_of_all_windows[ref.text_id]
                 del custom_text.CustomText.written_variables_of_all_windows[ref.text_id]
                 self.canvas.delete(tag)  # delete window

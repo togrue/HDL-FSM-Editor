@@ -17,7 +17,7 @@ import custom_text
 import global_actions
 import global_actions_combinatorial
 import reset_entry
-import state_action_handling
+import state_action
 import state_actions_default
 import state_comment
 import state_handling
@@ -127,8 +127,8 @@ def _clear_design() -> bool:
     connector_insertion.ConnectorInsertion.connector_number = 0
     condition_action.ConditionAction.conditionaction_id = 0
     condition_action.ConditionAction.dictionary = {}
-    state_action_handling.StateAction.mytext_id = 0
-    state_action_handling.StateAction.mytext_dict = {}
+    state_action.StateAction.mytext_id = 0
+    state_action.StateAction.mytext_dict = {}
     state_actions_default.StateActionsDefault.dictionary = {}
     project_manager.state_action_default_button.config(state=tk.NORMAL)
     project_manager.global_action_clocked_button.config(state=tk.NORMAL)
@@ -257,7 +257,7 @@ def _save_canvas_data(design_dictionary: dict[str, Any], allowed_element_names_i
     design_dictionary["transition_number"] = transition_handling.transition_number
     design_dictionary["connector_number"] = connector_insertion.ConnectorInsertion.connector_number
     design_dictionary["conditionaction_id"] = condition_action.ConditionAction.conditionaction_id
-    design_dictionary["mytext_id"] = state_action_handling.StateAction.mytext_id
+    design_dictionary["mytext_id"] = state_action.StateAction.mytext_id
     design_dictionary["state_radius"] = project_manager.state_radius
     design_dictionary["reset_entry_size"] = project_manager.reset_entry_size
     design_dictionary["priority_distance"] = project_manager.priority_distance
@@ -284,11 +284,11 @@ def _save_canvas_data(design_dictionary: dict[str, Any], allowed_element_names_i
         elif project_manager.canvas.type(i) == "rectangle":
             design_dictionary["rectangle"].append([project_manager.canvas.coords(i), _gettags(i)])
         elif project_manager.canvas.type(i) == "window":
-            if i in state_action_handling.StateAction.mytext_dict:
+            if i in state_action.StateAction.mytext_dict:
                 design_dictionary["window_state_action_block"].append(
                     [
                         project_manager.canvas.coords(i),
-                        state_action_handling.StateAction.mytext_dict[i].text_id.get("1.0", f"{tk.END}-1 chars"),
+                        state_action.StateAction.mytext_dict[i].text_id.get("1.0", f"{tk.END}-1 chars"),
                         _gettags(i),
                     ]
                 )
@@ -518,7 +518,7 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
     transition_handling.transition_number = design_dictionary["transition_number"]
     connector_insertion.ConnectorInsertion.connector_number = design_dictionary["connector_number"]
     condition_action.ConditionAction.conditionaction_id = design_dictionary["conditionaction_id"]
-    state_action_handling.StateAction.mytext_id = design_dictionary["mytext_id"]
+    state_action.StateAction.mytext_id = design_dictionary["mytext_id"]
 
     # Load canvas visual parameters
     project_manager.state_radius = design_dictionary["state_radius"]
@@ -652,9 +652,7 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         coords = definition[0]
         text = definition[1]
         tags = definition[2]
-        action_ref = state_action_handling.StateAction(
-            coords[0] - 100, coords[1], height=1, width=8, padding=1, increment=False
-        )
+        action_ref = state_action.StateAction(coords[0] - 100, coords[1], height=1, width=8, padding=1, increment=False)
         project_manager.canvas.itemconfigure(action_ref.window_id, tag=tags)
         action_ref.text_content = text + "\n"
         action_ref.text_id.insert("1.0", text)

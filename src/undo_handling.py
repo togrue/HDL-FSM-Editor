@@ -14,7 +14,7 @@ import file_handling
 import global_actions
 import global_actions_combinatorial
 import reset_entry
-import state_action_handling
+import state_action
 import state_actions_default
 import state_comment
 import state_handling
@@ -112,7 +112,7 @@ def _get_complete_design_as_text_object():
     design += "transition_number|" + str(transition_handling.transition_number) + "\n"
     design += "connector_number|" + str(connector_insertion.ConnectorInsertion.connector_number) + "\n"
     design += "conditionaction_id|" + str(condition_action.ConditionAction.conditionaction_id) + "\n"
-    design += "mytext_id|" + str(state_action_handling.StateAction.mytext_id) + "\n"
+    design += "mytext_id|" + str(state_action.StateAction.mytext_id) + "\n"
     design += "reset_entry_size|" + str(project_manager.reset_entry_size) + "\n"
     design += "state_radius|" + str(project_manager.state_radius) + "\n"
     design += "priority_distance|" + str(project_manager.priority_distance) + "\n"
@@ -193,9 +193,9 @@ def _get_complete_design_as_text_object():
             design += _get_tags(i)
             design += "\n"
         elif project_manager.canvas.type(i) == "window":
-            if i in state_action_handling.StateAction.mytext_dict:
+            if i in state_action.StateAction.mytext_dict:
                 design += "window_state_action_block|"
-                text = state_action_handling.StateAction.mytext_dict[i].text_id.get("1.0", tk.END)
+                text = state_action.StateAction.mytext_dict[i].text_id.get("1.0", tk.END)
                 design += str(len(text)) + "|"
                 design += text
                 design += _get_coords(i)
@@ -278,7 +278,7 @@ _line_index = 0
 def _set_diagram_to_version_selected_by_stack_pointer() -> None:
     global _line_index
     # Remove the old design:
-    state_action_handling.StateAction.mytext_dict = {}
+    state_action.StateAction.mytext_dict = {}
     condition_action.ConditionAction.dictionary = {}
     state_comment.StateComment.dictionary = {}
     project_manager.canvas.delete("all")
@@ -313,7 +313,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             condition_action.ConditionAction.conditionaction_id = int(rest_of_line)
         elif lines[_line_index].startswith("mytext_id|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "mytext_id|")
-            state_action_handling.StateAction.mytext_id = int(rest_of_line)
+            state_action.StateAction.mytext_id = int(rest_of_line)
         elif lines[_line_index].startswith("state_radius|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "state_radius|")
             project_manager.state_radius = float(rest_of_line)
@@ -448,7 +448,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                     coords.append(v)
                 except ValueError:
                     tags = tags + (e,)
-            action_ref = state_action_handling.StateAction(
+            action_ref = state_action.StateAction(
                 coords[0] - 100, coords[1], height=1, width=8, padding=1, increment=False
             )
             action_ref.text_id.insert("1.0", text)

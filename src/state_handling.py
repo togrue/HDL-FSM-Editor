@@ -10,7 +10,7 @@ import canvas_editing
 import constants
 import move_handling_canvas_item
 import move_handling_initialization
-import state_action_handling
+import state_action
 import state_comment
 import transition_handling
 import undo_handling
@@ -197,7 +197,7 @@ def _evaluate_menu(event, window, listbox, menu_x, menu_y, state_id) -> None:
             if tag.startswith("connection"):
                 action_block_exists = True
         if not action_block_exists:
-            action_ref = state_action_handling.StateAction(menu_x, menu_y, height=1, width=8, padding=1, increment=True)
+            action_ref = state_action.StateAction(menu_x, menu_y, height=1, width=8, padding=1, increment=True)
             action_ref.connect_to_state(menu_x, menu_y, state_id)
             action_ref.tag()
             undo_handling.design_has_changed()
