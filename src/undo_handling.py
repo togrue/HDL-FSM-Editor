@@ -215,12 +215,12 @@ def _get_complete_design_as_text_object():
                 design += text
                 design += _get_coords(i)
                 print_tags = True
-            elif i in global_actions_clocked.GlobalActions.dictionary:
+            elif i in global_actions_clocked.GlobalActionsClocked.dictionary:
                 design += "window_global_actions|"
-                text_before = global_actions_clocked.GlobalActions.dictionary[i].text_before_id.get("1.0", tk.END)
+                text_before = global_actions_clocked.GlobalActionsClocked.dictionary[i].text_before_id.get("1.0", tk.END)
                 design += str(len(text_before)) + "|"
                 design += text_before
-                text_after = global_actions_clocked.GlobalActions.dictionary[i].text_after_id.get("1.0", tk.END)
+                text_after = global_actions_clocked.GlobalActionsClocked.dictionary[i].text_after_id.get("1.0", tk.END)
                 design += str(len(text_after)) + "|"
                 design += text_after
                 design += _get_coords(i)
@@ -530,7 +530,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                     coords.append(v)
                 except ValueError:
                     tags = tags + (e,)
-            global_actions_ref = global_actions_clocked.GlobalActions(
+            global_actions_ref = global_actions_clocked.GlobalActionsClocked(
                 coords[0], coords[1], height=1, width=8, padding=1, tags=tags
             )
             global_actions_ref.text_before_id.insert("1.0", text_before)

@@ -360,25 +360,25 @@ def _modify_font_sizes_of_all_canvas_items(factor) -> None:
                         highlight_tag_name,
                         font=("Courier", int(project_manager.fontsize), "normal"),
                     )
-            elif i in global_actions_clocked.GlobalActions.dictionary:
-                global_actions_clocked.GlobalActions.dictionary[i].label_before.configure(
+            elif i in global_actions_clocked.GlobalActionsClocked.dictionary:
+                global_actions_clocked.GlobalActionsClocked.dictionary[i].label_before.configure(
                     font=("Arial", int(used_label_fontsize))
                 )
-                global_actions_clocked.GlobalActions.dictionary[i].label_after.configure(
+                global_actions_clocked.GlobalActionsClocked.dictionary[i].label_after.configure(
                     font=("Arial", int(used_label_fontsize))
                 )
-                global_actions_clocked.GlobalActions.dictionary[i].text_before_id.configure(
+                global_actions_clocked.GlobalActionsClocked.dictionary[i].text_before_id.configure(
                     font=("Courier", int(project_manager.fontsize))
                 )
-                global_actions_clocked.GlobalActions.dictionary[i].text_after_id.configure(
+                global_actions_clocked.GlobalActionsClocked.dictionary[i].text_after_id.configure(
                     font=("Courier", int(project_manager.fontsize))
                 )
                 for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
-                    global_actions_clocked.GlobalActions.dictionary[i].text_before_id.tag_configure(
+                    global_actions_clocked.GlobalActionsClocked.dictionary[i].text_before_id.tag_configure(
                         highlight_tag_name,
                         font=("Courier", int(project_manager.fontsize), "normal"),
                     )
-                    global_actions_clocked.GlobalActions.dictionary[i].text_after_id.tag_configure(
+                    global_actions_clocked.GlobalActionsClocked.dictionary[i].text_after_id.tag_configure(
                         highlight_tag_name,
                         font=("Courier", int(project_manager.fontsize), "normal"),
                     )

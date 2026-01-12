@@ -17,7 +17,7 @@ def insert_global_actions_clocked(event) -> None:
     canvas_grid_coordinates_of_the_event = (
         canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
     )
-    global_actions_clocked.GlobalActions(
+    global_actions_clocked.GlobalActionsClocked(
         canvas_grid_coordinates_of_the_event[0],
         canvas_grid_coordinates_of_the_event[1],
         height=1,

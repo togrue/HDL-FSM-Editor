@@ -47,8 +47,8 @@ def move_to_coordinates(event_x, event_y, move_list, first, move_to_grid):
                 ref = state_comment.StateComment.dictionary[item_id]
             elif item_id in state_actions_default.StateActionsDefault.dictionary:
                 ref = state_actions_default.StateActionsDefault.dictionary[item_id]
-            elif item_id in global_actions_clocked.GlobalActions.dictionary:
-                ref = global_actions_clocked.GlobalActions.dictionary[item_id]
+            elif item_id in global_actions_clocked.GlobalActionsClocked.dictionary:
+                ref = global_actions_clocked.GlobalActionsClocked.dictionary[item_id]
             elif item_id in global_actions_combinatorial.GlobalActionsCombinatorial.dictionary:
                 ref = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[item_id]
             else:

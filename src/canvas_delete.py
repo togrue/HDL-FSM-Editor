@@ -132,7 +132,7 @@ class CanvasDelete:
                 del custom_text.CustomText.written_variables_of_all_windows[ref.action_id]
                 self.canvas.delete(tag)  # delete window
             elif tag == "global_actions1":
-                ref = global_actions_clocked.GlobalActions.dictionary[item_id[0]]
+                ref = global_actions_clocked.GlobalActionsClocked.dictionary[item_id[0]]
                 del custom_text.CustomText.read_variables_of_all_windows[ref.text_before_id]
                 del custom_text.CustomText.written_variables_of_all_windows[ref.text_before_id]
                 del custom_text.CustomText.read_variables_of_all_windows[ref.text_after_id]

@@ -13,7 +13,7 @@ import undo_handling
 from project_manager import project_manager
 
 
-class GlobalActions:
+class GlobalActionsClocked:
     """
     Handles the global actions clocked window in the diagram.
     """
@@ -118,7 +118,7 @@ class GlobalActions:
             lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(event, self.label_after, self.window_id),
         )
 
-        GlobalActions.dictionary[self.window_id] = self
+        GlobalActionsClocked.dictionary[self.window_id] = self
         canvas_modify_bindings.switch_to_move_mode()
 
     def _edit_before_in_external_editor(self):

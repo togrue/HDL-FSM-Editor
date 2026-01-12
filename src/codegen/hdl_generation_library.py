@@ -779,7 +779,7 @@ def _get_transition_action(condition_action_reference):
 def create_global_actions_before() -> tuple[str, str] | tuple:
     canvas_item_ids = project_manager.canvas.find_withtag("global_actions1")
     if canvas_item_ids != ():
-        ref = global_actions_clocked.GlobalActions.dictionary[canvas_item_ids[0]]
+        ref = global_actions_clocked.GlobalActionsClocked.dictionary[canvas_item_ids[0]]
         return ref.text_before_id, ref.text_before_id.get("1.0", tk.END)
     return "", ""
 
@@ -787,7 +787,7 @@ def create_global_actions_before() -> tuple[str, str] | tuple:
 def create_global_actions_after() -> tuple[str, str] | tuple:
     canvas_item_ids = project_manager.canvas.find_withtag("global_actions1")
     if canvas_item_ids != ():
-        ref = global_actions_clocked.GlobalActions.dictionary[canvas_item_ids[0]]
+        ref = global_actions_clocked.GlobalActionsClocked.dictionary[canvas_item_ids[0]]
         return ref.text_after_id, ref.text_after_id.get("1.0", tk.END)
     return "", ""
 

@@ -102,9 +102,9 @@ class FindReplace:
         elif item in condition_action.ConditionAction.dictionary:
             text_ids.append(condition_action.ConditionAction.dictionary[item].condition_id)
             text_ids.append(condition_action.ConditionAction.dictionary[item].action_id)
-        elif item in global_actions_clocked.GlobalActions.dictionary:
-            text_ids.append(global_actions_clocked.GlobalActions.dictionary[item].text_before_id)
-            text_ids.append(global_actions_clocked.GlobalActions.dictionary[item].text_after_id)
+        elif item in global_actions_clocked.GlobalActionsClocked.dictionary:
+            text_ids.append(global_actions_clocked.GlobalActionsClocked.dictionary[item].text_before_id)
+            text_ids.append(global_actions_clocked.GlobalActionsClocked.dictionary[item].text_after_id)
         elif item in global_actions_combinatorial.GlobalActionsCombinatorial.dictionary:
             text_ids.append(global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[item].text_id)
         elif item in state_actions_default.StateActionsDefault.dictionary:
