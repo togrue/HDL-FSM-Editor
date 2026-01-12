@@ -4,7 +4,7 @@ inserting the different graphical objects.
 """
 
 import canvas_editing
-import connector_handling
+import connector_insertion
 import global_actions_handling
 import move_handling_canvas_item
 import move_handling_initialization
@@ -32,7 +32,7 @@ def switch_to_connector_insertion() -> None:
     move_handling_canvas_item.MoveHandlingCanvasItem.transition_insertion_runs = False
     #    print("switch_to_connector_insertion")
     project_manager.root.config(cursor="dot")
-    project_manager.canvas.bind("<Button-1>", connector_handling.ConnectorInsertion)
+    project_manager.canvas.bind("<Button-1>", connector_insertion.ConnectorInsertion)
 
 
 def switch_to_reset_entry_insertion() -> None:

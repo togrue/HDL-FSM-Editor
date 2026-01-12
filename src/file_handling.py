@@ -11,7 +11,7 @@ from typing import Any
 
 import canvas_editing
 import condition_action
-import connector_handling
+import connector_insertion
 import constants
 import custom_text
 import global_actions
@@ -124,7 +124,7 @@ def _clear_design() -> bool:
     state_handling.state_number = 0
     transition_handling.transition_number = 0
     project_manager.reset_entry_button.config(state=tk.NORMAL)
-    connector_handling.ConnectorInsertion.connector_number = 0
+    connector_insertion.ConnectorInsertion.connector_number = 0
     condition_action.ConditionAction.conditionaction_id = 0
     condition_action.ConditionAction.dictionary = {}
     state_action_handling.MyText.mytext_id = 0
@@ -255,7 +255,7 @@ def _save_canvas_data(design_dictionary: dict[str, Any], allowed_element_names_i
     design_dictionary["diagram_background_color"] = project_manager.diagram_background_color.get()
     design_dictionary["state_number"] = state_handling.state_number
     design_dictionary["transition_number"] = transition_handling.transition_number
-    design_dictionary["connector_number"] = connector_handling.ConnectorInsertion.connector_number
+    design_dictionary["connector_number"] = connector_insertion.ConnectorInsertion.connector_number
     design_dictionary["conditionaction_id"] = condition_action.ConditionAction.conditionaction_id
     design_dictionary["mytext_id"] = state_action_handling.MyText.mytext_id
     design_dictionary["state_radius"] = project_manager.state_radius
@@ -516,7 +516,7 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
     # Load canvas editing parameters
     state_handling.state_number = design_dictionary["state_number"]
     transition_handling.transition_number = design_dictionary["transition_number"]
-    connector_handling.ConnectorInsertion.connector_number = design_dictionary["connector_number"]
+    connector_insertion.ConnectorInsertion.connector_number = design_dictionary["connector_number"]
     condition_action.ConditionAction.conditionaction_id = design_dictionary["conditionaction_id"]
     state_action_handling.MyText.mytext_id = design_dictionary["mytext_id"]
 
@@ -621,7 +621,7 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
             rectangle_id = transition_handling.draw_priority_rectangle(coords, tags)
             ids_of_rectangles_to_raise.append(rectangle_id)
         else:
-            connector_handling.ConnectorInsertion.draw_connector(coords, tags)
+            connector_insertion.ConnectorInsertion.draw_connector(coords, tags)
             number_of_outgoing_transitions = 0
             for tag in tags:
                 if tag.startswith("transition") and tag.endswith("_start"):
