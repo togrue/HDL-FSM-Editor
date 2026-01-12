@@ -14,7 +14,7 @@ import condition_action
 import connector_insertion
 import constants
 import custom_text
-import global_actions
+import global_actions_clocked
 import global_actions_combinatorial
 import reset_entry
 import state_action
@@ -134,7 +134,7 @@ def _clear_design() -> bool:
     project_manager.global_action_clocked_button.config(state=tk.NORMAL)
     project_manager.global_action_combinatorial_button.config(state=tk.NORMAL)
     global_actions_combinatorial.GlobalActionsCombinatorial.dictionary = {}
-    global_actions.GlobalActions.dictionary = {}
+    global_actions_clocked.GlobalActions.dictionary = {}
     project_manager.state_radius = 20.0
     project_manager.priority_distance = 14
     project_manager.reset_entry_size = 40
@@ -309,12 +309,16 @@ def _save_canvas_data(design_dictionary: dict[str, Any], allowed_element_names_i
                         _gettags(i),
                     ]
                 )
-            elif i in global_actions.GlobalActions.dictionary:
+            elif i in global_actions_clocked.GlobalActions.dictionary:
                 design_dictionary["window_global_actions"].append(
                     [
                         project_manager.canvas.coords(i),
-                        global_actions.GlobalActions.dictionary[i].text_before_id.get("1.0", f"{tk.END}-1 chars"),
-                        global_actions.GlobalActions.dictionary[i].text_after_id.get("1.0", f"{tk.END}-1 chars"),
+                        global_actions_clocked.GlobalActions.dictionary[i].text_before_id.get(
+                            "1.0", f"{tk.END}-1 chars"
+                        ),
+                        global_actions_clocked.GlobalActions.dictionary[i].text_after_id.get(
+                            "1.0", f"{tk.END}-1 chars"
+                        ),
                         _gettags(i),
                     ]
                 )
@@ -708,7 +712,9 @@ def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
         text_before = definition[1]
         text_after = definition[2]
         tags = definition[3]
-        global_actions_ref = global_actions.GlobalActions(coords[0], coords[1], height=1, width=8, padding=1, tags=tags)
+        global_actions_ref = global_actions_clocked.GlobalActions(
+            coords[0], coords[1], height=1, width=8, padding=1, tags=tags
+        )
         global_actions_ref.text_before_id.text_before_content = text_before + "\n"
         global_actions_ref.text_before_id.insert("1.0", text_before)
         global_actions_ref.text_before_id.format()

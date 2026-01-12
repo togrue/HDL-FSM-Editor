@@ -5,7 +5,7 @@ All methods to handle the global actions block in the diagram.
 import tkinter as tk
 
 import canvas_editing
-import global_actions
+import global_actions_clocked
 import global_actions_combinatorial
 import state_actions_default
 import undo_handling
@@ -17,7 +17,7 @@ def insert_global_actions_clocked(event) -> None:
     canvas_grid_coordinates_of_the_event = (
         canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
     )
-    global_actions.GlobalActions(
+    global_actions_clocked.GlobalActions(
         canvas_grid_coordinates_of_the_event[0],
         canvas_grid_coordinates_of_the_event[1],
         height=1,
