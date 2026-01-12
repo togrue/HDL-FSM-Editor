@@ -210,7 +210,7 @@ def _create_state_action_list(state_tag_list_sorted):
                 connection_name = tag_of_state[:-4]
                 state_action_id = project_manager.canvas.find_withtag(connection_name + "_start")
                 if state_action_id != ():
-                    ref = state_action_handling.MyText.mytext_dict[state_action_id[0]]
+                    ref = state_action_handling.StateAction.mytext_dict[state_action_id[0]]
                     state_action = ref.text_id.get("1.0", tk.END)
                     state_action_reference = ref.text_id
                     break

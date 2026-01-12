@@ -114,7 +114,7 @@ class CanvasDelete:
                 self.canvas.delete(tag)  # delete window
                 project_manager.state_action_default_button.config(state=tk.NORMAL)
             elif tag.startswith("state_action"):
-                ref = state_action_handling.MyText.mytext_dict[item_id[0]]
+                ref = state_action_handling.StateAction.mytext_dict[item_id[0]]
                 del custom_text.CustomText.read_variables_of_all_windows[ref.text_id]
                 del custom_text.CustomText.written_variables_of_all_windows[ref.text_id]
                 self.canvas.delete(tag)  # delete window

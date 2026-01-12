@@ -12,7 +12,7 @@ import undo_handling
 from project_manager import project_manager
 
 
-class MyText:
+class StateAction:
     """
     Handles the state action of a single state.
     """
@@ -22,7 +22,7 @@ class MyText:
 
     def __init__(self, menu_x, menu_y, height, width, padding, increment) -> None:
         if increment is True:
-            MyText.mytext_id += 1
+            StateAction.mytext_id += 1
         self.text_content = None
         self.difference_x = 0
         self.difference_y = 0
@@ -81,18 +81,18 @@ class MyText:
             lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(event, self.label_id, self.window_id),
         )
 
-        MyText.mytext_dict[self.window_id] = self
+        StateAction.mytext_dict[self.window_id] = self
 
     def tag(self) -> None:
         project_manager.canvas.itemconfigure(
             self.window_id,
-            tag=("state_action" + str(MyText.mytext_id), "connection" + str(MyText.mytext_id) + "_start"),
+            tag=("state_action" + str(StateAction.mytext_id), "connection" + str(StateAction.mytext_id) + "_start"),
         )
 
     def connect_to_state(self, menu_x, menu_y, state_id) -> None:
         # Draw a line from the state to the action block which is added to the state:
         state_coords = project_manager.canvas.coords(state_id)
-        project_manager.canvas.addtag_withtag("connection" + str(MyText.mytext_id) + "_end", state_id)
+        project_manager.canvas.addtag_withtag("connection" + str(StateAction.mytext_id) + "_end", state_id)
         state_tags = project_manager.canvas.gettags(state_id)
         self.line_id = project_manager.canvas.create_line(
             menu_x + 100,
@@ -100,7 +100,7 @@ class MyText:
             (state_coords[2] + state_coords[0]) / 2,
             (state_coords[3] + state_coords[1]) / 2,
             dash=(2, 2),
-            tag=("connection" + str(MyText.mytext_id), "connected_to_" + state_tags[0]),
+            tag=("connection" + str(StateAction.mytext_id), "connected_to_" + state_tags[0]),
         )
         project_manager.canvas.tag_lower(self.line_id, state_id)
 
