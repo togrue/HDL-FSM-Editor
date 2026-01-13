@@ -8,7 +8,6 @@ import canvas_editing
 import condition_action
 import move_handling
 import move_handling_initialization
-import state_handling
 import transition_handling
 import undo_handling
 import vector_handling
@@ -57,7 +56,7 @@ def _get_item_ids_at_moving_end_location(event_x, event_y, move_list) -> list:
     for move_entry in move_list:
         move_items.append(move_entry[0])
         if project_manager.canvas.type(move_entry[0]) == "oval":
-            move_items.append(state_handling.get_canvas_id_of_state_name(move_entry[0]))
+            move_items.append(_get_canvas_id_of_state_name(move_entry[0]))
     overlapping_items = project_manager.canvas.find_overlapping(event_x, event_y, event_x, event_y)
     item_ids_at_moving_end_location = []
     for item in overlapping_items:
@@ -260,3 +259,8 @@ def _transition_connects_reset_entry_and_connector(item_ids_at_moving_end_locati
                 if "coming_from_reset_entry" in moved_object_tags:
                     return True
     return False
+
+
+def _get_canvas_id_of_state_name(state_id):
+    tags = project_manager.canvas.gettags(state_id)
+    return project_manager.canvas.find_withtag(tags[0] + "_name")[0]

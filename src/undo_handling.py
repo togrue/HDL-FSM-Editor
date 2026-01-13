@@ -14,10 +14,10 @@ import file_handling
 import global_actions_clocked
 import global_actions_combinatorial
 import reset_entry
+import state
 import state_action
 import state_actions_default
 import state_comment
-import state_handling
 import transition_handling
 from project_manager import project_manager
 
@@ -108,7 +108,7 @@ def _get_complete_design_as_text_object():
     design += "number_of_files|" + str(project_manager.select_file_number_text.get()) + "\n"
     design += "reset_signal_name|" + project_manager.reset_signal_name.get() + "\n"
     design += "clock_signal_name|" + project_manager.clock_signal_name.get() + "\n"
-    design += "state_number|" + str(state_handling.state_number) + "\n"
+    design += "state_number|" + str(state.States.state_number) + "\n"
     design += "transition_number|" + str(transition_handling.transition_number) + "\n"
     design += "connector_number|" + str(connector_insertion.ConnectorInsertion.connector_number) + "\n"
     design += "conditionaction_id|" + str(condition_action.ConditionAction.conditionaction_id) + "\n"
@@ -217,7 +217,9 @@ def _get_complete_design_as_text_object():
                 print_tags = True
             elif i in global_actions_clocked.GlobalActionsClocked.dictionary:
                 design += "window_global_actions|"
-                text_before = global_actions_clocked.GlobalActionsClocked.dictionary[i].text_before_id.get("1.0", tk.END)
+                text_before = global_actions_clocked.GlobalActionsClocked.dictionary[i].text_before_id.get(
+                    "1.0", tk.END
+                )
                 design += str(len(text_before)) + "|"
                 design += text_before
                 text_after = global_actions_clocked.GlobalActionsClocked.dictionary[i].text_after_id.get("1.0", tk.END)
@@ -301,7 +303,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
     while _line_index < len(lines):
         if lines[_line_index].startswith("state_number|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "state_number|")
-            state_handling.state_number = int(rest_of_line)
+            state.States.state_number = int(rest_of_line)
         elif lines[_line_index].startswith("transition_number|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "transition_number|")
             transition_handling.transition_number = int(rest_of_line)
@@ -349,8 +351,8 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                         fill_color = e.replace("fill=", "")
                     else:
                         tags = tags + (e,)
-            state_id = state_handling.draw_state_circle(coords, fill_color, tags)
-            list_of_states.append(state_id)
+            ref = state.States(coords, tags, "dummy", fill_color)
+            list_of_states.append(ref.state_id)
         elif lines[_line_index].startswith("polygon|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "polygon|")
             coords = []
@@ -378,13 +380,11 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             for t in tags:
                 if t.startswith("state"):  # state<nr>_name
                     text_is_state_name = True
+                    state_tag = t[:-5]
+                    project_manager.canvas.itemconfigure(state_tag + "_name", text=text, tags=tags)
                 elif t.startswith("reset_text"):
                     text_is_reset_text = True
-            if text_is_state_name:
-                state_handling.draw_state_name(coords[0], coords[1], text, tags)
-            elif text_is_reset_text:
-                pass
-            else:
+            if not text_is_state_name and not text_is_reset_text:  # priority number
                 for t in tags:
                     if t.startswith("transition"):
                         transition_tag = t[:-8]
@@ -638,8 +638,8 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             )
             project_manager.internals_process_combinatorial_text.update_custom_text_class_signals_list()
         _line_index += 1
-    for state in list_of_states:
-        canvas_editing.adapt_visibility_of_priority_rectangles_at_state(state)
+    for state_canvas_id in list_of_states:
+        canvas_editing.adapt_visibility_of_priority_rectangles_at_state(state_canvas_id)
     if project_manager.canvas.find_withtag("global_actions1") == ():
         project_manager.global_action_clocked_button.config(state=tk.NORMAL)
     else:

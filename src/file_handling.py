@@ -17,10 +17,10 @@ import custom_text
 import global_actions_clocked
 import global_actions_combinatorial
 import reset_entry
+import state
 import state_action
 import state_actions_default
 import state_comment
-import state_handling
 import tag_plausibility
 import transition_handling
 import undo_handling
@@ -121,7 +121,7 @@ def _clear_design() -> bool:
     project_manager.hdl_frame_text.delete("1.0", tk.END)
     project_manager.hdl_frame_text.config(state=tk.DISABLED)
     project_manager.canvas.delete("all")
-    state_handling.state_number = 0
+    state.States.state_number = 0
     transition_handling.transition_number = 0
     project_manager.reset_entry_button.config(state=tk.NORMAL)
     connector_insertion.ConnectorInsertion.connector_number = 0
@@ -253,7 +253,7 @@ def _save_log_config(design_dictionary: dict[str, Any]) -> None:
 
 def _save_canvas_data(design_dictionary: dict[str, Any], allowed_element_names_in_design_dictionary) -> None:
     design_dictionary["diagram_background_color"] = project_manager.diagram_background_color.get()
-    design_dictionary["state_number"] = state_handling.state_number
+    design_dictionary["state_number"] = state.States.state_number
     design_dictionary["transition_number"] = transition_handling.transition_number
     design_dictionary["connector_number"] = connector_insertion.ConnectorInsertion.connector_number
     design_dictionary["conditionaction_id"] = condition_action.ConditionAction.conditionaction_id
@@ -518,7 +518,7 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
     project_manager.canvas.configure(bg=project_manager.diagram_background_color.get())
 
     # Load canvas editing parameters
-    state_handling.state_number = design_dictionary["state_number"]
+    state.States.state_number = design_dictionary["state_number"]
     transition_handling.transition_number = design_dictionary["transition_number"]
     connector_insertion.ConnectorInsertion.connector_number = design_dictionary["connector_number"]
     condition_action.ConditionAction.conditionaction_id = design_dictionary["conditionaction_id"]
@@ -555,7 +555,7 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
                 number_of_outgoing_transitions += 1
         if number_of_outgoing_transitions == 1:
             hide_priority_rectangle_list.append(transition_identifier)
-        state_handling.draw_state_circle(coords, fill_color, tags)
+        state.States(coords, tags, "dummy", fill_color)
 
     # Load polygons (reset symbols)
     for definition in design_dictionary["polygon"]:
@@ -580,13 +580,11 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
         for t in tags:
             if t.startswith("state"):  # state<nr>_name
                 text_is_state_name = True
+                state_tag = t[:-5]
+                project_manager.canvas.itemconfigure(state_tag + "_name", text=text, tags=tags)
             elif t.startswith("reset_text"):
                 text_is_reset_text = True
-        if text_is_state_name:
-            state_handling.draw_state_name(coords[0], coords[1], text, tags)
-        elif text_is_reset_text:
-            pass
-        else:  # priority number
+        if not text_is_state_name and not text_is_reset_text:  # priority number
             for t in tags:
                 if t.startswith("transition"):
                     transition_tag = t[:-8]

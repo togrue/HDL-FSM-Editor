@@ -9,10 +9,10 @@ import constants
 import global_actions_clocked
 import global_actions_combinatorial
 import reset_entry
+import state
 import state_action
 import state_actions_default
 import state_comment
-import state_handling
 import transition_handling
 from project_manager import project_manager
 
@@ -33,7 +33,8 @@ def move_to_coordinates(event_x, event_y, move_list, first, move_to_grid):
         item_point_to_move = entry[1]
         item_type = project_manager.canvas.type(item_id)
         if item_type == "oval":
-            state_handling.move_to(event_x, event_y, item_id, first, move_to_grid)
+            ref = state.States.state_dict[item_id]
+            ref.move_to(event_x, event_y, item_id, first, move_to_grid)
         elif item_type == "polygon":
             reset_entry.ResetEntry.move_to(event_x, event_y, item_id, first, move_to_grid)
         elif item_type == "line":
@@ -62,8 +63,9 @@ def _state_is_moved_to_near_to_state_or_connector(move_list, event_x, event_y) -
     for entry in move_list:
         moved_item_id = entry[0]
         if project_manager.canvas.type(moved_item_id) == "oval":
+            ref = state.States.state_dict[moved_item_id]
             # Keep the distance between event and anchor point constant:
-            event_x_mod, event_y_mod = event_x + state_handling.difference_x, event_y + state_handling.difference_y
+            event_x_mod, event_y_mod = event_x + ref.difference_x, event_y + ref.difference_y
             event_x_mod = project_manager.state_radius * round(event_x_mod / project_manager.state_radius)
             event_y_mod = project_manager.state_radius * round(event_y_mod / project_manager.state_radius)
             state_coords = project_manager.canvas.coords(moved_item_id)
