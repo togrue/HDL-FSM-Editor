@@ -67,7 +67,7 @@ class TransitionLine:
         project_manager.canvas.tag_bind(
             canvas_id_priority_text,
             "<Double-Button-1>",
-            lambda event: self.edit_priority(event, transition_tag),
+            lambda event: self._edit_priority(event, transition_tag),
         )
 
         project_manager.canvas.tag_raise(canvas_id_priority_text)
@@ -164,7 +164,9 @@ class TransitionLine:
             [priority_middle_x, priority_middle_y, _, _] = vector_handling.shorten_vector(
                 project_manager.priority_distance, new_coords[0], new_coords[1], 0, new_coords[2], new_coords[3], 1, 0
             )
-            [rectangle_width_half, rectangle_height_half] = self._get_rectangle_dimensions(transition_tag + "rectangle")
+            [rectangle_width_half, rectangle_height_half] = TransitionLine.get_rectangle_dimensions(
+                transition_tag + "rectangle"
+            )
             project_manager.canvas.coords(
                 transition_tag + "rectangle",
                 priority_middle_x - rectangle_width_half,
@@ -185,7 +187,7 @@ class TransitionLine:
         listbox.destroy()
         project_manager.canvas.delete(window)
 
-    def edit_priority(self, event, transition_tag) -> None:
+    def _edit_priority(self, event, transition_tag) -> None:
         project_manager.canvas.unbind("<Button-1>")
         project_manager.canvas.unbind_all("<Delete>")
         priority_tag = transition_tag + "priority"
@@ -330,7 +332,7 @@ class TransitionLine:
                     1,
                     0,
                 )
-            [rectangle_width_half, rectangle_height_half] = TransitionLine._get_rectangle_dimensions(
+            [rectangle_width_half, rectangle_height_half] = TransitionLine.get_rectangle_dimensions(
                 transition_tag + "rectangle"
             )
             project_manager.canvas.coords(
@@ -438,7 +440,7 @@ class TransitionLine:
                 1,
                 0,
             )
-            [rectangle_width_half, rectangle_height_half] = TransitionLine._get_rectangle_dimensions(
+            [rectangle_width_half, rectangle_height_half] = TransitionLine.get_rectangle_dimensions(
                 transition_tag + "rectangle"
             )
             project_manager.canvas.coords(
@@ -486,7 +488,7 @@ class TransitionLine:
         return new_transition_coords
 
     @classmethod
-    def _get_rectangle_dimensions(cls, canvas_id) -> list:
+    def get_rectangle_dimensions(cls, canvas_id) -> list:
         rectangle_coords = project_manager.canvas.coords(canvas_id)
         rectangle_width_half = (rectangle_coords[2] - rectangle_coords[0]) / 2
         rectangle_height_half = (rectangle_coords[3] - rectangle_coords[1]) / 2
