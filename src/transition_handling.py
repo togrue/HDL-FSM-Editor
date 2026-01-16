@@ -24,6 +24,7 @@ def transition_start(event) -> None:
                     fill="blue",
                     smooth=True,
                 )
+                project_manager.canvas.tag_lower(transition_id)  # Line should be under states/connectors
                 transition_draw_funcid = project_manager.canvas.bind(
                     "<Motion>",
                     lambda event, transition_id=transition_id: _transition_continue(event, transition_id),
