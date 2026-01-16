@@ -4,7 +4,7 @@ This module contains a method to decide which graphical object must be moved.
 
 import canvas_editing
 import condition_action
-import connector_insertion
+import connector
 import constants
 import global_actions_clocked
 import global_actions_combinatorial
@@ -58,7 +58,7 @@ def move_to_coordinates(event_x, event_y, move_list, first, move_to_grid):
                 ref = state_action.StateAction.mytext_dict[canvas_id_of_connected_state_action]
                 ref.move_line_point_to(event_x, event_y, first)
         elif item_type == "rectangle":
-            connector_insertion.ConnectorInstance.move_to(event_x, event_y, item_id, first, move_to_grid)
+            connector.ConnectorInstance.move_to(event_x, event_y, item_id, first, move_to_grid)
         elif item_type == "window":
             if item_id in state_action.StateAction.mytext_dict:
                 ref = state_action.StateAction.mytext_dict[item_id]
@@ -122,8 +122,8 @@ def _connector_moved_too_close_to_other_object(move_list, event_x, event_y) -> b
         ):
             # Keep the distance between event and anchor point constant:
             event_x_mod, event_y_mod = (
-                event_x + connector_insertion.ConnectorInstance.difference_x,
-                event_y + connector_insertion.ConnectorInstance.difference_y,
+                event_x + connector.ConnectorInstance.difference_x,
+                event_y + connector.ConnectorInstance.difference_y,
             )
             event_x_mod = project_manager.state_radius * round(
                 event_x_mod / project_manager.state_radius
