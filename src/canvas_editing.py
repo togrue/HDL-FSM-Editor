@@ -199,7 +199,6 @@ def _calculate_zoom_factor(complete_rectangle, visible_rectangle):
 
 
 def zoom_wheel(event) -> None:
-    project_manager.canvas.grid_remove()  # Make the grid invisible, but remember all options for the the next grid() call.
     project_manager.grid_drawer.remove_grid()
     # event.delta: attribute of the mouse wheel under Windows and MacOs.
     # One "felt step" at the mouse wheel gives this value:
@@ -214,7 +213,6 @@ def zoom_wheel(event) -> None:
     canvas_zoom(zoom_center, factor)
     project_manager.grid_drawer.draw_grid()
     canvas_modify_bindings.switch_to_move_mode()
-    project_manager.canvas.grid()
 
 
 def zoom_plus() -> None:
