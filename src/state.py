@@ -8,7 +8,7 @@ import move_handling_canvas_item
 import move_handling_initialization
 import state_action
 import state_comment
-import transition_handling
+import transition
 import undo_handling
 from dialogs.color_changer import ColorChanger
 from project_manager import project_manager
@@ -19,10 +19,11 @@ class States:
     state_number = 0
     state_dict = {}
 
-    def __init__(self, coords, tags, text, fill_color) -> None:
+    def __init__(self, coords, tags, text, fill_color, new_state=False) -> None:
+        if new_state:
+            States.state_number += 1
         self.difference_x = 0
         self.difference_y = 0
-        States.state_number += 1
         self.state_id = project_manager.canvas.create_oval(
             coords,
             fill=fill_color,
@@ -36,9 +37,7 @@ class States:
         project_manager.canvas.tag_bind(
             self.state_id, "<Leave>", lambda event, id=self.state_id: project_manager.canvas.itemconfig(id, width=2)
         )
-        project_manager.canvas.tag_bind(
-            self.state_id, "<Button-3>", lambda event, id=self.state_id: self._show_menu(event, id)
-        )
+        project_manager.canvas.tag_bind(self.state_id, "<Button-3>", self._show_menu)
         project_manager.canvas.tag_bind(
             self.state_id,
             "<Button-1>",
@@ -63,13 +62,10 @@ class States:
                 project_manager.canvas.tag_bind(
                     text_id, "<Double-Button-1>", lambda event, text_id=text_id: self._edit_state_name(event, text_id)
                 )
-                project_manager.canvas.tag_bind(
-                    text_id, "<Button-3>", lambda event, text_id=text_id: self._show_menu_from_text(event, text_id)
-                )
-        # undo_handling.design_has_changed()
+                project_manager.canvas.tag_bind(text_id, "<Button-3>", self._show_menu)
         States.state_dict[self.state_id] = self
 
-    def _show_menu(self, event, state_id) -> None:
+    def _show_menu(self, event) -> None:
         listbox = OptionMenu(
             project_manager.canvas,
             ["add action", "add comment", "change color"],
@@ -83,12 +79,9 @@ class States:
         window = project_manager.canvas.create_window(event_x + 40, event_y, window=listbox)
         listbox.bind(
             "<Button-1>",
-            lambda event,
-            window=window,
-            listbox=listbox,
-            menu_x=event_x,
-            menu_y=event_y,
-            state_id=state_id: self._evaluate_menu(event, window, listbox, menu_x, menu_y, state_id),
+            lambda event, window=window, listbox=listbox, menu_x=event_x, menu_y=event_y: self._evaluate_menu(
+                event, window, listbox, menu_x, menu_y
+            ),
         )
         listbox.bind("<Leave>", lambda event, window=window, listbox=listbox: self._close_menu(window, listbox))
 
@@ -113,12 +106,6 @@ class States:
         project_manager.canvas.create_window(event_x, event_y, window=text_box, tag="entry-window")
         text_box.focus_set()
 
-    def _show_menu_from_text(self, event, text_id):
-        for tag in project_manager.canvas.gettags(text_id):
-            if tag.endswith("_name"):
-                state_tag = tag[:-5]
-                self._show_menu(event, state_tag)
-
     def _close_menu(self, window, listbox) -> None:
         listbox.destroy()
         project_manager.canvas.delete(window)
@@ -139,42 +126,79 @@ class States:
         tags = project_manager.canvas.gettags(state_tag)
         for t in tags:
             if t.endswith("_start"):
-                transition_handling.extend_transition_to_state_middle_points(t[:-6])
-                transition_handling.shorten_to_state_border(t[:-6])
+                transition.TransitionLine.extend_transition_to_state_middle_points(t[:-6])
+                transition.TransitionLine.shorten_to_state_border(t[:-6])
             elif t.endswith("_end") and not t.endswith("_comment_line_end"):
-                transition_handling.extend_transition_to_state_middle_points(t[:-4])
-                transition_handling.shorten_to_state_border(t[:-4])
+                transition.TransitionLine.extend_transition_to_state_middle_points(t[:-4])
+                transition.TransitionLine.shorten_to_state_border(t[:-4])
 
-    def _evaluate_menu(self, event, window, listbox, menu_x, menu_y, state_id) -> None:
+    def _evaluate_menu(self, event, window, listbox, menu_x, menu_y) -> None:
         selected_entry = listbox.get(listbox.curselection())
         listbox.destroy()
         project_manager.canvas.delete(window)
         if selected_entry == "add action":
-            tags = project_manager.canvas.gettags(state_id)
+            tags = project_manager.canvas.gettags(self.state_id)
             action_block_exists = False
             for tag in tags:
                 if tag.startswith("connection"):
                     action_block_exists = True
             if not action_block_exists:
-                action_ref = state_action.StateAction(menu_x, menu_y, height=1, width=8, padding=1, increment=True)
-                action_ref.connect_to_state(menu_x, menu_y, state_id)
-                action_ref.tag()
+                project_manager.canvas.addtag_withtag(
+                    "connection" + str(state_action.StateAction.mytext_id) + "_end", self.state_id
+                )
+                project_manager.canvas.addtag_withtag(
+                    "connection" + str(state_action.StateAction.mytext_id) + "_end", self.state_id
+                )
+                line_tags = (
+                    "connection" + str(state_action.StateAction.mytext_id),
+                    "connected_to_" + project_manager.canvas.gettags(self.state_id)[0],
+                )
+                state_action_tags = (
+                    "state_action" + str(state_action.StateAction.mytext_id),
+                    "connection" + str(state_action.StateAction.mytext_id) + "_start",
+                )
+                middle_x, middle_y = self._calculate_center(project_manager.canvas.coords(self.state_id))
+                line_coords = [menu_x + 100, menu_y, middle_x, middle_y]
+                state_action.StateAction(
+                    menu_x + 100,
+                    menu_y,
+                    height=1,
+                    width=8,
+                    padding=1,
+                    tags=state_action_tags,
+                    line_coords=line_coords,
+                    line_tags=line_tags,
+                    increment=True,
+                )
                 undo_handling.design_has_changed()
         elif selected_entry == "add comment":
-            tags = project_manager.canvas.gettags(state_id)
+            tags = project_manager.canvas.gettags(self.state_id)
             for tag in tags:
                 if tag.endswith("comment_line_end"):
                     return  # There is already a comment attached to this state.
+            state_coords = project_manager.canvas.coords(self.state_id)
             for tag in tags:
                 if tag.startswith("state"):
                     state_identifier = tag
-                    comment_ref = state_comment.StateComment(menu_x, menu_y, height=1, width=8, padding=1)
-                    comment_ref.add_line(menu_x, menu_y, state_identifier)
-                    comment_ref.tag(state_identifier)
+                    project_manager.canvas.addtag_withtag(state_identifier + "_comment_line_end", state_identifier)
+                    state_comment.StateComment(
+                        menu_x,
+                        menu_y,
+                        height=1,
+                        width=8,
+                        padding=1,
+                        tags=[state_identifier + "_comment", state_identifier + "_comment_line_start"],
+                        line_coords=[
+                            menu_x + 100,
+                            menu_y,
+                            (state_coords[2] + state_coords[0]) / 2,
+                            (state_coords[3] + state_coords[1]) / 2,
+                        ],
+                    )
                     undo_handling.design_has_changed()
         elif selected_entry == "change color":
             new_color = ColorChanger(constants.STATE_COLOR).ask_color()
-            project_manager.canvas.itemconfigure(state_id, fill=new_color)
+            project_manager.canvas.itemconfigure(self.state_id, fill=new_color)
             undo_handling.design_has_changed()
 
     def move_to(self, event_x, event_y, state_id, first, last) -> None:
@@ -222,25 +246,6 @@ class States:
         state_coords = project_manager.canvas.coords(state_id)
         return (state_coords[2] - state_coords[0]) / 2
 
-    def draw_state_name(self, event_x, event_y, text, tags):
-        text_id = project_manager.canvas.create_text(
-            event_x,
-            event_y,
-            text=text,
-            tags=tags,
-            font=project_manager.state_name_font,
-        )
-        project_manager.canvas.tag_bind(
-            text_id,
-            "<Button-1>",
-            lambda event: move_handling_canvas_item.MoveHandlingCanvasItem(event, text_id),
-        )
-        project_manager.canvas.tag_bind(
-            text_id, "<Double-Button-1>", lambda event, text_id=text_id: edit_state_name(event, text_id)
-        )
-        project_manager.canvas.tag_bind(text_id, "<Button-3>", lambda event: _show_menu_from_text(event, text_id))
-
-    @classmethod
     def _abort_edit_text(self, text_id, text_box, old_text) -> None:
         project_manager.canvas.delete("entry-window")
         project_manager.canvas.itemconfig(text_id, text=old_text)
@@ -248,17 +253,15 @@ class States:
         project_manager.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
         project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas))
 
-    @classmethod
     def _show_new_state_name(self, new_text, text_id) -> None:
-        state_name_list = self.__get_list_of_state_names(text_id)
+        state_name_list = self._get_list_of_state_names(text_id)
         if new_text != "":
             if new_text not in state_name_list:
                 project_manager.canvas.itemconfig(text_id, text=new_text)
             else:
                 messagebox.showerror("Error", "The state name\n" + new_text + "\nis already used at another state.")
 
-    @classmethod
-    def __get_list_of_state_names(text_id) -> list:
+    def _get_list_of_state_names(self, text_id) -> list:
         state_name_list = []
         all_canvas_ids = project_manager.canvas.find_withtag("all")
         for canvas_id in all_canvas_ids:

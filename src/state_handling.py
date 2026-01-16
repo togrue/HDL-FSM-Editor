@@ -30,6 +30,7 @@ def insert_state(event) -> None:
         tags=["state" + str(state.States.state_number + 1)],
         text="S" + str(state.States.state_number + 1),
         fill_color=constants.STATE_COLOR,
+        new_state=True,
     )
     # design_has_changed cannot be called by state.States, because state.States must be called
     # when an Undo is performed, which shall not create a new entry in the Undo-Stack.

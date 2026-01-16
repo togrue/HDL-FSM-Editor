@@ -18,7 +18,7 @@ import state
 import state_action
 import state_actions_default
 import state_comment
-import transition_handling
+import transition
 from project_manager import project_manager
 
 stack = []
@@ -109,7 +109,7 @@ def _get_complete_design_as_text_object():
     design += "reset_signal_name|" + project_manager.reset_signal_name.get() + "\n"
     design += "clock_signal_name|" + project_manager.clock_signal_name.get() + "\n"
     design += "state_number|" + str(state.States.state_number) + "\n"
-    design += "transition_number|" + str(transition_handling.transition_number) + "\n"
+    design += "transition_number|" + str(transition.TransitionLine.transition_number) + "\n"
     design += "connector_number|" + str(connector_insertion.ConnectorInsertion.connector_number) + "\n"
     design += "conditionaction_id|" + str(condition_action.ConditionAction.conditionaction_id) + "\n"
     design += "mytext_id|" + str(state_action.StateAction.mytext_id) + "\n"
@@ -300,13 +300,16 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
     # Build the new design:
     _line_index = 0
     list_of_states = []
+    transition_dict = {}
+    state_comment_line_dictionary = {}
+    state_action_line_dictionary = {}
     while _line_index < len(lines):
         if lines[_line_index].startswith("state_number|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "state_number|")
             state.States.state_number = int(rest_of_line)
         elif lines[_line_index].startswith("transition_number|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "transition_number|")
-            transition_handling.transition_number = int(rest_of_line)
+            transition.TransitionLine.transition_number = int(rest_of_line)
         elif lines[_line_index].startswith("connector_number|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "connector_number|")
             connector_insertion.ConnectorInsertion.connector_number = int(rest_of_line)
@@ -388,11 +391,15 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                 for t in tags:
                     if t.startswith("transition"):
                         transition_tag = t[:-8]
-                        transition_handling.draw_priority_number(coords, text, tags, transition_tag)
+                        if transition_tag not in transition_dict:
+                            transition_dict[transition_tag] = {}
+                        transition_dict[transition_tag]["prio-item"] = {"text": text}
+                        break
         elif lines[_line_index].startswith("line|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "line|")
             coords = []
             tags = ()
+            trans_id = None
             entries = rest_of_line.split()
             for e in entries:
                 try:
@@ -406,14 +413,18 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                         coords, dash=(2, 2), fill="black", tags=tags, state=tk.HIDDEN
                     )
                     break
-                if t.startswith("connected_to_state") or t.endswith("_comment_line"):  # line to state action/comment
-                    trans_id = project_manager.canvas.create_line(coords, dash=(2, 2), fill="black", tags=tags)
+                if t.startswith("connection"):  # line to state action
+                    state_action_line_dictionary[t] = {"coords": coords, "tags": tags}
                     break
+                if t.endswith("_comment_line"):  # line to comment
+                    state_comment_line_dictionary[t[:-5]] = {"coords": coords}
                 if t.startswith("transition"):
-                    trans_id = transition_handling.draw_transition(coords, tags)
-                    project_manager.canvas.tag_lower(trans_id)
+                    if t not in transition_dict:
+                        transition_dict[t] = {}
+                    transition_dict[t]["line-item"] = {"coords": coords, "tags": tags}
                     break
-            project_manager.canvas.tag_lower(trans_id)  # Lines are always "under" anything else.
+            if trans_id is not None:
+                project_manager.canvas.tag_lower(trans_id)  # lines are always in "background"
         elif lines[_line_index].startswith("rectangle|"):  # Used as connector or as priority entry.
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "rectangle|")
             coords = []
@@ -429,11 +440,9 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             for t in tags:
                 if t.startswith("connector"):
                     is_priority_rectangle = False
-            if is_priority_rectangle:
-                rectangle_id = project_manager.canvas.create_rectangle(coords, tag=tags, fill=constants.STATE_COLOR)
-            else:
+            if not is_priority_rectangle:
                 rectangle_id = connector_insertion.ConnectorInsertion.draw_connector(coords, tags)
-            project_manager.canvas.tag_raise(rectangle_id)  # priority rectangles are always in "foreground"
+                project_manager.canvas.tag_raise(rectangle_id)  # priority rectangles are always in "foreground"
         elif lines[_line_index].startswith("window_state_action_block|"):  # state_action
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_state_action_block|")
             text = _get_data(rest_of_line, lines)
@@ -448,12 +457,22 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                     coords.append(v)
                 except ValueError:
                     tags = tags + (e,)
-            action_ref = state_action.StateAction(
-                coords[0] - 100, coords[1], height=1, width=8, padding=1, increment=False
-            )
-            action_ref.text_id.insert("1.0", text)
-            action_ref.text_id.format()
-            project_manager.canvas.itemconfigure(action_ref.window_id, tag=tags)
+            for t in tags:
+                if t.startswith("connection"):  # line to state action
+                    connection_tag = t[:-6]
+                    action_ref = state_action.StateAction(
+                        coords[0],
+                        coords[1],
+                        height=1,
+                        width=8,
+                        padding=1,
+                        tags=tags,
+                        line_coords=state_action_line_dictionary[connection_tag]["coords"],
+                        line_tags=state_action_line_dictionary[connection_tag]["tags"],
+                        increment=False,
+                    )
+                    action_ref.text_id.insert("1.0", text)
+                    action_ref.text_id.format()
         elif lines[_line_index].startswith("window_state_comment|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_state_comment|")
             text = _get_data(rest_of_line, lines)
@@ -468,10 +487,12 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                     coords.append(v)
                 except ValueError:
                     tags = tags + (e,)
-            comment_ref = state_comment.StateComment(coords[0] - 100, coords[1], height=1, width=8, padding=1)
+            line_coords = state_comment_line_dictionary[tags[0]]["coords"]
+            comment_ref = state_comment.StateComment(
+                coords[0] - 100, coords[1], height=1, width=8, padding=1, tags=tags, line_coords=line_coords
+            )
             comment_ref.text_id.insert("1.0", text)
             comment_ref.text_id.format()
-            project_manager.canvas.itemconfigure(comment_ref.window_id, tag=tags)
         elif lines[_line_index].startswith("window_condition_action_block|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_condition_action_block|")
             condition = _get_data(rest_of_line, lines)
@@ -656,6 +677,12 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
         project_manager.reset_entry_button.config(state=tk.NORMAL)
     else:
         project_manager.reset_entry_button.config(state=tk.DISABLED)
+    for _, single_transition_dict in transition_dict.items():
+        transition_coords = single_transition_dict["line-item"]["coords"]
+        tags = single_transition_dict["line-item"]["tags"]
+        priority = single_transition_dict["prio-item"]["text"]
+        transition.TransitionLine(transition_coords, tags, priority, new_transition=False)
+    transition.TransitionLine.hide_priority_of_single_outgoing_transitions()
     project_manager.grid_drawer.draw_grid()
 
 

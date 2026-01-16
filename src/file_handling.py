@@ -22,7 +22,7 @@ import state_action
 import state_actions_default
 import state_comment
 import tag_plausibility
-import transition_handling
+import transition
 import undo_handling
 import update_hdl_tab
 import write_data_creator
@@ -122,7 +122,7 @@ def _clear_design() -> bool:
     project_manager.hdl_frame_text.config(state=tk.DISABLED)
     project_manager.canvas.delete("all")
     state.States.state_number = 0
-    transition_handling.transition_number = 0
+    transition.TransitionLine.transition_number = 0
     project_manager.reset_entry_button.config(state=tk.NORMAL)
     connector_insertion.ConnectorInsertion.connector_number = 0
     condition_action.ConditionAction.conditionaction_id = 0
@@ -254,7 +254,7 @@ def _save_log_config(design_dictionary: dict[str, Any]) -> None:
 def _save_canvas_data(design_dictionary: dict[str, Any], allowed_element_names_in_design_dictionary) -> None:
     design_dictionary["diagram_background_color"] = project_manager.diagram_background_color.get()
     design_dictionary["state_number"] = state.States.state_number
-    design_dictionary["transition_number"] = transition_handling.transition_number
+    design_dictionary["transition_number"] = transition.TransitionLine.transition_number
     design_dictionary["connector_number"] = connector_insertion.ConnectorInsertion.connector_number
     design_dictionary["conditionaction_id"] = condition_action.ConditionAction.conditionaction_id
     design_dictionary["mytext_id"] = state_action.StateAction.mytext_id
@@ -519,7 +519,7 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
 
     # Load canvas editing parameters
     state.States.state_number = design_dictionary["state_number"]
-    transition_handling.transition_number = design_dictionary["transition_number"]
+    transition.TransitionLine.transition_number = design_dictionary["transition_number"]
     connector_insertion.ConnectorInsertion.connector_number = design_dictionary["connector_number"]
     condition_action.ConditionAction.conditionaction_id = design_dictionary["conditionaction_id"]
     state_action.StateAction.mytext_id = design_dictionary["mytext_id"]
@@ -542,6 +542,9 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
     priority_ids = []
     hide_priority_rectangle_list = []
     transition_identifier = ""
+    transition_dict = {}
+    state_comment_line_dictionary = {}
+    state_action_line_dictionary = {}
 
     # Load states
     for definition in design_dictionary["state"]:
@@ -588,8 +591,9 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
             for t in tags:
                 if t.startswith("transition"):
                     transition_tag = t[:-8]
-                    text_id = transition_handling.draw_priority_number(coords, text, tags, transition_tag)
-                    priority_ids.append(text_id)
+                    if transition_tag not in transition_dict:
+                        transition_dict[transition_tag] = {}
+                    transition_dict[transition_tag]["prio-item"] = {"text": text}
 
     # Load lines (transitions)
     for definition in design_dictionary["line"]:
@@ -602,11 +606,15 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
                     coords, dash=(2, 2), fill="black", tags=tags, state=tk.HIDDEN
                 )
                 break
-            if t.startswith("connected_to_state") or t.endswith("_comment_line"):  # line to state action/comment
-                trans_id = project_manager.canvas.create_line(coords, dash=(2, 2), fill="black", tags=tags)
+            if t.startswith("connection"):  # line to state action
+                state_action_line_dictionary[t] = {"coords": coords, "tags": tags}
                 break
+            if t.endswith("_comment_line"):  # line to state comment
+                state_comment_line_dictionary[t[:-5]] = {"coords": coords}
             if t.startswith("transition"):
-                trans_id = transition_handling.draw_transition(coords, tags)
+                if tags[0] not in transition_dict:
+                    transition_dict[tags[0]] = {}
+                transition_dict[tags[0]]["line-item"] = {"coords": coords, "tags": tags}
                 break
         if trans_id is not None:
             project_manager.canvas.tag_lower(trans_id)  # Lines are always "under" anything else.
@@ -619,10 +627,7 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
         for t in tags:
             if t.startswith("connector"):
                 is_priority_rectangle = False
-        if is_priority_rectangle:  # priority rectangle
-            rectangle_id = transition_handling.draw_priority_rectangle(coords, tags)
-            ids_of_rectangles_to_raise.append(rectangle_id)
-        else:
+        if not is_priority_rectangle:
             connector_insertion.ConnectorInsertion.draw_connector(coords, tags)
             number_of_outgoing_transitions = 0
             for tag in tags:
@@ -632,8 +637,8 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
             if number_of_outgoing_transitions == 1:
                 hide_priority_rectangle_list.append(transition_identifier)
 
-    # Load window elements
-    _load_window_elements(design_dictionary)
+    _load_transitions_from_dict(transition_dict)
+    _load_window_elements(design_dictionary, state_comment_line_dictionary, state_action_line_dictionary)
 
     # Sort the display order for the transition priorities:
     for transition_id in transition_ids:
@@ -647,25 +652,56 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
         project_manager.canvas.itemconfigure(f"{transition_identifer}rectangle", state=tk.HIDDEN)
 
 
-def _load_window_elements(design_dictionary: dict[str, Any]) -> None:
+def _load_transitions_from_dict(transition_dict):
+    """Load transitions from the provided transition dictionary."""
+    for _, single_transition_dict in transition_dict.items():
+        transition_coords = single_transition_dict["line-item"]["coords"]
+        tags = single_transition_dict["line-item"]["tags"]
+        priority = single_transition_dict["prio-item"]["text"]
+        transition.TransitionLine(transition_coords, tags, priority, new_transition=False)
+    transition.TransitionLine.hide_priority_of_single_outgoing_transitions()
+
+
+def _load_window_elements(
+    design_dictionary: dict[str, Any],
+    state_comment_line_dictionary: dict[str, Any],
+    state_action_line_dictionary: dict[str, Any],
+) -> None:
     """Load all window elements including state actions, comments, and global actions."""
     # Load state action blocks
     for definition in design_dictionary["window_state_action_block"]:
         coords = definition[0]
         text = definition[1]
         tags = definition[2]
-        action_ref = state_action.StateAction(coords[0] - 100, coords[1], height=1, width=8, padding=1, increment=False)
-        project_manager.canvas.itemconfigure(action_ref.window_id, tag=tags)
-        action_ref.text_content = text + "\n"
-        action_ref.text_id.insert("1.0", text)
-        action_ref.text_id.format()
+        for t in tags:
+            if t.startswith("connection"):
+                line_tag = t[:-6]
+                line_coords = state_action_line_dictionary[line_tag]["coords"]
+                line_tags = state_action_line_dictionary[line_tag]["tags"]
+                action_ref = state_action.StateAction(
+                    coords[0],
+                    coords[1],
+                    height=1,
+                    width=8,
+                    padding=1,
+                    tags=tags,
+                    line_coords=line_coords,
+                    line_tags=line_tags,
+                    increment=False,
+                )
+                action_ref.text_content = text + "\n"
+                action_ref.text_id.insert("1.0", text)
+                action_ref.text_id.format()
 
     # Load state comments
     for definition in design_dictionary.get("window_state_comment", []):
         coords = definition[0]
         text = definition[1]
         tags = definition[2]
-        comment_ref = state_comment.StateComment(coords[0] - 100, coords[1], height=1, width=8, padding=1)
+        line_coords = state_comment_line_dictionary[tags[0]]["coords"]
+        comment_ref = state_comment.StateComment(
+            coords[0] - 100, coords[1], height=1, width=8, padding=1, tags=tags, line_coords=line_coords
+        )
         project_manager.canvas.itemconfigure(comment_ref.window_id, tag=tags)
         comment_ref.text_content = text + "\n"
         comment_ref.text_id.insert("1.0", text)

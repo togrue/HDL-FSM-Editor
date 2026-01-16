@@ -22,32 +22,25 @@ class StateComment:
     def __init__(
         self,
         menu_x,
-        menu_y,  # coordinates for placing the StateComment-Window "near" the clicked menu-entry
+        menu_y,
         height,
         width,
         padding,
+        tags,
+        line_coords,
     ) -> None:
         self.text_content = None
         self.difference_x = 0
         self.difference_y = 0
-        self.line_id = None
-        self.line_coords = []
-        # Create frame:
         self.frame_id = ttk.Frame(
             project_manager.canvas, relief=tk.FLAT, borderwidth=0, style="StateActionsWindow.TFrame", padding=padding
         )
-        self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
-        self.frame_id.bind("<Leave>", lambda event: self.deactivate_frame())
-        # Create label object inside frame:
         self.label_id = ttk.Label(
             self.frame_id,
             text="State-Comment: ",
             font=("Arial", int(project_manager.label_fontsize)),
             style="StateActionsWindow.TLabel",
         )
-        self.label_id.bind("<Enter>", lambda event: self.activate_window())
-        self.label_id.bind("<Leave>", lambda event: self.deactivate_window())
-        # Create text object inside frame:
         self.text_id = custom_text.CustomText(
             self.frame_id,
             text_type="comment",
@@ -57,6 +50,31 @@ class StateComment:
             maxundo=-1,
             font=("Courier", int(project_manager.fontsize)),
             foreground="blue",
+        )
+        self.line_id = project_manager.canvas.create_line(  # Line starts at comment, ends at state
+            line_coords,
+            tags=tags[0] + "_line",
+            dash=(2, 2),
+        )
+        # Create canvas window for the frame (containing label and text):
+        self.window_id = project_manager.canvas.create_window(
+            menu_x + 100, menu_y, window=self.frame_id, anchor=tk.W, tags=tags
+        )
+        self.label_id.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E))
+        self.text_id.grid(column=0, row=1, sticky=(tk.S, tk.W, tk.E))
+
+        project_manager.canvas.tag_lower(self.line_id)  # Lines are always "under" anything else.
+        self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
+        self.frame_id.bind("<Leave>", lambda event: self.deactivate_frame())
+        self.frame_id.bind(
+            "<Button-1>",
+            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(event, self.frame_id, self.window_id),
+        )
+        self.label_id.bind("<Enter>", lambda event: self.activate_window())
+        self.label_id.bind("<Leave>", lambda event: self.deactivate_window())
+        self.label_id.bind(
+            "<Button-1>",
+            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(event, self.label_id, self.window_id),
         )
         self.text_id.bind("<Control-z>", lambda event: self.text_id.undo())
         self.text_id.bind("<Control-Z>", lambda event: self.text_id.redo())
@@ -72,20 +90,6 @@ class StateComment:
             ),
         )
 
-        self.label_id.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E))
-        self.text_id.grid(column=0, row=1, sticky=(tk.S, tk.W, tk.E))
-
-        # Create canvas window for frame and text:
-        self.window_id = project_manager.canvas.create_window(menu_x + 100, menu_y, window=self.frame_id, anchor=tk.W)
-
-        self.frame_id.bind(
-            "<Button-1>",
-            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(event, self.frame_id, self.window_id),
-        )
-        self.label_id.bind(
-            "<Button-1>",
-            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(event, self.label_id, self.window_id),
-        )
         StateComment.dictionary[self.window_id] = self  # Store the object-reference with the Canvas-id as key.
 
     def _edit_in_external_editor(self):
@@ -129,26 +133,25 @@ class StateComment:
         for t in window_tags:
             if t.endswith("_comment"):
                 line_tag = t + "_line"
-                self.line_coords = project_manager.canvas.coords(line_tag)
-                self.line_coords[0] = event_x
-                self.line_coords[1] = event_y
-                project_manager.canvas.coords(line_tag, self.line_coords)
+                line_coords = project_manager.canvas.coords(line_tag)
+                line_coords[0] = event_x
+                line_coords[1] = event_y
+                project_manager.canvas.coords(line_tag, line_coords)
 
-    def add_line(self, menu_x, menu_y, state_identifier) -> None:  # Called by state_handling.evaluate_menu().
-        # Draw a line from the state to the comment block which is added to the state:
-        state_coords = project_manager.canvas.coords(state_identifier)
-        self.line_id = project_manager.canvas.create_line(
-            menu_x + 100,
-            menu_y,
-            (state_coords[2] + state_coords[0]) / 2,
-            (state_coords[3] + state_coords[1]) / 2,
-            dash=(2, 2),
-            tag=state_identifier + "_comment_line",
-        )
-        project_manager.canvas.tag_lower(self.line_id, state_identifier)
-
-    def tag(self, state_identifier) -> None:  # Called by state_handling.evaluate_menu().
-        project_manager.canvas.addtag_withtag(state_identifier + "_comment_line_end", state_identifier)
-        project_manager.canvas.itemconfigure(
-            self.window_id, tag=(state_identifier + "_comment", state_identifier + "_comment_line_start")
-        )
+    def move_line_point_to(self, event_x, event_y, first) -> None:
+        # Called when the state is moved.
+        if first:
+            state_tag = project_manager.canvas.gettags(self.window_id)[0][:-8]  # remove "_comment"
+            state_coords = project_manager.canvas.coords(state_tag)
+            middle_x = (state_coords[0] + state_coords[2]) / 2
+            middle_y = (state_coords[1] + state_coords[3]) / 2
+            self.difference_x, self.difference_y = -event_x + middle_x, -event_y + middle_y
+        # Keep the distance between event and anchor point constant:
+        event_x, event_y = event_x + self.difference_x, event_y + self.difference_y
+        # Move line end point to grid:
+        event_x = project_manager.state_radius * round(event_x / project_manager.state_radius)
+        event_y = project_manager.state_radius * round(event_y / project_manager.state_radius)
+        line_coords = project_manager.canvas.coords(self.line_id)
+        line_coords[2] = event_x
+        line_coords[3] = event_y
+        project_manager.canvas.coords(self.line_id, line_coords)

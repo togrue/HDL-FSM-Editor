@@ -5,6 +5,7 @@ All methods needed for the state action process in VHDL or Verilog
 import re
 import tkinter as tk
 
+import state_action
 import state_actions_default
 from codegen import hdl_generation_library
 from project_manager import project_manager
@@ -99,13 +100,13 @@ def _create_state_action_process_for_vhdl(
     state_action_process += "    case state is\n"
     file_line_number += 2
 
-    for state_action in state_action_list:
-        when_entry = _create_when_entry(state_action)
+    for state_action_entry in state_action_list:
+        when_entry = _create_when_entry(state_action_entry)
         state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, when_entry)
         file_line_number += 1  # A when_entry starts always with "when ..."
         number_of_lines = when_entry.count("\n")
         project_manager.link_dict_ref.add(
-            file_name, file_line_number, "custom_text_in_diagram_tab", number_of_lines - 1, state_action[2]
+            file_name, file_line_number, "custom_text_in_diagram_tab", number_of_lines - 1, state_action_entry[2]
         )
         file_line_number += number_of_lines - 1
 
@@ -163,8 +164,8 @@ def _create_state_action_process_for_verilog(
     state_action_process += "    case (state)\n"
     file_line_number += 2
 
-    for state_action in state_action_list:
-        when_entry = _create_when_entry(state_action)
+    for state_action_entry in state_action_list:
+        when_entry = _create_when_entry(state_action_entry)
         number_of_lines = when_entry.count("\n")
         state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, when_entry)
         if number_of_lines == 2 and when_entry.endswith("    ;\n"):  # Empty state action
@@ -176,7 +177,7 @@ def _create_state_action_process_for_verilog(
                 file_line_number,
                 "custom_text_in_diagram_tab",
                 number_of_lines - 2,  # a when entry always ends with "end"
-                state_action[2],
+                state_action_entry[2],
             )
             file_line_number += number_of_lines - 1
 
@@ -200,7 +201,7 @@ def _create_a_list_with_all_possible_sensitivity_entries() -> list:
 def _create_state_action_list(state_tag_list_sorted):
     state_action_list = []
     for state_tag in state_tag_list_sorted:
-        state_action = "null;\n"
+        state_action_text = "null;\n"
         state_action_reference = None
         for tag_of_state in project_manager.canvas.gettags(state_tag):
             if tag_of_state.startswith("connection") and tag_of_state.endswith(
@@ -210,11 +211,11 @@ def _create_state_action_list(state_tag_list_sorted):
                 state_action_id = project_manager.canvas.find_withtag(connection_name + "_start")
                 if state_action_id != ():
                     ref = state_action.StateAction.mytext_dict[state_action_id[0]]
-                    state_action = ref.text_id.get("1.0", tk.END)
+                    state_action_text = ref.text_id.get("1.0", tk.END)
                     state_action_reference = ref.text_id
                     break
         state_name = project_manager.canvas.itemcget(state_tag + "_name", "text")
-        state_action_list.append([state_name, state_action, state_action_reference])
+        state_action_list.append([state_name, state_action_text, state_action_reference])
     return state_action_list
 
 
@@ -237,15 +238,15 @@ def _create_sensitivity_list(state_action_list, default_state_actions, all_possi
     return sensitivity_list
 
 
-def _remove_left_hand_sides(state_action):
+def _remove_left_hand_sides(state_action_text) -> str:
     # Insert ";" for the search pattern later:
-    state_action = ";" + state_action
-    state_action = re.sub(" begin ", " ; ", state_action, flags=re.I)
-    state_action = re.sub(" then ", " ; ", state_action, flags=re.I)
-    state_action = re.sub(" else ", " ; ", state_action, flags=re.I)
+    state_action_text = ";" + state_action_text
+    state_action_text = re.sub(" begin ", " ; ", state_action_text, flags=re.I)
+    state_action_text = re.sub(" then ", " ; ", state_action_text, flags=re.I)
+    state_action_text = re.sub(" else ", " ; ", state_action_text, flags=re.I)
     # Replace the left sides:
-    state_action = re.sub(r";\s*[^\s]+\s*<=", "; <=", state_action)
-    return state_action
+    state_action_text = re.sub(r";\s*[^\s]+\s*<=", "; <=", state_action_text)
+    return state_action_text
 
 
 def _get_default_state_actions() -> str:
@@ -258,17 +259,17 @@ def _get_default_state_actions() -> str:
         return comment + " Default State Actions:\n" + ref.text_id.get("1.0", tk.END)
 
 
-def _create_when_entry(state_action):
+def _create_when_entry(state_action_entry) -> str:
     if project_manager.language.get() == "VHDL":
-        when_entry = "when " + state_action[0] + "=>\n"
-        when_entry += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_action[1])
+        when_entry = "when " + state_action_entry[0] + "=>\n"
+        when_entry += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_action_entry[1])
     else:
-        if state_action[1].startswith("null;"):
-            when_entry = state_action[0] + ":\n"
+        if state_action_entry[1].startswith("null;"):
+            when_entry = state_action_entry[0] + ":\n"
             when_entry += "    ;\n"
         else:
-            when_entry = state_action[0] + ": begin\n"
-            when_entry += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_action[1])
+            when_entry = state_action_entry[0] + ": begin\n"
+            when_entry += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_action_entry[1])
             when_entry += "end\n"
     return when_entry
 

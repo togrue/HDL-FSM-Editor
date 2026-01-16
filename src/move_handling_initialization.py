@@ -4,12 +4,13 @@ When the mouse hovers over one of the text boxes, this binding is not active,
 as the text boxes are Canvas-Windows, for which the Canvas binding is not valid.
 """
 
+import math
 import tkinter as tk
 
 import canvas_editing
 import move_handling
 import move_handling_finish
-import transition_handling
+import transition
 from project_manager import project_manager
 
 
@@ -202,23 +203,42 @@ def _create_move_list_entry_if_a_diagram_object_is_moved(items_near_mouse_click_
 
 def _add_lines_connected_to_the_diagram_object_to_the_list(move_list) -> None:
     tag_list_of_object_to_move = project_manager.canvas.gettags(move_list[0][0])
+    # tag_list_of_object_to_move may have different entries (additional to "current"):
+    # When moving a state:
+    # ('state1',
+    # 'connection0_end',       -> for state_action
+    # 'transition0_start', 'transition2_end',
+    # 'state1_comment_line_end')
+    # When moving a state action:
+    # ('state_action0', 'connection0_start')
+    # When moving a state comment:
+    # ('state1_comment', 'state1_comment_line_start')
     tag_of_connected_line = None
     for tag in (
         tag_list_of_object_to_move
     ):  # Check which Canvas lines are "connected" and must be moved together with the diagram object.
         to_be_moved_point_of_connected_line = ""
-        if tag.endswith("_start"):
+        if tag.startswith("connection") and tag.endswith("_start"):
             tag_of_connected_line = tag[:-6]  # transition<n>, state<n>_comment_line, connection<n>
             to_be_moved_point_of_connected_line = "start"
+            # transition.TransitionLine.extend_transition_to_state_middle_points(tag_of_connected_line)
+        elif tag.startswith("transition") and tag.endswith("_start"):
+            tag_of_connected_line = tag[:-6]  # transition<n>, state<n>_comment_line, connection<n>
+            to_be_moved_point_of_connected_line = "start"
+            transition.TransitionLine.extend_transition_to_state_middle_points(tag_of_connected_line)
+        elif tag.endswith("_comment_line_end"):
+            tag_of_connected_line = tag[:-4]
+            to_be_moved_point_of_connected_line = "end"
         elif tag.endswith("_end"):
             tag_of_connected_line = tag[:-4]  # transition<n>, state<n>_comment_line, connection<n>, ca_connection<n>
             to_be_moved_point_of_connected_line = "end"
+            transition.TransitionLine.extend_transition_to_state_middle_points(tag_of_connected_line)
         if to_be_moved_point_of_connected_line != "":
             # tag_of_connected_line identifies a single object.
             # So the method find_withtag() returns always a list of length 1:
             id_of_connected_line = project_manager.canvas.find_withtag(tag_of_connected_line)[0]
             move_list.append([id_of_connected_line, to_be_moved_point_of_connected_line])
-            transition_handling.extend_transition_to_state_middle_points(tag_of_connected_line)
+            transition.TransitionLine.extend_transition_to_state_middle_points(tag_of_connected_line)
 
 
 def _add_items_for_moving_a_single_line_point_to_the_list(
@@ -231,14 +251,14 @@ def _add_items_for_moving_a_single_line_point_to_the_list(
         line_id
     )  # A line can represent a "transition" or a "connection" (connections are ignored here).
     if transition_tags != ():
-        moving_point = transition_handling.get_point_to_move(line_id, event_x, event_y)
+        moving_point = get_point_to_move(line_id, event_x, event_y)
         for tag in transition_tags:
             if tag.startswith("transition"):
                 id_of_transition = project_manager.canvas.find_withtag(tag)[0]
                 # moving point is one of: "start", "next_to_start", "next_to_end", "end" as
                 # at maximum 4 points are supported:
                 move_list.append([id_of_transition, moving_point])
-                transition_handling.extend_transition_to_state_middle_points(tag)
+                transition.TransitionLine.extend_transition_to_state_middle_points(tag)
                 _remove_tags_and_hide_priority(line_id, tag, transition_tags, moving_point)
 
 
@@ -272,7 +292,7 @@ def _remove_tags_and_hide_priority(line_id, transition_tag, transition_tags, mov
                 for t in transition_tags:
                     if t.startswith("ca_connection"):
                         project_manager.canvas.dtag("connected_to_reset_transition", "connected_to_reset_transition")
-            priority_dict = transition_handling.determine_priorities_of_outgoing_transitions(start_state_tag)
+            priority_dict = transition.TransitionLine.determine_priorities_of_outgoing_transitions(start_state_tag)
             if len(priority_dict) == 1:
                 for outgoing_transition in priority_dict:
                     project_manager.canvas.itemconfigure(outgoing_transition + "priority", state=tk.HIDDEN)
@@ -283,3 +303,89 @@ def _remove_tags_and_hide_priority(line_id, transition_tag, transition_tags, mov
                 end_state_tag, transition_tag + "_end"
             )  # delete the transition<n>_end-tag from the connected state.
             project_manager.canvas.dtag(line_id, tag)  # delete the "going_to_" tag from the line
+
+
+def get_point_to_move(item_id, event_x, event_y) -> str:
+    # Determine which point of the transition is nearest to the event and insert an additional if necessary:
+    transition_coords = project_manager.canvas.coords(item_id)
+    number_of_points = len(transition_coords) // 2
+    distance_event_to_point = []
+    distance_to_neighbour = []
+    for i in range(number_of_points):
+        distance_event_to_point.append(
+            math.sqrt((event_x - transition_coords[2 * i]) ** 2 + (event_y - transition_coords[2 * i + 1]) ** 2)
+        )
+        if i < number_of_points - 1:
+            distance_to_neighbour.append(
+                math.sqrt(
+                    (transition_coords[2 * i] - transition_coords[2 * i + 2]) ** 2
+                    + (transition_coords[2 * i + 1] - transition_coords[2 * i + 3]) ** 2
+                )
+            )
+    if number_of_points == 4:
+        return_value = ""
+        if distance_event_to_point[0] < 2 * project_manager.state_radius:
+            return_value = "start"
+        if (
+            distance_event_to_point[3] < 2 * project_manager.state_radius
+            and distance_event_to_point[3] < distance_event_to_point[0]
+        ):
+            return_value = "end"
+        if return_value == "":
+            return_value = "next_to_start" if distance_event_to_point[1] < distance_event_to_point[2] else "next_to_end"
+        return return_value
+    if number_of_points == 3:
+        return_value = ""
+        if distance_event_to_point[0] < 2 * project_manager.state_radius:
+            return_value = "start"
+        if (
+            distance_event_to_point[2] < 2 * project_manager.state_radius
+            and distance_event_to_point[2] < distance_event_to_point[0]
+        ):
+            return_value = "end"
+        if return_value != "":
+            return return_value
+        ratio = distance_event_to_point[0] / distance_event_to_point[2]
+        if 0.8 < ratio < 1.2:
+            return "next_to_start"  # equal to "next_to_end" because no new point is inserted.
+        _change_the_number_of_points_from_3_to_4(item_id, transition_coords)
+        if distance_event_to_point[2] < distance_event_to_point[0]:
+            return "next_to_end"
+        return "next_to_start"
+    # number_of_points == 2
+    if distance_event_to_point[0] < distance_to_neighbour[0] / 3:
+        return "start"
+    if distance_event_to_point[0] < distance_to_neighbour[0] * 2 / 3:
+        _change_the_number_of_points_from_2_to_3(item_id, transition_coords, event_x, event_y)
+        return "next_to_start"
+    return "end"
+
+
+def _change_the_number_of_points_from_3_to_4(item_id, transition_coords):
+    transition_coords = _calculate_4_points_from_3_points(transition_coords)
+    project_manager.canvas.coords(item_id, *transition_coords)  # insert new point into transition
+
+
+def _calculate_4_points_from_3_points(transition_coords):
+    vector_to_point0 = transition_coords[0], transition_coords[1]
+    vector_to_point1 = transition_coords[2], transition_coords[3]
+    vector_to_point2 = transition_coords[4], transition_coords[5]
+    vector_point0_to_point2 = [vector_to_point2[i] - vector_to_point0[i] for i in range(2)]
+    vector_to_half_02 = [vector_to_point0[i] + 0.50 * vector_point0_to_point2[i] for i in range(2)]
+    vector_to_shor_02 = [vector_to_point0[i] + 0.25 * vector_point0_to_point2[i] for i in range(2)]
+    vector_to_long_02 = [vector_to_point0[i] + 0.75 * vector_point0_to_point2[i] for i in range(2)]
+    vector_half_02_to_point1 = [vector_to_point1[i] - vector_to_half_02[i] for i in range(2)]
+    new_point2 = [vector_to_shor_02[i] + 0.5 * vector_half_02_to_point1[i] for i in range(2)]
+    new_point3 = [vector_to_long_02[i] + 0.5 * vector_half_02_to_point1[i] for i in range(2)]
+    return (
+        transition_coords[0],
+        transition_coords[1],
+        new_point2,
+        new_point3,
+        transition_coords[4],
+        transition_coords[5],
+    )
+
+
+def _change_the_number_of_points_from_2_to_3(item_id, transition_coords, event_x, event_y):
+    project_manager.canvas.coords(item_id, *transition_coords[0:2], event_x, event_y, *transition_coords[2:4])

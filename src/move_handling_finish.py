@@ -8,7 +8,7 @@ import canvas_editing
 import condition_action
 import move_handling
 import move_handling_initialization
-import transition_handling
+import transition
 import undo_handling
 import vector_handling
 from project_manager import project_manager
@@ -89,20 +89,16 @@ def _move_the_line_to_the_center_of_the_target(
     for target in item_ids_at_moving_end_location:
         target_coords = project_manager.canvas.coords(target)
         target_type = project_manager.canvas.type(target)
+        ref = transition.TransitionLine.transition_dict[transition_id]
         if target_type == "polygon":
             polygon_coords = project_manager.canvas.coords(target)
-            transition_handling.move_to(
-                polygon_coords[4], polygon_coords[5], transition_id, transition_point, False, move_list, False
-            )
+            ref.move_to(polygon_coords[4], polygon_coords[5], transition_id, transition_point, False, move_list, False)
         elif target_type in ["oval", "rectangle"]:
             state_middle_x = (target_coords[2] + target_coords[0]) / 2
             state_middle_y = (target_coords[3] + target_coords[1]) / 2
-            transition_handling.move_to(
-                state_middle_x, state_middle_y, transition_id, transition_point, False, move_list, False
-            )
+            ref.move_to(state_middle_x, state_middle_y, transition_id, transition_point, False, move_list, False)
 
 
-# def move_to(event_x, event_y, transition_id, point, first, move_list, last):
 def _update_the_tags_of_the_transition(item_ids_at_moving_end_location, transition_id, transition_point) -> None:
     transition_tags = project_manager.canvas.gettags(transition_id)
     transition_tag = ""
@@ -133,7 +129,7 @@ def _update_the_tags_of_the_transition(item_ids_at_moving_end_location, transiti
                         ref.change_descriptor_to("Transition actions (asynchronous):")
                     else:
                         ref.change_descriptor_to("Transition actions (clocked):")
-                priority_dict = transition_handling.determine_priorities_of_outgoing_transitions(target_id)
+                priority_dict = transition.TransitionLine.determine_priorities_of_outgoing_transitions(target_id)
                 transition_priority_visibility = tk.HIDDEN if len(priority_dict) == 1 else tk.NORMAL
                 for outgoing_transition in priority_dict:
                     project_manager.canvas.itemconfigure(
@@ -168,7 +164,7 @@ def _shorten_all_moved_transitions_to_the_state_borders(move_list) -> None:
                     project_manager.canvas.coords(transition_tag)
                 )
                 project_manager.canvas.coords(transition_tag, transition_coords)
-                transition_handling.shorten_to_state_border(transition_tag)
+                transition.TransitionLine.shorten_to_state_border(transition_tag)
                 done.append(move_list_entry[0])
 
 
