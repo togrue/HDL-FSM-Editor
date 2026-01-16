@@ -498,7 +498,11 @@ class TransitionLine:
     def hide_priority_of_single_outgoing_transitions(cls) -> None:
         canvas_ids = project_manager.canvas.find_all()
         for canvas_id in canvas_ids:
-            if project_manager.canvas.type(canvas_id) == "oval":  # found state
+            if project_manager.canvas.type(canvas_id) in [
+                "oval",
+                "polygon",
+                "rectangle",
+            ]:  # state, reset_entry, connector
                 tags = project_manager.canvas.gettags(canvas_id)
                 outgoing_transition_tags = []
                 for tag in tags:
