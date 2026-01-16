@@ -28,46 +28,15 @@ class ConditionAction:
         self.line_coords = None
         self.action_text = None
         self.condition_text = None
-        # Create frame:
+
         self.frame_id = ttk.Frame(
             project_manager.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="Window.TFrame"
         )
-        # The method deactivate_frame() can not be bound to the Frame-leave-Event, because otherwise at moving the
-        # cursor exactly at the frame would cause a flickering because of toggling between shrinked and full box.
-        # Instead the method deactivate_frame() is bound dynamically to the Canvas-Enter event in activate_frame():
-        self.frame_enter_func_id = self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
-        self.canvas_enter_func_id = None
-
-        # Create objects inside frame:
-        if connected_to_reset_entry:
-            label_action_text = "Transition actions (asynchronous):"
-        else:
-            label_action_text = "Transition actions (clocked):"
         self.condition_label = ttk.Label(
             self.frame_id,
             text="Transition condition: ",
             font=("Arial", int(project_manager.label_fontsize)),
             style="Window.TLabel",
-        )
-        self.condition_label.bind("<Enter>", lambda event: self.select_window())
-        self.condition_label.bind("<Leave>", lambda event: self.deselect_window())
-        self.action_label = ttk.Label(
-            self.frame_id,
-            text=label_action_text,
-            font=("Arial", int(project_manager.label_fontsize)),
-            style="Window.TLabel",
-        )
-        self.action_label.bind("<Enter>", lambda event: self.select_window())
-        self.action_label.bind("<Leave>", lambda event: self.deselect_window())
-        self.action_id = custom_text.CustomText(
-            self.frame_id,
-            text_type="action",
-            takefocus=0,
-            height=height,
-            width=width,
-            undo=True,
-            maxundo=-1,
-            font=("Courier", int(project_manager.fontsize)),
         )
         self.condition_id = custom_text.CustomText(
             self.frame_id,
@@ -79,26 +48,56 @@ class ConditionAction:
             maxundo=-1,
             font=("Courier", int(project_manager.fontsize)),
         )
-        # Create bindings for Undo/Redo:
-        self.action_id.bind("<Control-z>", lambda event: self.action_id.undo())
-        self.action_id.bind("<Control-Z>", lambda event: self.action_id.redo())
-        self.action_id.bind("<Control-e>", lambda event: self._edit_action_in_external_editor())
+        self.action_label = ttk.Label(
+            self.frame_id,
+            text="Transition actions (asynchronous):" if connected_to_reset_entry else "Transition actions (clocked):",
+            font=("Arial", int(project_manager.label_fontsize)),
+            style="Window.TLabel",
+        )
+        self.action_id = custom_text.CustomText(
+            self.frame_id,
+            text_type="action",
+            takefocus=0,
+            height=height,
+            width=width,
+            undo=True,
+            maxundo=-1,
+            font=("Courier", int(project_manager.fontsize)),
+        )
+        self.window_id = project_manager.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
+        self._show_condition_and_action()
+
+        # The method _deactivate_frame() can not be bound to the Frame-leave-Event, because otherwise at moving the
+        # cursor exactly at the frame would cause a flickering because of toggling between shrinked and full box.
+        # Instead the method _deactivate_frame() is bound dynamically to the Canvas-Enter event in _activate_frame():
+        self.frame_enter_func_id = self.frame_id.bind("<Enter>", lambda event: self._activate_frame())
+        self.frame_id.bind(
+            "<Button-1>",
+            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(event, self.frame_id, self.window_id),
+        )
+        self.canvas_enter_func_id = None
+        self.condition_label.bind("<Enter>", lambda event: self._select_window())
+        self.condition_label.bind("<Leave>", lambda event: self._deselect_window())
+        self.condition_label.bind(
+            "<Button-1>",
+            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(
+                event, self.condition_label, self.window_id
+            ),
+        )
+        self.action_label.bind("<Enter>", lambda event: self._select_window())
+        self.action_label.bind("<Leave>", lambda event: self._deselect_window())
+        self.action_label.bind(
+            "<Button-1>",
+            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(
+                event, self.action_label, self.window_id
+            ),
+        )
         self.condition_id.bind("<Control-z>", lambda event: self.condition_id.undo())
         self.condition_id.bind("<Control-Z>", lambda event: self.condition_id.redo())
         self.condition_id.bind("<Control-e>", lambda event: self._edit_condition_in_external_editor())
-        self.action_id.bind("<Control-s>", lambda event: self.update_action())
-        self.action_id.bind("<Control-g>", lambda event: self.update_action())
-        self.condition_id.bind("<Control-s>", lambda event: self.update_condition())
-        self.condition_id.bind("<Control-g>", lambda event: self.update_condition())
-        self.action_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
         self.condition_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-        self.action_id.bind("<FocusIn>", lambda event: project_manager.canvas.unbind_all("<Delete>"))
-        self.action_id.bind(
-            "<FocusOut>",
-            lambda event: project_manager.canvas.bind_all(
-                "<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas)
-            ),
-        )
+        self.condition_id.bind("<Control-s>", lambda event: self._update_condition())  # Update self.text at "save".
+        self.condition_id.bind("<Control-g>", lambda event: self._update_condition())  # Update self.text at "generate".
         self.condition_id.bind("<FocusIn>", lambda event: project_manager.canvas.unbind_all("<Delete>"))
         self.condition_id.bind(
             "<FocusOut>",
@@ -106,57 +105,90 @@ class ConditionAction:
                 "<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas)
             ),
         )
-        # Define layout:
-        self.show_complete_box()
-
-        # Create canvas window for the frame:
-        self.window_id = project_manager.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
-
-        self.frame_id.bind(
-            "<Button-1>",
-            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(event, self.frame_id, self.window_id),
-        )
-        self.condition_label.bind(
-            "<Button-1>",
-            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(
-                event, self.condition_label, self.window_id
-            ),
-        )
-        self.action_label.bind(
-            "<Button-1>",
-            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(
-                event, self.action_label, self.window_id
+        self.action_id.bind("<Control-z>", lambda event: self.action_id.undo())
+        self.action_id.bind("<Control-Z>", lambda event: self.action_id.redo())
+        self.action_id.bind("<Control-e>", lambda event: self._edit_action_in_external_editor())
+        self.action_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
+        self.action_id.bind("<Control-s>", lambda event: self._update_action())  # Update self.text at "save".
+        self.action_id.bind("<Control-g>", lambda event: self._update_action())  # Update self.text at "generate".
+        self.action_id.bind("<FocusIn>", lambda event: project_manager.canvas.unbind_all("<Delete>"))
+        self.action_id.bind(
+            "<FocusOut>",
+            lambda event: project_manager.canvas.bind_all(
+                "<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas)
             ),
         )
 
         # Create dictionary for translating the canvas-id of the canvas-window into a reference to this object:
         ConditionAction.dictionary[self.window_id] = self
 
-    def _edit_action_in_external_editor(self):
-        self.action_id.edit_in_external_editor()
-        self.update_action()
+    def _show_condition_and_action(self) -> None:
+        self.condition_label.grid(row=0, column=0, sticky=(tk.W, tk.E))
+        self.condition_id.grid(row=1, column=0, sticky=(tk.W, tk.E))
+        self.action_label.grid(row=2, column=0, sticky=(tk.W, tk.E))
+        self.action_id.grid(row=3, column=0, sticky=(tk.W, tk.E))
+
+    def _activate_frame(self) -> None:
+        self._select_window()
+        self._show_condition_and_action()
+        self.action_text = self.action_id.get("1.0", tk.END)
+        self.condition_text = self.condition_id.get("1.0", tk.END)
+        if self.frame_enter_func_id is not None:
+            self.frame_id.unbind("<Enter>", self.frame_enter_func_id)
+            self.frame_enter_func_id = None
+        self.canvas_enter_func_id = project_manager.canvas.bind("<Motion>", lambda event: self._deactivate_frame(), "+")
+
+    def _select_window(self) -> None:
+        self.frame_id.configure(borderwidth=1, style="WindowSelected.TFrame")
+        self.condition_label.configure(style="WindowSelected.TLabel")
+        self.action_label.configure(style="WindowSelected.TLabel")
+
+    def _deselect_window(self) -> None:
+        self.frame_id.configure(borderwidth=0, style="Window.TFrame")
+        self.condition_label.configure(style="Window.TLabel")
+        self.action_label.configure(style="Window.TLabel")
 
     def _edit_condition_in_external_editor(self):
         self.condition_id.edit_in_external_editor()
-        self.update_condition()
+        self._update_condition()
 
-    def update_action(self):
-        # Update self.action_text, so that the <Leave>-check in deactivate() does not signal a design-change and
-        # that save_in_file() already reads the new text, entered into the textbox before Control-s/g.
-        # To ensure this, save_in_file() waits for idle.
-        self.action_text = self.action_id.get("1.0", tk.END)
-
-    def update_condition(self):
+    def _update_condition(self):
         # Update self.condition_text, so that the <Leave>-check in deactivate() does not signal a design-change and
         # that save_in_file() already reads the new text, entered into the textbox before Control-s/g.
         # To ensure this, save_in_file() waits for idle.
         self.condition_text = self.condition_id.get("1.0", tk.END)
 
-    def show_complete_box(self) -> None:
-        self.condition_label.grid(row=0, column=0, sticky=(tk.W, tk.E))
-        self.condition_id.grid(row=1, column=0, sticky=(tk.W, tk.E))
-        self.action_label.grid(row=2, column=0, sticky=(tk.W, tk.E))
-        self.action_id.grid(row=3, column=0, sticky=(tk.W, tk.E))
+    def _edit_action_in_external_editor(self):
+        self.action_id.edit_in_external_editor()
+        self._update_action()
+
+    def _update_action(self):
+        # Update self.action_text, so that the <Leave>-check in deactivate() does not signal a design-change and
+        # that save_in_file() already reads the new text, entered into the textbox before Control-s/g.
+        # To ensure this, save_in_file() waits for idle.
+        self.action_text = self.action_id.get("1.0", tk.END)
+
+    def _deactivate_frame(self) -> None:
+        self._deselect_window()
+        if self.canvas_enter_func_id is not None:
+            project_manager.canvas.unbind("<Motion>", self.canvas_enter_func_id)
+            self.canvas_enter_func_id = None
+        self.frame_enter_func_id = self.frame_id.bind("<Enter>", lambda event: self._activate_frame())
+        self._hide_empty_condition_or_action()
+
+    def _hide_empty_condition_or_action(self) -> None:
+        self.frame_id.focus()  # "unfocus" the Text, when the mouse leaves the text.
+        if (
+            self.condition_id.get("1.0", tk.END) != self.condition_text
+            or self.action_id.get("1.0", tk.END) != self.action_text
+        ):
+            undo_handling.design_has_changed()
+        if self.condition_id.get("1.0", tk.END) == "\n" and self.action_id.get("1.0", tk.END) != "\n":
+            self.condition_label.grid_forget()
+            self.condition_id.grid_forget()
+        if self.condition_id.get("1.0", tk.END) != "\n" and self.action_id.get("1.0", tk.END) == "\n":
+            self.action_label.grid_forget()
+            self.action_id.grid_forget()
 
     def tag(self, connected_to_reset_entry) -> None:
         if connected_to_reset_entry is True:
@@ -194,48 +226,6 @@ class ConditionAction:
             "ca_connection" + str(ConditionAction.conditionaction_id) + "_end", transition_id
         )
         project_manager.canvas.tag_lower(self.line_id, transition_id)
-
-    def activate_frame(self) -> None:
-        self.select_window()
-        self.show_complete_box()
-        self.action_text = self.action_id.get("1.0", tk.END)
-        self.condition_text = self.condition_id.get("1.0", tk.END)
-        if self.frame_enter_func_id is not None:
-            self.frame_id.unbind("<Enter>", self.frame_enter_func_id)
-            self.frame_enter_func_id = None
-        self.canvas_enter_func_id = project_manager.canvas.bind("<Motion>", lambda event: self.deactivate_frame(), "+")
-
-    def select_window(self) -> None:
-        self.frame_id.configure(borderwidth=1, style="WindowSelected.TFrame")
-        self.condition_label.configure(style="WindowSelected.TLabel")
-        self.action_label.configure(style="WindowSelected.TLabel")
-
-    def deactivate_frame(self) -> None:
-        self.deselect_window()
-        if self.canvas_enter_func_id is not None:
-            project_manager.canvas.unbind("<Motion>", self.canvas_enter_func_id)
-            self.canvas_enter_func_id = None
-        self.frame_enter_func_id = self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
-        self.shrink_box()
-
-    def deselect_window(self) -> None:
-        self.frame_id.configure(borderwidth=0, style="Window.TFrame")
-        self.condition_label.configure(style="Window.TLabel")
-        self.action_label.configure(style="Window.TLabel")
-
-    def shrink_box(self) -> None:
-        self.frame_id.focus()  # "unfocus" the Text, when the mouse leaves the text.
-        if (
-            self.condition_id.get("1.0", tk.END) != self.condition_text
-            or self.action_id.get("1.0", tk.END) != self.action_text
-        ):
-            undo_handling.design_has_changed()
-        if self.condition_id.get("1.0", tk.END) == "\n" and self.action_id.get("1.0", tk.END) != "\n":
-            self.condition_label.grid_forget()
-            self.condition_id.grid_forget()
-        if self.condition_id.get("1.0", tk.END) != "\n" and self.action_id.get("1.0", tk.END) == "\n":
-            self.action_label.grid_forget()
-            self.action_id.grid_forget()
 
     def move_to(self, event_x, event_y, first) -> None:
         if first is True:
