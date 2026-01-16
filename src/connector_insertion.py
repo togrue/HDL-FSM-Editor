@@ -8,9 +8,9 @@ import undo_handling
 from project_manager import project_manager
 
 
-class ConnectorInsertion:
+class ConnectorInstance:
     """
-    For each connector on the canvas a ConnectorInsertion object is created.
+    For each connector on the canvas a ConnectorInstance object is created.
     """
 
     connector_number = 0
@@ -20,7 +20,7 @@ class ConnectorInsertion:
     # def insert_connector(event) -> None:
     def __init__(self, event) -> None:
         # global connector_number
-        ConnectorInsertion.connector_number += 1
+        ConnectorInstance.connector_number += 1
         # Translate the window coordinate into the canvas coordinate (the Canvas is bigger than the window):
         event_x, event_y = canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(event)
         overlapping_items = project_manager.canvas.find_overlapping(
@@ -38,8 +38,8 @@ class ConnectorInsertion:
             event_x + project_manager.state_radius / 4,
             event_y + project_manager.state_radius / 4,
         )
-        tag = "connector" + str(ConnectorInsertion.connector_number)
-        ConnectorInsertion.draw_connector(coords, tag)
+        tag = "connector" + str(ConnectorInstance.connector_number)
+        ConnectorInstance.draw_connector(coords, tag)
         undo_handling.design_has_changed()
 
     @classmethod
@@ -59,21 +59,21 @@ class ConnectorInsertion:
         if first is True:
             # Calculate the difference between the "anchor" point and the event:
             coords = project_manager.canvas.coords(rectangle_id)
-            middle_point = ConnectorInsertion._calculate_middle_point(coords)
+            middle_point = ConnectorInstance._calculate_middle_point(coords)
             cls.difference_x, cls.difference_y = -event_x + middle_point[0], -event_y + middle_point[1]
         # Keep the distance between event and anchor point constant (important for moving with connected transitions):
         event_x, event_y = event_x + cls.difference_x, event_y + cls.difference_y
         if last is True:
             event_x = project_manager.state_radius * round(event_x / project_manager.state_radius)
             event_y = project_manager.state_radius * round(event_y / project_manager.state_radius)
-        edge_length = ConnectorInsertion._determine_edge_length_of_the_rectangle(rectangle_id)
-        new_upper_left_corner = ConnectorInsertion._calculate_new_upper_left_corner_of_the_rectangle(
+        edge_length = ConnectorInstance._determine_edge_length_of_the_rectangle(rectangle_id)
+        new_upper_left_corner = ConnectorInstance._calculate_new_upper_left_corner_of_the_rectangle(
             event_x, event_y, edge_length
         )
-        new_lower_right_corner = ConnectorInsertion._calculate_new_lower_right_corner_of_the_rectangle(
+        new_lower_right_corner = ConnectorInstance._calculate_new_lower_right_corner_of_the_rectangle(
             event_x, event_y, edge_length
         )
-        ConnectorInsertion._move_rectangle_in_canvas(rectangle_id, new_upper_left_corner, new_lower_right_corner)
+        ConnectorInstance._move_rectangle_in_canvas(rectangle_id, new_upper_left_corner, new_lower_right_corner)
 
     @classmethod
     def _calculate_middle_point(cls, coords) -> list:

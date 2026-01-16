@@ -110,7 +110,7 @@ def _get_complete_design_as_text_object():
     design += "clock_signal_name|" + project_manager.clock_signal_name.get() + "\n"
     design += "state_number|" + str(state.States.state_number) + "\n"
     design += "transition_number|" + str(transition.TransitionLine.transition_number) + "\n"
-    design += "connector_number|" + str(connector_insertion.ConnectorInsertion.connector_number) + "\n"
+    design += "connector_number|" + str(connector_insertion.ConnectorInstance.connector_number) + "\n"
     design += "conditionaction_id|" + str(condition_action.ConditionAction.conditionaction_id) + "\n"
     design += "mytext_id|" + str(state_action.StateAction.mytext_id) + "\n"
     design += "reset_entry_size|" + str(project_manager.reset_entry_size) + "\n"
@@ -312,7 +312,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             transition.TransitionLine.transition_number = int(rest_of_line)
         elif lines[_line_index].startswith("connector_number|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "connector_number|")
-            connector_insertion.ConnectorInsertion.connector_number = int(rest_of_line)
+            connector_insertion.ConnectorInstance.connector_number = int(rest_of_line)
         elif lines[_line_index].startswith("conditionaction_id|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "conditionaction_id|")
             condition_action.ConditionAction.conditionaction_id = int(rest_of_line)
@@ -446,7 +446,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                 if t.startswith("connector"):
                     is_priority_rectangle = False
             if not is_priority_rectangle:
-                rectangle_id = connector_insertion.ConnectorInsertion.draw_connector(coords, tags)
+                rectangle_id = connector_insertion.ConnectorInstance.draw_connector(coords, tags)
                 project_manager.canvas.tag_raise(rectangle_id)  # priority rectangles are always in "foreground"
         elif lines[_line_index].startswith("window_state_action_block|"):  # state_action
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_state_action_block|")

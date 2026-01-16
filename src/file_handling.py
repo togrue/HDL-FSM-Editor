@@ -124,7 +124,7 @@ def _clear_design() -> bool:
     state.States.state_number = 0
     transition.TransitionLine.transition_number = 0
     project_manager.reset_entry_button.config(state=tk.NORMAL)
-    connector_insertion.ConnectorInsertion.connector_number = 0
+    connector_insertion.ConnectorInstance.connector_number = 0
     condition_action.ConditionAction.conditionaction_id = 0
     condition_action.ConditionAction.dictionary = {}
     state_action.StateAction.mytext_id = 0
@@ -255,7 +255,7 @@ def _save_canvas_data(design_dictionary: dict[str, Any], allowed_element_names_i
     design_dictionary["diagram_background_color"] = project_manager.diagram_background_color.get()
     design_dictionary["state_number"] = state.States.state_number
     design_dictionary["transition_number"] = transition.TransitionLine.transition_number
-    design_dictionary["connector_number"] = connector_insertion.ConnectorInsertion.connector_number
+    design_dictionary["connector_number"] = connector_insertion.ConnectorInstance.connector_number
     design_dictionary["conditionaction_id"] = condition_action.ConditionAction.conditionaction_id
     design_dictionary["mytext_id"] = state_action.StateAction.mytext_id
     design_dictionary["state_radius"] = project_manager.state_radius
@@ -520,7 +520,7 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
     # Load canvas editing parameters
     state.States.state_number = design_dictionary["state_number"]
     transition.TransitionLine.transition_number = design_dictionary["transition_number"]
-    connector_insertion.ConnectorInsertion.connector_number = design_dictionary["connector_number"]
+    connector_insertion.ConnectorInstance.connector_number = design_dictionary["connector_number"]
     condition_action.ConditionAction.conditionaction_id = design_dictionary["conditionaction_id"]
     state_action.StateAction.mytext_id = design_dictionary["mytext_id"]
 
@@ -628,7 +628,7 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
             if t.startswith("connector"):
                 is_priority_rectangle = False
         if not is_priority_rectangle:
-            connector_insertion.ConnectorInsertion.draw_connector(coords, tags)
+            connector_insertion.ConnectorInstance.draw_connector(coords, tags)
             number_of_outgoing_transitions = 0
             for tag in tags:
                 if tag.startswith("transition") and tag.endswith("_start"):
