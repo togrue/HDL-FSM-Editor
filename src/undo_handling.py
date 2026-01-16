@@ -301,8 +301,8 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
     _line_index = 0
     list_of_states = []
     transition_dict = {}
-    state_comment_line_dictionary = {}
-    state_action_line_dictionary = {}
+    state_comment_dictionary = {}
+    state_action_dictionary = {}
     while _line_index < len(lines):
         if lines[_line_index].startswith("state_number|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "state_number|")
@@ -414,10 +414,15 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                     )
                     break
                 if t.startswith("connection"):  # line to state action
-                    state_action_line_dictionary[t] = {"coords": coords, "tags": tags}
+                    if t not in state_action_dictionary:
+                        state_action_dictionary[t] = {}
+                    state_action_dictionary[t]["line_coords"] = coords
+                    state_action_dictionary[t]["line_tags"] = tags
                     break
                 if t.endswith("_comment_line"):  # line to comment
-                    state_comment_line_dictionary[t[:-5]] = {"coords": coords}
+                    if t[:-5] not in state_comment_dictionary:
+                        state_comment_dictionary[t[:-5]] = {}
+                    state_comment_dictionary[t[:-5]]["line_coords"] = coords
                 if t.startswith("transition"):
                     if t not in transition_dict:
                         transition_dict[t] = {}
@@ -460,19 +465,12 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             for t in tags:
                 if t.startswith("connection"):  # line to state action
                     connection_tag = t[:-6]
-                    action_ref = state_action.StateAction(
-                        coords[0],
-                        coords[1],
-                        height=1,
-                        width=8,
-                        padding=1,
-                        tags=tags,
-                        line_coords=state_action_line_dictionary[connection_tag]["coords"],
-                        line_tags=state_action_line_dictionary[connection_tag]["tags"],
-                        increment=False,
-                    )
-                    action_ref.text_id.insert("1.0", text)
-                    action_ref.text_id.format()
+                    if connection_tag not in state_action_dictionary:
+                        state_action_dictionary[connection_tag] = {}
+                    state_action_dictionary[connection_tag]["state_coords"] = coords
+                    state_action_dictionary[connection_tag]["state_tags"] = tags
+                    state_action_dictionary[connection_tag]["text"] = text
+                    break
         elif lines[_line_index].startswith("window_state_comment|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_state_comment|")
             text = _get_data(rest_of_line, lines)
@@ -487,12 +485,11 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                     coords.append(v)
                 except ValueError:
                     tags = tags + (e,)
-            line_coords = state_comment_line_dictionary[tags[0]]["coords"]
-            comment_ref = state_comment.StateComment(
-                coords[0] - 100, coords[1], height=1, width=8, padding=1, tags=tags, line_coords=line_coords
-            )
-            comment_ref.text_id.insert("1.0", text)
-            comment_ref.text_id.format()
+            if tags[0] not in state_comment_dictionary:
+                state_comment_dictionary[tags[0]] = {}
+            state_comment_dictionary[tags[0]]["window_coords"] = coords
+            state_comment_dictionary[tags[0]]["window_tags"] = tags
+            state_comment_dictionary[tags[0]]["text"] = text
         elif lines[_line_index].startswith("window_condition_action_block|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_condition_action_block|")
             condition = _get_data(rest_of_line, lines)
@@ -682,6 +679,32 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
         tags = single_transition_dict["line-item"]["tags"]
         priority = single_transition_dict["prio-item"]["text"]
         transition.TransitionLine(transition_coords, tags, priority, new_transition=False)
+    for _, state_action_info in state_action_dictionary.items():
+        action_ref = state_action.StateAction(
+            state_action_info["state_coords"][0],
+            state_action_info["state_coords"][1],
+            height=1,
+            width=8,
+            padding=1,
+            tags=state_action_info["state_tags"],
+            line_coords=state_action_info["line_coords"],
+            line_tags=state_action_info["line_tags"],
+            increment=False,
+        )
+        action_ref.text_id.insert("1.0", state_action_info["text"])
+        action_ref.text_id.format()
+    for _, state_comment_info in state_comment_dictionary.items():
+        comment_ref = state_comment.StateComment(
+            state_comment_info["window_coords"][0] - 100,
+            state_comment_info["window_coords"][1],
+            height=1,
+            width=8,
+            padding=1,
+            tags=state_comment_info["window_tags"],
+            line_coords=state_comment_info["line_coords"],
+        )
+        comment_ref.text_id.insert("1.0", state_comment_info["text"])
+        comment_ref.text_id.format()
     transition.TransitionLine.hide_priority_of_single_outgoing_transitions()
     project_manager.grid_drawer.draw_grid()
 
