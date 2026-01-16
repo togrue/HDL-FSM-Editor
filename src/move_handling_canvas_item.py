@@ -1,5 +1,5 @@
 """
-A MoveHandlingCanvasItem object is created, when the user moves a state (touching state-circle or state-name).
+This module handles the movement of states at the Canvas.
 """
 
 # import canvas_modify_bindings
@@ -11,6 +11,10 @@ from project_manager import project_manager
 
 
 class MoveHandlingCanvasItem:
+    """
+    When a state is moved at the Canvas, a MoveHandlingCanvasItem object is created and handles the movement.
+    """
+
     transition_insertion_runs = False
 
     def __init__(self, event, canvas_id):

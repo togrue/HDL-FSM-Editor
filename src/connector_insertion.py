@@ -1,5 +1,5 @@
 """
-Methods for the handling of the connectors
+Module handling connectors on the canvas.
 """
 
 import canvas_editing
@@ -9,6 +9,10 @@ from project_manager import project_manager
 
 
 class ConnectorInsertion:
+    """
+    For each connector on the canvas a ConnectorInsertion object is created.
+    """
+
     connector_number = 0
     difference_x = 0
     difference_y = 0

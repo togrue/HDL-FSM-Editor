@@ -1,3 +1,7 @@
+"""
+Module handling states on the canvas.
+"""
+
 import tkinter as tk
 from tkinter import messagebox
 
@@ -16,6 +20,10 @@ from widgets.OptionMenu import OptionMenu
 
 
 class States:
+    """
+    For each state on the canvas a states-object is created.
+    """
+
     state_number = 0
     state_dict = {}
 
@@ -276,7 +284,6 @@ class States:
                         state_name_list.append(project_manager.canvas.itemcget(tag + "_name", "text"))
         return state_name_list
 
-    @classmethod
     def _resize_state(self, state_tag, text_id) -> None:
         state_coords = project_manager.canvas.coords(state_tag)
         state_width = state_coords[2] - state_coords[0]

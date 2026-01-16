@@ -1,3 +1,7 @@
+"""
+This module handling contains all needed methods for the notebook widget.
+"""
+
 from tkinter import ttk
 
 import tab_control
@@ -11,6 +15,10 @@ from project_manager import project_manager
 
 
 class NotebookTop(ttk.Notebook):
+    """
+    For the top-level notebook widget a NotebookTop object is created.
+    """
+
     def __init__(self, row, column) -> None:
         super().__init__(padding=5)
         self.grid(column=column, row=row, sticky="nsew")

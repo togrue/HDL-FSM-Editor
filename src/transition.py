@@ -1,3 +1,7 @@
+"""
+Module handling transitions on the canvas.
+"""
+
 import tkinter as tk
 
 import canvas_delete
@@ -12,6 +16,10 @@ from widgets.OptionMenu import OptionMenu
 
 
 class TransitionLine:
+    """
+    For each transition at the Canvas a TransitionLine object is created.
+    """
+
     transition_number = 0
     transition_dict = {}
 
