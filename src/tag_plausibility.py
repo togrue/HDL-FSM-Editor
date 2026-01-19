@@ -496,7 +496,7 @@ class TagPlausibility:
         #                    "transition_end_state"        : ["state"|"connector"]<integer>,
         #                    "transition_start_state_name" : ["<state-name>"|""],
         #                    "transition_end_state_name"   : ["<state-name>"|""],
-        #                    "ca_connection_identifier"    : "ca_connection"<integer>} <-- This entry is optional
+        #                    "ca_connection_identifier"    : "ca_connection"<integer>"_end"} <-- This entry is optional
         transition_dict = {}
         line_tags = project_manager.canvas.gettags(canvas_item)
         for transition_tag in line_tags:
@@ -670,9 +670,11 @@ class TagPlausibility:
                 print(
                     "Fatal in TagPlausibility-Checks: the identifier-numbers derived from the condition-action window"
                     + " and from the anchor-line differ:",
-                    condition_action_number_from_window_identifier
-                    + "!="
-                    + condition_action_number_from_anchor_line_identifier,
+                    "|"
+                    + condition_action_number_from_window_identifier
+                    + "| != |"
+                    + condition_action_number_from_anchor_line_identifier
+                    + "|",
                 )
 
     def __create_ca_anchor_line_dict(self, canvas_item) -> dict:
@@ -984,12 +986,14 @@ class TagPlausibility:
                 )
         for ca_anchor_line_dict in ca_anchor_line_dict_list:
             ca_connection_identifier = ca_anchor_line_dict["ca_connection_identifier"]
+            print("ca_connection_identifier:", ca_connection_identifier)
             ca_transition = ca_anchor_line_dict["connected_to_transition"]
             number_of_connected_condition_action_windows = 0
             for ca_window_dict in ca_window_dict_list:
                 if ca_window_dict["ca_connection_identifier"] == ca_connection_identifier:
                     number_of_connected_condition_action_windows += 1
             number_of_transitions_the_anchor_line_is_attached_to = 0
+            print("transition_dict_list:", transition_dict_list)
             for transition_dict in transition_dict_list:
                 if transition_dict["transition_identifier"] == ca_transition:
                     number_of_transitions_the_anchor_line_is_attached_to += 1
