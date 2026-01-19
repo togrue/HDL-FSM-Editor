@@ -23,8 +23,6 @@ def move_do(event, move_list, first, move_to_grid=False) -> None:
 
 
 def move_to_coordinates(event_x, event_y, move_list, first, move_to_grid):
-    if _state_is_moved_to_near_to_state_or_connector(move_list, event_x, event_y):
-        return
     if _connector_moved_too_close_to_other_object(move_list, event_x, event_y):
         return
     for entry in move_list:
@@ -32,8 +30,7 @@ def move_to_coordinates(event_x, event_y, move_list, first, move_to_grid):
         item_point_to_move = entry[1]
         item_type = project_manager.canvas.type(item_id)
         if item_type == "oval":
-            ref = state.States.state_dict[item_id]
-            ref.move_to(event_x, event_y, item_id, first, move_to_grid)
+            state.States.move_to(event_x, event_y, item_id, first, move_to_grid)
         elif item_type == "polygon":
             reset_entry.ResetEntry.move_to(event_x, event_y, item_id, first, move_to_grid)
         elif item_type == "line":

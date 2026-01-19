@@ -26,12 +26,12 @@ class States:
 
     state_number = 0
     state_dict = {}
+    difference_x = 0
+    difference_y = 0
 
     def __init__(self, coords, tags, text, fill_color, new_state=False) -> None:
         if new_state:
             States.state_number += 1
-        self.difference_x = 0
-        self.difference_y = 0
         self.state_id = project_manager.canvas.create_oval(
             coords,
             fill=fill_color,
@@ -71,7 +71,6 @@ class States:
                     text_id, "<Double-Button-1>", lambda event, text_id=text_id: self._edit_state_name(event, text_id)
                 )
                 project_manager.canvas.tag_bind(text_id, "<Button-3>", self._show_menu)
-        States.state_dict[self.state_id] = self
 
     def _show_menu(self, event) -> None:
         listbox = OptionMenu(
@@ -209,51 +208,6 @@ class States:
             project_manager.canvas.itemconfigure(self.state_id, fill=new_color)
             undo_handling.design_has_changed()
 
-    def move_to(self, event_x, event_y, state_id, first, last) -> None:
-        if first is True:
-            # Calculate the difference between the "anchor" point and the event:
-            coords = project_manager.canvas.coords(state_id)
-            center = self._calculate_center(coords)
-            self.difference_x, self.difference_y = -event_x + center[0], -event_y + center[1]
-        # When moving the center, keep the distance between event and anchor point constant:
-        new_center_x, new_center_y = event_x + self.difference_x, event_y + self.difference_y
-        if last is True:
-            new_center_x, new_center_y = self._move_center_to_grid(new_center_x, new_center_y)
-        text_tag = self._determine_the_tag_of_the_state_name(state_id)
-        state_radius = self._determine_the_radius_of_the_state(state_id)
-        project_manager.canvas.coords(
-            state_id,
-            new_center_x - state_radius,
-            new_center_y - state_radius,
-            new_center_x + state_radius,
-            new_center_y + state_radius,
-        )
-        project_manager.canvas.coords(text_tag, new_center_x, new_center_y)
-        project_manager.canvas.tag_raise(state_id, "all")
-        project_manager.canvas.tag_raise(text_tag, state_id)
-
-    def _calculate_center(self, coords) -> list:
-        middle_x = (coords[0] + coords[2]) / 2
-        middle_y = (coords[1] + coords[3]) / 2
-        return [middle_x, middle_y]
-
-    def _move_center_to_grid(self, new_center_x, new_center_y):
-        new_center_x = project_manager.state_radius * round(new_center_x / project_manager.state_radius)
-        new_center_y = project_manager.state_radius * round(new_center_y / project_manager.state_radius)
-        return new_center_x, new_center_y
-
-    def _determine_the_tag_of_the_state_name(self, state_id):
-        state_tag = ""
-        tags = project_manager.canvas.gettags(state_id)
-        for tag in tags:
-            if tag.startswith("state") and not tag.endswith("_comment_line_end"):
-                state_tag = tag
-        return state_tag + "_name"
-
-    def _determine_the_radius_of_the_state(self, state_id):
-        state_coords = project_manager.canvas.coords(state_id)
-        return (state_coords[2] - state_coords[0]) / 2
-
     def _abort_edit_text(self, text_id, text_box, old_text) -> None:
         project_manager.canvas.delete("entry-window")
         project_manager.canvas.itemconfig(text_id, text=old_text)
@@ -308,3 +262,87 @@ class States:
                 state_is_too_big = True
         if not state_is_too_big:
             project_manager.canvas.coords(state_tag, state_coords)
+
+    @classmethod
+    def move_to(cls, event_x, event_y, state_id, first, last) -> None:
+        if first is True:
+            # Calculate the difference between the "anchor" point and the event:
+            coords = project_manager.canvas.coords(state_id)
+            center = cls._calculate_center(coords)
+            cls.difference_x, cls.difference_y = -event_x + center[0], -event_y + center[1]
+        if cls._state_is_moved_to_near_to_state_or_connector(state_id, event_x, event_y):
+            return
+        # When moving the center, keep the distance between event and anchor point constant:
+        new_center_x, new_center_y = event_x + cls.difference_x, event_y + cls.difference_y
+        if last is True:
+            new_center_x, new_center_y = cls._move_center_to_grid(new_center_x, new_center_y)
+        text_tag = cls._determine_the_tag_of_the_state_name(state_id)
+        state_radius = cls._determine_the_radius_of_the_state(state_id)
+        project_manager.canvas.coords(
+            state_id,
+            new_center_x - state_radius,
+            new_center_y - state_radius,
+            new_center_x + state_radius,
+            new_center_y + state_radius,
+        )
+        project_manager.canvas.coords(text_tag, new_center_x, new_center_y)
+        project_manager.canvas.tag_raise(state_id, "all")
+        project_manager.canvas.tag_raise(text_tag, state_id)
+
+    @classmethod
+    def _state_is_moved_to_near_to_state_or_connector(cls, moved_item_id, event_x, event_y) -> bool:
+        # Keep the distance between event and anchor point constant:
+        event_x_mod, event_y_mod = event_x + cls.difference_x, event_y + cls.difference_y
+        event_x_mod = project_manager.state_radius * round(event_x_mod / project_manager.state_radius)
+        event_y_mod = project_manager.state_radius * round(event_y_mod / project_manager.state_radius)
+        state_coords = project_manager.canvas.coords(moved_item_id)
+        state_radius = (state_coords[2] - state_coords[0]) // 2
+        moved_state_coords = (
+            event_x_mod - state_radius,
+            event_y_mod - state_radius,
+            event_x_mod + state_radius,
+            event_y_mod + state_radius,
+        )
+        overlapping_list = project_manager.canvas.find_overlapping(
+            moved_state_coords[0] - project_manager.state_radius / 2,
+            moved_state_coords[1] - project_manager.state_radius / 2,
+            moved_state_coords[2] + project_manager.state_radius / 2,
+            moved_state_coords[3] + project_manager.state_radius / 2,
+        )
+        for overlapping_item in overlapping_list:
+            overlapping_with_connector = False
+            tags = project_manager.canvas.gettags(overlapping_item)
+            for tag in tags:
+                if tag.startswith("connector"):
+                    overlapping_with_connector = True
+            if overlapping_item != moved_item_id and (
+                project_manager.canvas.type(overlapping_item) == "oval" or overlapping_with_connector
+            ):
+                return True
+        return False
+
+    @classmethod
+    def _calculate_center(cls, coords) -> list:
+        middle_x = (coords[0] + coords[2]) / 2
+        middle_y = (coords[1] + coords[3]) / 2
+        return [middle_x, middle_y]
+
+    @classmethod
+    def _move_center_to_grid(cls, new_center_x, new_center_y):
+        new_center_x = project_manager.state_radius * round(new_center_x / project_manager.state_radius)
+        new_center_y = project_manager.state_radius * round(new_center_y / project_manager.state_radius)
+        return new_center_x, new_center_y
+
+    @classmethod
+    def _determine_the_tag_of_the_state_name(cls, state_id):
+        state_tag = ""
+        tags = project_manager.canvas.gettags(state_id)
+        for tag in tags:
+            if tag.startswith("state") and not tag.endswith("_comment_line_end"):
+                state_tag = tag
+        return state_tag + "_name"
+
+    @classmethod
+    def _determine_the_radius_of_the_state(cls, state_id):
+        state_coords = project_manager.canvas.coords(state_id)
+        return (state_coords[2] - state_coords[0]) / 2

@@ -10,7 +10,6 @@ import condition_action
 import custom_text
 import global_actions_clocked
 import global_actions_combinatorial
-import state
 import state_action
 import state_actions_default
 import state_comment
@@ -190,7 +189,6 @@ class CanvasDelete:
                 canvas_id_of_comment = tag[:-9]
                 self.canvas.delete(canvas_id_of_comment_line)
                 self.canvas.delete(canvas_id_of_comment)
-        del state.States.state_dict[canvas_id]
         self.design_was_changed = True
 
     def _delete_connector_or_transition(self, tags_of_item_i):
