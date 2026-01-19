@@ -622,19 +622,16 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
     for definition in design_dictionary["rectangle"]:
         coords = definition[0]
         tags = definition[1]
-        is_priority_rectangle = True
         for t in tags:
             if t.startswith("connector"):
-                is_priority_rectangle = False
-        if not is_priority_rectangle:
-            connector.ConnectorInstance.draw_connector(coords, tags)
-            number_of_outgoing_transitions = 0
-            for tag in tags:
-                if tag.startswith("transition") and tag.endswith("_start"):
-                    transition_identifier = tag.replace("_start", "")
-                    number_of_outgoing_transitions += 1
-            if number_of_outgoing_transitions == 1:
-                hide_priority_rectangle_list.append(transition_identifier)
+                connector.ConnectorInstance(coords, tags)
+                number_of_outgoing_transitions = 0
+                for tag in tags:
+                    if tag.startswith("transition") and tag.endswith("_start"):
+                        transition_identifier = tag.replace("_start", "")
+                        number_of_outgoing_transitions += 1
+                if number_of_outgoing_transitions == 1:
+                    hide_priority_rectangle_list.append(transition_identifier)
 
     _load_transitions_from_dict(transition_dict)
     _load_window_elements(

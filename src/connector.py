@@ -17,10 +17,21 @@ class ConnectorInstance:
     difference_x = 0
     difference_y = 0
 
-    # def insert_connector(event) -> None:
-    def __init__(self, event) -> None:
-        # global connector_number
-        ConnectorInstance.connector_number += 1
+    def __init__(self, coords, tags):
+        self.connector_id = project_manager.canvas.create_rectangle(coords, fill=constants.CONNECTOR_COLOR, tags=tags)
+        project_manager.canvas.tag_bind(
+            self.connector_id,
+            "<Enter>",
+            lambda event: project_manager.canvas.itemconfig(self.connector_id, width=2),
+        )
+        project_manager.canvas.tag_bind(
+            self.connector_id,
+            "<Leave>",
+            lambda event: project_manager.canvas.itemconfig(self.connector_id, width=1),
+        )
+
+    @classmethod
+    def create_connector(cls, event) -> None:
         # Translate the window coordinate into the canvas coordinate (the Canvas is bigger than the window):
         event_x, event_y = canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(event)
         overlapping_items = project_manager.canvas.find_overlapping(
@@ -31,27 +42,18 @@ class ConnectorInstance:
         )
         for overlapping_item in overlapping_items:
             if "grid_line" not in project_manager.canvas.gettags(overlapping_item):
+                # Another item (different from a grid-line) is already at this position.
                 return
+        ConnectorInstance.connector_number += 1
+        tag = "connector" + str(ConnectorInstance.connector_number)
         coords = (
             event_x - project_manager.state_radius / 4,
             event_y - project_manager.state_radius / 4,
             event_x + project_manager.state_radius / 4,
             event_y + project_manager.state_radius / 4,
         )
-        tag = "connector" + str(ConnectorInstance.connector_number)
-        ConnectorInstance.draw_connector(coords, tag)
+        ConnectorInstance(coords, tag)
         undo_handling.design_has_changed()
-
-    @classmethod
-    def draw_connector(cls, coords, tags):
-        connector_id = project_manager.canvas.create_rectangle(coords, fill=constants.CONNECTOR_COLOR, tags=tags)
-        project_manager.canvas.tag_bind(
-            connector_id, "<Enter>", lambda event, id=connector_id: project_manager.canvas.itemconfig(id, width=2)
-        )
-        project_manager.canvas.tag_bind(
-            connector_id, "<Leave>", lambda event, id=connector_id: project_manager.canvas.itemconfig(id, width=1)
-        )
-        return connector_id
 
     @classmethod
     def move_to(cls, event_x, event_y, rectangle_id, first, last) -> None:
@@ -73,7 +75,7 @@ class ConnectorInstance:
         new_lower_right_corner = ConnectorInstance._calculate_new_lower_right_corner_of_the_rectangle(
             event_x, event_y, edge_length
         )
-        ConnectorInstance._move_rectangle_in_canvas(rectangle_id, new_upper_left_corner, new_lower_right_corner)
+        project_manager.canvas.coords(rectangle_id, *new_upper_left_corner, *new_lower_right_corner)
 
     @classmethod
     def _calculate_middle_point(cls, coords) -> list:
@@ -94,7 +96,3 @@ class ConnectorInstance:
     @classmethod
     def _calculate_new_lower_right_corner_of_the_rectangle(cls, event_x, event_y, edge_length) -> list:
         return [event_x + edge_length / 2, event_y + edge_length / 2]
-
-    @classmethod
-    def _move_rectangle_in_canvas(cls, rectangle_id, new_upper_left_corner, new_lower_right_corner) -> None:
-        project_manager.canvas.coords(rectangle_id, *new_upper_left_corner, *new_lower_right_corner)

@@ -448,7 +448,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                 if t.startswith("connector"):
                     is_priority_rectangle = False
             if not is_priority_rectangle:
-                rectangle_id = connector.ConnectorInstance.draw_connector(coords, tags)
+                rectangle_id = connector.ConnectorInstance(coords, tags)
                 project_manager.canvas.tag_raise(rectangle_id)  # priority rectangles are always in "foreground"
         elif lines[_line_index].startswith("window_state_action_block|"):  # state_action
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_state_action_block|")
