@@ -165,6 +165,7 @@ class ConditionAction:
         if self.frame_enter_func_id is not None:
             self.frame_id.unbind("<Enter>", self.frame_enter_func_id)
             self.frame_enter_func_id = None
+        # The binding for 'Motion' must be added with '+', as 'store_mouse_position' is also bound to 'Motion':
         self.canvas_enter_func_id = project_manager.canvas.bind("<Motion>", lambda event: self._deactivate_frame(), "+")
 
     def _select_window(self) -> None:

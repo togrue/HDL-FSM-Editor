@@ -56,6 +56,7 @@ def start_view_rectangle(event) -> None:
     [event_x, event_y] = translate_window_event_coordinates_in_exact_canvas_coordinates(event)
     rectangle_id = project_manager.canvas.create_rectangle(event_x, event_y, event_x, event_y, dash=(3, 5))
     project_manager.canvas.tag_raise(rectangle_id, "all")
+    # The binding for 'Motion' must be added with '+', as 'store_mouse_position' is also bound to 'Motion':
     funcid_canvas_draw_view_rectangle = project_manager.canvas.bind(
         "<Motion>", lambda event: _draw_view_rectangle(event, rectangle_id), "+"
     )
