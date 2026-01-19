@@ -89,14 +89,17 @@ def _move_the_line_to_the_center_of_the_target(
     for target in item_ids_at_moving_end_location:
         target_coords = project_manager.canvas.coords(target)
         target_type = project_manager.canvas.type(target)
-        ref = transition.TransitionLine.transition_dict[transition_id]
         if target_type == "polygon":
             polygon_coords = project_manager.canvas.coords(target)
-            ref.move_to(polygon_coords[4], polygon_coords[5], transition_id, transition_point, False, move_list, False)
+            transition.TransitionLine.move_to(
+                polygon_coords[4], polygon_coords[5], transition_id, transition_point, False, move_list, False
+            )
         elif target_type in ["oval", "rectangle"]:
             state_middle_x = (target_coords[2] + target_coords[0]) / 2
             state_middle_y = (target_coords[3] + target_coords[1]) / 2
-            ref.move_to(state_middle_x, state_middle_y, transition_id, transition_point, False, move_list, False)
+            transition.TransitionLine.move_to(
+                state_middle_x, state_middle_y, transition_id, transition_point, False, move_list, False
+            )
 
 
 def _update_the_tags_of_the_transition(item_ids_at_moving_end_location, transition_id, transition_point) -> None:

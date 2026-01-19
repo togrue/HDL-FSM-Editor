@@ -13,7 +13,6 @@ import global_actions_combinatorial
 import state_action
 import state_actions_default
 import state_comment
-import transition
 import undo_handling
 from project_manager import project_manager
 
@@ -205,7 +204,6 @@ class CanvasDelete:
         transition_tag = None
         for tag in tags_of_item_i:
             if tag.startswith("transition"):
-                transition.TransitionLine.transition_dict.pop(canvas_id, None)
                 self.canvas.delete(tag)  # delete transition
                 self.canvas.delete(tag + "rectangle")  # delete priority rectangle
                 self.canvas.delete(tag + "priority")  # delete priority
@@ -230,7 +228,6 @@ class CanvasDelete:
         for transition_tag in transition_tags:
             if transition_tag.startswith("coming_from_"):
                 state_id = transition_tag[12:]
-                transition.TransitionLine.transition_dict.pop(transition_id, None)
                 self.canvas.dtag(state_id, transition_id + "_start")
                 self._adapt_visibility_of_priority_rectangles_at_state(state_id)
             elif transition_tag.startswith("ca_connection"):

@@ -21,7 +21,6 @@ class TransitionLine:
     """
 
     transition_number = 0
-    transition_dict = {}
 
     def __init__(self, transition_coords, tags, priority, new_transition=False) -> None:
         if new_transition:
@@ -71,7 +70,6 @@ class TransitionLine:
         )
 
         project_manager.canvas.tag_raise(canvas_id_priority_text)
-        TransitionLine.transition_dict[transition_id] = self
 
     def _determine_position_of_priority_rectangle(self, transition_coords):
         # Determine middle of the priority rectangle position by calculating a shortened transition:
@@ -260,7 +258,8 @@ class TransitionLine:
         project_manager.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
         project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas))
 
-    def move_to(self, event_x, event_y, transition_id, point, first, move_list, last) -> None:
+    @classmethod
+    def move_to(cls, event_x, event_y, transition_id, point, first, move_list, last=False) -> None:
         if project_manager.canvas.type(move_list[0][0]) == "line" and (move_list[0][1] in ("start", "end")):
             middle_of_line_is_moved = False
         else:
@@ -280,12 +279,12 @@ class TransitionLine:
                 else:
                     print("transition_handling: Fatal, unknown point =", point)
                     return
-                self.difference_x, self.difference_y = -event_x + point_to_move[0], -event_y + point_to_move[1]
+                cls.difference_x, cls.difference_y = -event_x + point_to_move[0], -event_y + point_to_move[1]
         else:
-            self.difference_x = 0
-            self.difference_y = 0
+            cls.difference_x = 0
+            cls.difference_y = 0
         # Keep the distance between event and anchor point constant:
-        event_x, event_y = event_x + self.difference_x, event_y + self.difference_y
+        event_x, event_y = event_x + cls.difference_x, event_y + cls.difference_y
         if last is True:
             event_x = project_manager.state_radius * round(event_x / project_manager.state_radius)
             event_y = project_manager.state_radius * round(event_y / project_manager.state_radius)

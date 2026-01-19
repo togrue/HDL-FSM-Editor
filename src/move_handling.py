@@ -35,9 +35,10 @@ def move_to_coordinates(event_x, event_y, move_list, first, move_to_grid):
             reset_entry.ResetEntry.move_to(event_x, event_y, item_id, first, move_to_grid)
         elif item_type == "line":
             tags = project_manager.canvas.gettags(item_id)
-            if item_id in transition.TransitionLine.transition_dict:
-                ref = transition.TransitionLine.transition_dict[item_id]
-                ref.move_to(event_x, event_y, item_id, item_point_to_move, first, move_list, move_to_grid)
+            if tags[0].startswith("transition"):
+                transition.TransitionLine.move_to(
+                    event_x, event_y, item_id, item_point_to_move, first, move_list, move_to_grid
+                )
             elif (
                 tags[0].endswith("comment_line") and item_point_to_move == "end"
             ):  # state is moved and state_comment line must follow
