@@ -986,14 +986,12 @@ class TagPlausibility:
                 )
         for ca_anchor_line_dict in ca_anchor_line_dict_list:
             ca_connection_identifier = ca_anchor_line_dict["ca_connection_identifier"]
-            print("ca_connection_identifier:", ca_connection_identifier)
             ca_transition = ca_anchor_line_dict["connected_to_transition"]
             number_of_connected_condition_action_windows = 0
             for ca_window_dict in ca_window_dict_list:
                 if ca_window_dict["ca_connection_identifier"] == ca_connection_identifier:
                     number_of_connected_condition_action_windows += 1
             number_of_transitions_the_anchor_line_is_attached_to = 0
-            print("transition_dict_list:", transition_dict_list)
             for transition_dict in transition_dict_list:
                 if transition_dict["transition_identifier"] == ca_transition:
                     number_of_transitions_the_anchor_line_is_attached_to += 1
