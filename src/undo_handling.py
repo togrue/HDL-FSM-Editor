@@ -303,6 +303,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
     transition_dict = {}
     state_comment_dictionary = {}
     state_action_dictionary = {}
+    condition_action_dictionary = {}
     while _line_index < len(lines):
         if lines[_line_index].startswith("state_number|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "state_number|")
@@ -408,10 +409,11 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
                 except ValueError:
                     tags = tags + (e,)
             for t in tags:
-                if t.startswith("connected_to_transition"):  # line to condition&action block
-                    trans_id = project_manager.canvas.create_line(
-                        coords, dash=(2, 2), fill="black", tags=tags, state=tk.HIDDEN
-                    )
+                if t.startswith("ca_connection"):  # line to condition&action block
+                    if t not in condition_action_dictionary:
+                        condition_action_dictionary[t] = {}
+                    condition_action_dictionary[t]["line_coords"] = coords
+                    condition_action_dictionary[t]["line_tags"] = tags
                     break
                 if t.startswith("connection"):  # line to state action
                     if t not in state_action_dictionary:
@@ -511,26 +513,14 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             for t in tags:
                 if t == "connected_to_reset_transition":
                     connected_to_reset_entry = True
-            condition_action_ref = condition_action.ConditionAction(
-                coords[0], coords[1], connected_to_reset_entry, height=1, width=8, padding=1, increment=False
-            )
-            condition_action_ref.condition_id.insert("1.0", condition)
-            condition_action_ref.condition_id.format()
-            condition_action_ref.action_id.insert("1.0", action)
-            condition_action_ref.action_id.format()
-            if (
-                condition_action_ref.condition_id.get("1.0", tk.END) == "\n"
-                and condition_action_ref.action_id.get("1.0", tk.END) != "\n"
-            ):
-                condition_action_ref.condition_label.grid_forget()
-                condition_action_ref.condition_id.grid_forget()
-            if (
-                condition_action_ref.condition_id.get("1.0", tk.END) != "\n"
-                and condition_action_ref.action_id.get("1.0", tk.END) == "\n"
-            ):
-                condition_action_ref.action_label.grid_forget()
-                condition_action_ref.action_id.grid_forget()
-            project_manager.canvas.itemconfigure(condition_action_ref.window_id, tag=tags)
+                if t.startswith("ca_connection"):  # "ca_connection<n>_anchor"
+                    if t[:-7] not in condition_action_dictionary:
+                        condition_action_dictionary[t[:-7]] = {}
+                    condition_action_dictionary[t[:-7]]["window_coords"] = coords
+                    condition_action_dictionary[t[:-7]]["window_tags"] = tags
+                    condition_action_dictionary[t[:-7]]["condition"] = condition
+                    condition_action_dictionary[t[:-7]]["action"] = action
+                    condition_action_dictionary[t[:-7]]["connected_to_reset_entry"] = connected_to_reset_entry
         elif lines[_line_index].startswith("window_global_actions|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "window_global_actions|")
             text_before = _get_data(rest_of_line, lines)
@@ -705,6 +695,35 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
         )
         comment_ref.text_id.insert("1.0", state_comment_info["text"])
         comment_ref.text_id.format()
+
+    for _, condition_action_info in condition_action_dictionary.items():
+        condition_action_ref = condition_action.ConditionAction(
+            condition_action_info["window_coords"][0],
+            condition_action_info["window_coords"][1],
+            condition_action_info["connected_to_reset_entry"],
+            height=1,
+            width=8,
+            padding=1,
+            tags=condition_action_info["window_tags"],
+            condition=condition_action_info["condition"],
+            action=condition_action_info["action"],
+            line_coords=condition_action_info["line_coords"],
+            line_tags=condition_action_info["line_tags"],
+            increment=False,
+        )
+        if (
+            condition_action_ref.condition_id.get("1.0", tk.END) == "\n"
+            and condition_action_ref.action_id.get("1.0", tk.END) != "\n"
+        ):
+            condition_action_ref.condition_label.grid_forget()
+            condition_action_ref.condition_id.grid_forget()
+        if (
+            condition_action_ref.condition_id.get("1.0", tk.END) != "\n"
+            and condition_action_ref.action_id.get("1.0", tk.END) == "\n"
+        ):
+            condition_action_ref.action_label.grid_forget()
+            condition_action_ref.action_id.grid_forget()
+
     transition.TransitionLine.hide_priority_of_single_outgoing_transitions()
     project_manager.grid_drawer.draw_grid()
 

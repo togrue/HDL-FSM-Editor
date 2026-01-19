@@ -19,15 +19,27 @@ class ConditionAction:
     conditionaction_id = 0
     dictionary = {}
 
-    def __init__(self, menu_x, menu_y, connected_to_reset_entry, height, width, padding, increment) -> None:
+    def __init__(
+        self,
+        menu_x,
+        menu_y,
+        connected_to_reset_entry,
+        height,
+        width,
+        padding,
+        tags,
+        condition,
+        action,
+        line_coords,
+        line_tags,
+        increment,
+    ) -> None:
         if increment is True:
             ConditionAction.conditionaction_id += 1
         self.difference_x = 0
         self.difference_y = 0
-        self.line_id = None
-        self.line_coords = None
-        self.action_text = None
-        self.condition_text = None
+        self.action_text = action
+        self.condition_text = condition
 
         self.frame_id = ttk.Frame(
             project_manager.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="Window.TFrame"
@@ -64,7 +76,24 @@ class ConditionAction:
             maxundo=-1,
             font=("Courier", int(project_manager.fontsize)),
         )
-        self.window_id = project_manager.canvas.create_window(menu_x, menu_y, window=self.frame_id, anchor=tk.W)
+        self.window_id = project_manager.canvas.create_window(
+            menu_x, menu_y, window=self.frame_id, tags=tags, anchor=tk.W
+        )
+        self.line_id = project_manager.canvas.create_line(
+            menu_x,
+            menu_y,
+            line_coords[2],
+            line_coords[3],
+            dash=(2, 2),
+            state=tk.HIDDEN,
+            tag=line_tags,
+        )
+        project_manager.canvas.tag_lower(self.line_id)
+
+        self.condition_id.insert("1.0", self.condition_text)
+        self.condition_id.format()
+        self.action_id.insert("1.0", self.action_text)
+        self.action_id.format()
         self._show_condition_and_action()
 
         # The method _deactivate_frame() can not be bound to the Frame-leave-Event, because otherwise at moving the
@@ -190,42 +219,10 @@ class ConditionAction:
             self.action_label.grid_forget()
             self.action_id.grid_forget()
 
-    def tag(self, connected_to_reset_entry) -> None:
-        if connected_to_reset_entry is True:
-            tag = (
-                "condition_action" + str(ConditionAction.conditionaction_id),
-                "ca_connection" + str(ConditionAction.conditionaction_id) + "_anchor",
-                "connected_to_reset_transition",
-            )
-        else:
-            tag = (
-                "condition_action" + str(ConditionAction.conditionaction_id),
-                "ca_connection" + str(ConditionAction.conditionaction_id) + "_anchor",
-            )
-        project_manager.canvas.itemconfigure(self.window_id, tag=tag)
-
     def change_descriptor_to(self, text) -> None:
         self.action_label.config(
             text=text
         )  # Used for switching between "asynchronous" and "synchron" (clocked) transition.
-
-    def draw_line(self, transition_id, menu_x, menu_y) -> None:
-        # Draw a line from the transition start point to the condition_action block which is added to the transition:
-        transition_coords = project_manager.canvas.coords(transition_id)
-        transition_tags = project_manager.canvas.gettags(transition_id)
-        self.line_id = project_manager.canvas.create_line(
-            menu_x,
-            menu_y,
-            transition_coords[0],
-            transition_coords[1],
-            dash=(2, 2),
-            state=tk.HIDDEN,
-            tag=("ca_connection" + str(ConditionAction.conditionaction_id), "connected_to_" + transition_tags[0]),
-        )
-        project_manager.canvas.addtag_withtag(
-            "ca_connection" + str(ConditionAction.conditionaction_id) + "_end", transition_id
-        )
-        project_manager.canvas.tag_lower(self.line_id, transition_id)
 
     def move_to(self, event_x, event_y, first) -> None:
         if first is True:
@@ -236,19 +233,11 @@ class ConditionAction:
         event_x, event_y = event_x + self.difference_x, event_y + self.difference_y
         project_manager.canvas.coords(self.window_id, event_x, event_y)
         # Move the line which connects the window to the transition:
-        window_tags = project_manager.canvas.gettags(self.window_id)
-        for tag in window_tags:
-            if tag.startswith("ca_connection"):
-                line_tag = tag[:-7]
-                self.line_coords = project_manager.canvas.coords(line_tag)
-                self.line_coords[0] = event_x
-                self.line_coords[1] = event_y
-                project_manager.canvas.coords(line_tag, self.line_coords)
-                project_manager.canvas.itemconfig(line_tag, state=tk.NORMAL)
+        line_coords = project_manager.canvas.coords(self.line_id)
+        line_coords[0] = event_x
+        line_coords[1] = event_y
+        project_manager.canvas.coords(self.line_id, line_coords)
+        project_manager.canvas.itemconfig(self.line_id, state=tk.NORMAL)
 
     def hide_line(self) -> None:
-        window_tags = project_manager.canvas.gettags(self.window_id)
-        for t in window_tags:
-            if t.startswith("ca_connection"):
-                line_tag = t[:-7]
-                project_manager.canvas.itemconfig(line_tag, state=tk.HIDDEN)
+        project_manager.canvas.itemconfig(self.line_id, state=tk.HIDDEN)

@@ -123,11 +123,39 @@ class TransitionLine:
                 elif tag == "coming_from_reset_entry":
                     connected_to_reset_entry = True
             if has_condition_action is False:
-                condition_action_ref = condition_action.ConditionAction(
-                    menu_x, menu_y, connected_to_reset_entry, height=1, width=8, padding=1, increment=True
+                transition_coords = project_manager.canvas.coords(transition_id)
+                line_coords = [menu_x, menu_y, transition_coords[0], transition_coords[1]]
+                # Incrementing of conditionaction_id is needed, as in old versions of HFE first conditionaction_id was
+                # incremented and afterwards the tags were created by reading this new value:
+                project_manager.canvas.addtag_withtag(
+                    "ca_connection" + str(condition_action.ConditionAction.conditionaction_id + 1) + "_end",
+                    transition_id,
                 )
-                condition_action_ref.tag(connected_to_reset_entry)
-                condition_action_ref.draw_line(transition_id, menu_x, menu_y)
+                tags = [
+                    "condition_action" + str(condition_action.ConditionAction.conditionaction_id + 1),
+                    "ca_connection" + str(condition_action.ConditionAction.conditionaction_id + 1) + "_anchor",
+                ]
+                if connected_to_reset_entry:
+                    tags.append("connected_to_reset_transition")
+                transition_tags = project_manager.canvas.gettags(transition_id)
+                line_tags = [
+                    "ca_connection" + str(condition_action.ConditionAction.conditionaction_id + 1),
+                    "connected_to_" + transition_tags[0],
+                ]
+                condition_action_ref = condition_action.ConditionAction(
+                    menu_x,
+                    menu_y,
+                    connected_to_reset_entry,
+                    height=1,
+                    width=8,
+                    padding=1,
+                    tags=tags,
+                    condition="",
+                    action="",
+                    line_coords=line_coords,
+                    line_tags=line_tags,
+                    increment=True,
+                )
                 condition_action_ref.condition_id.focus()  # Puts the text input cursor into the text box.
                 design_was_changed = True
         elif selected_entry == "straighten shape":

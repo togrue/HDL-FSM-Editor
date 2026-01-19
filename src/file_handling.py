@@ -545,6 +545,7 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
     transition_dict = {}
     state_comment_line_dictionary = {}
     state_action_line_dictionary = {}
+    condition_action_line_dictionary = {}
 
     # Load states
     for definition in design_dictionary["state"]:
@@ -601,10 +602,8 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
         tags = definition[1]
         trans_id = None
         for t in tags:
-            if t.startswith("connected_to_transition"):  # line to condition&action block
-                trans_id = project_manager.canvas.create_line(
-                    coords, dash=(2, 2), fill="black", tags=tags, state=tk.HIDDEN
-                )
+            if t.startswith("ca_connection"):  # line to condition&action block
+                condition_action_line_dictionary[t] = {"coords": coords, "tags": tags}
                 break
             if t.startswith("connection"):  # line to state action
                 state_action_line_dictionary[t] = {"coords": coords, "tags": tags}
@@ -638,7 +637,9 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
                 hide_priority_rectangle_list.append(transition_identifier)
 
     _load_transitions_from_dict(transition_dict)
-    _load_window_elements(design_dictionary, state_comment_line_dictionary, state_action_line_dictionary)
+    _load_window_elements(
+        design_dictionary, state_comment_line_dictionary, state_action_line_dictionary, condition_action_line_dictionary
+    )
 
     # Sort the display order for the transition priorities:
     for transition_id in transition_ids:
@@ -666,6 +667,7 @@ def _load_window_elements(
     design_dictionary: dict[str, Any],
     state_comment_line_dictionary: dict[str, Any],
     state_action_line_dictionary: dict[str, Any],
+    condition_action_line_dictionary: dict[str, Any],
 ) -> None:
     """Load all window elements including state actions, comments, and global actions."""
     # Load state action blocks
@@ -717,28 +719,36 @@ def _load_window_elements(
         for t in tags:
             if t == "connected_to_reset_transition":
                 connected_to_reset_entry = True
-        condition_action_ref = condition_action.ConditionAction(
-            coords[0], coords[1], connected_to_reset_entry, height=1, width=8, padding=1, increment=False
-        )
-        project_manager.canvas.itemconfigure(condition_action_ref.window_id, tag=tags)
-        condition_action_ref.condition_id.condition_text = condition + "\n"
-        condition_action_ref.condition_id.insert("1.0", condition)
-        condition_action_ref.condition_id.format()
-        condition_action_ref.condition_id.action_text = action + "\n"
-        condition_action_ref.action_id.insert("1.0", action)
-        condition_action_ref.action_id.format()
-        if (
-            condition_action_ref.condition_id.get("1.0", tk.END) == "\n"
-            and condition_action_ref.action_id.get("1.0", tk.END) != "\n"
-        ):
-            condition_action_ref.condition_label.grid_forget()
-            condition_action_ref.condition_id.grid_forget()
-        if (
-            condition_action_ref.condition_id.get("1.0", tk.END) != "\n"
-            and condition_action_ref.action_id.get("1.0", tk.END) == "\n"
-        ):
-            condition_action_ref.action_label.grid_forget()
-            condition_action_ref.action_id.grid_forget()
+            if t.startswith("ca_connection") and t.endswith("_anchor"):
+                ca_connection = t[:-7]
+                line_coords = condition_action_line_dictionary[ca_connection]["coords"]
+                line_tags = condition_action_line_dictionary[ca_connection]["tags"]
+                condition_action_ref = condition_action.ConditionAction(
+                    coords[0],
+                    coords[1],
+                    connected_to_reset_entry,
+                    height=1,
+                    width=8,
+                    padding=1,
+                    tags=tags,
+                    condition=condition,
+                    action=action,
+                    line_coords=line_coords,
+                    line_tags=line_tags,
+                    increment=False,
+                )
+                if (
+                    condition_action_ref.condition_id.get("1.0", tk.END) == "\n"
+                    and condition_action_ref.action_id.get("1.0", tk.END) != "\n"
+                ):
+                    condition_action_ref.condition_label.grid_forget()
+                    condition_action_ref.condition_id.grid_forget()
+                if (
+                    condition_action_ref.condition_id.get("1.0", tk.END) != "\n"
+                    and condition_action_ref.action_id.get("1.0", tk.END) == "\n"
+                ):
+                    condition_action_ref.action_label.grid_forget()
+                    condition_action_ref.action_id.grid_forget()
 
     # Load global actions
     for definition in design_dictionary["window_global_actions"]:
