@@ -10,7 +10,7 @@ import move_handling_canvas_item
 import move_handling_initialization
 import reset_entry
 import state
-import transition_handling
+import transition
 from project_manager import project_manager
 
 
@@ -25,7 +25,7 @@ def switch_to_transition_insertion() -> None:
     move_handling_canvas_item.MoveHandlingCanvasItem.transition_insertion_runs = True
     # From now on transitions can be inserted by left mouse button (this ends with the escape key):
     project_manager.root.config(cursor="cross")
-    project_manager.canvas.bind("<Button-1>", transition_handling.transition_start)
+    project_manager.canvas.bind("<Button-1>", transition.TransitionLine.transition_start)
 
 
 def switch_to_connector_insertion() -> None:
