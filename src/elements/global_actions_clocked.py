@@ -30,25 +30,18 @@ class GlobalActionsClocked:
         self.frame_id = ttk.Frame(
             project_manager.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="GlobalActionsWindow.TFrame"
         )
-        self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
-        self.frame_id.bind("<Leave>", lambda event: self.deactivate_frame())
-        # Create label object inside frame:
         self.label_before = ttk.Label(
             self.frame_id,
             text="Global actions clocked (executed before running the state machine):",
             font=("Arial", int(project_manager.label_fontsize)),
             style="GlobalActionsWindow.TLabel",
         )
-        self.label_before.bind("<Enter>", lambda event: self.activate_window())
-        self.label_before.bind("<Leave>", lambda event: self.deactivate_window())
         self.label_after = ttk.Label(
             self.frame_id,
             text="Global actions clocked (executed after running the state machine):",
             font=("Arial", int(project_manager.label_fontsize)),
             style="GlobalActionsWindow.TLabel",
         )
-        self.label_after.bind("<Enter>", lambda event: self.activate_window())
-        self.label_after.bind("<Leave>", lambda event: self.deactivate_window())
         self.text_before_id = custom_text.CustomText(
             self.frame_id,
             text_type="action",
@@ -66,6 +59,35 @@ class GlobalActionsClocked:
             undo=True,
             maxundo=-1,
             font=("Courier", int(project_manager.fontsize)),
+        )
+        self.label_before.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E))
+        self.text_before_id.grid(row=1, column=0, sticky=(tk.E, tk.W))
+        self.label_after.grid(row=2, column=0, sticky=(tk.E, tk.W))
+        self.text_after_id.grid(row=3, column=0, sticky=(tk.E, tk.W, tk.S))
+        # Create canvas window for frame:
+        self.window_id = project_manager.canvas.create_window(
+            menu_x, menu_y, window=self.frame_id, anchor=tk.W, tags=tags
+        )
+
+        self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
+        self.frame_id.bind("<Leave>", lambda event: self.deactivate_frame())
+        self.frame_id.bind(
+            "<Button-1>",
+            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(event, self.frame_id, self.window_id),
+        )
+        self.label_before.bind("<Enter>", lambda event: self.activate_window())
+        self.label_before.bind("<Leave>", lambda event: self.deactivate_window())
+        self.label_before.bind(
+            "<Button-1>",
+            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(
+                event, self.label_before, self.window_id
+            ),
+        )
+        self.label_after.bind("<Enter>", lambda event: self.activate_window())
+        self.label_after.bind("<Leave>", lambda event: self.deactivate_window())
+        self.label_after.bind(
+            "<Button-1>",
+            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(event, self.label_after, self.window_id),
         )
         self.text_before_id.bind("<Control-z>", lambda event: self.text_before_id.undo())
         self.text_before_id.bind("<Control-Z>", lambda event: self.text_before_id.redo())
@@ -93,32 +115,6 @@ class GlobalActionsClocked:
                 "<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas)
             ),
         )
-
-        self.label_before.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E))
-        self.text_before_id.grid(row=1, column=0, sticky=(tk.E, tk.W))
-        self.label_after.grid(row=2, column=0, sticky=(tk.E, tk.W))
-        self.text_after_id.grid(row=3, column=0, sticky=(tk.E, tk.W, tk.S))
-
-        # Create canvas window for frame and text:
-        self.window_id = project_manager.canvas.create_window(
-            menu_x, menu_y, window=self.frame_id, anchor=tk.W, tags=tags
-        )
-
-        self.frame_id.bind(
-            "<Button-1>",
-            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(event, self.frame_id, self.window_id),
-        )
-        self.label_before.bind(
-            "<Button-1>",
-            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(
-                event, self.label_before, self.window_id
-            ),
-        )
-        self.label_after.bind(
-            "<Button-1>",
-            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(event, self.label_after, self.window_id),
-        )
-
         GlobalActionsClocked.dictionary[self.window_id] = self
         canvas_modify_bindings.switch_to_move_mode()
 
@@ -154,13 +150,13 @@ class GlobalActionsClocked:
 
     def deactivate_frame(self) -> None:
         self.deactivate_window()
-        self.frame_id.focus()  # "unfocus" the Text, when the mouse leaves the text.
         if self.text_before_id.get("1.0", tk.END) != self.text_before_content:
             undo_handling.design_has_changed()
         if self.text_after_id.get("1.0", tk.END) != self.text_after_content:
             undo_handling.design_has_changed()
 
     def deactivate_window(self) -> None:
+        project_manager.canvas.focus_set()  # "unfocus" the Text, when the mouse leaves the text.
         self.frame_id.configure(borderwidth=0, style="GlobalActionsWindow.TFrame")
         self.label_before.configure(style="GlobalActionsWindow.TLabel")
         self.label_after.configure(style="GlobalActionsWindow.TLabel")

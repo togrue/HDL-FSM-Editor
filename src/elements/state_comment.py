@@ -112,11 +112,11 @@ class StateComment:
 
     def deactivate_frame(self) -> None:
         self.deactivate_window()
-        self.frame_id.focus()  # "unfocus" the Text, when the mouse leaves the text.
         if self.text_id.get("1.0", tk.END) != self.text_content:
             undo_handling.design_has_changed()
 
     def deactivate_window(self) -> None:
+        project_manager.canvas.focus_set()  # "unfocus" the Text, when the mouse leaves the text.
         self.frame_id.configure(borderwidth=0, style="StateActionsWindow.TFrame")
         self.label_id.configure(style="StateActionsWindow.TLabel")
 

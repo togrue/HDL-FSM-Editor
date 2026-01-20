@@ -173,7 +173,16 @@ class ConditionAction:
         self.condition_label.configure(style="WindowSelected.TLabel")
         self.action_label.configure(style="WindowSelected.TLabel")
 
+    def _deactivate_frame(self) -> None:
+        self._deselect_window()
+        if self.canvas_enter_func_id is not None:
+            project_manager.canvas.unbind("<Motion>", self.canvas_enter_func_id)
+            self.canvas_enter_func_id = None
+        self.frame_enter_func_id = self.frame_id.bind("<Enter>", lambda event: self._activate_frame())
+        self._hide_empty_condition_or_action()
+
     def _deselect_window(self) -> None:
+        project_manager.canvas.focus_set()  # "unfocus" the Text, when the mouse leaves the text.
         self.frame_id.configure(borderwidth=0, style="Window.TFrame")
         self.condition_label.configure(style="Window.TLabel")
         self.action_label.configure(style="Window.TLabel")
@@ -198,16 +207,7 @@ class ConditionAction:
         # To ensure this, save_in_file() waits for idle.
         self.action_text = self.action_id.get("1.0", tk.END)
 
-    def _deactivate_frame(self) -> None:
-        self._deselect_window()
-        if self.canvas_enter_func_id is not None:
-            project_manager.canvas.unbind("<Motion>", self.canvas_enter_func_id)
-            self.canvas_enter_func_id = None
-        self.frame_enter_func_id = self.frame_id.bind("<Enter>", lambda event: self._activate_frame())
-        self._hide_empty_condition_or_action()
-
     def _hide_empty_condition_or_action(self) -> None:
-        self.frame_id.focus()  # "unfocus" the Text, when the mouse leaves the text.
         if (
             self.condition_id.get("1.0", tk.END) != self.condition_text
             or self.action_id.get("1.0", tk.END) != self.action_text

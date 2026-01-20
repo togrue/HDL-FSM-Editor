@@ -29,17 +29,12 @@ class GlobalActionsCombinatorial:
         self.frame_id = ttk.Frame(
             project_manager.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="GlobalActionsWindow.TFrame"
         )
-        self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
-        self.frame_id.bind("<Leave>", lambda event: self.deactivate_frame())
-        # Create label object inside frame:
         self.label = ttk.Label(
             self.frame_id,
             text="Global actions combinatorial: ",
             font=("Arial", int(project_manager.label_fontsize)),
             style="GlobalActionsWindow.TLabel",
         )
-        self.label.bind("<Enter>", lambda event: self.activate_window())
-        self.label.bind("<Leave>", lambda event: self.deactivate_window())
         self.text_id = custom_text.CustomText(
             self.frame_id,
             text_type="action",
@@ -48,6 +43,25 @@ class GlobalActionsCombinatorial:
             undo=True,
             maxundo=-1,
             font=("Courier", int(project_manager.fontsize)),
+        )
+        self.label.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E))
+        self.text_id.grid(row=1, column=0, sticky=(tk.E, tk.W))
+        # Create canvas window for frame:
+        self.window_id = project_manager.canvas.create_window(
+            menu_x, menu_y, window=self.frame_id, anchor=tk.W, tags=tags
+        )
+
+        self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
+        self.frame_id.bind("<Leave>", lambda event: self.deactivate_frame())
+        self.frame_id.bind(
+            "<Button-1>",
+            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(event, self.frame_id, self.window_id),
+        )
+        self.label.bind("<Enter>", lambda event: self.activate_window())
+        self.label.bind("<Leave>", lambda event: self.deactivate_window())
+        self.label.bind(
+            "<Button-1>",
+            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(event, self.label, self.window_id),
         )
         self.text_id.bind("<Control-z>", lambda event: self.text_id.undo())
         self.text_id.bind("<Control-Z>", lambda event: self.text_id.redo())
@@ -61,23 +75,6 @@ class GlobalActionsCombinatorial:
             lambda event: project_manager.canvas.bind_all(
                 "<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas)
             ),
-        )
-
-        self.label.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E))
-        self.text_id.grid(row=1, column=0, sticky=(tk.E, tk.W))
-
-        # Create canvas window for frame and text:
-        self.window_id = project_manager.canvas.create_window(
-            menu_x, menu_y, window=self.frame_id, anchor=tk.W, tags=tags
-        )
-
-        self.frame_id.bind(
-            "<Button-1>",
-            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(event, self.frame_id, self.window_id),
-        )
-        self.label.bind(
-            "<Button-1>",
-            lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(event, self.label, self.window_id),
         )
         self.frame_id.lower()
         GlobalActionsCombinatorial.dictionary[self.window_id] = self
@@ -103,11 +100,11 @@ class GlobalActionsCombinatorial:
 
     def deactivate_frame(self) -> None:
         self.deactivate_window()
-        self.frame_id.focus()  # "unfocus" the Text, when the mouse leaves the text.
         if self.text_id.get("1.0", tk.END) != self.text_content:
             undo_handling.design_has_changed()
 
     def deactivate_window(self) -> None:
+        project_manager.canvas.focus_set()  # "unfocus" the Text, when the mouse leaves the text.
         self.frame_id.configure(borderwidth=0, style="GlobalActionsWindow.TFrame")
         self.label.configure(style="GlobalActionsWindow.TLabel")
 
