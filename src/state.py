@@ -346,3 +346,42 @@ class States:
     def _determine_the_radius_of_the_state(cls, state_id):
         state_coords = project_manager.canvas.coords(state_id)
         return (state_coords[2] - state_coords[0]) / 2
+
+    @classmethod
+    def insert_state(cls, event) -> None:
+        event_x, event_y = canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(event)
+        if cls.state_overlaps(event_x, event_y):
+            messagebox.showwarning(
+                "Warning in HDL-FSM-Editor",
+                "The state could not be inserted, because it\nwas positioned too close to another object.\nTry again",
+            )
+            return
+        coords = [
+            event_x - project_manager.state_radius,
+            event_y - project_manager.state_radius,
+            event_x + project_manager.state_radius,
+            event_y + project_manager.state_radius,
+        ]
+        States(
+            coords,
+            tags=["state" + str(States.state_number + 1)],
+            text="S" + str(States.state_number + 1),
+            fill_color=constants.STATE_COLOR,
+            new_state=True,
+        )
+        # design_has_changed cannot be called by state.States, because state.States must be called
+        # when an Undo is performed, which shall not create a new entry in the Undo-Stack.
+        undo_handling.design_has_changed()
+
+    @classmethod
+    def state_overlaps(cls, event_x, event_y) -> bool:
+        overlapping_items = project_manager.canvas.find_overlapping(
+            event_x - project_manager.state_radius,
+            event_y - project_manager.state_radius,
+            event_x + project_manager.state_radius,
+            event_y + project_manager.state_radius,
+        )
+        for overlapping_item in overlapping_items:
+            if "grid_line" not in project_manager.canvas.gettags(overlapping_item):
+                return True
+        return False

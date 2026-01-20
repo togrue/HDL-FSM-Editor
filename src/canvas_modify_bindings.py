@@ -9,7 +9,7 @@ import global_actions_handling
 import move_handling_canvas_item
 import move_handling_initialization
 import reset_entry
-import state_handling
+import state
 import transition_handling
 from project_manager import project_manager
 
@@ -18,7 +18,7 @@ def switch_to_state_insertion() -> None:
     move_handling_canvas_item.MoveHandlingCanvasItem.transition_insertion_runs = False
     # From now on states can be inserted by left mouse button (this ends with the escape key):
     project_manager.root.config(cursor="circle")
-    project_manager.canvas.bind("<Button-1>", state_handling.insert_state)
+    project_manager.canvas.bind("<Button-1>", state.States.insert_state)
 
 
 def switch_to_transition_insertion() -> None:
