@@ -5,23 +5,6 @@ Methods for handling the form of transitions
 import math
 
 
-def shorten_vector(delta0, x0, y0, delta1, x1, y1, modify0, modify1) -> list:
-    phi = math.pi / 2 if x1 - x0 == 0 else math.atan((y1 - y0) / (x1 - x0))
-    phi = abs(phi)
-    delta0_x = delta0 * math.cos(phi)
-    delta0_y = delta0 * math.sin(phi)
-    delta1_x = delta1 * math.cos(phi)
-    delta1_y = delta1 * math.sin(phi)
-    if y1 >= y0 and x1 >= x0:
-        return [x0 + delta0_x * modify0, y0 + delta0_y * modify0, x1 - delta1_x * modify1, y1 - delta1_y * modify1]
-    elif y1 >= y0 and x1 < x0:
-        return [x0 - delta0_x * modify0, y0 + delta0_y * modify0, x1 + delta1_x * modify1, y1 - delta1_y * modify1]
-    elif y1 < y0 and x1 >= x0:
-        return [x0 + delta0_x * modify0, y0 - delta0_y * modify0, x1 - delta1_x * modify1, y1 + delta1_y * modify1]
-    else:
-        return [x0 - delta0_x * modify0, y0 - delta0_y * modify0, x1 + delta1_x * modify1, y1 + delta1_y * modify1]
-
-
 def try_to_convert_into_straight_line(coords) -> list:
     number_of_points = len(coords) / 2
     if number_of_points == 2:
