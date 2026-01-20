@@ -103,7 +103,7 @@ class TabControl:
         _compile_cmd_docu = ttk.Label(
             control_frame,
             text="Variables for compile command:\n$file1\t= Entity-File\n$file2\t= Architecture-File\n$file\t\
-    = File with Entity and Architecture\n$name\t= Module Name",
+= File with Entity and Architecture\n$name\t= Module Name",
             padding=5,
         )
         project_manager.compile_cmd_docu = _compile_cmd_docu
