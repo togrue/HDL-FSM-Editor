@@ -8,7 +8,7 @@ import connector
 import global_actions_handling
 import move_handling_canvas_item
 import move_handling_initialization
-import reset_entry_handling
+import reset_entry
 import state_handling
 import transition_handling
 from project_manager import project_manager
@@ -40,7 +40,7 @@ def switch_to_reset_entry_insertion() -> None:
     #    print("switch_to_reset_entry_insertion")
     if project_manager.canvas.find_withtag("reset_entry") == ():  # Only 1 reset entry is allowed.
         project_manager.root.config(cursor="center_ptr")
-        project_manager.canvas.bind("<Button-1>", reset_entry_handling.insert_reset_entry)
+        project_manager.canvas.bind("<Button-1>", reset_entry.ResetEntry.insert_reset_entry)
 
 
 def switch_to_state_action_default_insertion() -> None:
