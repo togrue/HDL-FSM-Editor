@@ -70,15 +70,9 @@ class GlobalActionsClocked:
         self.text_before_id.bind("<Control-z>", lambda event: self.text_before_id.undo())
         self.text_before_id.bind("<Control-Z>", lambda event: self.text_before_id.redo())
         self.text_before_id.bind("<Control-e>", lambda event: self._edit_before_in_external_editor())
-        self.text_after_id.bind("<Control-z>", lambda event: self.text_after_id.undo())
-        self.text_after_id.bind("<Control-Z>", lambda event: self.text_after_id.redo())
-        self.text_after_id.bind("<Control-e>", lambda event: self._edit_after_in_external_editor())
         self.text_before_id.bind("<Control-s>", lambda event: self.update_before())
         self.text_before_id.bind("<Control-g>", lambda event: self.update_before())
-        self.text_after_id.bind("<Control-s>", lambda event: self.update_after())
-        self.text_after_id.bind("<Control-g>", lambda event: self.update_after())
         self.text_before_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
-        self.text_after_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
         self.text_before_id.bind("<FocusIn>", lambda event: project_manager.canvas.unbind_all("<Delete>"))
         self.text_before_id.bind(
             "<FocusOut>",
@@ -86,6 +80,12 @@ class GlobalActionsClocked:
                 "<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas)
             ),
         )
+        self.text_after_id.bind("<Control-z>", lambda event: self.text_after_id.undo())
+        self.text_after_id.bind("<Control-Z>", lambda event: self.text_after_id.redo())
+        self.text_after_id.bind("<Control-e>", lambda event: self._edit_after_in_external_editor())
+        self.text_after_id.bind("<Control-s>", lambda event: self.update_after())
+        self.text_after_id.bind("<Control-g>", lambda event: self.update_after())
+        self.text_after_id.bind("<<TextModified>>", lambda event: undo_handling.update_window_title())
         self.text_after_id.bind("<FocusIn>", lambda event: project_manager.canvas.unbind_all("<Delete>"))
         self.text_after_id.bind(
             "<FocusOut>",
