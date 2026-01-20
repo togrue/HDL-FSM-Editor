@@ -6,10 +6,10 @@ import re
 import tkinter as tk
 
 import canvas_editing
-import condition_action
-import global_actions_clocked
-import global_actions_combinatorial
-import state_comment
+import elements.condition_action as condition_action
+import elements.global_actions_clocked as global_actions_clocked
+import elements.global_actions_combinatorial as global_actions_combinatorial
+import elements.state_comment as state_comment
 from project_manager import project_manager
 
 from .exceptions import GenerationError

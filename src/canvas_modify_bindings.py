@@ -4,13 +4,17 @@ inserting the different graphical objects.
 """
 
 import canvas_editing
-import connector
-import global_actions_handling
 import move_handling_canvas_item
 import move_handling_initialization
-import reset_entry
-import state
-import transition
+from elements import (
+    connector,
+    global_actions_clocked,
+    global_actions_combinatorial,
+    reset_entry,
+    state,
+    state_actions_default,
+    transition,
+)
 from project_manager import project_manager
 
 
@@ -48,7 +52,9 @@ def switch_to_state_action_default_insertion() -> None:
     #    print("switch_to_state_action_default_insertion")
     if project_manager.canvas.find_withtag("state_actions_default") == ():  # Only 1 global action is allowed.
         project_manager.root.config(cursor="bogosity")
-        project_manager.canvas.bind("<Button-1>", global_actions_handling.insert_state_actions_default)
+        project_manager.canvas.bind(
+            "<Button-1>", state_actions_default.StateActionsDefault.insert_state_actions_default
+        )
 
 
 def switch_to_global_action_clocked_insertion() -> None:
@@ -56,7 +62,9 @@ def switch_to_global_action_clocked_insertion() -> None:
     #    print("switch_to_global_action_clocked_insertion")
     if project_manager.canvas.find_withtag("global_actions1") == ():  # Only 1 global action is allowed.
         project_manager.root.config(cursor="bogosity")
-        project_manager.canvas.bind("<Button-1>", global_actions_handling.insert_global_actions_clocked)
+        project_manager.canvas.bind(
+            "<Button-1>", global_actions_clocked.GlobalActionsClocked.insert_global_actions_clocked
+        )
 
 
 def switch_to_global_action_combinatorial_insertion() -> None:
@@ -64,7 +72,9 @@ def switch_to_global_action_combinatorial_insertion() -> None:
     #    print("switch_to_global_action_combinatorial_insertion")
     if project_manager.canvas.find_withtag("global_actions_combinatorial1") == ():  # Only 1 global action is allowed.
         project_manager.root.config(cursor="bogosity")
-        project_manager.canvas.bind("<Button-1>", global_actions_handling.insert_global_actions_combinatorial)
+        project_manager.canvas.bind(
+            "<Button-1>", global_actions_combinatorial.GlobalActionsCombinatorial.insert_global_actions_combinatorial
+        )
 
 
 def switch_to_move_mode() -> None:

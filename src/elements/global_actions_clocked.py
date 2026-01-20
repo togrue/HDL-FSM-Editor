@@ -6,6 +6,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import canvas_delete
+import canvas_editing
 import canvas_modify_bindings
 import custom_text
 import move_handling_canvas_window
@@ -172,3 +173,19 @@ class GlobalActionsClocked:
         # Keep the distance between event and anchor point constant:
         event_x, event_y = event_x + self.difference_x, event_y + self.difference_y
         project_manager.canvas.coords(self.window_id, event_x, event_y)
+
+    @classmethod
+    def insert_global_actions_clocked(cls, event) -> None:
+        project_manager.global_action_clocked_button.config(state=tk.DISABLED)
+        canvas_grid_coordinates_of_the_event = (
+            canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
+        )
+        GlobalActionsClocked(
+            canvas_grid_coordinates_of_the_event[0],
+            canvas_grid_coordinates_of_the_event[1],
+            height=1,
+            width=8,
+            padding=1,
+            tags=("global_actions1",),
+        )
+        undo_handling.design_has_changed()

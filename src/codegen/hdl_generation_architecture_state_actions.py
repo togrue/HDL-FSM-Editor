@@ -5,8 +5,8 @@ All methods needed for the state action process in VHDL or Verilog
 import re
 import tkinter as tk
 
-import state_action
-import state_actions_default
+import elements.state_action as state_action
+import elements.state_actions_default as state_actions_default
 from codegen import hdl_generation_library
 from project_manager import project_manager
 

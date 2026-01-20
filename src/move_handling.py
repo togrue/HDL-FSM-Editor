@@ -3,17 +3,17 @@ This module contains a method to decide which graphical object must be moved.
 """
 
 import canvas_editing
-import condition_action
-import connector
 import constants
-import global_actions_clocked
-import global_actions_combinatorial
-import reset_entry
-import state
-import state_action
-import state_actions_default
-import state_comment
-import transition
+import elements.condition_action as condition_action
+import elements.connector as connector
+import elements.global_actions_clocked as global_actions_clocked
+import elements.global_actions_combinatorial as global_actions_combinatorial
+import elements.reset_entry as reset_entry
+import elements.state as state
+import elements.state_action as state_action
+import elements.state_actions_default as state_actions_default
+import elements.state_comment as state_comment
+import elements.transition as transition
 from project_manager import project_manager
 
 

@@ -8,8 +8,8 @@ import tkinter as tk
 import canvas_delete
 import canvas_editing
 import canvas_modify_bindings
-import condition_action
 import constants
+import elements.condition_action as condition_action
 import move_handling_initialization
 import undo_handling
 from project_manager import project_manager

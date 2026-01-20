@@ -8,11 +8,11 @@ from tkinter import messagebox
 import canvas_delete
 import canvas_editing
 import constants
+import elements.state_action as state_action
+import elements.state_comment as state_comment
+import elements.transition as transition
 import move_handling_canvas_item
 import move_handling_initialization
-import state_action
-import state_comment
-import transition
 import undo_handling
 from dialogs.color_changer import ColorChanger
 from project_manager import project_manager

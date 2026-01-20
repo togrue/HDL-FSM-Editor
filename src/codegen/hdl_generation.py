@@ -11,8 +11,8 @@ from tkinter import messagebox
 import codegen.hdl_generation_architecture as hdl_generation_architecture
 import codegen.hdl_generation_library as hdl_generation_library
 import codegen.hdl_generation_module as hdl_generation_module
+import elements.state_comment as state_comment
 import file_handling
-import state_comment
 import tag_plausibility
 from codegen.hdl_generation_config import GenerationConfig
 from constants import GuiTab

@@ -10,8 +10,8 @@ import tkinter as tk
 
 import config
 import constants
+import elements.global_actions_combinatorial as global_actions_combinatorial
 import file_handling
-import global_actions_combinatorial
 from codegen import hdl_generation_architecture_state_actions, hdl_generation_library
 from project_manager import project_manager
 

@@ -1,11 +1,12 @@
 """
-Class for combinatorial actions independent from the state machine
+Handles the combinatorial default actions for all states.
 """
 
 import tkinter as tk
 from tkinter import ttk
 
 import canvas_delete
+import canvas_editing
 import canvas_modify_bindings
 import custom_text
 import move_handling_canvas_window
@@ -13,29 +14,26 @@ import undo_handling
 from project_manager import project_manager
 
 
-class GlobalActionsCombinatorial:
+class StateActionsDefault:
     """
-    Class for combinatorial actions independent from the state machine
+    Handles the combinatorial default actions for all states.
     """
 
     dictionary = {}
 
     def __init__(self, menu_x, menu_y, height, width, padding, tags) -> None:
         self.text_content = None
-        self.difference_x = 0
-        self.difference_y = 0
-
         self.frame_id = ttk.Frame(
-            project_manager.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="GlobalActionsWindow.TFrame"
-        )
+            project_manager.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="StateActionsWindow.TFrame"
+        )  # , borderwidth=10)
         self.frame_id.bind("<Enter>", lambda event: self.activate_frame())
         self.frame_id.bind("<Leave>", lambda event: self.deactivate_frame())
         # Create label object inside frame:
         self.label = ttk.Label(
             self.frame_id,
-            text="Global actions combinatorial: ",
+            text="Default state actions (combinatorial): ",
             font=("Arial", int(project_manager.label_fontsize)),
-            style="GlobalActionsWindow.TLabel",
+            style="StateActionsWindow.TLabel",
         )
         self.label.bind("<Enter>", lambda event: self.activate_window())
         self.label.bind("<Leave>", lambda event: self.deactivate_window())
@@ -65,6 +63,10 @@ class GlobalActionsCombinatorial:
         self.label.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E))
         self.text_id.grid(row=1, column=0, sticky=(tk.E, tk.W))
 
+        self.difference_x = 0
+        self.difference_y = 0
+        self.move_rectangle = None
+
         # Create canvas window for frame and text:
         self.window_id = project_manager.canvas.create_window(
             menu_x, menu_y, window=self.frame_id, anchor=tk.W, tags=tags
@@ -78,16 +80,18 @@ class GlobalActionsCombinatorial:
             "<Button-1>",
             lambda event: move_handling_canvas_window.MoveHandlingCanvasWindow(event, self.label, self.window_id),
         )
-        self.frame_id.lower()
-        GlobalActionsCombinatorial.dictionary[self.window_id] = self
+        StateActionsDefault.dictionary[self.window_id] = self
         canvas_modify_bindings.switch_to_move_mode()
+
+    def tag(self) -> None:
+        project_manager.canvas.itemconfigure(self.window_id, tag="state_actions_default")
 
     def _edit_in_external_editor(self):
         self.text_id.edit_in_external_editor()
         self.update_text()
 
-    def update_text(self):
-        # Update self.text_content, so that the <Leave>-check in deactivate() does not signal a design-change and
+    def update_text(self) -> None:
+        # Update self.text_content, so that the <Leave>-check in deactivate_frame() does not signal a design-change and
         # that save_in_file() already reads the new text, entered into the textbox before Control-s/g.
         # To ensure this, save_in_file() waits for idle.
         self.text_content = self.text_id.get("1.0", tk.END)
@@ -97,8 +101,8 @@ class GlobalActionsCombinatorial:
         self.text_content = self.text_id.get("1.0", tk.END)
 
     def activate_window(self) -> None:
-        self.frame_id.configure(borderwidth=1, style="GlobalActionsWindowSelected.TFrame")
-        self.label.configure(style="GlobalActionsWindowSelected.TLabel")
+        self.frame_id.configure(borderwidth=1, style="StateActionsWindowSelected.TFrame")
+        self.label.configure(style="StateActionsWindowSelected.TLabel")
 
     def deactivate_frame(self) -> None:
         self.deactivate_window()
@@ -107,8 +111,8 @@ class GlobalActionsCombinatorial:
             undo_handling.design_has_changed()
 
     def deactivate_window(self) -> None:
-        self.frame_id.configure(borderwidth=0, style="GlobalActionsWindow.TFrame")
-        self.label.configure(style="GlobalActionsWindow.TLabel")
+        self.frame_id.configure(borderwidth=0, style="StateActionsWindow.TFrame")
+        self.label.configure(style="StateActionsWindow.TLabel")
 
     def move_to(self, event_x, event_y, first) -> None:
         if first:
@@ -118,3 +122,19 @@ class GlobalActionsCombinatorial:
         # Keep the distance between event and anchor point constant:
         event_x, event_y = event_x + self.difference_x, event_y + self.difference_y
         project_manager.canvas.coords(self.window_id, event_x, event_y)
+
+    @classmethod
+    def insert_state_actions_default(cls, event) -> None:
+        project_manager.state_action_default_button.config(state=tk.DISABLED)
+        canvas_grid_coordinates_of_the_event = (
+            canvas_editing.translate_window_event_coordinates_in_exact_canvas_coordinates(event)
+        )
+        StateActionsDefault(
+            canvas_grid_coordinates_of_the_event[0],
+            canvas_grid_coordinates_of_the_event[1],
+            height=1,
+            width=8,
+            padding=1,
+            tags=("state_actions_default",),
+        )
+        undo_handling.design_has_changed()
