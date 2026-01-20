@@ -12,21 +12,23 @@ from typing import Any
 import canvas_editing
 import constants
 import custom_text
-import elements.condition_action as condition_action
-import elements.connector as connector
-import elements.global_actions_clocked as global_actions_clocked
-import elements.global_actions_combinatorial as global_actions_combinatorial
-import elements.reset_entry as reset_entry
-import elements.state as state
-import elements.state_action as state_action
-import elements.state_actions_default as state_actions_default
-import elements.state_comment as state_comment
-import elements.transition as transition
 import tag_plausibility
 import undo_handling
 import update_hdl_tab
 import write_data_creator
 from constants import GuiTab
+from elements import (
+    condition_action,
+    connector,
+    global_actions_clocked,
+    global_actions_combinatorial,
+    reset_entry,
+    state,
+    state_action,
+    state_actions_default,
+    state_comment,
+    transition,
+)
 from project_manager import project_manager
 
 _write_data_creator_ref = None  # Nur lokal verwendet, kann in Attrbute umgewandelt werden.

@@ -6,10 +6,7 @@ import re
 import tkinter as tk
 
 import canvas_editing
-import elements.condition_action as condition_action
-import elements.global_actions_clocked as global_actions_clocked
-import elements.global_actions_combinatorial as global_actions_combinatorial
-import elements.state_comment as state_comment
+from elements import condition_action, global_actions_clocked, global_actions_combinatorial, state_comment
 from project_manager import project_manager
 
 from .exceptions import GenerationError
@@ -42,18 +39,6 @@ def _get_target_state_name(all_reset_transition_tags):
             target_state_tag = t[9:]
     target_state_name = project_manager.canvas.itemcget(target_state_tag + "_name", "text")
     return target_state_name
-
-
-# TODO: Might be unused right now.
-def _get_target_tag_of_transition(transition_tag):
-    transition_tags = project_manager.canvas.gettags(transition_tag)
-    for transition_tag in transition_tags:
-        if transition_tag.startswith("going_to_"):
-            return transition_tag[9:]
-    for tag in transition_tags:
-        if tag.startswith("going_to_"):
-            return tag[9:]
-    return ""  # Should never happen.
 
 
 def create_reset_condition_and_reset_action() -> list:

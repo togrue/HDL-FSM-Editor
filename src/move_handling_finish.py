@@ -6,11 +6,10 @@ import math
 import tkinter as tk
 
 import canvas_editing
-import elements.condition_action as condition_action
-import elements.transition as transition
 import move_handling
 import move_handling_initialization
 import undo_handling
+from elements import condition_action, transition
 from project_manager import project_manager
 
 

@@ -4,7 +4,7 @@ Methods needed for highlighting signals, which are not read, not written, not de
 
 import constants
 import custom_text
-import elements.global_actions_combinatorial as global_actions_combinatorial
+from elements import global_actions_combinatorial
 from project_manager import project_manager
 
 

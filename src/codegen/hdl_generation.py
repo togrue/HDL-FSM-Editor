@@ -8,14 +8,12 @@ import tkinter as tk
 from datetime import datetime
 from tkinter import messagebox
 
-import codegen.hdl_generation_architecture as hdl_generation_architecture
-import codegen.hdl_generation_library as hdl_generation_library
-import codegen.hdl_generation_module as hdl_generation_module
-import elements.state_comment as state_comment
 import file_handling
 import tag_plausibility
+from codegen import hdl_generation_architecture, hdl_generation_library, hdl_generation_module
 from codegen.hdl_generation_config import GenerationConfig
 from constants import GuiTab
+from elements import state_comment
 from project_manager import project_manager
 
 from .exceptions import GenerationError

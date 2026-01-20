@@ -8,9 +8,9 @@ import math
 import tkinter as tk
 
 import canvas_editing
-import elements.transition as transition
 import move_handling
 import move_handling_finish
+from elements import transition
 from project_manager import project_manager
 
 

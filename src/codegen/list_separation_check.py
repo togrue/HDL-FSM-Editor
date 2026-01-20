@@ -14,7 +14,7 @@ afterwards the search is ended.
 
 import re
 
-import codegen.hdl_generation_library as hdl_generation_library
+from codegen import hdl_generation_library
 
 
 class ListSeparationCheck:
