@@ -1,3 +1,5 @@
+"""This class generates the menu bar of the tool."""
+
 import os
 import sys
 import tkinter as tk
@@ -14,6 +16,8 @@ from project_manager import project_manager
 
 
 class MenuBar:
+    """This object creates the menu bar of the tool and manages its functionality."""
+
     def __init__(self, row, column) -> None:
         menue_frame = ttk.Frame(project_manager.root, borderwidth=2, relief=tk.RAISED)
         menue_frame.grid(column=column, row=row, sticky="nsew")
