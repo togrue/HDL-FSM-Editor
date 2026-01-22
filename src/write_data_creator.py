@@ -10,6 +10,11 @@ import canvas_editing
 
 
 class WriteDataCreator:
+    """
+    Only one WriteDataCreator object is used.
+    It is created at a file-operation.
+    """
+
     def __init__(self, standard_size) -> None:
         self.standard_size = standard_size
         self.last_design_dictionary = None
