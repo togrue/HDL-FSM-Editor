@@ -9,6 +9,12 @@ from project_manager import project_manager
 
 
 class HighLightDict:
+    """
+    There is only one HighLightDict object used, which is created at startup.
+    The dictionary contains some predefined keywords for syntax highlighting.
+    Additionally the keywords for not read and not written signals are added here.
+    """
+
     def __init__(self) -> None:
         self.highlight_pattern_dict: dict[str, list[str]] = constants.VHDL_HIGHLIGHT_PATTERN_DICT
         self.recreate_after_id = None
