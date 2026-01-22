@@ -207,9 +207,9 @@ def _create_state_action_list(state_tag_list_sorted):
                 "_end"
             ):  # This is a tag which exists only at states.
                 connection_name = tag_of_state[:-4]
-                state_action_id = project_manager.canvas.find_withtag(connection_name + "_start")
-                if state_action_id != ():
-                    ref = state_action.StateAction.state_action_dict[state_action_id[0]]
+                state_action_ids = project_manager.canvas.find_withtag(connection_name + "_start")
+                if state_action_ids:
+                    ref = state_action.StateAction.state_action_dict[state_action_ids[0]]
                     state_action_text = ref.text_id.get("1.0", tk.END)
                     state_action_reference = ref.text_id
                     break
