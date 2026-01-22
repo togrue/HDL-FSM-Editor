@@ -1,5 +1,5 @@
 """
-Includes all methods needed, when the moving objects ends.
+Includes all methods needed, when moving objects ends.
 """
 
 import math
