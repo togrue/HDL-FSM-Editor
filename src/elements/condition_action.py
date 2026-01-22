@@ -130,9 +130,7 @@ class ConditionAction:
         self.condition_id.bind("<FocusIn>", lambda event: project_manager.canvas.unbind_all("<Delete>"))
         self.condition_id.bind(
             "<FocusOut>",
-            lambda event: project_manager.canvas.bind_all(
-                "<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas)
-            ),
+            lambda event: project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete()),
         )
         self.action_id.bind("<Control-z>", lambda event: self.action_id.undo())
         self.action_id.bind("<Control-Z>", lambda event: self.action_id.redo())
@@ -143,9 +141,7 @@ class ConditionAction:
         self.action_id.bind("<FocusIn>", lambda event: project_manager.canvas.unbind_all("<Delete>"))
         self.action_id.bind(
             "<FocusOut>",
-            lambda event: project_manager.canvas.bind_all(
-                "<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas)
-            ),
+            lambda event: project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete()),
         )
 
         # Create dictionary for translating the canvas-id of the canvas-window into a reference to this object:
@@ -242,3 +238,14 @@ class ConditionAction:
 
     def hide_line(self) -> None:
         project_manager.canvas.itemconfig(self.line_id, state=tk.HIDDEN)
+
+    def delete(self):
+        number = project_manager.canvas.gettags(self.window_id)[0][16:]  # extract <n> from "condition_action<n>"
+        del custom_text.CustomText.read_variables_of_all_windows[self.condition_id]
+        del custom_text.CustomText.written_variables_of_all_windows[self.condition_id]
+        del custom_text.CustomText.read_variables_of_all_windows[self.action_id]
+        del custom_text.CustomText.written_variables_of_all_windows[self.action_id]
+        project_manager.canvas.delete(self.window_id)
+        project_manager.canvas.delete(self.line_id)
+        project_manager.canvas.dtag("all", "ca_connection" + number + "_end")
+        del ConditionAction.dictionary[self.window_id]

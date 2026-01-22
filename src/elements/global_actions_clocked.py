@@ -98,9 +98,7 @@ class GlobalActionsClocked:
         self.text_before_id.bind("<FocusIn>", lambda event: project_manager.canvas.unbind_all("<Delete>"))
         self.text_before_id.bind(
             "<FocusOut>",
-            lambda event: project_manager.canvas.bind_all(
-                "<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas)
-            ),
+            lambda event: project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete()),
         )
         self.text_after_id.bind("<Control-z>", lambda event: self.text_after_id.undo())
         self.text_after_id.bind("<Control-Z>", lambda event: self.text_after_id.redo())
@@ -111,9 +109,7 @@ class GlobalActionsClocked:
         self.text_after_id.bind("<FocusIn>", lambda event: project_manager.canvas.unbind_all("<Delete>"))
         self.text_after_id.bind(
             "<FocusOut>",
-            lambda event: project_manager.canvas.bind_all(
-                "<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas)
-            ),
+            lambda event: project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete()),
         )
         GlobalActionsClocked.dictionary[self.window_id] = self
         canvas_modify_bindings.switch_to_move_mode()
@@ -169,6 +165,15 @@ class GlobalActionsClocked:
         # Keep the distance between event and anchor point constant:
         event_x, event_y = event_x + self.difference_x, event_y + self.difference_y
         project_manager.canvas.coords(self.window_id, event_x, event_y)
+
+    def delete(self):
+        del custom_text.CustomText.read_variables_of_all_windows[self.text_before_id]
+        del custom_text.CustomText.written_variables_of_all_windows[self.text_before_id]
+        del custom_text.CustomText.read_variables_of_all_windows[self.text_after_id]
+        del custom_text.CustomText.written_variables_of_all_windows[self.text_after_id]
+        project_manager.canvas.delete(self.window_id)
+        del GlobalActionsClocked.dictionary[self.window_id]
+        project_manager.global_action_clocked_button.config(state=tk.NORMAL)
 
     @classmethod
     def insert_global_actions_clocked(cls, event) -> None:

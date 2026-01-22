@@ -66,9 +66,7 @@ class StateActionsDefault:
         self.text_id.bind("<FocusIn>", lambda event: project_manager.canvas.unbind_all("<Delete>"))
         self.text_id.bind(
             "<FocusOut>",
-            lambda event: project_manager.canvas.bind_all(
-                "<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas)
-            ),
+            lambda event: project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete()),
         )
         self.label.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E))
         self.text_id.grid(row=1, column=0, sticky=(tk.E, tk.W))
@@ -118,6 +116,13 @@ class StateActionsDefault:
         # Keep the distance between event and anchor point constant:
         event_x, event_y = event_x + self.difference_x, event_y + self.difference_y
         project_manager.canvas.coords(self.window_id, event_x, event_y)
+
+    def delete(self):
+        del custom_text.CustomText.read_variables_of_all_windows[self.text_id]
+        del custom_text.CustomText.written_variables_of_all_windows[self.text_id]
+        project_manager.canvas.delete(self.window_id)  # delete window
+        del StateActionsDefault.dictionary[self.window_id]
+        project_manager.state_action_default_button.config(state=tk.NORMAL)
 
     @classmethod
     def insert_state_actions_default(cls, event) -> None:

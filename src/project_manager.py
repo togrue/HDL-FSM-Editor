@@ -6,8 +6,6 @@ This module provides a simple way to access application state throughout the app
 import tkinter as tk
 from tkinter import ttk
 
-import custom_text
-
 # from project import Project
 
 
@@ -33,17 +31,17 @@ class ProjectManager:
         self._edit_cmd: tk.Entry = None
         self._module_name: tk.Entry = None
         self._language: tk.StringVar = None
-        self._interface_package_text: custom_text.CustomText = None
-        self._interface_generics_text: custom_text.CustomText = None
-        self._interface_ports_text: custom_text.CustomText = None
-        self._internals_package_text: custom_text.CustomText = None
-        self._internals_architecture_text: custom_text.CustomText = None
-        self._internals_process_clocked_text: custom_text.CustomText = None
-        self._internals_process_combinatorial_text: custom_text.CustomText = None
+        self._interface_package_text = None  #: custom_text.CustomText = None
+        self._interface_generics_text = None  #: custom_text.CustomText = None
+        self._interface_ports_text = None  #: custom_text.CustomText = None
+        self._internals_package_text = None  #: custom_text.CustomText = None
+        self._internals_architecture_text = None  #: custom_text.CustomText = None
+        self._internals_process_clocked_text = None  #: custom_text.CustomText = None
+        self._internals_process_combinatorial_text = None  #: custom_text.CustomText = None
         self._interface_generics_label: ttk.Label = None
         self._interface_ports_label: ttk.Label = None
-        self._hdl_frame_text: custom_text.CustomText = None
-        self._log_frame_text: custom_text.CustomText = None
+        self._hdl_frame_text = None  #: custom_text.CustomText = None
+        self._log_frame_text = None  #: custom_text.CustomText = None
         self._internals_architecture_label: ttk.Label = None
         self._internals_process_clocked_label: ttk.Label = None
         self._internals_process_combinatorial_label: ttk.Label = None

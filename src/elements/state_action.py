@@ -85,9 +85,7 @@ class StateAction:
         self.text_id.bind("<FocusIn>", lambda event: project_manager.canvas.unbind_all("<Delete>"))
         self.text_id.bind(
             "<FocusOut>",
-            lambda event: project_manager.canvas.bind_all(
-                "<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas)
-            ),
+            lambda event: project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete()),
         )
         StateAction.mytext_dict[self.window_id] = self
 
@@ -156,3 +154,12 @@ class StateAction:
         line_coords[2] = event_x
         line_coords[3] = event_y
         project_manager.canvas.coords(self.line_id, line_coords)
+
+    def delete(self):
+        state_number = project_manager.canvas.gettags(self.window_id)[0][12:]  # remove "state_action"
+        project_manager.canvas.dtag("all", "connection" + state_number + "_end")  # delete tag "connection<n>_end".
+        project_manager.canvas.delete(self.line_id)  # delete connection line
+        project_manager.canvas.delete(self.window_id)  # delete state action window
+        del custom_text.CustomText.read_variables_of_all_windows[self.text_id]
+        del custom_text.CustomText.written_variables_of_all_windows[self.text_id]
+        del StateAction.mytext_dict[self.window_id]

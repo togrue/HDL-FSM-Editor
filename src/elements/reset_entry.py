@@ -3,6 +3,7 @@ import tkinter as tk
 import canvas_editing
 import canvas_modify_bindings
 import undo_handling
+from elements import transition
 from project_manager import project_manager
 
 
@@ -135,3 +136,13 @@ class ResetEntry:
             for i, p in enumerate(reset_entry_polygon)
         ]
         return reset_entry_polygon
+
+    @classmethod
+    def delete(cls):
+        reset_entry_tags = project_manager.canvas.gettags("reset_entry")
+        for reset_entry_tag in reset_entry_tags:
+            if reset_entry_tag.startswith("transition") and reset_entry_tag.endswith("_start"):
+                canvas_id = project_manager.canvas.find_withtag(reset_entry_tag[:-6])[0]
+                transition.TransitionLine.transitionline_dict[canvas_id].delete()
+        project_manager.canvas.delete("reset_entry")
+        project_manager.canvas.delete("reset_text")

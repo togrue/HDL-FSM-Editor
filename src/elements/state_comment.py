@@ -85,9 +85,7 @@ class StateComment:
         self.text_id.bind("<FocusIn>", lambda event: project_manager.canvas.unbind_all("<Delete>"))
         self.text_id.bind(
             "<FocusOut>",
-            lambda event: project_manager.canvas.bind_all(
-                "<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas)
-            ),
+            lambda event: project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete()),
         )
 
         StateComment.dictionary[self.window_id] = self  # Store the object-reference with the Canvas-id as key.
@@ -155,3 +153,10 @@ class StateComment:
         line_coords[2] = event_x
         line_coords[3] = event_y
         project_manager.canvas.coords(self.line_id, line_coords)
+
+    def delete(self):
+        comment_number = project_manager.canvas.gettags(self.window_id)[0][5:-8]  # remove "state" and "_comment"
+        project_manager.canvas.delete(self.window_id)
+        project_manager.canvas.delete(self.line_id)
+        project_manager.canvas.dtag("all", "state" + comment_number + "_comment_line_end")
+        del StateComment.dictionary[self.window_id]

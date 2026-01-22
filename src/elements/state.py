@@ -37,6 +37,15 @@ class States:
             outline="blue",
             tags=tags,
         )
+        state_name = tags[0]
+        middle = self._calculate_center(coords)
+        self.text_id = project_manager.canvas.create_text(
+            middle[0],
+            middle[1],
+            text=text,
+            tags=state_name + "_name",
+            font=project_manager.state_name_font,
+        )
         project_manager.canvas.tag_bind(
             self.state_id, "<Enter>", lambda event, id=self.state_id: project_manager.canvas.itemconfig(id, width=4)
         )
@@ -49,26 +58,14 @@ class States:
             "<Button-1>",
             lambda event: move_handling_canvas_item.MoveHandlingCanvasItem(event, self.state_id),
         )
-        middle = self._calculate_center(coords)
-        for t in tags:
-            if t.startswith("state") and not t.endswith("_comment_line_end"):
-                state_name = t
-                text_id = project_manager.canvas.create_text(
-                    middle[0],
-                    middle[1],
-                    text=text,
-                    tags=state_name + "_name",
-                    font=project_manager.state_name_font,
-                )
-                project_manager.canvas.tag_bind(
-                    text_id,
-                    "<Button-1>",
-                    lambda event, text_id=text_id: move_handling_canvas_item.MoveHandlingCanvasItem(event, text_id),
-                )
-                project_manager.canvas.tag_bind(
-                    text_id, "<Double-Button-1>", lambda event, text_id=text_id: self._edit_state_name(event, text_id)
-                )
-                project_manager.canvas.tag_bind(text_id, "<Button-3>", self._show_menu)
+        project_manager.canvas.tag_bind(
+            self.text_id,
+            "<Button-1>",
+            lambda event: move_handling_canvas_item.MoveHandlingCanvasItem(event, self.text_id),
+        )
+        project_manager.canvas.tag_bind(self.text_id, "<Double-Button-1>", self._edit_state_name)
+        project_manager.canvas.tag_bind(self.text_id, "<Button-3>", self._show_menu)
+        States.state_dict[self.state_id] = self
 
     def _show_menu(self, event) -> None:
         listbox = OptionMenu(
@@ -90,22 +87,18 @@ class States:
         )
         listbox.bind("<Leave>", lambda event, window=window, listbox=listbox: self._close_menu(window, listbox))
 
-    def _edit_state_name(self, event, text_id) -> None:
+    def _edit_state_name(self, event) -> None:
         project_manager.canvas.unbind("<Button-1>")
         project_manager.canvas.unbind_all("<Delete>")
-        old_text = project_manager.canvas.itemcget(text_id, "text")
+        old_text = project_manager.canvas.itemcget(self.text_id, "text")
         text_box = tk.Entry(project_manager.canvas, width=10, justify=tk.CENTER)
         # text_box = Entry(None, width=10, justify=tk.CENTER) funktioniert auch, unklar, was richtig/besser ist.
         text_box.insert(tk.END, old_text)
         text_box.select_range(0, tk.END)
-        text_box.bind(
-            "<Return>", lambda event, text_id=text_id, text_box=text_box: self._update_state_name(text_id, text_box)
-        )
+        text_box.bind("<Return>", lambda event, text_box=text_box: self._update_state_name(text_box))
         text_box.bind(
             "<Escape>",
-            lambda event, text_id=text_id, text_box=text_box, old_text=old_text: self._abort_edit_text(
-                text_id, text_box, old_text
-            ),
+            lambda event, text_box=text_box, old_text=old_text: self._abort_edit_text(text_box, old_text),
         )
         event_x, event_y = canvas_editing.translate_window_event_coordinates_in_rounded_canvas_coordinates(event)
         project_manager.canvas.create_window(event_x, event_y, window=text_box, tag="entry-window")
@@ -115,19 +108,19 @@ class States:
         listbox.destroy()
         project_manager.canvas.delete(window)
 
-    def _update_state_name(self, text_id, text_box) -> None:
+    def _update_state_name(self, text_box) -> None:
         project_manager.canvas.delete("entry-window")
         new_text = text_box.get()
         text_box.destroy()
-        tags = project_manager.canvas.gettags(text_id)
+        tags = project_manager.canvas.gettags(self.text_id)
         for t in tags:
             if t.startswith("state"):  # Format of text_id tag: 'state' + str(state_number) + "_name"
                 state_tag = t[:-5]
-                self._show_new_state_name(new_text, text_id)
-                self._resize_state(state_tag, text_id)
+                self._show_new_state_name(new_text)
+                self._resize_state(state_tag)
         undo_handling.design_has_changed()
         project_manager.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
-        project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas))
+        project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete())
         tags = project_manager.canvas.gettags(state_tag)
         for t in tags:
             if t.endswith("_start"):
@@ -145,12 +138,9 @@ class States:
             tags = project_manager.canvas.gettags(self.state_id)
             action_block_exists = False
             for tag in tags:
-                if tag.startswith("connection"):
+                if tag.startswith("connection"):  # searching for "connection<n>_end"
                     action_block_exists = True
             if not action_block_exists:
-                project_manager.canvas.addtag_withtag(
-                    "connection" + str(state_action.StateAction.mytext_id) + "_end", self.state_id
-                )
                 project_manager.canvas.addtag_withtag(
                     "connection" + str(state_action.StateAction.mytext_id) + "_end", self.state_id
                 )
@@ -206,22 +196,22 @@ class States:
             project_manager.canvas.itemconfigure(self.state_id, fill=new_color)
             undo_handling.design_has_changed()
 
-    def _abort_edit_text(self, text_id, text_box, old_text) -> None:
+    def _abort_edit_text(self, text_box, old_text) -> None:
         project_manager.canvas.delete("entry-window")
-        project_manager.canvas.itemconfig(text_id, text=old_text)
+        project_manager.canvas.itemconfig(self.text_id, text=old_text)
         text_box.destroy()
         project_manager.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
-        project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas))
+        project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete())
 
-    def _show_new_state_name(self, new_text, text_id) -> None:
-        state_name_list = self._get_list_of_state_names(text_id)
+    def _show_new_state_name(self, new_text) -> None:
+        state_name_list = self._get_list_of_state_names()
         if new_text != "":
             if new_text not in state_name_list:
-                project_manager.canvas.itemconfig(text_id, text=new_text)
+                project_manager.canvas.itemconfig(self.text_id, text=new_text)
             else:
                 messagebox.showerror("Error", "The state name\n" + new_text + "\nis already used at another state.")
 
-    def _get_list_of_state_names(self, text_id) -> list:
+    def _get_list_of_state_names(self) -> list:
         state_name_list = []
         all_canvas_ids = project_manager.canvas.find_withtag("all")
         for canvas_id in all_canvas_ids:
@@ -231,15 +221,15 @@ class States:
                     if (
                         tag.startswith("state")
                         and not tag.endswith("_comment_line_end")
-                        and project_manager.canvas.find_withtag(tag + "_name")[0] != text_id
+                        and project_manager.canvas.find_withtag(tag + "_name")[0] != self.text_id
                     ):
                         state_name_list.append(project_manager.canvas.itemcget(tag + "_name", "text"))
         return state_name_list
 
-    def _resize_state(self, state_tag, text_id) -> None:
+    def _resize_state(self, state_tag) -> None:
         state_coords = project_manager.canvas.coords(state_tag)
         state_width = state_coords[2] - state_coords[0]
-        size = project_manager.canvas.bbox(text_id)
+        size = project_manager.canvas.bbox(self.text_id)
         text_width = (
             size[2] - size[0] + 15
         )  # Make the text a little bit bigger, so that it does not touch the state circle.
@@ -260,6 +250,31 @@ class States:
                 state_is_too_big = True
         if not state_is_too_big:
             project_manager.canvas.coords(state_tag, state_coords)
+
+    def delete(self) -> None:
+        state_tags = project_manager.canvas.gettags(self.state_id)
+        for state_tag in state_tags:
+            if state_tag.startswith("transition") and state_tag.endswith("_start"):
+                canvas_ids = project_manager.canvas.find_withtag(state_tag[:-6])
+                if canvas_ids:
+                    transition.TransitionLine.transitionline_dict[canvas_ids[0]].delete()
+            elif state_tag.startswith("transition") and state_tag.endswith("_end"):
+                canvas_ids = project_manager.canvas.find_withtag(state_tag[:-4])
+                if canvas_ids:
+                    transition.TransitionLine.transitionline_dict[canvas_ids[0]].delete()
+            elif state_tag.startswith("connection"):
+                tags_of_state_action = project_manager.canvas.gettags(state_tag[:-4] + "_start")
+                tag_of_state_action = tags_of_state_action[0]  # like "state_action<n>"
+                state_action_window_canvas_id = project_manager.canvas.find_withtag(tag_of_state_action)[0]
+                ref = state_action.StateAction.mytext_dict[state_action_window_canvas_id]
+                ref.delete()
+            elif state_tag.endswith("_comment_line_end"):
+                canvas_id_of_comment = project_manager.canvas.find_withtag(state_tag[:-9])[0]
+                ref = state_comment.StateComment.dictionary[canvas_id_of_comment]
+                ref.delete()
+        project_manager.canvas.delete(self.state_id)  # delete state
+        project_manager.canvas.delete(self.text_id)  # delete state name
+        del States.state_dict[self.state_id]
 
     @classmethod
     def move_to(cls, event_x, event_y, state_id, first, last) -> None:

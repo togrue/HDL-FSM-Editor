@@ -122,7 +122,7 @@ class TabDiagram:
         plus_button.bind("<Button-1>", lambda event: canvas_editing.zoom_plus())
         minus_button.bind("<Button-1>", lambda event: canvas_editing.zoom_minus())
 
-        canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete(canvas))
+        canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete())
         canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
         canvas.bind("<Motion>", canvas_delete.CanvasDelete.store_mouse_position)
         canvas.bind("<Control-MouseWheel>", canvas_editing.zoom_wheel)  # MouseWheel used at Windows.

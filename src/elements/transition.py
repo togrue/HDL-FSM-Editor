@@ -9,9 +9,9 @@ import canvas_delete
 import canvas_editing
 import canvas_modify_bindings
 import constants
-import elements.condition_action as condition_action
 import move_handling_initialization
 import undo_handling
+from elements import condition_action
 from project_manager import project_manager
 from widgets.OptionMenu import OptionMenu
 
@@ -22,55 +22,52 @@ class TransitionLine:
     """
 
     transition_number = 0
+    transitionline_dict = {}
 
     def __init__(self, transition_coords, tags, priority, new_transition=False) -> None:
         if new_transition:
             TransitionLine.transition_number += 1
         self.difference_x = 0
         self.difference_y = 0
-        # tags = ["transition"+str(transition_number), "coming_from_"+start_object_tag, "going_to_"+end_object_tag]
-        transition_tag = tags[0]
+        transition_tag = tags[0]  # "transition<n>"
         rectangle_coords = self._determine_position_of_priority_rectangle(transition_coords)
 
-        transition_id = project_manager.canvas.create_line(
+        self.transition_id = project_manager.canvas.create_line(
             transition_coords, arrow="last", fill="blue", smooth=True, tags=tags
         )
 
-        canvas_id_priority_text = project_manager.canvas.create_text(
+        self.priority_text = project_manager.canvas.create_text(
             rectangle_coords,
             text=priority,
             tag=transition_tag + "priority",
             font=project_manager.state_name_font,
         )
 
-        project_manager.canvas.create_rectangle(
-            project_manager.canvas.bbox(canvas_id_priority_text),
+        self.priority_rectangle = project_manager.canvas.create_rectangle(
+            project_manager.canvas.bbox(self.priority_text),
             tag=transition_tag + "rectangle",
             fill=constants.STATE_COLOR,
         )
 
         project_manager.canvas.tag_bind(
-            transition_id,
+            self.transition_id,
             "<Enter>",
-            lambda event, transition_id=transition_id: project_manager.canvas.itemconfig(transition_id, width=3),
+            lambda event: project_manager.canvas.itemconfig(self.transition_id, width=3),
         )
         project_manager.canvas.tag_bind(
-            transition_id,
+            self.transition_id,
             "<Leave>",
-            lambda event, transition_id=transition_id: project_manager.canvas.itemconfig(transition_id, width=1),
+            lambda event: project_manager.canvas.itemconfig(self.transition_id, width=1),
         )
+        project_manager.canvas.tag_bind(self.transition_id, "<Button-3>", self._show_menu)
         project_manager.canvas.tag_bind(
-            transition_id,
-            "<Button-3>",
-            lambda event, transition_id=transition_id: self._show_menu(event, transition_id),
-        )
-        project_manager.canvas.tag_bind(
-            canvas_id_priority_text,
+            self.priority_text,
             "<Double-Button-1>",
             lambda event: self._edit_priority(event, transition_tag),
         )
 
-        project_manager.canvas.tag_raise(canvas_id_priority_text)
+        project_manager.canvas.tag_raise(self.priority_text)
+        TransitionLine.transitionline_dict[self.transition_id] = self
 
     def _determine_position_of_priority_rectangle(self, transition_coords):
         # Determine middle of the priority rectangle position by calculating a shortened transition:
@@ -86,7 +83,7 @@ class TransitionLine:
         )
         return priority_middle_x, priority_middle_y
 
-    def _show_menu(self, event, transition_id) -> None:
+    def _show_menu(self, event) -> None:
         listbox = OptionMenu(
             project_manager.canvas,
             ["add condition&action", "straighten shape"],
@@ -100,20 +97,24 @@ class TransitionLine:
         window = project_manager.canvas.create_window(event_x + 40, event_y, window=listbox)
         listbox.bind(
             "<Button-1>",
-            lambda event,
-            window=window,
-            listbox=listbox,
-            menu_x=event_x,
-            menu_y=event_y,
-            transition_id=transition_id: self._evaluate_menu(event, window, listbox, menu_x, menu_y, transition_id),
+            lambda event, window=window, listbox=listbox, menu_x=event_x, menu_y=event_y: self._evaluate_menu(
+                event, window, listbox, menu_x, menu_y
+            ),
         )
         listbox.bind("<Leave>", lambda event, window=window, listbox=listbox: self._close_menu(event, window, listbox))
 
-    def _evaluate_menu(self, event, window, listbox, menu_x, menu_y, transition_id) -> None:
+    def _evaluate_menu(
+        self,
+        event,
+        window,
+        listbox,
+        menu_x,
+        menu_y,
+    ) -> None:
         design_was_changed = False
         selected_entry = listbox.get(listbox.curselection())
         if selected_entry == "add condition&action":
-            transition_tags = project_manager.canvas.gettags(transition_id)
+            transition_tags = project_manager.canvas.gettags(self.transition_id)
             has_condition_action = False
             connected_to_reset_entry = False
             for tag in transition_tags:
@@ -122,13 +123,13 @@ class TransitionLine:
                 elif tag == "coming_from_reset_entry":
                     connected_to_reset_entry = True
             if has_condition_action is False:
-                transition_coords = project_manager.canvas.coords(transition_id)
+                transition_coords = project_manager.canvas.coords(self.transition_id)
                 line_coords = [menu_x, menu_y, transition_coords[0], transition_coords[1]]
                 # Incrementing of conditionaction_id is needed, as in old versions of HFE first conditionaction_id was
                 # incremented and afterwards the tags were created by reading this new value:
                 project_manager.canvas.addtag_withtag(
                     "ca_connection" + str(condition_action.ConditionAction.conditionaction_id + 1) + "_end",
-                    transition_id,
+                    self.transition_id,
                 )
                 tags = [
                     "condition_action" + str(condition_action.ConditionAction.conditionaction_id + 1),
@@ -136,7 +137,7 @@ class TransitionLine:
                 ]
                 if connected_to_reset_entry:
                     tags.append("connected_to_reset_transition")
-                transition_tags = project_manager.canvas.gettags(transition_id)
+                transition_tags = project_manager.canvas.gettags(self.transition_id)
                 line_tags = [
                     "ca_connection" + str(condition_action.ConditionAction.conditionaction_id + 1),
                     "connected_to_" + transition_tags[0],
@@ -158,7 +159,7 @@ class TransitionLine:
                 condition_action_ref.condition_id.focus()  # Puts the text input cursor into the text box.
                 design_was_changed = True
         elif selected_entry == "straighten shape":
-            transition_tags = project_manager.canvas.gettags(transition_id)
+            transition_tags = project_manager.canvas.gettags(self.transition_id)
             start_state_radius = 0
             end_state_radius = 0
             for tag in transition_tags:
@@ -176,7 +177,7 @@ class TransitionLine:
                     end_state = tag.replace("going_to_", "")
                     end_state_coords = project_manager.canvas.coords(end_state)
                     end_state_radius = abs(end_state_coords[2] - end_state_coords[0]) / 2
-            old_coords = project_manager.canvas.coords(transition_id)
+            old_coords = project_manager.canvas.coords(self.transition_id)
             new_coords = []
             new_coords.append(old_coords[0])
             new_coords.append(old_coords[1])
@@ -185,7 +186,7 @@ class TransitionLine:
             new_coords = TransitionLine.shorten_vector(
                 start_state_radius, new_coords[0], new_coords[1], end_state_radius, new_coords[2], new_coords[3], 1, 1
             )
-            project_manager.canvas.coords(transition_id, new_coords)
+            project_manager.canvas.coords(self.transition_id, new_coords)
             # Calculates the position of the priority rectangle by shortening the distance between the first point of
             # the transition and the second point of the transition.
             [priority_middle_x, priority_middle_y, _, _] = TransitionLine.shorten_vector(
@@ -195,15 +196,15 @@ class TransitionLine:
                 transition_tag + "rectangle"
             )
             project_manager.canvas.coords(
-                transition_tag + "rectangle",
+                self.transition_id + "rectangle",
                 priority_middle_x - rectangle_width_half,
                 priority_middle_y - rectangle_height_half,
                 priority_middle_x + rectangle_width_half,
                 priority_middle_y + rectangle_height_half,
             )
-            project_manager.canvas.coords(transition_tag + "priority", priority_middle_x, priority_middle_y)
-            project_manager.canvas.tag_raise(transition_tag + "rectangle", transition_tag)
-            project_manager.canvas.tag_raise(transition_tag + "priority", transition_tag + "rectangle")
+            project_manager.canvas.coords(self.transition_id + "priority", priority_middle_x, priority_middle_y)
+            project_manager.canvas.tag_raise(self.transition_id + "rectangle", self.transition_id)
+            project_manager.canvas.tag_raise(self.transition_id + "priority", self.transition_id + "rectangle")
             design_was_changed = True
         listbox.destroy()
         project_manager.canvas.delete(window)
@@ -248,7 +249,7 @@ class TransitionLine:
         project_manager.canvas.tag_raise(transition_tag + "priority", transition_tag + "rectangle")
         undo_handling.design_has_changed()
         project_manager.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
-        project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas))
+        project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete())
 
     def _abort_edit_text(self, transition_tag, text_box, old_text) -> None:
         project_manager.canvas.delete("entry-window")
@@ -257,7 +258,38 @@ class TransitionLine:
         project_manager.canvas.tag_raise(transition_tag + "rectangle", transition_tag)
         project_manager.canvas.tag_raise(transition_tag + "priority", transition_tag + "rectangle")
         project_manager.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
-        project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete(project_manager.canvas))
+        project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete())
+
+    def delete(self) -> None:
+        transition_tags = project_manager.canvas.gettags(self.transition_id)
+        project_manager.canvas.delete(self.transition_id)
+        project_manager.canvas.delete(self.priority_text)
+        project_manager.canvas.delete(self.priority_rectangle)
+        project_manager.canvas.dtag("all", transition_tags[0] + "_start")  # delete: "transition"<integer>"_start"
+        project_manager.canvas.dtag("all", transition_tags[0] + "_end")  # delete: "transition"<integer>"_end"
+        for transition_tag in transition_tags:
+            if transition_tag.startswith("ca_connection"):
+                ca_window_anchor_tag = transition_tag[:-4] + "_anchor"
+                ca_window_canvas_id = project_manager.canvas.find_withtag(ca_window_anchor_tag)[0]
+                ref = condition_action.ConditionAction.dictionary[ca_window_canvas_id]
+                ref.delete()
+            if transition_tag.startswith("coming_from_"):
+                start_state = transition_tag[12:]
+                self._adapt_visibility_of_priority_rectangles_at_state(start_state)
+        del TransitionLine.transitionline_dict[self.transition_id]
+
+    @classmethod
+    def _adapt_visibility_of_priority_rectangles_at_state(cls, start_state) -> None:
+        tags_of_start_state = project_manager.canvas.gettags(start_state)
+        number_of_outgoing_transitions = 0
+        tag_of_outgoing_transition = ""
+        for start_state_tag in tags_of_start_state:
+            if start_state_tag.startswith("transition") and start_state_tag.endswith("_start"):
+                number_of_outgoing_transitions += 1
+                tag_of_outgoing_transition = start_state_tag.replace("_start", "")
+        if number_of_outgoing_transitions == 1:
+            project_manager.canvas.itemconfigure(tag_of_outgoing_transition + "rectangle", state=tk.HIDDEN)
+            project_manager.canvas.itemconfigure(tag_of_outgoing_transition + "priority", state=tk.HIDDEN)
 
     @classmethod
     def move_to(cls, event_x, event_y, transition_id, point, first, move_list, last=False) -> None:
