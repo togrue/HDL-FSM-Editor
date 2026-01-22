@@ -129,7 +129,7 @@ def _clear_design() -> bool:
     connector.ConnectorInstance.connector_number = 0
     condition_action.ConditionAction.conditionaction_id = 0
     condition_action.ConditionAction.dictionary = {}
-    state_action.StateAction.mytext_id = 0
+    state_action.StateAction.state_action_id = 0
     state_action.StateAction.state_action_dict = {}
     state_actions_default.StateActionsDefault.dictionary = {}
     project_manager.state_action_default_button.config(state=tk.NORMAL)
@@ -259,7 +259,7 @@ def _save_canvas_data(design_dictionary: dict[str, Any], allowed_element_names_i
     design_dictionary["transition_number"] = transition.TransitionLine.transition_number
     design_dictionary["connector_number"] = connector.ConnectorInstance.connector_number
     design_dictionary["conditionaction_id"] = condition_action.ConditionAction.conditionaction_id
-    design_dictionary["mytext_id"] = state_action.StateAction.mytext_id
+    design_dictionary["mytext_id"] = state_action.StateAction.state_action_id
     design_dictionary["state_radius"] = project_manager.state_radius
     design_dictionary["reset_entry_size"] = project_manager.reset_entry_size
     design_dictionary["priority_distance"] = project_manager.priority_distance
@@ -524,7 +524,7 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
     transition.TransitionLine.transition_number = design_dictionary["transition_number"]
     connector.ConnectorInstance.connector_number = design_dictionary["connector_number"]
     condition_action.ConditionAction.conditionaction_id = design_dictionary["conditionaction_id"]
-    state_action.StateAction.mytext_id = design_dictionary["mytext_id"]
+    state_action.StateAction.state_action_id = design_dictionary["mytext_id"]
 
     # Load canvas visual parameters
     project_manager.state_radius = design_dictionary["state_radius"]

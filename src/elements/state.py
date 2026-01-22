@@ -142,15 +142,15 @@ class States:
                     action_block_exists = True
             if not action_block_exists:
                 project_manager.canvas.addtag_withtag(
-                    "connection" + str(state_action.StateAction.mytext_id) + "_end", self.state_id
+                    "connection" + str(state_action.StateAction.state_action_id) + "_end", self.state_id
                 )
                 line_tags = (
-                    "connection" + str(state_action.StateAction.mytext_id),
+                    "connection" + str(state_action.StateAction.state_action_id),
                     "connected_to_" + project_manager.canvas.gettags(self.state_id)[0],
                 )
                 state_action_tags = (
-                    "state_action" + str(state_action.StateAction.mytext_id),
-                    "connection" + str(state_action.StateAction.mytext_id) + "_start",
+                    "state_action" + str(state_action.StateAction.state_action_id),
+                    "connection" + str(state_action.StateAction.state_action_id) + "_start",
                 )
                 middle_x, middle_y = self._calculate_center(project_manager.canvas.coords(self.state_id))
                 line_coords = [menu_x + 100, menu_y, middle_x, middle_y]

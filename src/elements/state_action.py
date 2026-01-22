@@ -15,7 +15,7 @@ from project_manager import project_manager
 class StateAction:
     """Implements the state action of a single state."""
 
-    mytext_id = 0
+    state_action_id = 0
     state_action_dict = {}
 
     def __init__(
@@ -31,7 +31,7 @@ class StateAction:
         increment,
     ) -> None:
         if increment is True:
-            StateAction.mytext_id += 1
+            StateAction.state_action_id += 1
         self.text_content = None
         self.difference_x = 0
         self.difference_y = 0

@@ -114,7 +114,7 @@ def _get_complete_design_as_text_object():
     design += "transition_number|" + str(transition.TransitionLine.transition_number) + "\n"
     design += "connector_number|" + str(connector.ConnectorInstance.connector_number) + "\n"
     design += "conditionaction_id|" + str(condition_action.ConditionAction.conditionaction_id) + "\n"
-    design += "mytext_id|" + str(state_action.StateAction.mytext_id) + "\n"
+    design += "mytext_id|" + str(state_action.StateAction.state_action_id) + "\n"
     design += "reset_entry_size|" + str(project_manager.reset_entry_size) + "\n"
     design += "state_radius|" + str(project_manager.state_radius) + "\n"
     design += "priority_distance|" + str(project_manager.priority_distance) + "\n"
@@ -321,7 +321,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             condition_action.ConditionAction.conditionaction_id = int(rest_of_line)
         elif lines[_line_index].startswith("mytext_id|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "mytext_id|")
-            state_action.StateAction.mytext_id = int(rest_of_line)
+            state_action.StateAction.state_action_id = int(rest_of_line)
         elif lines[_line_index].startswith("state_radius|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "state_radius|")
             project_manager.state_radius = float(rest_of_line)
