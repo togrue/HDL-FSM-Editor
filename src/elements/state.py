@@ -266,7 +266,7 @@ class States:
                 tags_of_state_action = project_manager.canvas.gettags(state_tag[:-4] + "_start")
                 tag_of_state_action = tags_of_state_action[0]  # like "state_action<n>"
                 state_action_window_canvas_id = project_manager.canvas.find_withtag(tag_of_state_action)[0]
-                ref = state_action.StateAction.mytext_dict[state_action_window_canvas_id]
+                ref = state_action.StateAction.state_action_dict[state_action_window_canvas_id]
                 ref.delete()
             elif state_tag.endswith("_comment_line_end"):
                 canvas_id_of_comment = project_manager.canvas.find_withtag(state_tag[:-9])[0]

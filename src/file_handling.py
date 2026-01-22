@@ -130,7 +130,7 @@ def _clear_design() -> bool:
     condition_action.ConditionAction.conditionaction_id = 0
     condition_action.ConditionAction.dictionary = {}
     state_action.StateAction.mytext_id = 0
-    state_action.StateAction.mytext_dict = {}
+    state_action.StateAction.state_action_dict = {}
     state_actions_default.StateActionsDefault.dictionary = {}
     project_manager.state_action_default_button.config(state=tk.NORMAL)
     project_manager.global_action_clocked_button.config(state=tk.NORMAL)
@@ -286,11 +286,11 @@ def _save_canvas_data(design_dictionary: dict[str, Any], allowed_element_names_i
         elif project_manager.canvas.type(i) == "rectangle":
             design_dictionary["rectangle"].append([project_manager.canvas.coords(i), _gettags(i)])
         elif project_manager.canvas.type(i) == "window":
-            if i in state_action.StateAction.mytext_dict:
+            if i in state_action.StateAction.state_action_dict:
                 design_dictionary["window_state_action_block"].append(
                     [
                         project_manager.canvas.coords(i),
-                        state_action.StateAction.mytext_dict[i].text_id.get("1.0", f"{tk.END}-1 chars"),
+                        state_action.StateAction.state_action_dict[i].text_id.get("1.0", f"{tk.END}-1 chars"),
                         _gettags(i),
                     ]
                 )

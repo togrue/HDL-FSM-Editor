@@ -55,13 +55,13 @@ def move_to_coordinates(event_x, event_y, move_list, first, move_to_grid):
                 canvas_id_of_connected_state_action = project_manager.canvas.find_withtag(
                     tag_of_connected_state_action
                 )[0]
-                ref = state_action.StateAction.mytext_dict[canvas_id_of_connected_state_action]
+                ref = state_action.StateAction.state_action_dict[canvas_id_of_connected_state_action]
                 ref.move_line_point_to(event_x, event_y, first)
         elif item_type == "rectangle":
             connector.ConnectorInstance.move_to(event_x, event_y, item_id, first, move_to_grid)
         elif item_type == "window":
-            if item_id in state_action.StateAction.mytext_dict:
-                ref = state_action.StateAction.mytext_dict[item_id]
+            if item_id in state_action.StateAction.state_action_dict:
+                ref = state_action.StateAction.state_action_dict[item_id]
             elif item_id in state_comment.StateComment.dictionary:
                 ref = state_comment.StateComment.dictionary[item_id]
             elif item_id in state_actions_default.StateActionsDefault.dictionary:

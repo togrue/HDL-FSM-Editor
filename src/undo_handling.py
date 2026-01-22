@@ -195,9 +195,9 @@ def _get_complete_design_as_text_object():
             design += _get_tags(i)
             design += "\n"
         elif project_manager.canvas.type(i) == "window":
-            if i in state_action.StateAction.mytext_dict:
+            if i in state_action.StateAction.state_action_dict:
                 design += "window_state_action_block|"
-                text = state_action.StateAction.mytext_dict[i].text_id.get("1.0", tk.END)
+                text = state_action.StateAction.state_action_dict[i].text_id.get("1.0", tk.END)
                 design += str(len(text)) + "|"
                 design += text
                 design += _get_coords(i)
@@ -282,7 +282,7 @@ _line_index = 0
 def _set_diagram_to_version_selected_by_stack_pointer() -> None:
     global _line_index
     # Remove the old design:
-    state_action.StateAction.mytext_dict = {}
+    state_action.StateAction.state_action_dict = {}
     condition_action.ConditionAction.dictionary = {}
     state_comment.StateComment.dictionary = {}
     project_manager.canvas.delete("all")

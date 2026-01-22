@@ -66,7 +66,7 @@ class CanvasDelete:
                 elif tag == "global_actions_combinatorial1":
                     global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[canvas_id].delete()
                 elif tag.startswith("state_action"):
-                    state_action.StateAction.mytext_dict[canvas_id].delete()
+                    state_action.StateAction.state_action_dict[canvas_id].delete()
                 elif tag.endswith("_comment"):
                     state_comment.StateComment.dictionary[canvas_id].delete()
                 elif tag.startswith("condition_action"):

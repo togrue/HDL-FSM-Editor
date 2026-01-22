@@ -319,13 +319,15 @@ def _modify_font_sizes_of_all_canvas_items(factor) -> None:
     canvas_ids = project_manager.canvas.find_all()
     for i in canvas_ids:
         if project_manager.canvas.type(i) == "window":
-            if i in state_action.StateAction.mytext_dict:
-                state_action.StateAction.mytext_dict[i].label_id.configure(font=("Arial", int(used_label_fontsize)))
-                state_action.StateAction.mytext_dict[i].text_id.configure(
+            if i in state_action.StateAction.state_action_dict:
+                state_action.StateAction.state_action_dict[i].label_id.configure(
+                    font=("Arial", int(used_label_fontsize))
+                )
+                state_action.StateAction.state_action_dict[i].text_id.configure(
                     font=("Courier", int(project_manager.fontsize))
                 )
                 for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
-                    state_action.StateAction.mytext_dict[i].text_id.tag_configure(
+                    state_action.StateAction.state_action_dict[i].text_id.tag_configure(
                         highlight_tag_name,
                         font=("Courier", int(project_manager.fontsize), "normal"),
                     )

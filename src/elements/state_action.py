@@ -1,5 +1,5 @@
 """
-Handles the state action of a single state.
+Handles the state action of all states.
 """
 
 import tkinter as tk
@@ -13,12 +13,10 @@ from project_manager import project_manager
 
 
 class StateAction:
-    """
-    Handles the state action of a single state.
-    """
+    """Implements the state action of a single state."""
 
     mytext_id = 0
-    mytext_dict = {}
+    state_action_dict = {}
 
     def __init__(
         self,
@@ -87,7 +85,7 @@ class StateAction:
             "<FocusOut>",
             lambda event: project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete()),
         )
-        StateAction.mytext_dict[self.window_id] = self
+        StateAction.state_action_dict[self.window_id] = self
 
     def _edit_in_external_editor(self):
         self.text_id.edit_in_external_editor()
@@ -162,4 +160,4 @@ class StateAction:
         project_manager.canvas.delete(self.window_id)  # delete state action window
         del custom_text.CustomText.read_variables_of_all_windows[self.text_id]
         del custom_text.CustomText.written_variables_of_all_windows[self.text_id]
-        del StateAction.mytext_dict[self.window_id]
+        del StateAction.state_action_dict[self.window_id]
