@@ -17,7 +17,7 @@ class ConditionAction:
     """This class handles the condition&action box which can be activated for each transition."""
 
     conditionaction_id = 0
-    dictionary = {}
+    ref_dict = {}
 
     def __init__(
         self,
@@ -145,7 +145,7 @@ class ConditionAction:
         )
 
         # Create dictionary for translating the canvas-id of the canvas-window into a reference to this object:
-        ConditionAction.dictionary[self.window_id] = self
+        ConditionAction.ref_dict[self.window_id] = self
 
     def _show_condition_and_action(self) -> None:
         self.condition_label.grid(row=0, column=0, sticky=(tk.W, tk.E))
@@ -248,4 +248,4 @@ class ConditionAction:
         project_manager.canvas.delete(self.window_id)
         project_manager.canvas.delete(self.line_id)
         project_manager.canvas.dtag("all", "ca_connection" + number + "_end")
-        del ConditionAction.dictionary[self.window_id]
+        del ConditionAction.ref_dict[self.window_id]

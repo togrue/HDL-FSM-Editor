@@ -99,20 +99,20 @@ class FindReplace:
 
     def _get_text_ids_of_canvas_window(self, item) -> list:
         text_ids = []
-        if item in state_action.StateAction.state_action_dict:
-            text_ids.append(state_action.StateAction.state_action_dict[item].text_id)
-        elif item in condition_action.ConditionAction.dictionary:
-            text_ids.append(condition_action.ConditionAction.dictionary[item].condition_id)
-            text_ids.append(condition_action.ConditionAction.dictionary[item].action_id)
-        elif item in global_actions_clocked.GlobalActionsClocked.dictionary:
-            text_ids.append(global_actions_clocked.GlobalActionsClocked.dictionary[item].text_before_id)
-            text_ids.append(global_actions_clocked.GlobalActionsClocked.dictionary[item].text_after_id)
-        elif item in global_actions_combinatorial.GlobalActionsCombinatorial.dictionary:
-            text_ids.append(global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[item].text_id)
-        elif item in state_actions_default.StateActionsDefault.dictionary:
-            text_ids.append(state_actions_default.StateActionsDefault.dictionary[item].text_id)
-        elif item in state_comment.StateComment.dictionary:
-            text_ids.append(state_comment.StateComment.dictionary[item].text_id)
+        if item in state_action.StateAction.ref_dict:
+            text_ids.append(state_action.StateAction.ref_dict[item].text_id)
+        elif item in condition_action.ConditionAction.ref_dict:
+            text_ids.append(condition_action.ConditionAction.ref_dict[item].condition_id)
+            text_ids.append(condition_action.ConditionAction.ref_dict[item].action_id)
+        elif item in global_actions_clocked.GlobalActionsClocked.ref_dict:
+            text_ids.append(global_actions_clocked.GlobalActionsClocked.ref_dict[item].text_before_id)
+            text_ids.append(global_actions_clocked.GlobalActionsClocked.ref_dict[item].text_after_id)
+        elif item in global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict:
+            text_ids.append(global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict[item].text_id)
+        elif item in state_actions_default.StateActionsDefault.ref_dict:
+            text_ids.append(state_actions_default.StateActionsDefault.ref_dict[item].text_id)
+        elif item in state_comment.StateComment.ref_dict:
+            text_ids.append(state_comment.StateComment.ref_dict[item].text_id)
         return text_ids
 
     def _search_in_all_text_fields_of_canvas_window(self, item, text_ids_of_actions) -> bool:

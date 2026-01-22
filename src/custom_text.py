@@ -405,7 +405,7 @@ class CustomText(tk.Text):
         list_of_canvas_id = project_manager.canvas.find_withtag("global_actions_combinatorial1")
         if list_of_canvas_id:
             canvas_id = list_of_canvas_id[0]
-            if global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[canvas_id].text_id == self:
+            if global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict[canvas_id].text_id == self:
                 return True
         return False
 

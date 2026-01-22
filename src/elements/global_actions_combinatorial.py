@@ -19,7 +19,7 @@ class GlobalActionsCombinatorial:
     Class for combinatorial actions independent from the state machine
     """
 
-    dictionary = {}
+    ref_dict = {}
 
     def __init__(self, menu_x, menu_y, height, width, padding, tags) -> None:
         self.text_content = None
@@ -75,7 +75,7 @@ class GlobalActionsCombinatorial:
             lambda event: project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete()),
         )
         self.frame_id.lower()
-        GlobalActionsCombinatorial.dictionary[self.window_id] = self
+        GlobalActionsCombinatorial.ref_dict[self.window_id] = self
         canvas_modify_bindings.switch_to_move_mode()
 
     def _edit_in_external_editor(self):
@@ -119,7 +119,7 @@ class GlobalActionsCombinatorial:
         del custom_text.CustomText.read_variables_of_all_windows[self.text_id]
         del custom_text.CustomText.written_variables_of_all_windows[self.text_id]
         project_manager.canvas.delete(self.window_id)  # delete window
-        del GlobalActionsCombinatorial.dictionary[self.window_id]
+        del GlobalActionsCombinatorial.ref_dict[self.window_id]
         project_manager.global_action_combinatorial_button.config(state=tk.NORMAL)
 
     @classmethod

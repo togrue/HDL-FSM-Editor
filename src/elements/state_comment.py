@@ -17,7 +17,7 @@ class StateComment:
     This class handles "state-comments".
     """
 
-    dictionary = {}
+    ref_dict = {}
 
     def __init__(
         self,
@@ -88,7 +88,7 @@ class StateComment:
             lambda event: project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete()),
         )
 
-        StateComment.dictionary[self.window_id] = self  # Store the object-reference with the Canvas-id as key.
+        StateComment.ref_dict[self.window_id] = self  # Store the object-reference with the Canvas-id as key.
 
     def _edit_in_external_editor(self):
         self.text_id.edit_in_external_editor()
@@ -159,4 +159,4 @@ class StateComment:
         project_manager.canvas.delete(self.window_id)
         project_manager.canvas.delete(self.line_id)
         project_manager.canvas.dtag("all", "state" + comment_number + "_comment_line_end")
-        del StateComment.dictionary[self.window_id]
+        del StateComment.ref_dict[self.window_id]

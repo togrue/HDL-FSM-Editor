@@ -195,48 +195,46 @@ def _get_complete_design_as_text_object():
             design += _get_tags(i)
             design += "\n"
         elif project_manager.canvas.type(i) == "window":
-            if i in state_action.StateAction.state_action_dict:
+            if i in state_action.StateAction.ref_dict:
                 design += "window_state_action_block|"
-                text = state_action.StateAction.state_action_dict[i].text_id.get("1.0", tk.END)
+                text = state_action.StateAction.ref_dict[i].text_id.get("1.0", tk.END)
                 design += str(len(text)) + "|"
                 design += text
                 design += _get_coords(i)
-            elif i in state_comment.StateComment.dictionary:
+            elif i in state_comment.StateComment.ref_dict:
                 design += "window_state_comment|"
-                text = state_comment.StateComment.dictionary[i].text_id.get("1.0", tk.END)
+                text = state_comment.StateComment.ref_dict[i].text_id.get("1.0", tk.END)
                 design += str(len(text)) + "|"
                 design += text
                 design += _get_coords(i)
-            elif i in condition_action.ConditionAction.dictionary:
+            elif i in condition_action.ConditionAction.ref_dict:
                 design += "window_condition_action_block|"
-                text = condition_action.ConditionAction.dictionary[i].condition_id.get("1.0", tk.END)
+                text = condition_action.ConditionAction.ref_dict[i].condition_id.get("1.0", tk.END)
                 design += str(len(text)) + "|"
                 design += text
-                text = condition_action.ConditionAction.dictionary[i].action_id.get("1.0", tk.END)
+                text = condition_action.ConditionAction.ref_dict[i].action_id.get("1.0", tk.END)
                 design += str(len(text)) + "|"
                 design += text
                 design += _get_coords(i)
                 print_tags = True
-            elif i in global_actions_clocked.GlobalActionsClocked.dictionary:
+            elif i in global_actions_clocked.GlobalActionsClocked.ref_dict:
                 design += "window_global_actions|"
-                text_before = global_actions_clocked.GlobalActionsClocked.dictionary[i].text_before_id.get(
-                    "1.0", tk.END
-                )
+                text_before = global_actions_clocked.GlobalActionsClocked.ref_dict[i].text_before_id.get("1.0", tk.END)
                 design += str(len(text_before)) + "|"
                 design += text_before
-                text_after = global_actions_clocked.GlobalActionsClocked.dictionary[i].text_after_id.get("1.0", tk.END)
+                text_after = global_actions_clocked.GlobalActionsClocked.ref_dict[i].text_after_id.get("1.0", tk.END)
                 design += str(len(text_after)) + "|"
                 design += text_after
                 design += _get_coords(i)
-            elif i in global_actions_combinatorial.GlobalActionsCombinatorial.dictionary:
+            elif i in global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict:
                 design += "window_global_actions_combinatorial|"
-                text = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[i].text_id.get("1.0", tk.END)
+                text = global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict[i].text_id.get("1.0", tk.END)
                 design += str(len(text)) + "|"
                 design += text
                 design += _get_coords(i)
-            elif i in state_actions_default.StateActionsDefault.dictionary:
+            elif i in state_actions_default.StateActionsDefault.ref_dict:
                 design += "window_state_actions_default|"
-                text = state_actions_default.StateActionsDefault.dictionary[i].text_id.get("1.0", tk.END)
+                text = state_actions_default.StateActionsDefault.ref_dict[i].text_id.get("1.0", tk.END)
                 design += str(len(text)) + "|"
                 design += text
                 design += _get_coords(i)
@@ -282,9 +280,9 @@ _line_index = 0
 def _set_diagram_to_version_selected_by_stack_pointer() -> None:
     global _line_index
     # Remove the old design:
-    state_action.StateAction.state_action_dict = {}
-    condition_action.ConditionAction.dictionary = {}
-    state_comment.StateComment.dictionary = {}
+    state_action.StateAction.ref_dict = {}
+    condition_action.ConditionAction.ref_dict = {}
+    state_comment.StateComment.ref_dict = {}
     project_manager.canvas.delete("all")
     # Bring the notebook tab with the diagram into the foreground:
     notebook_ids = project_manager.notebook.tabs()

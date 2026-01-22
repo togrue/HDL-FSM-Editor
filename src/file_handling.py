@@ -128,15 +128,15 @@ def _clear_design() -> bool:
     project_manager.reset_entry_button.config(state=tk.NORMAL)
     connector.ConnectorInstance.connector_number = 0
     condition_action.ConditionAction.conditionaction_id = 0
-    condition_action.ConditionAction.dictionary = {}
+    condition_action.ConditionAction.ref_dict = {}
     state_action.StateAction.state_action_id = 0
-    state_action.StateAction.state_action_dict = {}
-    state_actions_default.StateActionsDefault.dictionary = {}
+    state_action.StateAction.ref_dict = {}
+    state_actions_default.StateActionsDefault.ref_dict = {}
     project_manager.state_action_default_button.config(state=tk.NORMAL)
     project_manager.global_action_clocked_button.config(state=tk.NORMAL)
     project_manager.global_action_combinatorial_button.config(state=tk.NORMAL)
-    global_actions_combinatorial.GlobalActionsCombinatorial.dictionary = {}
-    global_actions_clocked.GlobalActionsClocked.dictionary = {}
+    global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict = {}
+    global_actions_clocked.GlobalActionsClocked.ref_dict = {}
     project_manager.state_radius = 20.0
     project_manager.priority_distance = 14
     project_manager.reset_entry_size = 40
@@ -286,59 +286,59 @@ def _save_canvas_data(design_dictionary: dict[str, Any], allowed_element_names_i
         elif project_manager.canvas.type(i) == "rectangle":
             design_dictionary["rectangle"].append([project_manager.canvas.coords(i), _gettags(i)])
         elif project_manager.canvas.type(i) == "window":
-            if i in state_action.StateAction.state_action_dict:
+            if i in state_action.StateAction.ref_dict:
                 design_dictionary["window_state_action_block"].append(
                     [
                         project_manager.canvas.coords(i),
-                        state_action.StateAction.state_action_dict[i].text_id.get("1.0", f"{tk.END}-1 chars"),
+                        state_action.StateAction.ref_dict[i].text_id.get("1.0", f"{tk.END}-1 chars"),
                         _gettags(i),
                     ]
                 )
-            elif i in state_comment.StateComment.dictionary:
+            elif i in state_comment.StateComment.ref_dict:
                 design_dictionary["window_state_comment"].append(
                     [
                         project_manager.canvas.coords(i),
-                        state_comment.StateComment.dictionary[i].text_id.get("1.0", f"{tk.END}-1 chars"),
+                        state_comment.StateComment.ref_dict[i].text_id.get("1.0", f"{tk.END}-1 chars"),
                         _gettags(i),
                     ]
                 )
-            elif i in condition_action.ConditionAction.dictionary:
+            elif i in condition_action.ConditionAction.ref_dict:
                 design_dictionary["window_condition_action_block"].append(
                     [
                         project_manager.canvas.coords(i),
-                        condition_action.ConditionAction.dictionary[i].condition_id.get("1.0", f"{tk.END}-1 chars"),
-                        condition_action.ConditionAction.dictionary[i].action_id.get("1.0", f"{tk.END}-1 chars"),
+                        condition_action.ConditionAction.ref_dict[i].condition_id.get("1.0", f"{tk.END}-1 chars"),
+                        condition_action.ConditionAction.ref_dict[i].action_id.get("1.0", f"{tk.END}-1 chars"),
                         _gettags(i),
                     ]
                 )
-            elif i in global_actions_clocked.GlobalActionsClocked.dictionary:
+            elif i in global_actions_clocked.GlobalActionsClocked.ref_dict:
                 design_dictionary["window_global_actions"].append(
                     [
                         project_manager.canvas.coords(i),
-                        global_actions_clocked.GlobalActionsClocked.dictionary[i].text_before_id.get(
+                        global_actions_clocked.GlobalActionsClocked.ref_dict[i].text_before_id.get(
                             "1.0", f"{tk.END}-1 chars"
                         ),
-                        global_actions_clocked.GlobalActionsClocked.dictionary[i].text_after_id.get(
+                        global_actions_clocked.GlobalActionsClocked.ref_dict[i].text_after_id.get(
                             "1.0", f"{tk.END}-1 chars"
                         ),
                         _gettags(i),
                     ]
                 )
-            elif i in global_actions_combinatorial.GlobalActionsCombinatorial.dictionary:
+            elif i in global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict:
                 design_dictionary["window_global_actions_combinatorial"].append(
                     [
                         project_manager.canvas.coords(i),
-                        global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[i].text_id.get(
+                        global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict[i].text_id.get(
                             "1.0", f"{tk.END}-1 chars"
                         ),
                         _gettags(i),
                     ]
                 )
-            elif i in state_actions_default.StateActionsDefault.dictionary:
+            elif i in state_actions_default.StateActionsDefault.ref_dict:
                 design_dictionary["window_state_actions_default"].append(
                     [
                         project_manager.canvas.coords(i),
-                        state_actions_default.StateActionsDefault.dictionary[i].text_id.get("1.0", f"{tk.END}-1 chars"),
+                        state_actions_default.StateActionsDefault.ref_dict[i].text_id.get("1.0", f"{tk.END}-1 chars"),
                         _gettags(i),
                     ]
                 )

@@ -81,7 +81,7 @@ class HighLightDict:
     def _store_not_written_not_read_signals(self, variables_to_read, variables_to_write):
         # Check if each signal or variable is written and is read:
         process_variable_list = []
-        for _, ref in global_actions_combinatorial.GlobalActionsCombinatorial.dictionary.items():
+        for _, ref in global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict.items():
             process_variable_list += ref.text_id.signals_list
         for signal in (
             project_manager.internals_architecture_text.signals_list

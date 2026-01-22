@@ -19,7 +19,7 @@ class StateActionsDefault:
     Handles the combinatorial default actions for all states.
     """
 
-    dictionary = {}
+    ref_dict = {}
 
     def __init__(self, menu_x, menu_y, height, width, padding, tags) -> None:
         self.text_content = None
@@ -74,7 +74,7 @@ class StateActionsDefault:
         self.window_id = project_manager.canvas.create_window(
             menu_x, menu_y, window=self.frame_id, anchor=tk.W, tags=tags
         )
-        StateActionsDefault.dictionary[self.window_id] = self
+        StateActionsDefault.ref_dict[self.window_id] = self
         canvas_modify_bindings.switch_to_move_mode()
 
     def tag(self) -> None:
@@ -121,7 +121,7 @@ class StateActionsDefault:
         del custom_text.CustomText.read_variables_of_all_windows[self.text_id]
         del custom_text.CustomText.written_variables_of_all_windows[self.text_id]
         project_manager.canvas.delete(self.window_id)  # delete window
-        del StateActionsDefault.dictionary[self.window_id]
+        del StateActionsDefault.ref_dict[self.window_id]
         project_manager.state_action_default_button.config(state=tk.NORMAL)
 
     @classmethod

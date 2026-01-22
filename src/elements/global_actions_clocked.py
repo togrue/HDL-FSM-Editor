@@ -20,7 +20,7 @@ class GlobalActionsClocked:
     """
 
     global_actions_number = 1
-    dictionary = {}
+    ref_dict = {}
 
     def __init__(self, menu_x, menu_y, height, width, padding, tags) -> None:
         self.text_before_content = None
@@ -111,7 +111,7 @@ class GlobalActionsClocked:
             "<FocusOut>",
             lambda event: project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete()),
         )
-        GlobalActionsClocked.dictionary[self.window_id] = self
+        GlobalActionsClocked.ref_dict[self.window_id] = self
         canvas_modify_bindings.switch_to_move_mode()
 
     def _edit_before_in_external_editor(self):
@@ -172,7 +172,7 @@ class GlobalActionsClocked:
         del custom_text.CustomText.read_variables_of_all_windows[self.text_after_id]
         del custom_text.CustomText.written_variables_of_all_windows[self.text_after_id]
         project_manager.canvas.delete(self.window_id)
-        del GlobalActionsClocked.dictionary[self.window_id]
+        del GlobalActionsClocked.ref_dict[self.window_id]
         project_manager.global_action_clocked_button.config(state=tk.NORMAL)
 
     @classmethod

@@ -17,7 +17,7 @@ class ConnectorInstance:
     connector_number = 0
     difference_x = 0
     difference_y = 0
-    connector_dict = {}
+    ref_dict = {}
 
     def __init__(self, coords, tags):
         self.connector_id = project_manager.canvas.create_rectangle(coords, fill=constants.CONNECTOR_COLOR, tags=tags)
@@ -31,7 +31,7 @@ class ConnectorInstance:
             "<Leave>",
             lambda event: project_manager.canvas.itemconfig(self.connector_id, width=1),
         )
-        ConnectorInstance.connector_dict[self.connector_id] = self
+        ConnectorInstance.ref_dict[self.connector_id] = self
 
     def delete(self):
         connector_tags = project_manager.canvas.gettags(self.connector_id)
@@ -40,12 +40,12 @@ class ConnectorInstance:
             if connector_tag.startswith("transition") and connector_tag.endswith("_start"):
                 canvas_ids = project_manager.canvas.find_withtag(connector_tag[:-6])
                 if canvas_ids:
-                    transition.TransitionLine.transitionline_dict[canvas_ids[0]].delete()
+                    transition.TransitionLine.ref_dict[canvas_ids[0]].delete()
             elif connector_tag.startswith("transition") and connector_tag.endswith("_end"):
                 canvas_ids = project_manager.canvas.find_withtag(connector_tag[:-4])
                 if canvas_ids:
-                    transition.TransitionLine.transitionline_dict[canvas_ids[0]].delete()
-        del ConnectorInstance.connector_dict[self.connector_id]
+                    transition.TransitionLine.ref_dict[canvas_ids[0]].delete()
+        del ConnectorInstance.ref_dict[self.connector_id]
 
     @classmethod
     def create_connector(cls, event) -> None:

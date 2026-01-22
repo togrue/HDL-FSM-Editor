@@ -16,7 +16,7 @@ class StateAction:
     """Implements the state action of a single state."""
 
     state_action_id = 0
-    state_action_dict = {}
+    ref_dict = {}
 
     def __init__(
         self,
@@ -85,7 +85,7 @@ class StateAction:
             "<FocusOut>",
             lambda event: project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete()),
         )
-        StateAction.state_action_dict[self.window_id] = self
+        StateAction.ref_dict[self.window_id] = self
 
     def _edit_in_external_editor(self):
         self.text_id.edit_in_external_editor()
@@ -160,4 +160,4 @@ class StateAction:
         project_manager.canvas.delete(self.window_id)  # delete state action window
         del custom_text.CustomText.read_variables_of_all_windows[self.text_id]
         del custom_text.CustomText.written_variables_of_all_windows[self.text_id]
-        del StateAction.state_action_dict[self.window_id]
+        del StateAction.ref_dict[self.window_id]

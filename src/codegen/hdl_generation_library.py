@@ -101,7 +101,7 @@ def _get_transition_target_condition_action(transition_tag) -> tuple[str, str, s
             condition_action_number = tag[13:-4]
             condition_action_tag = "condition_action" + condition_action_number
             condition_action_canvas_item_id = project_manager.canvas.find_withtag(condition_action_tag)[0]
-            condition_action_reference = condition_action.ConditionAction.dictionary[condition_action_canvas_item_id]
+            condition_action_reference = condition_action.ConditionAction.ref_dict[condition_action_canvas_item_id]
             if condition_action_reference is not None:
                 transition_condition = _get_transition_condition(condition_action_reference)
                 transition_action = _get_transition_action(condition_action_reference)
@@ -115,7 +115,7 @@ def _get_condition_action_reference_of_transition(transition_tag) -> None:
             condition_action_number = tag[13:-4]
             condition_action_tag = "condition_action" + condition_action_number
             condition_action_canvas_item_id = project_manager.canvas.find_withtag(condition_action_tag)[0]
-            condition_action_reference = condition_action.ConditionAction.dictionary[condition_action_canvas_item_id]
+            condition_action_reference = condition_action.ConditionAction.ref_dict[condition_action_canvas_item_id]
             return condition_action_reference
     return None
 
@@ -127,7 +127,7 @@ def extract_transition_specifications_from_the_graph(state_tag_list_sorted) -> l
         all_tags_of_state = project_manager.canvas.gettags(state_tag)
         if state_tag + "_comment_line_end" in all_tags_of_state:
             canvas_id_of_comment_window = project_manager.canvas.find_withtag(state_tag + "_comment")[0]
-            reference_to_state_comment_window = state_comment.StateComment.dictionary[canvas_id_of_comment_window]
+            reference_to_state_comment_window = state_comment.StateComment.ref_dict[canvas_id_of_comment_window]
             canvas_id_of_comment_text_widget = reference_to_state_comment_window.text_id
             state_comments = reference_to_state_comment_window.text_id.get("1.0", "end")
             state_comments = re.sub(r"^\s*[0-9]*\s*", "", state_comments)  # Remove order comment at comment start.
@@ -534,7 +534,7 @@ def _sort_list_of_all_state_tags(list_of_all_state_tags):
         list_of_canvas_ids = project_manager.canvas.find_withtag(state_tag + "_comment")
         if list_of_canvas_ids:
             canvas_id_of_comment_window = list_of_canvas_ids[0]
-            reference_to_state_comment_window = state_comment.StateComment.dictionary[canvas_id_of_comment_window]
+            reference_to_state_comment_window = state_comment.StateComment.ref_dict[canvas_id_of_comment_window]
             state_comments = reference_to_state_comment_window.text_id.get("1.0", "end")
             state_comments_list = state_comments.split("\n")
             if state_comments_list:
@@ -764,7 +764,7 @@ def _get_transition_action(condition_action_reference):
 def create_global_actions_before() -> tuple[str, str] | tuple:
     canvas_item_ids = project_manager.canvas.find_withtag("global_actions1")
     if canvas_item_ids != ():
-        ref = global_actions_clocked.GlobalActionsClocked.dictionary[canvas_item_ids[0]]
+        ref = global_actions_clocked.GlobalActionsClocked.ref_dict[canvas_item_ids[0]]
         return ref.text_before_id, ref.text_before_id.get("1.0", tk.END)
     return "", ""
 
@@ -772,7 +772,7 @@ def create_global_actions_before() -> tuple[str, str] | tuple:
 def create_global_actions_after() -> tuple[str, str] | tuple:
     canvas_item_ids = project_manager.canvas.find_withtag("global_actions1")
     if canvas_item_ids != ():
-        ref = global_actions_clocked.GlobalActionsClocked.dictionary[canvas_item_ids[0]]
+        ref = global_actions_clocked.GlobalActionsClocked.ref_dict[canvas_item_ids[0]]
         return ref.text_after_id, ref.text_after_id.get("1.0", tk.END)
     return "", ""
 
@@ -780,7 +780,7 @@ def create_global_actions_after() -> tuple[str, str] | tuple:
 def create_concurrent_actions() -> tuple[str, str] | tuple:
     canvas_item_ids = project_manager.canvas.find_withtag("global_actions_combinatorial1")
     if canvas_item_ids != ():
-        ref = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[canvas_item_ids[0]]
+        ref = global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict[canvas_item_ids[0]]
         return ref.text_id, ref.text_id.get("1.0", tk.END)
     return "", ""
 

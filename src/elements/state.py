@@ -23,7 +23,7 @@ class States:
     """
 
     state_number = 0
-    state_dict = {}
+    ref_dict = {}
     difference_x = 0
     difference_y = 0
 
@@ -65,7 +65,7 @@ class States:
         )
         project_manager.canvas.tag_bind(self.text_id, "<Double-Button-1>", self._edit_state_name)
         project_manager.canvas.tag_bind(self.text_id, "<Button-3>", self._show_menu)
-        States.state_dict[self.state_id] = self
+        States.ref_dict[self.state_id] = self
 
     def _show_menu(self, event) -> None:
         listbox = OptionMenu(
@@ -257,24 +257,24 @@ class States:
             if state_tag.startswith("transition") and state_tag.endswith("_start"):
                 canvas_ids = project_manager.canvas.find_withtag(state_tag[:-6])
                 if canvas_ids:
-                    transition.TransitionLine.transitionline_dict[canvas_ids[0]].delete()
+                    transition.TransitionLine.ref_dict[canvas_ids[0]].delete()
             elif state_tag.startswith("transition") and state_tag.endswith("_end"):
                 canvas_ids = project_manager.canvas.find_withtag(state_tag[:-4])
                 if canvas_ids:
-                    transition.TransitionLine.transitionline_dict[canvas_ids[0]].delete()
+                    transition.TransitionLine.ref_dict[canvas_ids[0]].delete()
             elif state_tag.startswith("connection"):
                 tags_of_state_action = project_manager.canvas.gettags(state_tag[:-4] + "_start")
                 tag_of_state_action = tags_of_state_action[0]  # like "state_action<n>"
                 state_action_window_canvas_id = project_manager.canvas.find_withtag(tag_of_state_action)[0]
-                ref = state_action.StateAction.state_action_dict[state_action_window_canvas_id]
+                ref = state_action.StateAction.ref_dict[state_action_window_canvas_id]
                 ref.delete()
             elif state_tag.endswith("_comment_line_end"):
                 canvas_id_of_comment = project_manager.canvas.find_withtag(state_tag[:-9])[0]
-                ref = state_comment.StateComment.dictionary[canvas_id_of_comment]
+                ref = state_comment.StateComment.ref_dict[canvas_id_of_comment]
                 ref.delete()
         project_manager.canvas.delete(self.state_id)  # delete state
         project_manager.canvas.delete(self.text_id)  # delete state name
-        del States.state_dict[self.state_id]
+        del States.ref_dict[self.state_id]
 
     @classmethod
     def move_to(cls, event_x, event_y, state_id, first, last) -> None:

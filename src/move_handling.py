@@ -46,7 +46,7 @@ def move_to_coordinates(event_x, event_y, move_list, first, move_to_grid):
             ):  # state is moved and state_comment line must follow
                 tag_of_comment_window = tags[0][:-5]  # tag[0] = state<number>_comment_line
                 canvas_id_of_comment_window = project_manager.canvas.find_withtag(tag_of_comment_window)[0]
-                ref = state_comment.StateComment.dictionary[canvas_id_of_comment_window]
+                ref = state_comment.StateComment.ref_dict[canvas_id_of_comment_window]
                 ref.move_line_point_to(event_x, event_y, first)
             elif (
                 tags[0].startswith("connection") and item_point_to_move == "end"
@@ -55,23 +55,23 @@ def move_to_coordinates(event_x, event_y, move_list, first, move_to_grid):
                 canvas_id_of_connected_state_action = project_manager.canvas.find_withtag(
                     tag_of_connected_state_action
                 )[0]
-                ref = state_action.StateAction.state_action_dict[canvas_id_of_connected_state_action]
+                ref = state_action.StateAction.ref_dict[canvas_id_of_connected_state_action]
                 ref.move_line_point_to(event_x, event_y, first)
         elif item_type == "rectangle":
             connector.ConnectorInstance.move_to(event_x, event_y, item_id, first, move_to_grid)
         elif item_type == "window":
-            if item_id in state_action.StateAction.state_action_dict:
-                ref = state_action.StateAction.state_action_dict[item_id]
-            elif item_id in state_comment.StateComment.dictionary:
-                ref = state_comment.StateComment.dictionary[item_id]
-            elif item_id in state_actions_default.StateActionsDefault.dictionary:
-                ref = state_actions_default.StateActionsDefault.dictionary[item_id]
-            elif item_id in global_actions_clocked.GlobalActionsClocked.dictionary:
-                ref = global_actions_clocked.GlobalActionsClocked.dictionary[item_id]
-            elif item_id in global_actions_combinatorial.GlobalActionsCombinatorial.dictionary:
-                ref = global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[item_id]
+            if item_id in state_action.StateAction.ref_dict:
+                ref = state_action.StateAction.ref_dict[item_id]
+            elif item_id in state_comment.StateComment.ref_dict:
+                ref = state_comment.StateComment.ref_dict[item_id]
+            elif item_id in state_actions_default.StateActionsDefault.ref_dict:
+                ref = state_actions_default.StateActionsDefault.ref_dict[item_id]
+            elif item_id in global_actions_clocked.GlobalActionsClocked.ref_dict:
+                ref = global_actions_clocked.GlobalActionsClocked.ref_dict[item_id]
+            elif item_id in global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict:
+                ref = global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict[item_id]
             else:
-                ref = condition_action.ConditionAction.dictionary[item_id]
+                ref = condition_action.ConditionAction.ref_dict[item_id]
             ref.move_to(event_x, event_y, first)
         else:
             print("move: Fatal, unknown canvas type", "|" + item_type + "|")

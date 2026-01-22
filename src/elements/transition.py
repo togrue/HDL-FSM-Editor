@@ -22,7 +22,7 @@ class TransitionLine:
     """
 
     transition_number = 0
-    transitionline_dict = {}
+    ref_dict = {}
 
     def __init__(self, transition_coords, tags, priority, new_transition=False) -> None:
         if new_transition:
@@ -67,7 +67,7 @@ class TransitionLine:
         )
 
         project_manager.canvas.tag_raise(self.priority_text)
-        TransitionLine.transitionline_dict[self.transition_id] = self
+        TransitionLine.ref_dict[self.transition_id] = self
 
     def _determine_position_of_priority_rectangle(self, transition_coords):
         # Determine middle of the priority rectangle position by calculating a shortened transition:
@@ -271,12 +271,12 @@ class TransitionLine:
             if transition_tag.startswith("ca_connection"):
                 ca_window_anchor_tag = transition_tag[:-4] + "_anchor"
                 ca_window_canvas_id = project_manager.canvas.find_withtag(ca_window_anchor_tag)[0]
-                ref = condition_action.ConditionAction.dictionary[ca_window_canvas_id]
+                ref = condition_action.ConditionAction.ref_dict[ca_window_canvas_id]
                 ref.delete()
             if transition_tag.startswith("coming_from_"):
                 start_state = transition_tag[12:]
                 self._adapt_visibility_of_priority_rectangles_at_state(start_state)
-        del TransitionLine.transitionline_dict[self.transition_id]
+        del TransitionLine.ref_dict[self.transition_id]
 
     @classmethod
     def _adapt_visibility_of_priority_rectangles_at_state(cls, start_state) -> None:

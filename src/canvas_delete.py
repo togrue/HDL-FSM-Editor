@@ -60,23 +60,23 @@ class CanvasDelete:
         elif item_type == "window":
             for tag in tags_of_item_i:
                 if tag.startswith("state_actions_default"):
-                    state_actions_default.StateActionsDefault.dictionary[canvas_id].delete()
+                    state_actions_default.StateActionsDefault.ref_dict[canvas_id].delete()
                 elif tag == "global_actions1":
-                    global_actions_clocked.GlobalActionsClocked.dictionary[canvas_id].delete()
+                    global_actions_clocked.GlobalActionsClocked.ref_dict[canvas_id].delete()
                 elif tag == "global_actions_combinatorial1":
-                    global_actions_combinatorial.GlobalActionsCombinatorial.dictionary[canvas_id].delete()
+                    global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict[canvas_id].delete()
                 elif tag.startswith("state_action"):
-                    state_action.StateAction.state_action_dict[canvas_id].delete()
+                    state_action.StateAction.ref_dict[canvas_id].delete()
                 elif tag.endswith("_comment"):
-                    state_comment.StateComment.dictionary[canvas_id].delete()
+                    state_comment.StateComment.ref_dict[canvas_id].delete()
                 elif tag.startswith("condition_action"):
-                    condition_action.ConditionAction.dictionary[canvas_id].delete()
+                    condition_action.ConditionAction.ref_dict[canvas_id].delete()
         elif item_type == "oval":
-            state.States.state_dict[canvas_id].delete()
+            state.States.ref_dict[canvas_id].delete()
         elif item_type == "rectangle":
-            connector.ConnectorInstance.connector_dict[canvas_id].delete()
+            connector.ConnectorInstance.ref_dict[canvas_id].delete()
         elif item_type == "line":
-            transition.TransitionLine.transitionline_dict[canvas_id].delete()
+            transition.TransitionLine.ref_dict[canvas_id].delete()
         elif item_type == "text":  # Text of reset entry
             pass
         else:

@@ -48,7 +48,7 @@ class ResetEntry:
         for reset_entry_tag in reset_entry_tags:
             if reset_entry_tag.startswith("transition") and reset_entry_tag.endswith("_start"):
                 canvas_id = project_manager.canvas.find_withtag(reset_entry_tag[:-6])[0]
-                transition.TransitionLine.transitionline_dict[canvas_id].delete()
+                transition.TransitionLine.ref_dict[canvas_id].delete()
         project_manager.canvas.delete("reset_entry")
         project_manager.canvas.delete("reset_text")
 

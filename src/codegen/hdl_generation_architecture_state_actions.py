@@ -82,9 +82,7 @@ def _create_state_action_process_for_vhdl(
     number_of_lines = default_state_actions.count("\n")
     if number_of_lines != 0:
         item_ids = project_manager.canvas.find_withtag("state_actions_default")
-        reference_to_default_state_actions_custom_text = state_actions_default.StateActionsDefault.dictionary[
-            item_ids[0]
-        ]
+        reference_to_default_state_actions_custom_text = state_actions_default.StateActionsDefault.ref_dict[item_ids[0]]
         file_line_number += 1  # default_state_actions starts always with "-- Default State Actions:"
         project_manager.link_dict_ref.add(
             file_name,
@@ -146,9 +144,7 @@ def _create_state_action_process_for_verilog(
     number_of_lines = default_state_actions.count("\n")
     if number_of_lines != 0:
         item_ids = project_manager.canvas.find_withtag("state_actions_default")
-        reference_to_default_state_actions_custom_text = state_actions_default.StateActionsDefault.dictionary[
-            item_ids[0]
-        ]
+        reference_to_default_state_actions_custom_text = state_actions_default.StateActionsDefault.ref_dict[item_ids[0]]
         file_line_number += 1  # default_state_actions starts always with "-- Default State Actions:"
         project_manager.link_dict_ref.add(
             file_name,
@@ -209,7 +205,7 @@ def _create_state_action_list(state_tag_list_sorted):
                 connection_name = tag_of_state[:-4]
                 state_action_ids = project_manager.canvas.find_withtag(connection_name + "_start")
                 if state_action_ids:
-                    ref = state_action.StateAction.state_action_dict[state_action_ids[0]]
+                    ref = state_action.StateAction.ref_dict[state_action_ids[0]]
                     state_action_text = ref.text_id.get("1.0", tk.END)
                     state_action_reference = ref.text_id
                     break
@@ -253,7 +249,7 @@ def _get_default_state_actions() -> str:
     if item_ids == ():
         return ""
     else:
-        ref = state_actions_default.StateActionsDefault.dictionary[item_ids[0]]
+        ref = state_actions_default.StateActionsDefault.ref_dict[item_ids[0]]
         comment = "--" if project_manager.language.get() == "VHDL" else "//"
         return comment + " Default State Actions:\n" + ref.text_id.get("1.0", tk.END)
 
