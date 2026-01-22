@@ -1,3 +1,5 @@
+"""Creates the Reset-Entry element in the canvas."""
+
 import tkinter as tk
 
 import canvas_editing
@@ -8,6 +10,17 @@ from project_manager import project_manager
 
 
 class ResetEntry:
+    """
+    Creates the Reset-Entry element in the canvas.
+
+    As only 1 Reset-Entry is allowed in a diagram, no element dictionary (as used for all other elements) is necessary.
+    For the same reason only a class method is used for moving the Reset-Entry polygon.
+
+    Class variables:
+        difference_x: Difference in x direction between mouse pointer and Reset-Entry polygon at move start.
+        difference_y: Difference in y direction between mouse pointer and Reset-Entry polygon at move start.
+    """
+
     difference_x = 0
     difference_y = 0
 
@@ -28,6 +41,16 @@ class ResetEntry:
             tag="reset_text",
             font=project_manager.state_name_font,
         )
+
+    @classmethod
+    def delete(cls):
+        reset_entry_tags = project_manager.canvas.gettags("reset_entry")
+        for reset_entry_tag in reset_entry_tags:
+            if reset_entry_tag.startswith("transition") and reset_entry_tag.endswith("_start"):
+                canvas_id = project_manager.canvas.find_withtag(reset_entry_tag[:-6])[0]
+                transition.TransitionLine.transitionline_dict[canvas_id].delete()
+        project_manager.canvas.delete("reset_entry")
+        project_manager.canvas.delete("reset_text")
 
     @classmethod
     def move_to(cls, event_x, event_y, polygon_id, first, last) -> None:
@@ -136,13 +159,3 @@ class ResetEntry:
             for i, p in enumerate(reset_entry_polygon)
         ]
         return reset_entry_polygon
-
-    @classmethod
-    def delete(cls):
-        reset_entry_tags = project_manager.canvas.gettags("reset_entry")
-        for reset_entry_tag in reset_entry_tags:
-            if reset_entry_tag.startswith("transition") and reset_entry_tag.endswith("_start"):
-                canvas_id = project_manager.canvas.find_withtag(reset_entry_tag[:-6])[0]
-                transition.TransitionLine.transitionline_dict[canvas_id].delete()
-        project_manager.canvas.delete("reset_entry")
-        project_manager.canvas.delete("reset_text")
