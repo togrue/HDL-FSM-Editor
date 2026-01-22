@@ -275,11 +275,11 @@ class TransitionLine:
                 ref.delete()
             if transition_tag.startswith("coming_from_"):
                 start_state = transition_tag[12:]
-                self._adapt_visibility_of_priority_rectangles_at_state(start_state)
+                TransitionLine.adapt_visibility_of_priority_rectangles_at_state(start_state)
         del TransitionLine.ref_dict[self.transition_id]
 
     @classmethod
-    def _adapt_visibility_of_priority_rectangles_at_state(cls, start_state) -> None:
+    def adapt_visibility_of_priority_rectangles_at_state(cls, start_state) -> None:
         tags_of_start_state = project_manager.canvas.gettags(start_state)
         number_of_outgoing_transitions = 0
         tag_of_outgoing_transition = ""

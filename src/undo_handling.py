@@ -6,7 +6,6 @@ import os
 import re
 import tkinter as tk
 
-import canvas_editing
 import constants
 import file_handling
 from elements import (
@@ -120,7 +119,7 @@ def _get_complete_design_as_text_object():
     design += "priority_distance|" + str(project_manager.priority_distance) + "\n"
     design += "fontsize|" + str(project_manager.fontsize) + "\n"
     design += "label_fontsize|" + str(project_manager.label_fontsize) + "\n"
-    design += "visible_center|" + canvas_editing.get_visible_center_as_string() + "\n"
+    design += "visible_center|" + file_handling.get_visible_center_as_string() + "\n"
     design += "include_timestamp_in_output|" + str(project_manager.include_timestamp_in_output.get()) + "\n"
     design += (
         "interface_package|"
@@ -339,7 +338,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             project_manager.label_fontsize = float(rest_of_line)
         elif lines[_line_index].startswith("visible_center|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "visible_center|")
-            canvas_editing.shift_visible_center_to_window_center(rest_of_line)
+            file_handling.shift_visible_center_to_window_center(rest_of_line)
         elif lines[_line_index].startswith("state|"):
             rest_of_line = _remove_keyword_from_line(lines[_line_index], "state|")
             coords = []
@@ -647,7 +646,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             project_manager.internals_process_combinatorial_text.update_custom_text_class_signals_list()
         _line_index += 1
     for state_canvas_id in list_of_states:
-        canvas_editing.adapt_visibility_of_priority_rectangles_at_state(state_canvas_id)
+        transition.TransitionLine.adapt_visibility_of_priority_rectangles_at_state(state_canvas_id)
     if project_manager.canvas.find_withtag("global_actions1") == ():
         project_manager.global_action_clocked_button.config(state=tk.NORMAL)
     else:

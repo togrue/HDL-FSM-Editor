@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import font, ttk
 
 import canvas_delete
 import canvas_editing
@@ -9,6 +9,7 @@ import move_handling_initialization
 import undo_handling
 from constants import GuiTab
 from project_manager import project_manager
+from widgets.OptionMenu import OptionMenu
 
 
 class TabDiagram:
@@ -34,8 +35,8 @@ class TabDiagram:
             relief=tk.SUNKEN,
         )
         project_manager.canvas = canvas
-        h["command"] = self.__scroll_xview
-        v["command"] = self.__scroll_yview
+        h["command"] = self._scroll_xview
+        v["command"] = self._scroll_yview
         button_frame = ttk.Frame(diagram_frame, padding="3 3 3 3", borderwidth=1)
 
         # Layout of the drawing area:
@@ -128,27 +129,91 @@ class TabDiagram:
         canvas.bind("<Control-MouseWheel>", canvas_editing.zoom_wheel)  # MouseWheel used at Windows.
         canvas.bind("<Control-Button-4>", canvas_editing.zoom_wheel)  # MouseWheel-Scroll-Up used at Linux.
         canvas.bind("<Control-Button-5>", canvas_editing.zoom_wheel)  # MouseWheel-Scroll-Down used at Linux.
-        canvas.bind("<Control-Button-1>", canvas_editing.scroll_start)
-        canvas.bind("<Control-B1-Motion>", canvas_editing.scroll_move)
-        canvas.bind("<Control-ButtonRelease-1>", canvas_editing.scroll_end)
-        canvas.bind("<MouseWheel>", canvas_editing.scroll_wheel)
+        canvas.bind("<Control-Button-1>", self._scroll_start)
+        canvas.bind("<Control-B1-Motion>", self._scroll_move)
+        canvas.bind("<Control-ButtonRelease-1>", self._scroll_end)
+        canvas.bind("<MouseWheel>", self._scroll_wheel)
         canvas.bind("<Button-3>", canvas_editing.start_view_rectangle)
-        canvas.bind("<Configure>", self.__check_for_window_resize)
+        canvas.bind("<Configure>", self._check_for_window_resize)
 
-        canvas_editing.create_font_for_state_names()
+        self._create_font_for_state_names()
         grid_drawer = grid_drawing.GridDraw(canvas)
         project_manager.grid_drawer = grid_drawer
 
-    def __scroll_xview(self, *args) -> None:
+    def _scroll_xview(self, *args) -> None:
         project_manager.grid_drawer.remove_grid()
         project_manager.canvas.xview(*args)
         project_manager.grid_drawer.draw_grid()
 
-    def __scroll_yview(self, *args) -> None:
+    def _scroll_yview(self, *args) -> None:
         project_manager.grid_drawer.remove_grid()
         project_manager.canvas.yview(*args)
         project_manager.grid_drawer.draw_grid()
 
-    def __check_for_window_resize(self, _) -> None:
+    def _scroll_start(self, event) -> None:
+        project_manager.grid_drawer.remove_grid()
+        project_manager.canvas.scan_mark(event.x, event.y)
+
+    def _scroll_move(self, event) -> None:
+        project_manager.canvas.scan_dragto(event.x, event.y, gain=1)
+
+    def _scroll_end(self, event) -> None:
+        project_manager.grid_drawer.draw_grid()
+
+    def _scroll_wheel(self, event) -> None:
+        project_manager.grid_drawer.remove_grid()
+        project_manager.canvas.scan_mark(event.x, event.y)
+        delta_y = 0
+        if event.num == 5 or event.delta < 0:  # scroll down
+            delta_y = -10
+        elif event.num == 4 or event.delta >= 0:  # scroll up
+            delta_y = +10
+        project_manager.canvas.scan_dragto(event.x, event.y + delta_y, gain=1)
+        project_manager.grid_drawer.draw_grid()
+
+    def _check_for_window_resize(self, _) -> None:
         project_manager.grid_drawer.remove_grid()
         project_manager.grid_drawer.draw_grid()
+
+    def _create_font_for_state_names(self) -> None:
+        project_manager.state_name_font = font.Font(font="TkDefaultFont")
+        project_manager.state_name_font.configure(size=int(project_manager.fontsize))
+
+    @classmethod
+    def show_canvas_background_menu(cls, zoom_coords) -> None:
+        canvas_menue_entries_list_with_hide = ["Change background color", "Hide grid"]
+        canvas_menue_entries_list_with_show = ["Change background color", "Show grid"]
+        if project_manager.grid_drawer.show_grid is True:
+            canvas_menue_entries_list = canvas_menue_entries_list_with_hide
+        else:
+            canvas_menue_entries_list = canvas_menue_entries_list_with_show
+        menu = OptionMenu(
+            project_manager.canvas,
+            canvas_menue_entries_list,
+            height=2,
+            bg="lightgrey",
+            width=25,
+            activestyle="dotbox",
+            relief=tk.RAISED,
+        )
+        menue_window = project_manager.canvas.create_window(zoom_coords[0], zoom_coords[1], window=menu)
+        menu.bind("<Button-1>", lambda event: cls._evaluate_menu(menue_window, menu))
+        menu.bind("<Leave>", lambda event: cls._close_menu(menue_window, menu))
+
+    @classmethod
+    def _evaluate_menu(cls, menue_window, menu) -> None:
+        selected_entry = menu.get(menu.curselection()[0])
+        if "Change background color" in selected_entry:
+            project_manager.tab_control_ref.choose_bg_color()
+        elif "Hide grid" in selected_entry:
+            project_manager.grid_drawer.show_grid = False
+            project_manager.grid_drawer.remove_grid()
+        elif "Show grid" in selected_entry:
+            project_manager.grid_drawer.show_grid = True
+            project_manager.grid_drawer.draw_grid()
+        cls._close_menu(menue_window, menu)
+
+    @classmethod
+    def _close_menu(cls, menue_window, menu) -> None:
+        menu.destroy()
+        project_manager.canvas.delete(menue_window)

@@ -265,7 +265,7 @@ def _save_canvas_data(design_dictionary: dict[str, Any], allowed_element_names_i
     design_dictionary["priority_distance"] = project_manager.priority_distance
     design_dictionary["fontsize"] = project_manager.fontsize
     design_dictionary["label_fontsize"] = project_manager.label_fontsize
-    # design_dictionary["visible_center"] = canvas_editing.get_visible_center_as_string()
+    # design_dictionary["visible_center"] = get_visible_center_as_string()
     # design_dictionary["sash_positions"] = main_window.sash_positions
     for element_name in allowed_element_names_in_design_dictionary:
         design_dictionary[element_name] = []
@@ -533,8 +533,8 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
     project_manager.fontsize = design_dictionary["fontsize"]
     project_manager.state_name_font.configure(size=int(project_manager.fontsize))
     project_manager.label_fontsize = design_dictionary["label_fontsize"]
-    # canvas_editing.shift_visible_center_to_window_center(design_dictionary["visible_center"])
-    canvas_editing.shift_visible_center_to_window_center(canvas_editing.get_visible_center_as_string())
+    # shift_visible_center_to_window_center(design_dictionary["visible_center"])
+    shift_visible_center_to_window_center(get_visible_center_as_string())
 
 
 def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
@@ -805,3 +805,39 @@ def _load_window_elements(
         project_manager.reset_entry_button.config(state=tk.NORMAL)
     else:
         project_manager.reset_entry_button.config(state=tk.DISABLED)
+
+
+def get_visible_center_as_string() -> str:
+    visible_rectangle = [
+        project_manager.canvas.canvasx(0),
+        project_manager.canvas.canvasy(0),
+        project_manager.canvas.canvasx(project_manager.canvas.winfo_width()),
+        project_manager.canvas.canvasy(project_manager.canvas.winfo_height()),
+    ]
+    visible_center = [
+        (visible_rectangle[0] + visible_rectangle[2]) / 2,
+        (visible_rectangle[1] + visible_rectangle[3]) / 2,
+    ]
+    visible_center_string = ""
+    for value in visible_center:
+        visible_center_string += str(value) + " "
+    return visible_center_string
+
+
+def shift_visible_center_to_window_center(new_visible_center_string) -> None:
+    new_visible_center = []
+    new_visible_center_string_array = new_visible_center_string.split()
+    for entry in new_visible_center_string_array:
+        new_visible_center.append(float(entry))
+    actual_visible_rectangle = [
+        project_manager.canvas.canvasx(0),
+        project_manager.canvas.canvasy(0),
+        project_manager.canvas.canvasx(project_manager.canvas.winfo_width()),
+        project_manager.canvas.canvasy(project_manager.canvas.winfo_height()),
+    ]
+    actual_visible_center = [
+        (actual_visible_rectangle[0] + actual_visible_rectangle[2]) / 2,
+        (actual_visible_rectangle[1] + actual_visible_rectangle[3]) / 2,
+    ]
+    project_manager.canvas.scan_mark(int(new_visible_center[0]), int(new_visible_center[1]))
+    project_manager.canvas.scan_dragto(int(actual_visible_center[0]), int(actual_visible_center[1]), gain=1)
