@@ -31,24 +31,20 @@ class TransitionLine:
         self.difference_y = 0
         transition_tag = tags[0]  # "transition<n>"
         rectangle_coords = self._determine_position_of_priority_rectangle(transition_coords)
-
         self.transition_id = project_manager.canvas.create_line(
             transition_coords, arrow="last", fill="blue", smooth=True, tags=tags
         )
-
         self.priority_text = project_manager.canvas.create_text(
             rectangle_coords,
             text=priority,
             tag=transition_tag + "priority",
             font=project_manager.state_name_font,
         )
-
         self.priority_rectangle = project_manager.canvas.create_rectangle(
             project_manager.canvas.bbox(self.priority_text),
             tag=transition_tag + "rectangle",
             fill=constants.STATE_COLOR,
         )
-
         project_manager.canvas.tag_bind(
             self.transition_id,
             "<Enter>",
@@ -65,7 +61,7 @@ class TransitionLine:
             "<Double-Button-1>",
             lambda event: self._edit_priority(event, transition_tag),
         )
-
+        project_manager.canvas.tag_lower(self.transition_id)  # Lines are always "under" anything else.
         project_manager.canvas.tag_raise(self.priority_text)
         TransitionLine.ref_dict[self.transition_id] = self
 

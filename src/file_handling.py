@@ -602,7 +602,6 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
     for definition in design_dictionary["line"]:
         coords = definition[0]
         tags = definition[1]
-        trans_id = None
         for t in tags:
             if t.startswith("ca_connection"):  # line to condition&action block
                 condition_action_line_dictionary[t] = {"coords": coords, "tags": tags}
@@ -617,8 +616,6 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
                     transition_dict[tags[0]] = {}
                 transition_dict[tags[0]]["line-item"] = {"coords": coords, "tags": tags}
                 break
-        if trans_id is not None:
-            project_manager.canvas.tag_lower(trans_id)  # Lines are always "under" anything else.
 
     # Load rectangles (connector, priority-box)
     for definition in design_dictionary["rectangle"]:
