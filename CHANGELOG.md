@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ## Added
 ## Changed
+Refactoring: most global variables are removed.
+Refactoring: several new classes were introduced.
+Refactoring: new folder "elements" was added.
+Refactoring: several files were renamed.
+Linting is now only updated after some inactivity for better performance.
 ## Deprecated
 ## Removed
 ## Fixed
