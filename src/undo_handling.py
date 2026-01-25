@@ -283,6 +283,7 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
     condition_action.ConditionAction.ref_dict = {}
     state_comment.StateComment.ref_dict = {}
     project_manager.canvas.delete("all")
+    project_manager.grid_drawer.draw_grid()  # must be available when transitions are raised above.
     # Bring the notebook tab with the diagram into the foreground:
     notebook_ids = project_manager.notebook.tabs()
     for notebook_id in notebook_ids:
@@ -724,7 +725,6 @@ def _set_diagram_to_version_selected_by_stack_pointer() -> None:
             condition_action_ref.action_id.grid_forget()
 
     transition.TransitionLine.hide_priority_of_single_outgoing_transitions()
-    project_manager.grid_drawer.draw_grid()
 
 
 def _remove_keyword_from_line(line, keyword):
