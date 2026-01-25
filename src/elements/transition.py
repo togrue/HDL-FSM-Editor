@@ -193,15 +193,15 @@ class TransitionLine:
                 transition_tag + "rectangle"
             )
             project_manager.canvas.coords(
-                self.transition_id + "rectangle",
+                transition_tag + "rectangle",
                 priority_middle_x - rectangle_width_half,
                 priority_middle_y - rectangle_height_half,
                 priority_middle_x + rectangle_width_half,
                 priority_middle_y + rectangle_height_half,
             )
-            project_manager.canvas.coords(self.transition_id + "priority", priority_middle_x, priority_middle_y)
-            project_manager.canvas.tag_raise(self.transition_id + "rectangle", self.transition_id)
-            project_manager.canvas.tag_raise(self.transition_id + "priority", self.transition_id + "rectangle")
+            project_manager.canvas.coords(transition_tag + "priority", priority_middle_x, priority_middle_y)
+            project_manager.canvas.tag_raise(transition_tag + "rectangle", transition_tag)
+            project_manager.canvas.tag_raise(transition_tag + "priority", transition_tag + "rectangle")
             design_was_changed = True
         listbox.destroy()
         project_manager.canvas.delete(window)
