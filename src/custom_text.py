@@ -30,7 +30,7 @@ VHDL_KEYWORD_PATTERNS = [
     + (
         r" process[^;]*?begin ",
         r" end\s+?process\s*?;",
-        r" process .*?$",
+        # Wrong: r" process .*?$",
         r" end\s+?case\s*?;",
         r" end\s+?if\s*?;",
         r" end\s*?;",
