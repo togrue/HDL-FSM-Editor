@@ -24,6 +24,8 @@ ASSIGN_RHS_RE = re.compile(r"=.*?;", re.IGNORECASE | re.DOTALL)
 ALWAYS_RE = re.compile(r"always\s*@.*?begin", re.IGNORECASE | re.DOTALL)
 WITH_SELECT_RE = re.compile(r"with\s+.*?\s+select", re.IGNORECASE | re.DOTALL)
 NOT_ASSIGNMENTS_RE = re.compile(r"^[^=]*?;", re.IGNORECASE | re.MULTILINE)
+WHEN_RE = re.compile(r"\swhen\s+([^\s\"\']+?)\s+=>", re.IGNORECASE | re.DOTALL)
+
 VHDL_KEYWORD_PATTERNS = [
     re.compile(p, re.IGNORECASE)
     for p in constants.VHDL_KEYWORDS_FOR_SIGNAL_HANDLING
@@ -152,7 +154,7 @@ class CustomText(tk.Text):
 
     def format(self) -> None:
         text = self.get("1.0", tk.END)
-        self.__update_size_of_text_box(text)
+        self._update_size_of_text_box(text)
         if self.text_type in ("declarations", "variable", "action"):
             self.update_custom_text_class_signals_list()
         elif self.text_type == "ports":
@@ -162,7 +164,7 @@ class CustomText(tk.Text):
         self._update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows()
         self._update_highlighting_in_all_texts()
 
-    def __update_size_of_text_box(self, text) -> None:
+    def _update_size_of_text_box(self, text) -> None:
         nr_of_lines = 0
         nr_of_characters_in_line = 0
         max_line_length = 0
@@ -348,22 +350,24 @@ class CustomText(tk.Text):
         if project_manager.language.get() == "VHDL" and self._text_is_global_actions_combinatorial():
             # "processes" are possible in this text, which might contain "uncomplete" variable usage:
             text = self._add_uncomplete_vhdl_variables_to_read_or_written_variables_of_all_windows(text)
-        text = self.__remove_keywords(text)
+        text = self._add_read_constants_from_case_when_to_read_variables_of_all_windows(text) # Keywords are used here.
+        text = self._remove_keywords(text)
         text = self._remove_vhdl_attributes(text)
         if project_manager.language.get() == "VHDL":
             text = re.sub(r"\..*?\s", " ", text)  # remove all record-element-names from their signal/variable names
         if self.text_type == "condition":
-            text = self.__remove_condition_keywords(text)
+            text = self._remove_condition_keywords(text)
             CustomText.read_variables_of_all_windows[self] = text.split()
         elif self.text_type == "action":
-            text = self.__add_read_variables_from_procedure_calls_to_read_variables_of_all_windows(text)
-            text = self.__add_read_variables_from_with_select_blocks_to_read_variables_of_all_windows(text)
-            text = self.__add_read_variables_from_conditions_to_read_variables_of_all_windows(text)
-            text = self.__add_read_variables_from_case_constructs_to_read_variables_of_all_windows(text)
-            text = self.__add_read_variables_from_assignments_to_read_variables_of_all_windows(text)
-            text = self.__add_read_variables_from_always_statements_to_read_variables_of_all_windows(text)
+            text = self._add_read_variables_from_procedure_calls_to_read_variables_of_all_windows(text)
+            text = self._add_read_variables_from_with_select_blocks_to_read_variables_of_all_windows(text)
+            text = self._add_read_variables_from_conditions_to_read_variables_of_all_windows(text)
+            text = self._add_read_variables_from_case_constructs_to_read_variables_of_all_windows(text)
+            text = self._add_read_variables_from_assignments_to_read_variables_of_all_windows(text)
+            text = self._add_read_variables_from_always_statements_to_read_variables_of_all_windows(text)
             # Remove duplicates:
             CustomText.read_variables_of_all_windows[self] = list(set(CustomText.read_variables_of_all_windows[self]))
+            # print("read-variables = ", CustomText.read_variables_of_all_windows[self])
             text = re.sub(
                 # remove remaining "when" of a "case"-statement (left hand side):
                 " when | when$|^when |^when$",
@@ -546,21 +550,21 @@ class CustomText(tk.Text):
             if used_variable_name not in all_variable_names:
                 CustomText.read_variables_of_all_windows[self] += [used_variable_name]  # may be colored red
 
-    def __remove_keywords(self, text):
+    def _remove_keywords(self, text):
         if project_manager.language.get() == "VHDL":
-            text = self.__remove_keywords_from_vhdl(text)
+            text = self._remove_keywords_from_vhdl(text)
         else:
-            text = self.__remove_keywords_from_verilog(text)
+            text = self._remove_keywords_from_verilog(text)
         return text
 
-    def __remove_keywords_from_vhdl(self, text):
+    def _remove_keywords_from_vhdl(self, text):
         for pattern in VHDL_KEYWORD_PATTERNS:
             text = pattern.sub("  ", text)  # Keep the blanks the keyword is surrounded by.
         for pattern in DATATYPE_PATTERNS:
             text = pattern.sub("  ", text)  # Keep the blanks the keyword is surrounded by.
         return text
 
-    def __remove_keywords_from_verilog(self, text):
+    def _remove_keywords_from_verilog(self, text):
         for keyword in constants.VERILOG_KEYWORDS_FOR_SIGNAL_HANDLING + (
             " end ",
             " endcase\\s*?;",
@@ -578,7 +582,7 @@ class CustomText(tk.Text):
             text = re.sub(keyword, "  ", text, flags=re.I)  # Keep the blanks the keyword is surrounded by.
         return text
 
-    def __remove_condition_keywords(self, text):
+    def _remove_condition_keywords(self, text):
         if project_manager.language.get() == "VHDL":
             for keyword in (" = ", " /= ", " < ", " <= ", " > ", " >= "):
                 text = re.sub(keyword, "  ", text, flags=re.I)  # Keep the blanks the keyword is surrounded by.
@@ -597,7 +601,7 @@ class CustomText(tk.Text):
                 text = re.sub(keyword, "  ", text, flags=re.I)  # Keep the blanks the keyword is surrounded by.
         return text
 
-    def __add_read_variables_from_procedure_calls_to_read_variables_of_all_windows(self, text):
+    def _add_read_variables_from_procedure_calls_to_read_variables_of_all_windows(self, text):
         if project_manager.language.get() != "VHDL":
             return text
         all_procedure_calls = []
@@ -640,7 +644,7 @@ class CustomText(tk.Text):
     def _remove_procedure_name(self, procedure_call):
         return re.sub(r"^.*?\s", "", procedure_call.lstrip())
 
-    def __add_read_variables_from_with_select_blocks_to_read_variables_of_all_windows(self, text):
+    def _add_read_variables_from_with_select_blocks_to_read_variables_of_all_windows(self, text):
         if project_manager.language.get() == "VHDL":
             all_with_selects = []
             while True:  # Collect all with_selects and remove them from text.
@@ -660,7 +664,7 @@ class CustomText(tk.Text):
                 )  # split() removes only blanks here.
         return text
 
-    def __add_read_variables_from_conditions_to_read_variables_of_all_windows(self, text):
+    def _add_read_variables_from_conditions_to_read_variables_of_all_windows(self, text):
         if project_manager.language.get() == "VHDL":
             condition_search_pattern = (
                 "^if\\s+[^;]*?\\s+then| if\\s+[^;]*?\\s+then|elsif\\s+[^;]*?\\s+then|"
@@ -708,7 +712,21 @@ class CustomText(tk.Text):
             CustomText.read_variables_of_all_windows[self] += condition.split()
         return text
 
-    def __add_read_variables_from_case_constructs_to_read_variables_of_all_windows(self, text):
+    def _add_read_constants_from_case_when_to_read_variables_of_all_windows(self, text):
+        if project_manager.language.get() == "VHDL":
+            while True:
+                match = WHEN_RE.search(text)
+                if match:
+                    if match.start() == match.end():
+                        break
+                    if match.group(1)!="others": 
+                        CustomText.read_variables_of_all_windows[self] += [match.group(1)]
+                    text = text[: match.start()] + text[match.end() :]  # remove match from text
+                else:
+                    break
+        return text
+
+    def _add_read_variables_from_case_constructs_to_read_variables_of_all_windows(self, text):
         if project_manager.language.get() == "VHDL":
             case_search_pattern = "^case\\s+.+?\\s+is| case\\s+.+?\\s+is"
         else:
@@ -734,7 +752,7 @@ class CustomText(tk.Text):
             CustomText.read_variables_of_all_windows[self] += case.split()
         return text
 
-    def __add_read_variables_from_assignments_to_read_variables_of_all_windows(self, text):
+    def _add_read_variables_from_assignments_to_read_variables_of_all_windows(self, text):
         while True:  # Collect all right hand sides and remove them from text.
             match = ASSIGN_RHS_RE.search(text)
             if match:
@@ -754,7 +772,7 @@ class CustomText(tk.Text):
                 break
         return text
 
-    def __add_read_variables_from_always_statements_to_read_variables_of_all_windows(self, text):
+    def _add_read_variables_from_always_statements_to_read_variables_of_all_windows(self, text):
         while True:
             match = ALWAYS_RE.search(text)
             if match:
