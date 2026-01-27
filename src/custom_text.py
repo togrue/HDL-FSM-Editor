@@ -72,7 +72,7 @@ class CustomText(tk.Text):
 
     def __init__(self, *args, text_type, **kwargs) -> None:
         """A text widget that report on internal widget commands"""
-        tk.Text.__init__(self, *args, **kwargs)
+        tk.Text.__init__(self, *args, wrap=tk.NONE, **kwargs)
         self.text_type = text_type
         # text_type is in:
         # ["package","generics","ports","variable","condition","generated","action","declarations","log","comment"]
