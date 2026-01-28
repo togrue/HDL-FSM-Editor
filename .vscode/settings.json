@@ -21,8 +21,4 @@
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.testing.autoTestDiscoverOnSaveEnabled": true,
-    "pylint.args": [
-        "--max-line-length=120",
-        "--disable=C0116"
-    ]
 }
