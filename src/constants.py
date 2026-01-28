@@ -6,7 +6,7 @@ Constants for all modules of HDL-FSM-Editor
 from enum import Enum
 
 VERSION = "5.9"
-header_string = (
+HEADER_STRING = (
     "HDL-FSM-Editor\nVersion " + VERSION + "\nCreated by Matthias Schweikart\nContact: matthias.schweikart@gmx.de"
 )
 

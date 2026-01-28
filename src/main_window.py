@@ -142,6 +142,6 @@ def _get_resource_path(resource_name: str) -> Path:
 def _copy_message_into_log_tab(_read_message_result) -> None:
     project_manager.log_frame_text.config(state=tk.NORMAL)
     project_manager.log_frame_text.insert(
-        "1.0", constants.header_string + "\n" + _check_version_result + "\n" + _read_message_result + "\n"
+        "1.0", constants.HEADER_STRING + "\n" + _check_version_result + "\n" + _read_message_result + "\n"
     )
     project_manager.log_frame_text.config(state=tk.NORMAL)

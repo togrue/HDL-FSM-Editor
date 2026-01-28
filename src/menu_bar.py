@@ -90,7 +90,7 @@ class MenuBar:
         info_menu = tk.Menu(info_menu_button)
         info_menu_button.configure(menu=info_menu)
         info_menu.add_command(
-            label="About", command=lambda: messagebox.showinfo("About:", constants.header_string), font=("Arial", 10)
+            label="About", command=lambda: messagebox.showinfo("About:", constants.HEADER_STRING), font=("Arial", 10)
         )
 
         project_manager.notebook.bind("<<NotebookTabChanged>>", lambda event: self._handle_notebook_tab_changed_event())

@@ -69,7 +69,7 @@ def _parse_and_process_arguments() -> None:
 
 def _main() -> None:
     """Main entry point for HDL-FSM-Editor."""
-    print(constants.header_string)
+    print(constants.HEADER_STRING)
     _setup_application_ui()
     _parse_and_process_arguments()
     project_manager.root.wm_deiconify()
