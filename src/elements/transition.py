@@ -62,7 +62,8 @@ class TransitionLine:
             lambda event: self._edit_priority(event, transition_tag),
         )
         project_manager.canvas.tag_lower(self.transition_id)
-        project_manager.canvas.tag_raise(self.transition_id, "grid_line")
+        if project_manager.canvas.find_withtag("grid_line"):
+            project_manager.canvas.tag_raise(self.transition_id, "grid_line")
         project_manager.canvas.tag_raise(self.priority_text)
         TransitionLine.ref_dict[self.transition_id] = self
 
