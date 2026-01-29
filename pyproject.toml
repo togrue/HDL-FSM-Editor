@@ -38,6 +38,8 @@ select = [
     "SIM",
     # isort
     "I",
+    # pycodestyle warnings
+    "W",
 ]
 
 
