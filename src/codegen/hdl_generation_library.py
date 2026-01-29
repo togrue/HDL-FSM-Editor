@@ -121,61 +121,77 @@ def _get_condition_action_reference_of_transition(transition_tag) -> None:
 
 
 def extract_transition_specifications_from_the_graph(state_tag_list_sorted) -> list:
+    """For each state in state_tag_list_sorted, all outgoing transitions are analyzed."""
     transition_specifications = []
     for state_tag in state_tag_list_sorted:
-        state_name = project_manager.canvas.itemcget(state_tag + "_name", "text")
-        all_tags_of_state = project_manager.canvas.gettags(state_tag)
-        if state_tag + "_comment_line_end" in all_tags_of_state:
-            canvas_id_of_comment_window = project_manager.canvas.find_withtag(state_tag + "_comment")[0]
-            reference_to_state_comment_window = state_comment.StateComment.ref_dict[canvas_id_of_comment_window]
-            canvas_id_of_comment_text_widget = reference_to_state_comment_window.text_id
-            state_comments = reference_to_state_comment_window.text_id.get("1.0", "end")
-            state_comments = re.sub(r"^\s*[0-9]*\s*", "", state_comments)  # Remove order comment at comment start.
-            if state_comments == "":
-                canvas_id_of_comment_text_widget = None
-        else:
-            canvas_id_of_comment_text_widget = None
-            state_comments = ""
+        canvas_id_of_comment_text_widget, state_comments = _get_state_comments(state_tag)
         condition_level = 0
         moved_actions = []
         trace = []  # Is temporarily used when a path from a state to a target state passes connectors.
-        trace_array = []
-        # Each entry of trace_array shall describe a path from this state to a target state (target state is always
-        # also this state).
-        # The entries of trace_array are ordered regarding their priority in the HDL, the first entry has the
-        # highest priority.
+        trace_array = []  # Stores all paths starting from this state.
+        # Each entry of trace_array shall describe a path from this state to a target state (this state is also target).
+        # The entries of trace_array are ordered regarding their priority in the HDL,
+        # the first entry has the highest priority.
         # Each entry is a ordered list of dictionaries.
-        # The order of the dictionaries is defined by the order in which the HDL lines must be generated.
+        # The order of these dictionaries is defined by the order in which the HDL lines must be generated.
         # Each dictionary contains all information to create one or several HDL lines.
-        _extract_conditions_for_all_outgoing_transitions_of_the_state(
-            state_name, state_tag, moved_actions, condition_level, trace, trace_array
-        )
+        state_name = project_manager.canvas.itemcget(state_tag + "_name", "text")
         transition_specifications.append(
             {
                 "state_name": state_name,
-                "command": "when",
+                "command": "when",  # indicates that this dictionary must create the HDL line "when state_name =>"
                 "state_comments": state_comments,
                 "state_comments_canvas_id": canvas_id_of_comment_text_widget,
             }
         )
+        _extract_conditions_for_all_outgoing_transitions_of_the_state(
+            state_name, state_tag, moved_actions, condition_level, trace, trace_array
+        )
         # The separated paths of trace_array are merged together by adding "else" commands,
         # so if the first trace depends on an "if", then the inserted "else" path of the first trace
         # contains the second trace and so on:
-        transition_specifications += _merge_trace_array(trace_array)
+        transition_specifications.extend(_merge_trace_array(trace_array))
     _optimize_transition_specifications(transition_specifications)
     return transition_specifications
 
 
+def _get_state_comments(state_tag):
+    all_tags_of_state = project_manager.canvas.gettags(state_tag)
+    if state_tag + "_comment_line_end" in all_tags_of_state:
+        canvas_id_of_comment_window = project_manager.canvas.find_withtag(state_tag + "_comment")[0]
+        reference_to_state_comment_window = state_comment.StateComment.ref_dict[canvas_id_of_comment_window]
+        canvas_id_of_comment_text_widget = reference_to_state_comment_window.text_id
+        state_comments = canvas_id_of_comment_text_widget.get("1.0", "end")
+        state_comments = re.sub(r"^\s*[0-9]*\s*", "", state_comments)  # Remove order comment at comment start.
+        if state_comments == "":
+            canvas_id_of_comment_text_widget = None
+    else:
+        canvas_id_of_comment_text_widget = None
+        state_comments = ""
+    return canvas_id_of_comment_text_widget, state_comments
+
+
 def _optimize_transition_specifications(transition_specifications) -> None:
+    # This method calls itself again, until no more changes were added.
     # Add an unique if-identifier to each transition_specification of the transition_specifications.
     # At each if, the identifier is incremented, at each end-if it is decremented.
     # Also add to each end-if transition specification the number of branches of this ending if-construct:
     _expand_transition_specifications_by_if_identifier(transition_specifications)
+    # for transition_specification in transition_specifications:
+    #     temp = {}
+    #     for key in transition_specification:
+    #         if key == "condition_action_reference" and transition_specification[key] is not None:
+    #             pass  # temp[key] = transition_specification[key].get("1.0", "end-1c")
+    #         else:
+    #             temp[key] = transition_specification[key]
+    #     print("transition_specification =", temp)
     # action_target_array is a dictionary with the state name as key.
     # It contains for each state name a dictionary which describes the actions to a specific target state:
     action_target_array, branchnumber_array = _create_action_and_branch_array_for_each_if_construct(
         transition_specifications
     )
+    # print("action_target_array =", action_target_array)
+    # print("branchnumber_array =", branchnumber_array)
     changes_were_implemented = False
     index_of_if_in_transition_specifications = 0
     for state_name, action_target_if_dictionary in action_target_array.items():
@@ -244,9 +260,8 @@ def _expand_transition_specifications_by_if_identifier(transition_specifications
             stack_of_branch_number.append(1)
         elif transition_specification["command"] == "endif":
             transition_specification["if_identifier"] = stack_of_if_identifier[-1]
-            transition_specification["branch_number"] = stack_of_branch_number[
-                -1
-            ]  # This entry counts how many branches an "if" has, starting with 1.
+            # This entry counts how many branches an "if" has, starting with 1:
+            transition_specification["branch_number"] = stack_of_branch_number[-1]
             stack_of_if_identifier.pop()
             stack_of_branch_number.pop()
         elif transition_specification["command"] == "elsif" or transition_specification["command"] == "else":
@@ -269,7 +284,10 @@ def _create_action_and_branch_array_for_each_if_construct(transition_specificati
     action_target_array = {}
     branchnumber_array = {}
     state_name = None
+    next_actions_will_be_executed_for_sure = False
     for transition_specification in transition_specifications:
+        if transition_specification["command"] == "else":
+            next_actions_will_be_executed_for_sure = True
         if transition_specification["command"] == "when":
             if action_target_array_of_state and state_name is not None:  # The analysis of a state is ready.
                 action_target_array[state_name] = action_target_array_of_state
@@ -286,13 +304,20 @@ def _create_action_and_branch_array_for_each_if_construct(transition_specificati
             copy_of_actions = []
             for entry in transition_specification["actions"]:
                 copy_of_actions.append(entry)
+            # For each branch (possible paths available after the "if") add the actions executed in this branch:
             action_target_array_of_state[if_identifier].append(
-                {"actions": copy_of_actions, "target": transition_specification["target"]}
+                {
+                    "actions": copy_of_actions,
+                    "target": transition_specification["target"],
+                    "executed_for_sure": next_actions_will_be_executed_for_sure,
+                }
             )
+            next_actions_will_be_executed_for_sure = False
         elif transition_specification["command"] == "endif":
             branchnumber_array_of_state[transition_specification["if_identifier"]] = transition_specification[
                 "branch_number"
             ]
+            next_actions_will_be_executed_for_sure = False
     if (
         action_target_array_of_state and state_name is not None
     ):  # Needed for the last state, as no new "when" will come after the last state.
@@ -302,10 +327,14 @@ def _create_action_and_branch_array_for_each_if_construct(transition_specificati
 
 
 def _action_is_present_in_each_branch(action, state_name, if_identifier, action_target_array) -> bool:
+    # Returns only True, when the action is present in each branch and a default branch exists.
+    default_branch_exists = False
     for action_target_dict_check in action_target_array[state_name][if_identifier]:
+        if action_target_dict_check["executed_for_sure"]:
+            default_branch_exists = True
         if action not in action_target_dict_check["actions"]:
             return False
-    return True
+    return default_branch_exists
 
 
 def _remove_action_from_branches(transition_specifications, state_name, if_identifier, action, moved_actions) -> int:
@@ -552,14 +581,14 @@ def _sort_list_of_all_state_tags(list_of_all_state_tags):
 
 def _extract_conditions_for_all_outgoing_transitions_of_the_state(
     state_name,
-    start_point,
+    start_tag,
     moved_actions,
     condition_level,
     trace,
     trace_array,  # initialized by trace_array = []
 ) -> None:
-    outgoing_transition_tags = _get_all_outgoing_transitions_in_priority_order(start_point)
-    if not outgoing_transition_tags and start_point.startswith("connector"):
+    outgoing_transition_tags = _get_all_outgoing_transitions_in_priority_order(start_tag)
+    if not outgoing_transition_tags and start_tag.startswith("connector"):
         if trace:
             raise GenerationError(
                 "Warning",
@@ -577,28 +606,28 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
                 ],
             )
     for _, transition_tag in enumerate(outgoing_transition_tags):
+        # Collect information about the transition:
         transition_target, transition_condition, transition_action, condition_action_reference = (
             _get_transition_target_condition_action(transition_tag)
         )
         transition_condition_is_a_comment = _check_if_condition_is_a_comment(transition_condition)
+        # Handle the transition actions:
         if transition_action != "" or transition_condition_is_a_comment:
+            # Create a new list which contains first all moved actions and then the action of this transition:
             if transition_action != "":
                 if transition_condition_is_a_comment:
+                    # Put the comment in front of the action:
                     if not transition_condition.endswith("\n"):
                         transition_condition = transition_condition + "\n"
                     transition_action = transition_condition + transition_action
-                    moved_actions_dict = {
-                        "moved_action": transition_action,
-                        "moved_action_ref": condition_action_reference.action_id,
-                        "moved_condition_ref": condition_action_reference.condition_id,
-                        "moved_condition_lines": transition_condition.count("\n"),
-                    }
-                else:
-                    moved_actions_dict = {
-                        "moved_action": transition_action,
-                        "moved_action_ref": condition_action_reference.action_id,
-                    }
-            else:  # transition condition is a comment.
+                moved_actions_dict = {
+                    "moved_action": transition_action,
+                    "moved_action_ref": condition_action_reference.action_id,
+                }
+                if transition_condition_is_a_comment:
+                    moved_actions_dict["moved_condition_ref"] = condition_action_reference.condition_id
+                    moved_actions_dict["moved_condition_lines"] = transition_condition.count("\n")
+            else:  # transition condition is a comment and transition action is empty.
                 moved_actions_dict = {
                     "moved_action": transition_condition,
                     "moved_action_ref": condition_action_reference.condition_id,
@@ -609,77 +638,51 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
             transition_action_new.append(moved_actions_dict)
             # print("transition_action_new =", transition_action_new)
         else:
+            # Copy the old list:
             transition_action_new = moved_actions
+        # Handle the transition condition:
+        trace_new = []
+        for entry in trace:
+            trace_new.append(entry)
+        if transition_condition != "" and not transition_condition_is_a_comment:
+            trace_new.append(
+                {
+                    "state_name": state_name,  # The state where the transition starts.
+                    "command": "if",
+                    "condition": transition_condition,
+                    "target": transition_target,
+                    "condition_level": condition_level,
+                    "condition_action_reference": condition_action_reference.condition_id,
+                }
+            )
+            condition_level_new = condition_level + 1
+        else:
+            condition_level_new = condition_level
         if transition_target.startswith("connector"):
-            trace_new = []
-            for entry in trace:
-                trace_new.append(entry)
-            if transition_condition != "" and not transition_condition_is_a_comment:
-                trace_new.append(
-                    {
-                        "state_name": state_name,
-                        "command": "if",
-                        "condition": transition_condition,
-                        "target": transition_target,
-                        "condition_level": condition_level,
-                        "condition_action_reference": condition_action_reference.condition_id,
-                    }
-                )
-                condition_level_new = condition_level + 1
-            else:
-                condition_level_new = condition_level
             _extract_conditions_for_all_outgoing_transitions_of_the_state(
                 state_name,
-                transition_target,
+                transition_target,  # new start point
                 transition_action_new,
                 condition_level_new,
                 trace_new,
                 trace_array,  # initialized by transition_specifications = []
             )
-        else:
-            # print(state_name, transition_target, transition_condition, transition_action)
-            trace_new = []
-            for entry in trace:
-                trace_new.append(entry)
-            # print("start-point, trace", start_point, trace)
-            if transition_condition != "" and not transition_condition_is_a_comment:
-                condition_level_new = condition_level + 1
-                trace_new.append(
-                    {
-                        "state_name": state_name,
-                        "command": "if",
-                        "condition": transition_condition,
-                        "target": transition_target,
-                        "condition_level": condition_level,
-                        "condition_action_reference": condition_action_reference.condition_id,
-                    }
-                )
-            else:
-                condition_level_new = condition_level
-            if state_name != transition_target:
+        else:  # Target is a state.
+            transition_target_tmp = transition_target if transition_target != state_name else ""
+            # Create at jumps to itself only an entry, if actions are available.
+            if transition_target != state_name or transition_action_new != []:
                 trace_new.append(
                     {
                         "state_name": state_name,
                         "command": "action",
                         "condition": "",
                         "actions": transition_action_new,
-                        "target": transition_target,
+                        "target": transition_target_tmp,
                         "condition_level": condition_level,
                         "condition_action_reference": None,
                     }
                 )
-            elif transition_action_new != []:  # Create at jumps to itself only an entry, if actions are available.
-                trace_new.append(
-                    {
-                        "state_name": state_name,
-                        "command": "action",
-                        "condition": "",
-                        "actions": transition_action_new,
-                        "target": "",
-                        "condition_level": condition_level,
-                        "condition_action_reference": None,
-                    }
-                )
+            # Close all opened conditions by "endif" (condition-level muss eigentlich dekrementiert werden?!):
             for _ in range(condition_level_new):
                 trace_new.append(
                     {
