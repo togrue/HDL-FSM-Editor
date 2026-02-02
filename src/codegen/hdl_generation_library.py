@@ -151,6 +151,13 @@ def extract_transition_specifications_from_the_graph(state_tag_list_sorted) -> l
         # so if the first trace depends on an "if", then the inserted "else" path of the first trace
         # contains the second trace and so on:
         transition_specifications.extend(_merge_trace_array(trace_array))
+    # The list "transition_specifications" now contains all information to generate the HDL.
+    # But in this list all actions are moved "down" and duplicated in a way that only
+    # the transition which at last reaches the target state contains all the actions.
+    # This is needed, because when traversing connectors (and collecting actions) first
+    # all conditions must be collected, and only if all conditions are true, the actions can be executed.
+    # But the resulting HDL code may have unnecessary duplicated actions in several branches of if-constructs.
+    # So it is checked here, if actions can be moved "up" again, so that they are only present once:
     _optimize_transition_specifications(transition_specifications)
     return transition_specifications
 
