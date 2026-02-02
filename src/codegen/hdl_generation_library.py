@@ -176,7 +176,7 @@ def _optimize_transition_specifications(transition_specifications) -> None:
     # Add an unique if-identifier to each transition_specification of the transition_specifications.
     # At each if, the identifier is incremented, at each end-if it is decremented.
     # Also add to each end-if transition specification the number of branches of this ending if-construct:
-    _expand_transition_specifications_by_if_identifier(transition_specifications)
+    _expand_transition_specifications_by_if_depth(transition_specifications)
     # for transition_specification in transition_specifications:
     #     temp = {}
     #     for key in transition_specification:
@@ -187,40 +187,40 @@ def _optimize_transition_specifications(transition_specifications) -> None:
     #     print("transition_specification =", temp)
     # action_target_array is a dictionary with the state name as key.
     # It contains for each state name a dictionary which describes the actions to a specific target state:
-    action_target_array, branchnumber_array = _create_action_and_branch_array_for_each_if_construct(
+    action_target_array, branch_counter_array = _create_action_and_branch_array_for_each_if_construct(
         transition_specifications
     )
     # print("action_target_array =", action_target_array)
-    # print("branchnumber_array =", branchnumber_array)
+    # print("branch_counter_array =", branch_counter_array)
     changes_were_implemented = False
     index_of_if_in_transition_specifications = 0
     for state_name, action_target_if_dictionary in action_target_array.items():
-        for if_identifier in action_target_if_dictionary:
+        for if_depth in action_target_if_dictionary:
             if (
-                # if_identifier==0 means this is an entry caused by a "when"-command:
-                if_identifier != 0
-                # This is the number of different actions&targets which exist for the if_identifier:
-                and len(action_target_array[state_name][if_identifier])
-                # This is the number of branches which exist for the if_identifier:
-                == branchnumber_array[state_name][if_identifier]
+                # if_depth==0 means this is an entry caused by a "when"-command:
+                if_depth != 0
+                # This is the number of different actions&targets which exist for the if_depth:
+                and len(action_target_array[state_name][if_depth])
+                # This is the number of branches which exist for the if_depth:
+                == branch_counter_array[state_name][if_depth]
                 != 1
             ):
-                # There is more than 1 branch for the if_identifier.
+                # There is more than 1 branch for the if_depth.
                 moved_actions = []
                 moved_target = []  # will get only 1 entry
-                for action_target_dict in action_target_array[state_name][if_identifier]:
+                for action_target_dict in action_target_array[state_name][if_depth]:
                     for action in action_target_dict["actions"]:
-                        if _action_is_present_in_each_branch(action, state_name, if_identifier, action_target_array):
+                        if _action_is_present_in_each_branch(action, state_name, if_depth, action_target_array):
                             index_of_if_in_transition_specifications = _remove_action_from_branches(
-                                transition_specifications, state_name, if_identifier, action, moved_actions
+                                transition_specifications, state_name, if_depth, action, moved_actions
                             )
                             changes_were_implemented = True
                     target = action_target_dict["target"]
                     if target != "" and _target_is_present_in_each_branch(
-                        target, state_name, if_identifier, action_target_array
+                        target, state_name, if_depth, action_target_array
                     ):
                         index_of_if_in_transition_specifications = _remove_target_from_branches(
-                            transition_specifications, state_name, if_identifier, target, moved_target
+                            transition_specifications, state_name, if_depth, target, moved_target
                         )
                         changes_were_implemented = True
                 if moved_actions or moved_target:
@@ -235,7 +235,7 @@ def _optimize_transition_specifications(transition_specifications) -> None:
                             "condition": "",
                             "actions": moved_actions,
                             "target": target,
-                            "if_identifier": if_identifier - 1,
+                            "if_depth": if_depth - 1,
                         }
                     ]
     if changes_were_implemented:
@@ -243,46 +243,50 @@ def _optimize_transition_specifications(transition_specifications) -> None:
     return
 
 
-def _expand_transition_specifications_by_if_identifier(transition_specifications) -> None:
-    if_identifier = 0
-    if_identifier_max = 0
+def _expand_transition_specifications_by_if_depth(transition_specifications) -> None:
+    """
+    Adds a "if_depth" entry to each transition_specification,
+    and adds a "branch_counter" entry to each "endif" transition_specification:
+    At each "if" the "if_depth" is increased by 1, at each "endif" it is decreased by 1.
+    At each "if" the branch_counter is initialized by 1, at each "elsif" or "else" it is increased by 1.
+    At each "endif" the branch_counter is stored in the transition_specification.
+    """
+    if_depth = 0
     for transition_specification in transition_specifications:
         if transition_specification["command"] == "when":
-            if_identifier_max = max(if_identifier_max, if_identifier)
-            if_identifier = 0
-            stack_of_if_identifier = [0]
-            stack_of_branch_number = [0]
-            transition_specification["if_identifier"] = if_identifier
+            if_depth = 0
+            stack_of_if_depth = [0]
+            stack_of_branch_counters = [0]
+            transition_specification["if_depth"] = 0
         elif transition_specification["command"] == "if":
-            if_identifier += 1
-            transition_specification["if_identifier"] = if_identifier
-            stack_of_if_identifier.append(if_identifier)
-            stack_of_branch_number.append(1)
-        elif transition_specification["command"] == "endif":
-            transition_specification["if_identifier"] = stack_of_if_identifier[-1]
-            # This entry counts how many branches an "if" has, starting with 1:
-            transition_specification["branch_number"] = stack_of_branch_number[-1]
-            stack_of_if_identifier.pop()
-            stack_of_branch_number.pop()
+            if_depth += 1
+            transition_specification["if_depth"] = if_depth
+            stack_of_if_depth.append(if_depth)
+            stack_of_branch_counters.append(1)  #  Start a new branch counter for each "if".
         elif transition_specification["command"] == "elsif" or transition_specification["command"] == "else":
-            transition_specification["if_identifier"] = stack_of_if_identifier[-1]
-            stack_of_branch_number[-1] += 1
+            transition_specification["if_depth"] = stack_of_if_depth[-1]
+            stack_of_branch_counters[-1] += 1  # Increment this branch counter because end-if is not reached
+        elif transition_specification["command"] == "endif":
+            transition_specification["if_depth"] = stack_of_if_depth.pop()  # stack_of_if_depth[-1]
+            transition_specification["branch_counter"] = stack_of_branch_counters.pop()  # stack_of_branch_counters[-1]
         else:  # "action"
-            transition_specification["if_identifier"] = stack_of_if_identifier[-1]
+            transition_specification["if_depth"] = stack_of_if_depth[-1]
 
 
 def _create_action_and_branch_array_for_each_if_construct(transition_specifications) -> tuple[dict, dict]:
-    # The return dictionary action_target_array[state_name][if_identifier][0..n] is an
+    # The return dictionary action_target_array[state_name][if_depth][0..n] is an
     # dictionary with the keys "actions" and "target".
-    # The key "actions" stores a list of actions which are executed in this branch.
-    # The key "target" stores the target state of this branch.
-    # The return dictionary branchnumber_array contains for each state a dictionary
-    # with transition_specification["if_identifier"] as key,
+    # if_depth identifies a complete if..elsif..else..endif-construct.
+    # [0..n] identifies each branch in this construct.
+    # The key "actions" of the dictionary stores a list of actions which are executed in this branch.
+    # The key "target" of the dictionary stores the target state of this branch.
+    # The return dictionary branch_counter_array contains for each state a dictionary
+    # with transition_specification["if_depth"] as key,
     # where the value is the number of branches the "if" has.
     action_target_array_of_state = {}
-    branchnumber_array_of_state = {}
+    branch_counter_array_of_state = {}
     action_target_array = {}
-    branchnumber_array = {}
+    branch_counter_array = {}
     state_name = None
     next_actions_will_be_executed_for_sure = False
     for transition_specification in transition_specifications:
@@ -291,21 +295,21 @@ def _create_action_and_branch_array_for_each_if_construct(transition_specificati
         if transition_specification["command"] == "when":
             if action_target_array_of_state and state_name is not None:  # The analysis of a state is ready.
                 action_target_array[state_name] = action_target_array_of_state
-                branchnumber_array[state_name] = branchnumber_array_of_state
+                branch_counter_array[state_name] = branch_counter_array_of_state
                 action_target_array_of_state = {}
-                branchnumber_array_of_state = {}
+                branch_counter_array_of_state = {}
             state_name = transition_specification["state_name"]  # start new analysis
         elif transition_specification["command"] == "action":
-            if_identifier = transition_specification["if_identifier"]
-            if if_identifier not in action_target_array_of_state:
-                action_target_array_of_state[if_identifier] = []
+            if_depth = transition_specification["if_depth"]
+            if if_depth not in action_target_array_of_state:
+                action_target_array_of_state[if_depth] = []
             # Create a copy because later on the list transition_specification["actions"] is modified and
             # would modify if_array also:
             copy_of_actions = []
             for entry in transition_specification["actions"]:
                 copy_of_actions.append(entry)
             # For each branch (possible paths available after the "if") add the actions executed in this branch:
-            action_target_array_of_state[if_identifier].append(
+            action_target_array_of_state[if_depth].append(
                 {
                     "actions": copy_of_actions,
                     "target": transition_specification["target"],
@@ -314,60 +318,61 @@ def _create_action_and_branch_array_for_each_if_construct(transition_specificati
             )
             next_actions_will_be_executed_for_sure = False
         elif transition_specification["command"] == "endif":
-            branchnumber_array_of_state[transition_specification["if_identifier"]] = transition_specification[
-                "branch_number"
+            branch_counter_array_of_state[transition_specification["if_depth"]] = transition_specification[
+                "branch_counter"
             ]
             next_actions_will_be_executed_for_sure = False
     if (
         action_target_array_of_state and state_name is not None
     ):  # Needed for the last state, as no new "when" will come after the last state.
         action_target_array[state_name] = action_target_array_of_state
-        branchnumber_array[state_name] = branchnumber_array_of_state
-    return action_target_array, branchnumber_array
+        branch_counter_array[state_name] = branch_counter_array_of_state
+    return action_target_array, branch_counter_array
 
 
-def _action_is_present_in_each_branch(action, state_name, if_identifier, action_target_array) -> bool:
+def _action_is_present_in_each_branch(action, state_name, if_depth, action_target_array) -> bool:
     # Returns only True, when the action is present in each branch and a default branch exists.
     default_branch_exists = False
-    for action_target_dict_check in action_target_array[state_name][if_identifier]:
+    for action_target_dict_check in action_target_array[state_name][if_depth]:
         if action_target_dict_check["executed_for_sure"]:
             default_branch_exists = True
         if action not in action_target_dict_check["actions"]:
             return False
+        # for single_action in action_target_dict_check["actions"]:
+        #     if single_action["moved_action"] != action["moved_action"]:
+        #         return False
     return default_branch_exists
 
 
-def _remove_action_from_branches(transition_specifications, state_name, if_identifier, action, moved_actions) -> int:
+def _remove_action_from_branches(transition_specifications, state_name, if_depth, action, moved_actions) -> int:
     index_of_if_in_transition_specifications = 0
     for index, transition_specification in enumerate(transition_specifications):
-        if (
-            transition_specification["state_name"] == state_name
-            and transition_specification["if_identifier"] == if_identifier
-        ):
+        if transition_specification["state_name"] == state_name and transition_specification["if_depth"] == if_depth:
             if transition_specification["command"] == "if":
                 index_of_if_in_transition_specifications = index
             elif transition_specification["command"] == "action":
-                if action in transition_specification["actions"]:
-                    # This creates problems:
-                    # transition_specification["actions"].remove(action)
-                    # The reason is, that when the entry "action" is removed from the list, also in
-                    # another transition_specification["actions"] a entry disappears, if it is identical to action.
-                    # The solution is to create a new list:
-                    transition_specification["actions"] = [
-                        x for x in transition_specification["actions"] if x != action
-                    ]
+                # This creates problems:
+                # transition_specification["actions"].remove(single_action)
+                # The reason is, that when the entry "action" is removed from the list, also in
+                # another transition_specification["actions"] a entry disappears, if it is identical to action.
+                # The solution is to create a new list:
+                transition_specification["actions"] = [x for x in transition_specification["actions"] if x != action]
+                #  [x for x in transition_specification["actions"] if x["moved_action"] != action["moved_action"]]
                 if action not in moved_actions:
                     moved_actions.append(action)
+                # action_present = False
+                # for moved_single_action in moved_actions:
+                #     if moved_single_action["moved_action"] == action["moved_action"]:
+                #         action_present = True
+                # if not action_present:
+                #     moved_actions.append(action)
     return index_of_if_in_transition_specifications
 
 
-def _remove_target_from_branches(transition_specifications, state_name, if_identifier, target, moved_target) -> int:
+def _remove_target_from_branches(transition_specifications, state_name, if_depth, target, moved_target) -> int:
     index_of_if_in_transition_specifications = 0
     for index, transition_specification in enumerate(transition_specifications):
-        if (
-            transition_specification["state_name"] == state_name
-            and transition_specification["if_identifier"] == if_identifier
-        ):
+        if transition_specification["state_name"] == state_name and transition_specification["if_depth"] == if_depth:
             if transition_specification["command"] == "if":
                 index_of_if_in_transition_specifications = index
             elif transition_specification["command"] == "action" and target == transition_specification["target"]:
@@ -377,8 +382,8 @@ def _remove_target_from_branches(transition_specifications, state_name, if_ident
     return index_of_if_in_transition_specifications
 
 
-def _target_is_present_in_each_branch(target, state_name, if_identifier, action_target_array) -> bool:
-    for action_target_dict_check in action_target_array[state_name][if_identifier]:
+def _target_is_present_in_each_branch(target, state_name, if_depth, action_target_array) -> bool:
+    for action_target_dict_check in action_target_array[state_name][if_depth]:
         if target != action_target_dict_check["target"]:
             return False
     return True
