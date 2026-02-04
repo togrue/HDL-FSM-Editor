@@ -7,6 +7,7 @@ import tkinter as tk
 
 import canvas_editing
 import move_handling
+import move_handling_canvas_item
 import move_handling_initialization
 import undo_handling
 from elements import condition_action, transition
@@ -29,6 +30,7 @@ def move_finish(event, move_list, move_do_funcid) -> None:
     project_manager.canvas.unbind("<ButtonRelease-1>")
     project_manager.canvas.unbind("<Motion>", move_do_funcid)
     project_manager.canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
+    move_handling_canvas_item.MoveHandlingCanvasItem.transition_insertion_runs = False
 
     if transition_start_or_end_point_is_moved:
         transition_id = move_list[0][0]

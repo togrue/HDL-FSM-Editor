@@ -9,6 +9,7 @@ import tkinter as tk
 
 import canvas_editing
 import move_handling
+import move_handling_canvas_item
 import move_handling_finish
 from elements import transition
 from project_manager import project_manager
@@ -41,6 +42,12 @@ def move_initialization(event) -> None:
     if move_list:
         # The check for an empty movelist is needed, because move_finish accesses always move_list[0].
 
+        # When the user ends moving at an illegal place, the moving continues until he clicks Button-1 again.
+        # This second Button-1 click shall not start a new moving, so the binding for Button-1 is removed here:
+        project_manager.canvas.unbind("<Button-1>")
+        # The second Button-1 shall also not start a moving of canvas-items:
+        move_handling_canvas_item.MoveHandlingCanvasItem.transition_insertion_runs = True
+
         # With first=True the position of the cursor relativly to the anchor point of the object to move is
         # determined and stored. This distance is afterwards at each cursor movement added to the event coordinates
         # in order to get the new coordinates of the anchor point.
@@ -59,11 +66,6 @@ def move_initialization(event) -> None:
                 release_event, move_list, move_do_funcid
             ),
         )  # move_finish must unbind move_do from "Motion", so it needs the function id.
-
-        # From Button-1 the callback "move_initialization()" must be removed, because the user will
-        # use Button-1 a second time, when move_finish() did not accept the location of the ButtonRelease-1 and this
-        # second time shall not start a new moving:
-        project_manager.canvas.unbind("<Button-1>")
 
 
 def _any_item_is_not_allowed_to_be_moved(items_near_mouse_click_location):
