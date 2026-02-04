@@ -101,9 +101,13 @@ def _create_a_list_of_overlapping_items_near_the_mouse_click_location(event_x, e
         event_y + project_manager.state_radius / 4,
     )
     for overlapping_item in overlapping_items:
-        if "grid_line" not in project_manager.canvas.gettags(
-            overlapping_item
-        ) and "polygon_for_move" not in project_manager.canvas.gettags(overlapping_item):
+        overlap_tag = project_manager.canvas.gettags(overlapping_item)[0]
+        if (
+            "grid_line" not in project_manager.canvas.gettags(overlapping_item)
+            and "polygon_for_move" not in project_manager.canvas.gettags(overlapping_item)
+            and not (overlap_tag.startswith("transition") and overlap_tag.endswith("priority"))
+            and not (overlap_tag.startswith("transition") and overlap_tag.endswith("rectangle"))
+        ):
             list_of_overlapping_items.append(overlapping_item)
     return list_of_overlapping_items
 
