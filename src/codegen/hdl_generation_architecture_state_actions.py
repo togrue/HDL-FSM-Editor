@@ -13,15 +13,15 @@ from .exceptions import GenerationError
 
 
 def create_state_action_process(file_name, file_line_number, state_tag_list_sorted) -> tuple:
+    """Returns the state action process as string and the updated file_line_number."""
     default_state_actions = _get_default_state_actions()
     state_action_list = _create_state_action_list(
         state_tag_list_sorted
     )  # Each entry is : ["state_name", "state_actions", "state_action_reference"]
     if default_state_actions == "" and _state_actions_contain_only_null_for_each_state(state_action_list):
         return "", file_line_number
-    all_possible_sensitivity_entries = (
-        _create_a_list_with_all_possible_sensitivity_entries()
-    )  # from Interface/Ports and from Internals/Architecture Declarations
+    # Get from Interface/Ports and from Internals/Architecture Declarations:
+    all_possible_sensitivity_entries = _create_a_list_with_all_possible_sensitivity_entries()
     variable_declarations = hdl_generation_library.get_text_from_text_widget(
         project_manager.internals_process_combinatorial_text
     )
@@ -220,12 +220,14 @@ def _create_sensitivity_list(state_action_list, default_state_actions, all_possi
         default_state_actions
     )
     default_state_actions_separated = _remove_left_hand_sides(default_state_actions_separated)
+    default_state_actions_separated = _remove_record_element_names(default_state_actions_separated)
     for entry in all_possible_sensitivity_entries:
         if " " + entry + " " in default_state_actions_separated:
             sensitivity_list += entry + ", "
     for list_entry in state_action_list:
         state_action_separated = hdl_generation_library.convert_hdl_lines_into_a_searchable_string(list_entry[1])
         state_action_separated = _remove_left_hand_sides(state_action_separated)
+        state_action_separated = _remove_record_element_names(state_action_separated)
         for entry in all_possible_sensitivity_entries:
             if " " + entry + " " in state_action_separated and entry + ", " not in sensitivity_list:
                 sensitivity_list += entry + ", "
@@ -241,6 +243,11 @@ def _remove_left_hand_sides(state_action_text) -> str:
     state_action_text = re.sub(" else ", " ; ", state_action_text, flags=re.I)
     # Replace the left sides:
     state_action_text = re.sub(r";\s*[^\s]+\s*<=", "; <=", state_action_text)
+    return state_action_text
+
+
+def _remove_record_element_names(state_action_text) -> str:
+    state_action_text = re.sub(r"\..*?\s", " ", state_action_text)
     return state_action_text
 
 
@@ -270,6 +277,9 @@ def _create_when_entry(state_action_entry) -> str:
 
 
 def get_all_readable_ports(all_port_declarations, check) -> list:
+    """Returns a list with the names of all readable ports.
+    If check is True, an error is raised if an illegal port declaration is found.
+    """
     port_declaration_list = _create_list_of_declarations(all_port_declarations)
     readable_port_list = []
     for declaration in port_declaration_list:
@@ -283,6 +293,7 @@ def get_all_readable_ports(all_port_declarations, check) -> list:
 
 
 def get_all_writable_ports(all_port_declarations) -> list:
+    """Returns a list with the names of all writable ports."""
     port_declaration_list = _create_list_of_declarations(all_port_declarations)
     writeable_port_list = []
     for declaration in port_declaration_list:
@@ -303,6 +314,7 @@ def _create_list_of_declarations(all_declarations):
 
 
 def get_all_port_types(all_port_declarations) -> list:
+    """Returns a list with the type-names of all ports."""
     port_declaration_list = _create_list_of_declarations(all_port_declarations)
     port_types_list = []
     for declaration in port_declaration_list:
@@ -321,6 +333,7 @@ def get_all_port_types(all_port_declarations) -> list:
 
 
 def get_all_generic_names(all_generic_declarations) -> list:
+    """Returns a list with the names of all generics."""
     generic_declaration_list = _create_list_of_declarations(all_generic_declarations)
     generic_name_list = []
     for declaration in generic_declaration_list:
@@ -446,6 +459,8 @@ def _add_blank_at_the_beginning_of_each_line(signal_declaration_list) -> list:
 
 
 def _get_the_signal_names(declaration):
+    if " constant " in declaration:
+        return ""
     signal_names = re.sub(":.*", "", declaration)
     signal_names_alone = re.sub(" signal ", "", signal_names, flags=re.I)
     signal_names_without_blanks = re.sub(" ", "", signal_names_alone)
