@@ -94,6 +94,13 @@ def _create_a_list_of_overlapping_items_near_the_mouse_click_location(event_x, e
         if project_manager.canvas.type(overlapping_item) == "oval":
             # The cursor is inside a state, in this case moving shall use MoveHandlingCanvasItem.
             return []
+        overlap_tag = project_manager.canvas.gettags(overlapping_item)[0]
+        if overlap_tag.startswith("transition") and overlap_tag.endswith("priority"):
+            # The cursor is inside a priority-rectangle, no moving in this case
+            return []
+        if overlap_tag.startswith("transition") and overlap_tag.endswith("rectangle"):
+            # The cursor is inside a priority-rectangle, no moving in this case
+            return []
     overlapping_items = project_manager.canvas.find_overlapping(
         event_x - project_manager.state_radius / 4,
         event_y - project_manager.state_radius / 4,
@@ -102,12 +109,9 @@ def _create_a_list_of_overlapping_items_near_the_mouse_click_location(event_x, e
     )
     for overlapping_item in overlapping_items:
         overlap_tag = project_manager.canvas.gettags(overlapping_item)[0]
-        if (
-            "grid_line" not in project_manager.canvas.gettags(overlapping_item)
-            and "polygon_for_move" not in project_manager.canvas.gettags(overlapping_item)
-            and not (overlap_tag.startswith("transition") and overlap_tag.endswith("priority"))
-            and not (overlap_tag.startswith("transition") and overlap_tag.endswith("rectangle"))
-        ):
+        if "grid_line" not in project_manager.canvas.gettags(
+            overlapping_item
+        ) and "polygon_for_move" not in project_manager.canvas.gettags(overlapping_item):
             list_of_overlapping_items.append(overlapping_item)
     return list_of_overlapping_items
 
