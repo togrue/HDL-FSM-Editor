@@ -150,7 +150,7 @@ class CustomText(tk.Text):
         if self.text_type != "log":
             if self.format_after_id is not None:
                 self.after_cancel(self.format_after_id)
-            self.format_after_id = self.after(300, self.format)
+            self.format_after_id = self.after(200, self.format)
 
     def format(self) -> None:
         text = self.get("1.0", tk.END)
@@ -350,7 +350,7 @@ class CustomText(tk.Text):
         if project_manager.language.get() == "VHDL" and self._text_is_global_actions_combinatorial():
             # "processes" are possible in this text, which might contain "uncomplete" variable usage:
             text = self._add_uncomplete_vhdl_variables_to_read_or_written_variables_of_all_windows(text)
-        text = self._add_read_constants_from_case_when_to_read_variables_of_all_windows(text) # Keywords are used here.
+        text = self._add_read_constants_from_case_when_to_read_variables_of_all_windows(text)  # Keywords are used here.
         text = self._remove_keywords(text)
         text = self._remove_vhdl_attributes(text)
         if project_manager.language.get() == "VHDL":
@@ -719,7 +719,7 @@ class CustomText(tk.Text):
                 if match:
                     if match.start() == match.end():
                         break
-                    if match.group(1)!="others": 
+                    if match.group(1) != "others":
                         CustomText.read_variables_of_all_windows[self] += [match.group(1)]
                     text = text[: match.start()] + text[match.end() :]  # remove match from text
                 else:
