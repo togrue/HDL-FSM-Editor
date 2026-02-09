@@ -13,6 +13,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Fixed
 ## Security
 
+## [6.1]
+## Added
+## Changed
+Small feedback transitions now can be better modified by the mouse-pointer.
+## Deprecated
+## Removed
+## Fixed
+A second accidental mouse click at finishing a transition-end-point moving caused strange moving of other items.
+Wrong HDL could be generated, if all leaving transitions at a connector had conditions.
+Transition adding did not work when the design was zoomed until the grid was deactivated.
+When VHDL record elements are read, sometimes incomplete sensitivity lists were generated in VHDL.
+## Security
+
 ## [6.0]
 ## Added
 ## Changed
