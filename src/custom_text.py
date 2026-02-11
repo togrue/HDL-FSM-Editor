@@ -376,6 +376,12 @@ class CustomText(tk.Text):
                 flags=re.I,
             )
             text = re.sub(
+                r"\|",
+                "",
+                text,
+                flags=re.I,
+            )  # remove remaining "|" of a "case"-statement:
+            text = re.sub(
                 # remove remaining "else" of an if-clause (left hand side):
                 " else | else$|^else |^else$",
                 "",
@@ -527,8 +533,8 @@ class CustomText(tk.Text):
                 if match:
                     if match.start() == match.end():
                         break
-                    process = (
-                        process[: match.start()] + " " + process[match.end() :]
+                    process = (  # Insert $dummy$ to keep "case <variable> is" as a complete statement.
+                        process[: match.start()] + " $dummy$ " + process[match.end() :]
                     )  # remove assigned variable-name from process
                     read_variables.append(variable_name)
                 else:
