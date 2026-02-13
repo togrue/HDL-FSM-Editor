@@ -105,23 +105,19 @@ class TabDiagram:
 
         # Bindings of the drawing area:
         project_manager.root.bind_all("<Escape>", lambda event: canvas_modify_bindings.switch_to_move_mode())
-        new_state_button.bind("<Button-1>", lambda event: canvas_modify_bindings.switch_to_state_insertion())
-        new_transition_button.bind("<Button-1>", lambda event: canvas_modify_bindings.switch_to_transition_insertion())
-        new_connector_button.bind("<Button-1>", lambda event: canvas_modify_bindings.switch_to_connector_insertion())
-        reset_entry_button.bind("<Button-1>", lambda event: canvas_modify_bindings.switch_to_reset_entry_insertion())
-        state_action_default_button.bind(
-            "<Button-1>", lambda event: canvas_modify_bindings.switch_to_state_action_default_insertion()
+        new_state_button.config(command=canvas_modify_bindings.switch_to_state_insertion)
+        new_transition_button.config(command=canvas_modify_bindings.switch_to_transition_insertion)
+        new_connector_button.config(command=canvas_modify_bindings.switch_to_connector_insertion)
+        reset_entry_button.config(command=canvas_modify_bindings.switch_to_reset_entry_insertion)
+        state_action_default_button.config(command=canvas_modify_bindings.switch_to_state_action_default_insertion)
+        global_action_clocked_button.config(command=canvas_modify_bindings.switch_to_global_action_clocked_insertion)
+        global_action_combinatorial_button.config(
+            command=canvas_modify_bindings.switch_to_global_action_combinatorial_insertion
         )
-        global_action_clocked_button.bind(
-            "<Button-1>", lambda event: canvas_modify_bindings.switch_to_global_action_clocked_insertion()
-        )
-        global_action_combinatorial_button.bind(
-            "<Button-1>", lambda event: canvas_modify_bindings.switch_to_global_action_combinatorial_insertion()
-        )
-        view_area_button.bind("<Button-1>", lambda event: canvas_modify_bindings.switch_to_view_area())
-        view_all_button.bind("<Button-1>", lambda event: canvas_editing.view_all())
-        plus_button.bind("<Button-1>", lambda event: canvas_editing.zoom_plus())
-        minus_button.bind("<Button-1>", lambda event: canvas_editing.zoom_minus())
+        view_area_button.config(command=canvas_modify_bindings.switch_to_view_area)
+        view_all_button.config(command=canvas_editing.view_all)
+        plus_button.config(command=canvas_editing.zoom_plus)
+        minus_button.config(command=canvas_editing.zoom_minus)
 
         canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete())
         canvas.bind("<Button-1>", move_handling_initialization.move_initialization)

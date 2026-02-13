@@ -33,7 +33,7 @@ class TabLog:
 
         log_frame_clear_button = ttk.Button(log_frame_button_frame, takefocus=False, text="Clear", style="Find.TButton")
         log_frame_clear_button.grid(row=0, column=0, sticky=tk.W)
-        log_frame_clear_button.bind("<Button-1>", self._clear_log_tab)
+        log_frame_clear_button.configure(command=self._clear_log_tab)
 
         log_frame_regex_button = ttk.Button(
             log_frame_button_frame, takefocus=False, text="Define Regex for Hyperlinks", style="Find.TButton"
@@ -53,7 +53,7 @@ class TabLog:
         self._debug_active = tk.IntVar()
         self._debug_active.set(1)  # 1: inactive, 2: active
 
-    def _clear_log_tab(self, _) -> None:
+    def _clear_log_tab(self) -> None:
         project_manager.log_frame_text.config(state=tk.NORMAL)
         project_manager.log_frame_text.delete("1.0", tk.END)
         project_manager.log_frame_text.config(state=tk.DISABLED)
