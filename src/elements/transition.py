@@ -618,12 +618,14 @@ class TransitionLine:
                         transition_id=transition_id,
                         canvas_id_of_start_item=canvas_id,
                         transition_draw_funcid=transition_draw_funcid,
-                        transition_start_object_tag=transition_start_object_tag: cls._handle_next_added_transition_point(
-                            event,
-                            transition_id,
-                            canvas_id_of_start_item,
-                            transition_draw_funcid,
-                            transition_start_object_tag,
+                        transition_start_object_tag=transition_start_object_tag: (
+                            cls._handle_next_added_transition_point(
+                                event,
+                                transition_id,
+                                canvas_id_of_start_item,
+                                transition_draw_funcid,
+                                transition_start_object_tag,
+                            )
                         ),
                     )
                     project_manager.root.bind_all(

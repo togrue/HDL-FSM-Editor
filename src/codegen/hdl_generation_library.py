@@ -511,7 +511,8 @@ def _merge_trace_array(trace_array) -> list:
                             raise GenerationError(
                                 "Error",
                                 [
-                                    f"There is a transition starting at state {trace[0]['state_name']} to state {target_at_error} which will never fire,",
+                                    f"There is a transition starting at state {trace[0]['state_name']} "
+                                    f"to state {target_at_error} which will never fire,",
                                     "therefore the generated HDL may be corrupted.",
                                 ],
                             )
@@ -759,7 +760,8 @@ def _check_for_equal_priorities(transition_tags_and_priority_sorted, state_tag) 
             raise GenerationError(
                 "Warning",
                 [
-                    f"Two outgoing transition of {state_name} have the same priority with value {transition_tags_and_priority_sorted[n + 1][1]}."
+                    f"Two outgoing transition of {state_name} have the same priority "
+                    f"with value {transition_tags_and_priority_sorted[n + 1][1]}."
                 ],
             )
 
