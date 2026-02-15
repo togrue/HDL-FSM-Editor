@@ -305,13 +305,16 @@ def _save_window_item(design_dictionary: dict[str, Any], canvas_id: int) -> None
         )
     elif canvas_id in state_comment.StateComment.ref_dict:
         ref = state_comment.StateComment.ref_dict[canvas_id]
-        design_dictionary["window_state_comment"].append(
-            [coords, ref.text_id.get("1.0", f"{tk.END}-1 chars"), tags]
-        )
+        design_dictionary["window_state_comment"].append([coords, ref.text_id.get("1.0", f"{tk.END}-1 chars"), tags])
     elif canvas_id in condition_action.ConditionAction.ref_dict:
         ref = condition_action.ConditionAction.ref_dict[canvas_id]
         design_dictionary["window_condition_action_block"].append(
-            [coords, ref.condition_id.get("1.0", f"{tk.END}-1 chars"), ref.action_id.get("1.0", f"{tk.END}-1 chars"), tags]
+            [
+                coords,
+                ref.condition_id.get("1.0", f"{tk.END}-1 chars"),
+                ref.action_id.get("1.0", f"{tk.END}-1 chars"),
+                tags,
+            ]
         )
     elif canvas_id in global_actions_clocked.GlobalActionsClocked.ref_dict:
         ref = global_actions_clocked.GlobalActionsClocked.ref_dict[canvas_id]
@@ -338,8 +341,27 @@ def _save_window_item(design_dictionary: dict[str, Any], canvas_id: int) -> None
 
 
 def open_file_with_name(read_filename, is_script_mode) -> None:
-    global _write_data_creator_ref
-    replaced_read_filename = read_filename
+    replaced_read_filename = _resolve_read_filename(read_filename, is_script_mode)
+    project_manager.root.config(cursor="watch")
+    try:
+        _do_load_file(read_filename, replaced_read_filename, is_script_mode)
+    except FileNotFoundError:
+        project_manager.root.config(cursor="arrow")
+        _show_load_error(
+            is_script_mode,
+            "Error: File " + read_filename + " could not be found.",
+            f"File {read_filename} could not be found.",
+        )
+    except ValueError:  # includes JSONDecodeError
+        project_manager.root.config(cursor="arrow")
+        _show_load_error(
+            is_script_mode,
+            "Error: File " + read_filename + " has wrong format.",
+            f"File \n{read_filename}\nhas wrong format.",
+        )
+
+
+def _resolve_read_filename(read_filename: str, is_script_mode: bool) -> str:
     if os.path.isfile(f"{read_filename}.tmp") and not is_script_mode:
         answer = messagebox.askyesno(
             "HDL-FSM-Editor",
@@ -347,58 +369,56 @@ def open_file_with_name(read_filename, is_script_mode) -> None:
             "This file remains after a HDL-FSM-Editor crash and contains all latest changes.\n"
             "Shall this file be read?",
         )
-        if answer is True:
-            replaced_read_filename = f"{read_filename}.tmp"
-    project_manager.root.config(cursor="watch")
-    try:
-        with open(replaced_read_filename, encoding="utf-8") as fileobject:
-            data = fileobject.read()
-        project_manager.current_file = read_filename
-        design_dictionary = json.loads(data)
-        if _write_data_creator_ref is None:
-            _write_data_creator_ref = write_data_creator.WriteDataCreator(project_manager.state_radius)
-        _write_data_creator_ref.store_as_compare_object(design_dictionary)
-        _load_design_from_dict(design_dictionary)
-        if os.path.isfile(f"{read_filename}.tmp") and not is_script_mode:
-            os.remove(f"{read_filename}.tmp")
+        if answer:
+            return f"{read_filename}.tmp"
+    return read_filename
 
-        # Final cleanup
-        undo_handling.stack = []
-        # Loading the design created by "traces" some stack-entries, which are removed here:
-        undo_handling.stack_write_pointer = 0
-        project_manager.undo_button.config(state="disabled")
 
-        # Put the read design into stack[0]:
-        undo_handling.design_has_changed()  # Initialize the stack with the read design.
-        project_manager.root.update()
-        dir_name, file_name = os.path.split(read_filename)
-        project_manager.root.title(f"{file_name} ({dir_name})")
-        if not is_script_mode:
-            update_ref = update_hdl_tab.UpdateHdlTab(
-                design_dictionary["language"],
-                design_dictionary["number_of_files"],
-                read_filename,
-                design_dictionary["generate_path"],
-                design_dictionary["modulename"],
-            )
-            project_manager.date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
-            project_manager.date_of_hdl_file2_shown_in_hdl_tab = update_ref.get_date_of_hdl_file2()
-            project_manager.notebook.show_tab(GuiTab.DIAGRAM)
-            project_manager.root.after_idle(canvas_editing.view_all)
-        project_manager.root.config(cursor="arrow")
-        if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
-            if is_script_mode:
-                print("Error, the database is corrupt. Do not use this file.")
-            else:
-                messagebox.showerror("Error", "The database is corrupt.\nDo not use this file.\nSee details at STDOUT.")
-    except FileNotFoundError:
-        project_manager.root.config(cursor="arrow")
-        if is_script_mode:
-            print("Error: File " + read_filename + " could not be found.")
-        else:
-            messagebox.showerror("Error", f"File {read_filename} could not be found.")
-    except ValueError:  # includes JSONDecodeError
-        project_manager.root.config(cursor="arrow")
+def _show_load_error(is_script_mode: bool, print_msg: str, msgbox_msg: str) -> None:
+    if is_script_mode:
+        print(print_msg)
+    else:
+        messagebox.showerror("Error", msgbox_msg)
+
+
+def _do_load_file(read_filename: str, replaced_read_filename: str, is_script_mode: bool) -> None:
+    global _write_data_creator_ref
+    with open(replaced_read_filename, encoding="utf-8") as fileobject:
+        data = fileobject.read()
+    project_manager.current_file = read_filename
+    design_dictionary = json.loads(data)
+    if _write_data_creator_ref is None:
+        _write_data_creator_ref = write_data_creator.WriteDataCreator(project_manager.state_radius)
+    _write_data_creator_ref.store_as_compare_object(design_dictionary)
+    _load_design_from_dict(design_dictionary)
+    if os.path.isfile(f"{read_filename}.tmp") and not is_script_mode:
+        os.remove(f"{read_filename}.tmp")
+
+    # Final cleanup
+    undo_handling.stack = []
+    # Loading the design created by "traces" some stack-entries, which are removed here:
+    undo_handling.stack_write_pointer = 0
+    project_manager.undo_button.config(state="disabled")
+
+    # Put the read design into stack[0]:
+    undo_handling.design_has_changed()  # Initialize the stack with the read design.
+    project_manager.root.update()
+    dir_name, file_name = os.path.split(read_filename)
+    project_manager.root.title(f"{file_name} ({dir_name})")
+    if not is_script_mode:
+        update_ref = update_hdl_tab.UpdateHdlTab(
+            design_dictionary["language"],
+            design_dictionary["number_of_files"],
+            read_filename,
+            design_dictionary["generate_path"],
+            design_dictionary["modulename"],
+        )
+        project_manager.date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
+        project_manager.date_of_hdl_file2_shown_in_hdl_tab = update_ref.get_date_of_hdl_file2()
+        project_manager.notebook.show_tab(GuiTab.DIAGRAM)
+        project_manager.root.after_idle(canvas_editing.view_all)
+    project_manager.root.config(cursor="arrow")
+    if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
         if is_script_mode:
             print("Error: File " + read_filename + " has wrong format.")
         else:
