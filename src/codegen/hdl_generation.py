@@ -4,6 +4,7 @@ Methods needed for HDL generation
 
 import os
 import re
+import traceback
 import tkinter as tk
 from datetime import datetime
 from tkinter import messagebox
@@ -38,9 +39,6 @@ def run_hdl_generation(write_to_file, is_script_mode: bool = False) -> bool:
     except Exception:
         if not is_script_mode:
             messagebox.showerror("Unexpected Error", "An unexpected error occurred.\nSee details at STDOUT.")
-        # Print stack trace
-        import traceback
-
         print(traceback.format_exc())
 
     return success
