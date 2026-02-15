@@ -40,9 +40,9 @@ class ConditionAction:
         self.difference_y = 0
         self.action_text = action
         self.condition_text = condition
-
+        self.borderwidth = 0
         self.frame_id = ttk.Frame(
-            project_manager.canvas, relief=tk.FLAT, borderwidth=0, padding=padding, style="Window.TFrame"
+            project_manager.canvas, relief=tk.FLAT, borderwidth=self.borderwidth, padding=padding, style="Window.TFrame"
         )
         self.condition_label = ttk.Label(
             self.frame_id,
@@ -164,8 +164,16 @@ class ConditionAction:
         # The binding for 'Motion' must be added with '+', as 'store_mouse_position' is also bound to 'Motion':
         self.canvas_enter_func_id = project_manager.canvas.bind("<Motion>", lambda event: self._deactivate_frame(), "+")
 
+    def _set_borderwidth(self, borderwidth: int, style: str) -> None:
+        diff = self.borderwidth - borderwidth
+        self.borderwidth = borderwidth
+        self.frame_id.configure(borderwidth=borderwidth, style=style)
+        # Compensate for the borderwidth of the frame.
+        pos = project_manager.canvas.coords(self.window_id)
+        project_manager.canvas.coords(self.window_id, (pos[0] + diff, pos[1]))
+
     def _select_window(self) -> None:
-        self.frame_id.configure(borderwidth=1, style="WindowSelected.TFrame")
+        self._set_borderwidth(1, "WindowSelected.TFrame")
         self.condition_label.configure(style="WindowSelected.TLabel")
         self.action_label.configure(style="WindowSelected.TLabel")
 
@@ -179,7 +187,7 @@ class ConditionAction:
 
     def _deselect_window(self) -> None:
         project_manager.canvas.focus_set()  # "unfocus" the Text, when the mouse leaves the text.
-        self.frame_id.configure(borderwidth=0, style="Window.TFrame")
+        self._set_borderwidth(0, style="Window.TFrame")
         self.condition_label.configure(style="Window.TLabel")
         self.action_label.configure(style="Window.TLabel")
 
