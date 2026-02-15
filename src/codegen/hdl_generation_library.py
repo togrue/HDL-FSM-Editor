@@ -247,7 +247,6 @@ def _optimize_transition_specifications(transition_specifications) -> None:
                     ]
     if changes_were_implemented:
         _optimize_transition_specifications(transition_specifications)
-    return
 
 
 def _expand_transition_specifications_by_if_depth(transition_specifications) -> None:
