@@ -59,7 +59,7 @@ def save_as() -> None:
         initialfile=project_manager.module_name.get(),
         filetypes=(("HDL-FSM-Editor files", "*.hfe"), ("all files", "*.*")),
     )
-    if project_manager.current_file != () and project_manager.current_file != "":
+    if project_manager.current_file not in ((), ""):
         dir_name, file_name = os.path.split(project_manager.current_file)
         project_manager.root.title(f"{file_name} ({dir_name})")
         save_in_file(project_manager.current_file)
