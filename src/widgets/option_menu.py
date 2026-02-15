@@ -6,6 +6,8 @@ import tkinter as tk
 
 
 class OptionMenu(tk.Listbox):
+    """Custom listbox-based dropdown menu for selecting from items."""
+
     def __init__(self, master, items, *args, **kwargs) -> None:
         tk.Listbox.__init__(self, master, exportselection=False, background="grey", *args, **kwargs)
 

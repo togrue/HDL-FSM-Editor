@@ -19,6 +19,8 @@ class RegexConfig:
 
 
 class RegexDialog(simpledialog.Dialog):
+    """Dialog for configuring regex patterns for log parsing."""
+
     def __init__(
         self,
         parent: tk.Tk | tk.Toplevel,

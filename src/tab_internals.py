@@ -8,6 +8,8 @@ from project_manager import project_manager
 
 
 class TabInternals:
+    """Tab for editing internal packages and signals."""
+
     def __init__(self):
         # global self.paned_window_internals, self.internals_package_frame
 

@@ -11,6 +11,8 @@ from project_manager import project_manager
 
 
 class TabControl:
+    """Control panel for project configuration (module name, language, paths, etc.)."""
+
     def __init__(self) -> None:
         control_frame = ttk.Frame(project_manager.notebook, takefocus=False)
         control_frame.grid(sticky=(tk.W, tk.E))
