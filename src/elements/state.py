@@ -14,7 +14,7 @@ import undo_handling
 from dialogs.color_changer import ColorChanger
 from elements import state_action, state_comment, transition
 from project_manager import project_manager
-from widgets.OptionMenu import OptionMenu
+from widgets.option_menu import OptionMenu
 
 
 class States:

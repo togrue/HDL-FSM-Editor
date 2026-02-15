@@ -31,7 +31,8 @@ from elements import (
 )
 from project_manager import project_manager
 
-_write_data_creator_ref = None  # Nur lokal verwendet, kann in Attrbute umgewandelt werden.
+# Pylint expects this to be a constant with uppercase naming.
+_write_data_creator_ref = None  # pylint: disable=invalid-name # module-level mutable ref
 
 
 def ask_save_unsaved_changes(title) -> str:

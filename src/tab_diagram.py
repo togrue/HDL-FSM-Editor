@@ -9,7 +9,7 @@ import move_handling_initialization
 import undo_handling
 from constants import GuiTab
 from project_manager import project_manager
-from widgets.OptionMenu import OptionMenu
+from widgets.option_menu import OptionMenu
 
 
 class TabDiagram:

@@ -19,7 +19,8 @@ from project_manager import project_manager
 from .exceptions import GenerationError
 from .list_separation_check import ListSeparationCheck
 
-last_line_number_of_file1 = 0
+# Pylint expects this to be a constant with uppercase naming.
+last_line_number_of_file1 = 0  # pylint: disable=invalid-name # module-level mutable
 
 
 def run_hdl_generation(write_to_file, is_script_mode: bool = False) -> bool:
