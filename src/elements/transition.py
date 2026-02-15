@@ -103,7 +103,7 @@ class TransitionLine:
 
     def _evaluate_menu(
         self,
-        event,
+        _event,
         window,
         listbox,
         menu_x,
@@ -209,7 +209,7 @@ class TransitionLine:
         if design_was_changed:
             undo_handling.design_has_changed()  # It must be waited until the window for the menu is deleted.
 
-    def _close_menu(self, event, window, listbox) -> None:
+    def _close_menu(self, _event, window, listbox) -> None:
         listbox.destroy()
         project_manager.canvas.delete(window)
 

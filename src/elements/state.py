@@ -130,7 +130,7 @@ class States:
                 transition.TransitionLine.extend_transition_to_state_middle_points(t[:-4])
                 transition.TransitionLine.shorten_to_state_border(t[:-4])
 
-    def _evaluate_menu(self, event, window, listbox, menu_x, menu_y) -> None:
+    def _evaluate_menu(self, _event, window, listbox, menu_x, menu_y) -> None:
         selected_entry = listbox.get(listbox.curselection())
         listbox.destroy()
         project_manager.canvas.delete(window)
