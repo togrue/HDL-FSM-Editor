@@ -59,20 +59,19 @@ def create_reset_condition_and_reset_action() -> list:
                 "to the state, which shall be reached by active reset.",
             ],
         )
-    else:
-        reference_to_reset_condition_custom_text = ref.condition_id
-        condition = reference_to_reset_condition_custom_text.get(
-            "1.0", tk.END + "-1 chars"
-        )  # without "return" at the end
-        all_reset_transition_tags = project_manager.canvas.gettags(reset_transition_tag)
-        target_state_name = _get_target_state_name(all_reset_transition_tags)
-        action = "state <= " + target_state_name + ";\n"
-        reference_to_reset_action_custom_text = ref.action_id
-        action_text = reference_to_reset_action_custom_text.get(
-            "1.0", tk.END
-        )  # action_text will always have a return as last character.
-        if action_text != "\n":  # check for empty line
-            action += action_text
+    reference_to_reset_condition_custom_text = ref.condition_id
+    condition = reference_to_reset_condition_custom_text.get(
+        "1.0", tk.END + "-1 chars"
+    )  # without "return" at the end
+    all_reset_transition_tags = project_manager.canvas.gettags(reset_transition_tag)
+    target_state_name = _get_target_state_name(all_reset_transition_tags)
+    action = "state <= " + target_state_name + ";\n"
+    reference_to_reset_action_custom_text = ref.action_id
+    action_text = reference_to_reset_action_custom_text.get(
+        "1.0", tk.END
+    )  # action_text will always have a return as last character.
+    if action_text != "\n":  # check for empty line
+        action += action_text
     return [condition, action, reference_to_reset_condition_custom_text, reference_to_reset_action_custom_text]
 
 
@@ -429,15 +428,14 @@ def _check_for_wrong_priorities(trace_array) -> None:
                         "This is not allowed and will corrupt the HDL.",
                     ],
                 )
-            else:
-                raise GenerationError(
-                    "Error in HDL-FSM-Editor",
-                    [
-                        f"A transition starting at state {trace_array[index][0]['state_name']}",
-                        "with no condition hides a transition with lower priority.",
-                        "This is not allowed and will corrupt the HDL.",
-                    ],
-                )
+            raise GenerationError(
+                "Error in HDL-FSM-Editor",
+                [
+                    f"A transition starting at state {trace_array[index][0]['state_name']}",
+                    "with no condition hides a transition with lower priority.",
+                    "This is not allowed and will corrupt the HDL.",
+                ],
+            )
 
 
 def _merge_trace_array(trace_array) -> list:
@@ -608,14 +606,13 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
                     " has no outgoing transition, therefore the generated HDL may be corrupted.",
                 ],
             )
-        else:
-            raise GenerationError(
-                "Warning",
-                [
-                    "There is a connector which has no outgoing transition,",
-                    "therefore the generated HDL may be corrupted.",
-                ],
-            )
+        raise GenerationError(
+            "Warning",
+            [
+                "There is a connector which has no outgoing transition,",
+                "therefore the generated HDL may be corrupted.",
+            ],
+        )
     for _, transition_tag in enumerate(outgoing_transition_tags):
         # Collect information about the transition:
         transition_target, transition_condition, transition_action, condition_action_reference = (

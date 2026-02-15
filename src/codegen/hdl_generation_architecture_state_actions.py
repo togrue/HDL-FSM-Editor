@@ -420,10 +420,9 @@ def _get_all_signals(all_signal_declarations) -> list:
                             "VHDL may be corrupted.",
                         ],
                     )
-                else:
-                    signals = _get_the_signal_names(declaration)
-                    if signals != "":
-                        signals_list.extend(signals.split(","))
+                signals = _get_the_signal_names(declaration)
+                if signals != "":
+                    signals_list.extend(signals.split(","))
     else:
         for declaration in signal_declaration_list_extended:
             if declaration != "" and not declaration.isspace():
@@ -440,13 +439,12 @@ def _get_all_signals(all_signal_declarations) -> list:
                             "Verilog may be corrupted.",
                         ],
                     )
-                else:
-                    declaration = re.sub(" reg ", " ", declaration, flags=re.I)
-                    declaration = re.sub(" wire ", " ", declaration, flags=re.I)
-                    declaration = re.sub(" logic ", " ", declaration, flags=re.I)
-                    declaration = re.sub(" \\[.*?\\]", " ", declaration, flags=re.I)
-                    if declaration != "":
-                        signals_list.extend(declaration.split(","))
+                declaration = re.sub(" reg ", " ", declaration, flags=re.I)
+                declaration = re.sub(" wire ", " ", declaration, flags=re.I)
+                declaration = re.sub(" logic ", " ", declaration, flags=re.I)
+                declaration = re.sub(" \\[.*?\\]", " ", declaration, flags=re.I)
+                if declaration != "":
+                    signals_list.extend(declaration.split(","))
     return signals_list
 
 
