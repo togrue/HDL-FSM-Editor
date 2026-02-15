@@ -208,8 +208,7 @@ def _indent_identically(character, actual_list) -> list:
     new_list = []
     for port_declaration in actual_list:
         index = port_declaration.find(character)
-        if index > max_index:
-            max_index = index
+        max_index = max(max_index, index)
     for port_declaration in actual_list:
         index = port_declaration.find(character)
         fill = " " * (max_index - index + 1) + character
