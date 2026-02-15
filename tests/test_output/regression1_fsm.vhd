@@ -1,5 +1,5 @@
 -- Filename: regression1_fsm.vhd
--- Created by HDL-FSM-Editor at Wed Aug 13 17:52:13 2025
+-- Created by HDL-FSM-Editor
 
 architecture fsm of regression1 is
     type t_state is (S1, S2, S3, S4, S5, S6, S7, S8, S9, S10,
