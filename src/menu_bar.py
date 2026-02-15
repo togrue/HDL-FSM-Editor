@@ -186,7 +186,7 @@ class MenuBar:
             action = file_handling.ask_save_unsaved_changes(title)
             if action == "cancel":
                 return
-            elif action == "save":
+            if action == "save":
                 file_handling.save()
                 # Check if save was successful (current_file is not empty)
                 if project_manager.current_file == "":

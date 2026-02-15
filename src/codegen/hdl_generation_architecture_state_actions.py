@@ -255,10 +255,9 @@ def _get_default_state_actions() -> str:
     item_ids = project_manager.canvas.find_withtag("state_actions_default")
     if item_ids == ():
         return ""
-    else:
-        ref = state_actions_default.StateActionsDefault.ref_dict[item_ids[0]]
-        comment = "--" if project_manager.language.get() == "VHDL" else "//"
-        return comment + " Default State Actions:\n" + ref.text_id.get("1.0", tk.END)
+    ref = state_actions_default.StateActionsDefault.ref_dict[item_ids[0]]
+    comment = "--" if project_manager.language.get() == "VHDL" else "//"
+    return comment + " Default State Actions:\n" + ref.text_id.get("1.0", tk.END)
 
 
 def _create_when_entry(state_action_entry) -> str:

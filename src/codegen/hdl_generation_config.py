@@ -47,19 +47,18 @@ class GenerationConfig:
         """Get the appropriate comment style for the current language"""
         if self.language == "VHDL":
             return "--"
-        else:  # Verilog, SystemVerilog
-            return "//"
+        # Verilog, SystemVerilog
+        return "//"
 
     def get_file_extension(self) -> str:
         """Get the appropriate file extension for the current language"""
         if self.language == "VHDL":
             return ".vhd"
-        elif self.language == "Verilog":
+        if self.language == "Verilog":
             return ".v"
-        elif self.language == "SystemVerilog":
+        if self.language == "SystemVerilog":
             return ".sv"
-        else:
-            raise ValueError(f"Unsupported language: {self.language}")
+        raise ValueError(f"Unsupported language: {self.language}")
 
     def get_output_files(self) -> list[str]:
         """
@@ -78,12 +77,11 @@ class GenerationConfig:
         if self.select_file_number == 1:
             # Single file
             return [f"{self.generate_path}/{self.module_name}.vhd"]
-        else:
-            # Two files: entity and architecture
-            return [
-                f"{self.generate_path}/{self.module_name}_e.vhd",
-                f"{self.generate_path}/{self.module_name}_fsm.vhd",
-            ]
+        # Two files: entity and architecture
+        return [
+            f"{self.generate_path}/{self.module_name}_e.vhd",
+            f"{self.generate_path}/{self.module_name}_fsm.vhd",
+        ]
 
     def get_primary_file(self) -> Optional[str]:
         """Get the primary output file path (first file in the list)"""

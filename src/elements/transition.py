@@ -584,12 +584,11 @@ class TransitionLine:
         delta1_y = delta1 * math.sin(phi)
         if y1 >= y0 and x1 >= x0:
             return [x0 + delta0_x * modify0, y0 + delta0_y * modify0, x1 - delta1_x * modify1, y1 - delta1_y * modify1]
-        elif y1 >= y0 and x1 < x0:
+        if y1 >= y0 and x1 < x0:
             return [x0 - delta0_x * modify0, y0 + delta0_y * modify0, x1 + delta1_x * modify1, y1 - delta1_y * modify1]
-        elif y1 < y0 and x1 >= x0:
+        if y1 < y0 and x1 >= x0:
             return [x0 + delta0_x * modify0, y0 - delta0_y * modify0, x1 - delta1_x * modify1, y1 + delta1_y * modify1]
-        else:
-            return [x0 - delta0_x * modify0, y0 - delta0_y * modify0, x1 + delta1_x * modify1, y1 + delta1_y * modify1]
+        return [x0 - delta0_x * modify0, y0 - delta0_y * modify0, x1 + delta1_x * modify1, y1 + delta1_y * modify1]
 
     @classmethod
     def transition_start(cls, event) -> None:

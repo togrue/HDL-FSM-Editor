@@ -96,7 +96,7 @@ def new_design() -> bool:
         action = ask_save_unsaved_changes(title)
         if action == "cancel":
             return False
-        elif action == "save":
+        if action == "save":
             save()
             # Check if save was successful (current_file is not empty)
             if project_manager.current_file == "":
