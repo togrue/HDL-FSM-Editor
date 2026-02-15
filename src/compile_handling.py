@@ -58,15 +58,15 @@ def _execute(command) -> bool:
         _insert_line_in_log(command_part + " ")
     _insert_line_in_log("\n")
     try:
-        process = subprocess.Popen(
+        with subprocess.Popen(
             command_array_new,
             text=True,  # Decoding is done by Popen.
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-        )
-        for line in process.stdout:  # Terminates when process.stdout is closed.
-            if line != "\n":  # VHDL report-statements cause empty lines which mess up the protocol.
-                _insert_line_in_log(line)
+        ) as process:
+            for line in process.stdout:  # Terminates when process.stdout is closed.
+                if line != "\n":  # VHDL report-statements cause empty lines which mess up the protocol.
+                    _insert_line_in_log(line)
     except FileNotFoundError:
         command_string = ""
         for word in command_array_new:
