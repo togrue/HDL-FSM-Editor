@@ -544,46 +544,46 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
     shift_visible_center_to_window_center(get_visible_center_as_string())
 
 
-def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
-    """Load all canvas elements including states, transitions, text, and windows."""
-    transition_ids = []
-    ids_of_rectangles_to_raise = []
-    priority_ids = []
-    hide_priority_rectangle_list = []
+def _single_outgoing_transition_id(tags: list[str]) -> str | None:
+    """Return transition id (without _start) if exactly one outgoing transition tag, else None."""
+    count = 0
     transition_identifier = ""
-    transition_dict = {}
-    state_comment_line_dictionary = {}
-    state_action_line_dictionary = {}
-    condition_action_line_dictionary = {}
+    for tag in tags:
+        if tag.startswith("transition") and tag.endswith("_start"):
+            transition_identifier = tag.replace("_start", "")
+            count += 1
+    return transition_identifier if count == 1 else None
 
-    # Load states
+
+def _load_canvas_states(design_dictionary: dict[str, Any]) -> list[str]:
+    """Load state elements; return list of single-outgoing transition ids to hide."""
+    hide_list = []
     for definition in design_dictionary["state"]:
         coords = definition[0]
         tags = definition[1]
         fill_color = definition[2] if len(definition) == 3 else constants.STATE_COLOR
-        number_of_outgoing_transitions = 0
-        for tag in tags:
-            if tag.startswith("transition") and tag.endswith("_start"):
-                transition_identifier = tag.replace("_start", "")
-                number_of_outgoing_transitions += 1
-        if number_of_outgoing_transitions == 1:
-            hide_priority_rectangle_list.append(transition_identifier)
+        single_id = _single_outgoing_transition_id(tags)
+        if single_id:
+            hide_list.append(single_id)
         state.States(coords, tags, "dummy", fill_color)
+    return hide_list
 
-    # Load polygons (reset symbols)
+
+def _load_canvas_polygons(design_dictionary: dict[str, Any]) -> list[str]:
+    """Load polygon (reset) elements; return list of single-outgoing transition ids to hide."""
+    hide_list = []
     for definition in design_dictionary["polygon"]:
         coords = definition[0]
         tags = definition[1]
         reset_entry.ResetEntry(coords, tags)
-        number_of_outgoing_transitions = 0
-        for tag in tags:
-            if tag.startswith("transition") and tag.endswith("_start"):
-                transition_identifier = tag.replace("_start", "")
-                number_of_outgoing_transitions += 1
-        if number_of_outgoing_transitions == 1:
-            hide_priority_rectangle_list.append(transition_identifier)
+        single_id = _single_outgoing_transition_id(tags)
+        if single_id:
+            hide_list.append(single_id)
+    return hide_list
 
-    # Load text elements
+
+def _load_canvas_text_elements(design_dictionary: dict[str, Any], transition_dict: dict[str, Any]) -> None:
+    """Load text elements (state names, reset text, priority numbers) into canvas and transition_dict."""
     for definition in design_dictionary["text"]:
         coords = definition[0]
         tags = definition[1]
@@ -605,7 +605,15 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
                         transition_dict[transition_tag] = {}
                     transition_dict[transition_tag]["prio-item"] = {"text": text}
 
-    # Load lines (transitions)
+
+def _load_canvas_lines(
+    design_dictionary: dict[str, Any],
+    state_comment_line_dictionary: dict[str, Any],
+    state_action_line_dictionary: dict[str, Any],
+    condition_action_line_dictionary: dict[str, Any],
+    transition_dict: dict[str, Any],
+) -> None:
+    """Load line elements into the given line dicts and transition_dict."""
     for definition in design_dictionary["line"]:
         coords = definition[0]
         tags = definition[1]
@@ -624,20 +632,47 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
                 transition_dict[tags[0]]["line-item"] = {"coords": coords, "tags": tags}
                 break
 
-    # Load rectangles (connector, priority-box)
+
+def _load_canvas_rectangles(design_dictionary: dict[str, Any]) -> list[str]:
+    """Load rectangle elements (connector, priority-box); return single-outgoing transition ids to hide."""
+    hide_list = []
     for definition in design_dictionary["rectangle"]:
         coords = definition[0]
         tags = definition[1]
         for t in tags:
             if t.startswith("connector"):
                 connector.ConnectorInstance(coords, tags)
-                number_of_outgoing_transitions = 0
-                for tag in tags:
-                    if tag.startswith("transition") and tag.endswith("_start"):
-                        transition_identifier = tag.replace("_start", "")
-                        number_of_outgoing_transitions += 1
-                if number_of_outgoing_transitions == 1:
-                    hide_priority_rectangle_list.append(transition_identifier)
+                single_id = _single_outgoing_transition_id(tags)
+                if single_id:
+                    hide_list.append(single_id)
+                # TODO: In all tracked FSM's there is just one connector per transition
+                # so we could likely add a break here.
+                # break
+    return hide_list
+
+
+def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
+    """Load all canvas elements including states, transitions, text, and windows."""
+    transition_ids = []
+    ids_of_rectangles_to_raise = []
+    priority_ids = []
+    hide_priority_rectangle_list: list[str] = []
+    transition_dict: dict[str, Any] = {}
+    state_comment_line_dictionary: dict[str, Any] = {}
+    state_action_line_dictionary: dict[str, Any] = {}
+    condition_action_line_dictionary: dict[str, Any] = {}
+
+    hide_priority_rectangle_list.extend(_load_canvas_states(design_dictionary))
+    hide_priority_rectangle_list.extend(_load_canvas_polygons(design_dictionary))
+    _load_canvas_text_elements(design_dictionary, transition_dict)
+    _load_canvas_lines(
+        design_dictionary,
+        state_comment_line_dictionary,
+        state_action_line_dictionary,
+        condition_action_line_dictionary,
+        transition_dict,
+    )
+    hide_priority_rectangle_list.extend(_load_canvas_rectangles(design_dictionary))
 
     _load_transitions_from_dict(transition_dict)
     _load_window_elements(
