@@ -126,11 +126,13 @@ class CustomText(CodeEditor):
             return None
 
     def replace_tabs_by_blanks(self) -> str:
-        self.insert(tk.INSERT, "    ")  # replace the Tab by 4 blanks.
+        """Insert 4 spaces instead of tkinter's tab character."""
+        self.insert(tk.INSERT, "    ")  # insert four spaces
         self.format_after_idle()
         return "break"  # This prevents the "Tab" to be inserted in the text.
 
     def edit_in_external_editor(self) -> None:
+        """Open current text in external editor (blocking), then replace content with edited result."""
         with tempfile.NamedTemporaryFile(
             suffix=".vhd" if project_manager.language.get() == "VHDL" else ".v",
             delete=False,
@@ -151,12 +153,14 @@ class CustomText(CodeEditor):
         self.format()
 
     def format_after_idle(self) -> None:
+        """Schedule format() after 200 ms idle (except for log text)."""
         if self.text_type != "log":
             if self.format_after_id is not None:
                 self.after_cancel(self.format_after_id)
             self.format_after_id = self.after(200, self.format)
 
     def format(self) -> None:
+        """Update text box size and highlighting."""
         text = self.get("1.0", tk.END)
         self._update_size_of_text_box(text)
         if self.text_type in ("declarations", "variable", "action"):
@@ -282,6 +286,7 @@ class CustomText(CodeEditor):
                 )
 
     def replace_strings_and_attributes_by_blanks(self, copy_of_text):
+        """Replace string literals and VHDL attributes in text with spaces for safe regex search."""
         for search_string in ["'image", "'length", '".*?"', "'.*?'"]:
             while True:
                 match_object = re.search(search_string, copy_of_text, flags=re.IGNORECASE)
@@ -297,6 +302,7 @@ class CustomText(CodeEditor):
         return copy_of_text
 
     def remove_surrounding_characters_from_the_match(self, match_object, keyword) -> tuple:
+        """Return (start, end) indices of the keyword within the match (strip word boundaries)."""
         if match_object.end() - match_object.start() == len(keyword) + 2:
             return match_object.start() + 1, match_object.end() - 1
         if match_object.end() - match_object.start() == len(keyword) + 1:
@@ -306,14 +312,17 @@ class CustomText(CodeEditor):
         return match_object.start(), match_object.end()
 
     def undo(self) -> None:
+        """Reformat after undo (Ctrl-z already triggers edit_undo)."""
         # self.edit_undo() # causes a second "undo", as Ctrl-z automatically starts edit_undo()
         self.format_after_idle()
 
     def redo(self) -> None:
+        """Perform redo and schedule reformat."""
         self.edit_redo()
         self.format_after_idle()
 
     def update_custom_text_class_signals_list(self) -> None:
+        """Parse text and update signals_list and constants_list from declarations."""
         # ["package","generics","ports","variable","condition","generated","action","declarations","log","comment"]
         all_signal_declarations = self.get("1.0", tk.END).lower()
         all_signal_declarations = hdl_generation_library.remove_comments_and_returns(all_signal_declarations)
@@ -327,6 +336,7 @@ class CustomText(CodeEditor):
         self.constants_list = hdl_generation_library.get_all_declared_constant_names(all_signal_declarations)
 
     def update_custom_text_class_ports_list(self) -> None:  # Needed at self==project_manager.interface_ports_text
+        """Parse ports text and update readable_ports_list, writable_ports_list, port_types_list."""
         all_port_declarations = self.get("1.0", tk.END).lower()
         self.readable_ports_list = hdl_generation_architecture_state_actions.get_all_readable_ports(
             all_port_declarations, check=False
@@ -337,6 +347,7 @@ class CustomText(CodeEditor):
         self.port_types_list = hdl_generation_architecture_state_actions.get_all_port_types(all_port_declarations)
 
     def update_custom_text_class_generics_list(self) -> None:
+        """Parse generics text and update generics_list from interface generics."""
         all_generic_declarations = project_manager.interface_generics_text.get("1.0", tk.END).lower()
         self.generics_list = hdl_generation_architecture_state_actions.get_all_generic_names(all_generic_declarations)
 
@@ -783,12 +794,14 @@ class CustomText(CodeEditor):
         return text
 
     def highlight_item(self, _, __, number_of_line) -> None:
+        """Highlight the given line with orange background and scroll it into view."""
         self.tag_add("highlight", str(number_of_line) + ".0", str(number_of_line + 1) + ".0")
         self.tag_config("highlight", background="orange")
         self.see(str(number_of_line) + ".0")
         self.focus_set()
 
     def update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment(self) -> None:
+        """Schedule update of not_read, not_written, and comment highlights in all text windows after 300 ms."""
         if self.update_highlight_after_id is not None:
             project_manager.root.after_cancel(self.update_highlight_after_id)
         self.update_highlight_after_id = project_manager.root.after(

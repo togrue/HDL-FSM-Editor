@@ -176,6 +176,7 @@ class TabControl:
         ]
 
     def switch_language_mode(self) -> None:  # also called from file_handling.py
+        """Apply current language (VHDL/Verilog): update highlight dict, file count, labels, and layout."""
         new_language = project_manager.language.get()
         if new_language == "VHDL":
             project_manager.highlight_dict_ref.highlight_dict = constants.VHDL_HIGHLIGHT_PATTERN_DICT
@@ -283,6 +284,7 @@ class TabControl:
             )
 
     def choose_bg_color(self) -> None:  # also called from canvas_editing.py
+        """Open color picker and set canvas background to the chosen color."""
         new_color = ColorChanger(project_manager.canvas.cget("bg")).ask_color()
         if new_color is not None:
             project_manager.canvas.configure(bg=new_color)

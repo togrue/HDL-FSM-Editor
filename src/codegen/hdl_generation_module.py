@@ -16,6 +16,7 @@ from .exceptions import GenerationError
 
 
 def create_module_logic(file_name, file_line_number, state_tag_list_sorted) -> None:
+    """Build Verilog module logic (state type, signals, always block) and write; update link dict."""
     architecture = ""
     state_signal_type_definition = _create_signal_declaration_for_the_state_variable(state_tag_list_sorted)
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_signal_type_definition)
