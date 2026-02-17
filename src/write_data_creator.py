@@ -29,7 +29,6 @@ class WriteDataCreator:
 
     def zoom_graphic_back_to_actual_size(self, zoom_factor) -> None:
         canvas_editing.canvas_zoom([0, 0], 1 / zoom_factor)
-        return
 
     def round_and_sort_data(self, design_dictionary, allowed_element_names_in_design_dictionary) -> dict[str, list]:
         used_element_names = self._get_used_element_names(design_dictionary, allowed_element_names_in_design_dictionary)

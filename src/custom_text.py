@@ -361,57 +361,35 @@ class CustomText(CodeEditor):
             text = self._remove_condition_keywords(text)
             CustomText.read_variables_of_all_windows[self] = text.split()
         elif self.text_type == "action":
-            text = self._add_read_variables_from_procedure_calls_to_read_variables_of_all_windows(text)
-            text = self._add_read_variables_from_with_select_blocks_to_read_variables_of_all_windows(text)
-            text = self._add_read_variables_from_conditions_to_read_variables_of_all_windows(text)
-            text = self._add_read_variables_from_case_constructs_to_read_variables_of_all_windows(text)
-            text = self._add_read_variables_from_assignments_to_read_variables_of_all_windows(text)
-            text = self._add_read_variables_from_always_statements_to_read_variables_of_all_windows(text)
-            # Remove duplicates:
-            CustomText.read_variables_of_all_windows[self] = list(set(CustomText.read_variables_of_all_windows[self]))
-            # print("read-variables = ", CustomText.read_variables_of_all_windows[self])
-            text = re.sub(
-                # remove remaining "when" of a "case"-statement (left hand side):
-                " when | when$|^when |^when$",
-                "",
-                text,
-                flags=re.I,
-            )
-            text = re.sub(
-                r"\|",
-                "",
-                text,
-                flags=re.I,
-            )  # remove remaining "|" of a "case"-statement:
-            text = re.sub(
-                # remove remaining "else" of an if-clause (left hand side):
-                " else | else$|^else |^else$",
-                "",
-                text,
-                flags=re.I,
-            )
-            # Store the remaining variable names and remove duplicates from the list:
-            # print("written-variables = ", list(set(text.split())))
-            CustomText.written_variables_of_all_windows[self] += list(set(text.split()))
-            # When the ";" is missing, then the right hand side with "<=" could not be found and erased.
-            # So remove "<=" and ":=" from these lists:
-            if "<=" in CustomText.read_variables_of_all_windows[self]:
-                CustomText.read_variables_of_all_windows[self].remove("<=")
-            if ":=" in CustomText.read_variables_of_all_windows[self]:
-                CustomText.read_variables_of_all_windows[self].remove(":=")
-            for function_name in project_manager.internals_architecture_text.function_names_list:
-                if function_name in CustomText.read_variables_of_all_windows[self]:
-                    CustomText.read_variables_of_all_windows[self].remove(function_name)
-            if ";" in CustomText.read_variables_of_all_windows[self]:
-                CustomText.read_variables_of_all_windows[self].remove(";")
-            if "," in CustomText.read_variables_of_all_windows[self]:
-                CustomText.read_variables_of_all_windows[self].remove(",")
-            if ";" in CustomText.written_variables_of_all_windows[self]:  # Happens at VHDL-"null" assignments.
-                CustomText.written_variables_of_all_windows[self].remove(";")
-            if "<=" in CustomText.written_variables_of_all_windows[self]:
-                CustomText.written_variables_of_all_windows[self].remove("<=")
-            if ":=" in CustomText.written_variables_of_all_windows[self]:
-                CustomText.written_variables_of_all_windows[self].remove(":=")
+            self._process_action_read_and_written_variables(text)
+
+    def _process_action_read_and_written_variables(self, text: str) -> None:
+        text = self._add_read_variables_from_procedure_calls_to_read_variables_of_all_windows(text)
+        text = self._add_read_variables_from_with_select_blocks_to_read_variables_of_all_windows(text)
+        text = self._add_read_variables_from_conditions_to_read_variables_of_all_windows(text)
+        text = self._add_read_variables_from_case_constructs_to_read_variables_of_all_windows(text)
+        text = self._add_read_variables_from_assignments_to_read_variables_of_all_windows(text)
+        text = self._add_read_variables_from_always_statements_to_read_variables_of_all_windows(text)
+        CustomText.read_variables_of_all_windows[self] = list(set(CustomText.read_variables_of_all_windows[self]))
+        # remove remaining "when" of a "case"-statement (left hand side)
+        text = re.sub(" when | when$|^when |^when$", "", text, flags=re.I)
+        # remove remaining "|" of a "case"-statement
+        text = re.sub(r"\|", "", text, flags=re.I)
+        # remove remaining "else" of an if-clause (left hand side)
+        text = re.sub(" else | else$|^else |^else$", "", text, flags=re.I)
+
+        # Store the remaining variable names and remove duplicates from the list:
+        CustomText.written_variables_of_all_windows[self] = list(set(text.split()))
+        # When the ";" is missing, then the right hand side with "<=" could not be found and erased.
+        # So remove "<=" and ":=" from these lists:
+        _remove_items_from_list(CustomText.read_variables_of_all_windows[self], ["<=", ":="])
+        _remove_items_from_list(
+            CustomText.read_variables_of_all_windows[self],
+            project_manager.internals_architecture_text.function_names_list,
+        )
+        _remove_items_from_list(CustomText.read_variables_of_all_windows[self], [";", ","])
+        # ';' appears at VHDL-"null" assignments.
+        _remove_items_from_list(CustomText.written_variables_of_all_windows[self], [";", "<=", ":="])
 
     def _text_is_global_actions_combinatorial(self):
         list_of_canvas_id = project_manager.canvas.find_withtag("global_actions_combinatorial1")
@@ -830,3 +808,9 @@ class CustomText(CodeEditor):
         ]
         for text_ref in text_refs_fixed:
             text_ref.update_highlight_tags(10, ["not_read", "not_written", "comment"])
+
+
+def _remove_items_from_list(lst: list, items) -> None:
+    for item in items:
+        if item in lst:
+            lst.remove(item)

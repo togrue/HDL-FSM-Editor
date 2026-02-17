@@ -233,7 +233,7 @@ def _a_point_of_a_line_is_moved_illegally_to_a_reset_entry(item_ids_at_moving_en
                     "transition"
                 ):
                     return True
-                elif move_list_entry[1] == "start":
+                if move_list_entry[1] == "start":
                     reset_entry_tags = project_manager.canvas.gettags(target)
                     for reset_entry_tag in reset_entry_tags:
                         if reset_entry_tag.startswith("transition"):
@@ -276,8 +276,7 @@ def try_to_convert_into_straight_line(coords) -> list:
             eliminate_points = False
     if eliminate_points:
         return [coords[0], coords[1], coords[-2], coords[-1]]
-    else:
-        return coords
+    return coords
 
 
 def _calculate_vectors_from_line_point_to_next_line_point(coords) -> list:

@@ -31,7 +31,8 @@ from elements import (
 )
 from project_manager import project_manager
 
-_write_data_creator_ref = None  # Nur lokal verwendet, kann in Attrbute umgewandelt werden.
+# Pylint expects this to be a constant with uppercase naming.
+_write_data_creator_ref = None  # pylint: disable=invalid-name # module-level mutable ref
 
 
 def ask_save_unsaved_changes(title) -> str:
@@ -59,7 +60,7 @@ def save_as() -> None:
         initialfile=project_manager.module_name.get(),
         filetypes=(("HDL-FSM-Editor files", "*.hfe"), ("all files", "*.*")),
     )
-    if project_manager.current_file != () and project_manager.current_file != "":
+    if project_manager.current_file not in ((), ""):
         dir_name, file_name = os.path.split(project_manager.current_file)
         project_manager.root.title(f"{file_name} ({dir_name})")
         save_in_file(project_manager.current_file)
@@ -96,7 +97,7 @@ def new_design() -> bool:
         action = ask_save_unsaved_changes(title)
         if action == "cancel":
             return False
-        elif action == "save":
+        if action == "save":
             save()
             # Check if save was successful (current_file is not empty)
             if project_manager.current_file == "":
@@ -271,88 +272,96 @@ def _save_canvas_data(design_dictionary: dict[str, Any], allowed_element_names_i
         design_dictionary[element_name] = []
     items = project_manager.canvas.find_all()
     for i in items:
-        if project_manager.canvas.type(i) == "oval":
+        item_type = project_manager.canvas.type(i)
+        if item_type == "oval":
             design_dictionary["state"].append(
                 [project_manager.canvas.coords(i), _gettags(i), project_manager.canvas.itemcget(i, "fill")]
             )
-        elif project_manager.canvas.type(i) == "text":
+        elif item_type == "text":
             design_dictionary["text"].append(
                 [project_manager.canvas.coords(i), _gettags(i), project_manager.canvas.itemcget(i, "text")]
             )
-        elif project_manager.canvas.type(i) == "line" and "grid_line" not in _gettags(i):
+        elif item_type == "line" and "grid_line" not in _gettags(i):
             design_dictionary["line"].append([project_manager.canvas.coords(i), _gettags(i)])
-        elif project_manager.canvas.type(i) == "polygon":
+        elif item_type == "polygon":
             design_dictionary["polygon"].append([project_manager.canvas.coords(i), _gettags(i)])
-        elif project_manager.canvas.type(i) == "rectangle":
+        elif item_type == "rectangle":
             design_dictionary["rectangle"].append([project_manager.canvas.coords(i), _gettags(i)])
-        elif project_manager.canvas.type(i) == "window":
-            if i in state_action.StateAction.ref_dict:
-                design_dictionary["window_state_action_block"].append(
-                    [
-                        project_manager.canvas.coords(i),
-                        state_action.StateAction.ref_dict[i].text_id.get("1.0", f"{tk.END}-1 chars"),
-                        _gettags(i),
-                    ]
-                )
-            elif i in state_comment.StateComment.ref_dict:
-                design_dictionary["window_state_comment"].append(
-                    [
-                        project_manager.canvas.coords(i),
-                        state_comment.StateComment.ref_dict[i].text_id.get("1.0", f"{tk.END}-1 chars"),
-                        _gettags(i),
-                    ]
-                )
-            elif i in condition_action.ConditionAction.ref_dict:
-                design_dictionary["window_condition_action_block"].append(
-                    [
-                        project_manager.canvas.coords(i),
-                        condition_action.ConditionAction.ref_dict[i].condition_id.get("1.0", f"{tk.END}-1 chars"),
-                        condition_action.ConditionAction.ref_dict[i].action_id.get("1.0", f"{tk.END}-1 chars"),
-                        _gettags(i),
-                    ]
-                )
-            elif i in global_actions_clocked.GlobalActionsClocked.ref_dict:
-                design_dictionary["window_global_actions"].append(
-                    [
-                        project_manager.canvas.coords(i),
-                        global_actions_clocked.GlobalActionsClocked.ref_dict[i].text_before_id.get(
-                            "1.0", f"{tk.END}-1 chars"
-                        ),
-                        global_actions_clocked.GlobalActionsClocked.ref_dict[i].text_after_id.get(
-                            "1.0", f"{tk.END}-1 chars"
-                        ),
-                        _gettags(i),
-                    ]
-                )
-            elif i in global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict:
-                design_dictionary["window_global_actions_combinatorial"].append(
-                    [
-                        project_manager.canvas.coords(i),
-                        global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict[i].text_id.get(
-                            "1.0", f"{tk.END}-1 chars"
-                        ),
-                        _gettags(i),
-                    ]
-                )
-            elif i in state_actions_default.StateActionsDefault.ref_dict:
-                design_dictionary["window_state_actions_default"].append(
-                    [
-                        project_manager.canvas.coords(i),
-                        state_actions_default.StateActionsDefault.ref_dict[i].text_id.get("1.0", f"{tk.END}-1 chars"),
-                        _gettags(i),
-                    ]
-                )
-            else:
-                print("file_handling: Fatal, unknown dictionary key ", i)
+        elif item_type == "window":
+            _save_window_item(design_dictionary, i)
 
 
 def _gettags(i):
     return [x for x in project_manager.canvas.gettags(i) if x != "current"]
 
 
+def _save_window_item(design_dictionary: dict[str, Any], canvas_id: int) -> None:
+    coords = project_manager.canvas.coords(canvas_id)
+    tags = _gettags(canvas_id)
+    if canvas_id in state_action.StateAction.ref_dict:
+        ref = state_action.StateAction.ref_dict[canvas_id]
+        design_dictionary["window_state_action_block"].append(
+            [coords, ref.text_id.get("1.0", f"{tk.END}-1 chars"), tags]
+        )
+    elif canvas_id in state_comment.StateComment.ref_dict:
+        ref = state_comment.StateComment.ref_dict[canvas_id]
+        design_dictionary["window_state_comment"].append([coords, ref.text_id.get("1.0", f"{tk.END}-1 chars"), tags])
+    elif canvas_id in condition_action.ConditionAction.ref_dict:
+        ref = condition_action.ConditionAction.ref_dict[canvas_id]
+        design_dictionary["window_condition_action_block"].append(
+            [
+                coords,
+                ref.condition_id.get("1.0", f"{tk.END}-1 chars"),
+                ref.action_id.get("1.0", f"{tk.END}-1 chars"),
+                tags,
+            ]
+        )
+    elif canvas_id in global_actions_clocked.GlobalActionsClocked.ref_dict:
+        ref = global_actions_clocked.GlobalActionsClocked.ref_dict[canvas_id]
+        design_dictionary["window_global_actions"].append(
+            [
+                coords,
+                ref.text_before_id.get("1.0", f"{tk.END}-1 chars"),
+                ref.text_after_id.get("1.0", f"{tk.END}-1 chars"),
+                tags,
+            ]
+        )
+    elif canvas_id in global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict:
+        ref = global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict[canvas_id]
+        design_dictionary["window_global_actions_combinatorial"].append(
+            [coords, ref.text_id.get("1.0", f"{tk.END}-1 chars"), tags]
+        )
+    elif canvas_id in state_actions_default.StateActionsDefault.ref_dict:
+        ref = state_actions_default.StateActionsDefault.ref_dict[canvas_id]
+        design_dictionary["window_state_actions_default"].append(
+            [coords, ref.text_id.get("1.0", f"{tk.END}-1 chars"), tags]
+        )
+    else:
+        print("file_handling: Fatal, unknown dictionary key ", canvas_id)
+
+
 def open_file_with_name(read_filename, is_script_mode) -> None:
-    global _write_data_creator_ref
-    replaced_read_filename = read_filename
+    replaced_read_filename = _resolve_read_filename(read_filename, is_script_mode)
+    project_manager.root.config(cursor="watch")
+    try:
+        _do_load_file(read_filename, replaced_read_filename, is_script_mode)
+    except FileNotFoundError:
+        project_manager.root.config(cursor="arrow")
+        _show_load_error(
+            is_script_mode,
+            "Error: File " + read_filename + " could not be found.",
+            f"File {read_filename} could not be found.",
+        )
+    except ValueError:  # includes JSONDecodeError
+        project_manager.root.config(cursor="arrow")
+        _show_load_error(
+            is_script_mode,
+            "Error: File " + read_filename + " has wrong format.",
+            f"File \n{read_filename}\nhas wrong format.",
+        )
+
+
+def _resolve_read_filename(read_filename: str, is_script_mode: bool) -> str:
     if os.path.isfile(f"{read_filename}.tmp") and not is_script_mode:
         answer = messagebox.askyesno(
             "HDL-FSM-Editor",
@@ -360,58 +369,56 @@ def open_file_with_name(read_filename, is_script_mode) -> None:
             "This file remains after a HDL-FSM-Editor crash and contains all latest changes.\n"
             "Shall this file be read?",
         )
-        if answer is True:
-            replaced_read_filename = f"{read_filename}.tmp"
-    project_manager.root.config(cursor="watch")
-    try:
-        with open(replaced_read_filename, encoding="utf-8") as fileobject:
-            data = fileobject.read()
-        project_manager.current_file = read_filename
-        design_dictionary = json.loads(data)
-        if _write_data_creator_ref is None:
-            _write_data_creator_ref = write_data_creator.WriteDataCreator(project_manager.state_radius)
-        _write_data_creator_ref.store_as_compare_object(design_dictionary)
-        _load_design_from_dict(design_dictionary)
-        if os.path.isfile(f"{read_filename}.tmp") and not is_script_mode:
-            os.remove(f"{read_filename}.tmp")
+        if answer:
+            return f"{read_filename}.tmp"
+    return read_filename
 
-        # Final cleanup
-        undo_handling.stack = []
-        # Loading the design created by "traces" some stack-entries, which are removed here:
-        undo_handling.stack_write_pointer = 0
-        project_manager.undo_button.config(state="disabled")
 
-        # Put the read design into stack[0]:
-        undo_handling.design_has_changed()  # Initialize the stack with the read design.
-        project_manager.root.update()
-        dir_name, file_name = os.path.split(read_filename)
-        project_manager.root.title(f"{file_name} ({dir_name})")
-        if not is_script_mode:
-            update_ref = update_hdl_tab.UpdateHdlTab(
-                design_dictionary["language"],
-                design_dictionary["number_of_files"],
-                read_filename,
-                design_dictionary["generate_path"],
-                design_dictionary["modulename"],
-            )
-            project_manager.date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
-            project_manager.date_of_hdl_file2_shown_in_hdl_tab = update_ref.get_date_of_hdl_file2()
-            project_manager.notebook.show_tab(GuiTab.DIAGRAM)
-            project_manager.root.after_idle(canvas_editing.view_all)
-        project_manager.root.config(cursor="arrow")
-        if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
-            if is_script_mode:
-                print("Error, the database is corrupt. Do not use this file.")
-            else:
-                messagebox.showerror("Error", "The database is corrupt.\nDo not use this file.\nSee details at STDOUT.")
-    except FileNotFoundError:
-        project_manager.root.config(cursor="arrow")
-        if is_script_mode:
-            print("Error: File " + read_filename + " could not be found.")
-        else:
-            messagebox.showerror("Error", f"File {read_filename} could not be found.")
-    except ValueError:  # includes JSONDecodeError
-        project_manager.root.config(cursor="arrow")
+def _show_load_error(is_script_mode: bool, print_msg: str, msgbox_msg: str) -> None:
+    if is_script_mode:
+        print(print_msg)
+    else:
+        messagebox.showerror("Error", msgbox_msg)
+
+
+def _do_load_file(read_filename: str, replaced_read_filename: str, is_script_mode: bool) -> None:
+    global _write_data_creator_ref
+    with open(replaced_read_filename, encoding="utf-8") as fileobject:
+        data = fileobject.read()
+    project_manager.current_file = read_filename
+    design_dictionary = json.loads(data)
+    if _write_data_creator_ref is None:
+        _write_data_creator_ref = write_data_creator.WriteDataCreator(project_manager.state_radius)
+    _write_data_creator_ref.store_as_compare_object(design_dictionary)
+    _load_design_from_dict(design_dictionary)
+    if os.path.isfile(f"{read_filename}.tmp") and not is_script_mode:
+        os.remove(f"{read_filename}.tmp")
+
+    # Final cleanup
+    undo_handling.stack = []
+    # Loading the design created by "traces" some stack-entries, which are removed here:
+    undo_handling.stack_write_pointer = 0
+    project_manager.undo_button.config(state="disabled")
+
+    # Put the read design into stack[0]:
+    undo_handling.design_has_changed()  # Initialize the stack with the read design.
+    project_manager.root.update()
+    dir_name, file_name = os.path.split(read_filename)
+    project_manager.root.title(f"{file_name} ({dir_name})")
+    if not is_script_mode:
+        update_ref = update_hdl_tab.UpdateHdlTab(
+            design_dictionary["language"],
+            design_dictionary["number_of_files"],
+            read_filename,
+            design_dictionary["generate_path"],
+            design_dictionary["modulename"],
+        )
+        project_manager.date_of_hdl_file_shown_in_hdl_tab = update_ref.get_date_of_hdl_file()
+        project_manager.date_of_hdl_file2_shown_in_hdl_tab = update_ref.get_date_of_hdl_file2()
+        project_manager.notebook.show_tab(GuiTab.DIAGRAM)
+        project_manager.root.after_idle(canvas_editing.view_all)
+    project_manager.root.config(cursor="arrow")
+    if not tag_plausibility.TagPlausibility().get_tag_status_is_okay():
         if is_script_mode:
             print("Error: File " + read_filename + " has wrong format.")
         else:
@@ -537,46 +544,46 @@ def _load_canvas_data(design_dictionary: dict[str, Any]) -> None:
     shift_visible_center_to_window_center(get_visible_center_as_string())
 
 
-def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
-    """Load all canvas elements including states, transitions, text, and windows."""
-    transition_ids = []
-    ids_of_rectangles_to_raise = []
-    priority_ids = []
-    hide_priority_rectangle_list = []
+def _single_outgoing_transition_id(tags: list[str]) -> str | None:
+    """Return transition id (without _start) if exactly one outgoing transition tag, else None."""
+    count = 0
     transition_identifier = ""
-    transition_dict = {}
-    state_comment_line_dictionary = {}
-    state_action_line_dictionary = {}
-    condition_action_line_dictionary = {}
+    for tag in tags:
+        if tag.startswith("transition") and tag.endswith("_start"):
+            transition_identifier = tag.replace("_start", "")
+            count += 1
+    return transition_identifier if count == 1 else None
 
-    # Load states
+
+def _load_canvas_states(design_dictionary: dict[str, Any]) -> list[str]:
+    """Load state elements; return list of single-outgoing transition ids to hide."""
+    hide_list = []
     for definition in design_dictionary["state"]:
         coords = definition[0]
         tags = definition[1]
         fill_color = definition[2] if len(definition) == 3 else constants.STATE_COLOR
-        number_of_outgoing_transitions = 0
-        for tag in tags:
-            if tag.startswith("transition") and tag.endswith("_start"):
-                transition_identifier = tag.replace("_start", "")
-                number_of_outgoing_transitions += 1
-        if number_of_outgoing_transitions == 1:
-            hide_priority_rectangle_list.append(transition_identifier)
+        single_id = _single_outgoing_transition_id(tags)
+        if single_id:
+            hide_list.append(single_id)
         state.States(coords, tags, "dummy", fill_color)
+    return hide_list
 
-    # Load polygons (reset symbols)
+
+def _load_canvas_polygons(design_dictionary: dict[str, Any]) -> list[str]:
+    """Load polygon (reset) elements; return list of single-outgoing transition ids to hide."""
+    hide_list = []
     for definition in design_dictionary["polygon"]:
         coords = definition[0]
         tags = definition[1]
         reset_entry.ResetEntry(coords, tags)
-        number_of_outgoing_transitions = 0
-        for tag in tags:
-            if tag.startswith("transition") and tag.endswith("_start"):
-                transition_identifier = tag.replace("_start", "")
-                number_of_outgoing_transitions += 1
-        if number_of_outgoing_transitions == 1:
-            hide_priority_rectangle_list.append(transition_identifier)
+        single_id = _single_outgoing_transition_id(tags)
+        if single_id:
+            hide_list.append(single_id)
+    return hide_list
 
-    # Load text elements
+
+def _load_canvas_text_elements(design_dictionary: dict[str, Any], transition_dict: dict[str, Any]) -> None:
+    """Load text elements (state names, reset text, priority numbers) into canvas and transition_dict."""
     for definition in design_dictionary["text"]:
         coords = definition[0]
         tags = definition[1]
@@ -598,7 +605,15 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
                         transition_dict[transition_tag] = {}
                     transition_dict[transition_tag]["prio-item"] = {"text": text}
 
-    # Load lines (transitions)
+
+def _load_canvas_lines(
+    design_dictionary: dict[str, Any],
+    state_comment_line_dictionary: dict[str, Any],
+    state_action_line_dictionary: dict[str, Any],
+    condition_action_line_dictionary: dict[str, Any],
+    transition_dict: dict[str, Any],
+) -> None:
+    """Load line elements into the given line dicts and transition_dict."""
     for definition in design_dictionary["line"]:
         coords = definition[0]
         tags = definition[1]
@@ -617,20 +632,47 @@ def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
                 transition_dict[tags[0]]["line-item"] = {"coords": coords, "tags": tags}
                 break
 
-    # Load rectangles (connector, priority-box)
+
+def _load_canvas_rectangles(design_dictionary: dict[str, Any]) -> list[str]:
+    """Load rectangle elements (connector, priority-box); return single-outgoing transition ids to hide."""
+    hide_list = []
     for definition in design_dictionary["rectangle"]:
         coords = definition[0]
         tags = definition[1]
         for t in tags:
             if t.startswith("connector"):
                 connector.ConnectorInstance(coords, tags)
-                number_of_outgoing_transitions = 0
-                for tag in tags:
-                    if tag.startswith("transition") and tag.endswith("_start"):
-                        transition_identifier = tag.replace("_start", "")
-                        number_of_outgoing_transitions += 1
-                if number_of_outgoing_transitions == 1:
-                    hide_priority_rectangle_list.append(transition_identifier)
+                single_id = _single_outgoing_transition_id(tags)
+                if single_id:
+                    hide_list.append(single_id)
+                # TODO: In all tracked FSM's there is just one connector per transition
+                # so we could likely add a break here.
+                # break
+    return hide_list
+
+
+def _load_canvas_elements(design_dictionary: dict[str, Any]) -> None:
+    """Load all canvas elements including states, transitions, text, and windows."""
+    transition_ids = []
+    ids_of_rectangles_to_raise = []
+    priority_ids = []
+    hide_priority_rectangle_list: list[str] = []
+    transition_dict: dict[str, Any] = {}
+    state_comment_line_dictionary: dict[str, Any] = {}
+    state_action_line_dictionary: dict[str, Any] = {}
+    condition_action_line_dictionary: dict[str, Any] = {}
+
+    hide_priority_rectangle_list.extend(_load_canvas_states(design_dictionary))
+    hide_priority_rectangle_list.extend(_load_canvas_polygons(design_dictionary))
+    _load_canvas_text_elements(design_dictionary, transition_dict)
+    _load_canvas_lines(
+        design_dictionary,
+        state_comment_line_dictionary,
+        state_action_line_dictionary,
+        condition_action_line_dictionary,
+        transition_dict,
+    )
+    hide_priority_rectangle_list.extend(_load_canvas_rectangles(design_dictionary))
 
     _load_transitions_from_dict(transition_dict)
     _load_window_elements(

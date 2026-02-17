@@ -11,6 +11,8 @@ from project_manager import project_manager
 
 
 class TabControl:
+    """Control panel for project configuration (module name, language, paths, etc.)."""
+
     def __init__(self) -> None:
         control_frame = ttk.Frame(project_manager.notebook, takefocus=False)
         control_frame.grid(sticky=(tk.W, tk.E))
@@ -226,7 +228,10 @@ class TabControl:
                 text="Local Variable Declarations for clocked always process (not supported by all Verilog compilers):"
             )
             project_manager.internals_process_combinatorial_label.config(
-                text="Local Variable Declarations for combinatorial always process(not supported by all Verilog compilers):"
+                text=(
+                    "Local Variable Declarations for combinatorial always process "
+                    "(not supported by all Verilog compilers):"
+                )
             )
             # Modify compile command:
             if new_language == "Verilog":

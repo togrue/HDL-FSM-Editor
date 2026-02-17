@@ -255,10 +255,9 @@ def _get_default_state_actions() -> str:
     item_ids = project_manager.canvas.find_withtag("state_actions_default")
     if item_ids == ():
         return ""
-    else:
-        ref = state_actions_default.StateActionsDefault.ref_dict[item_ids[0]]
-        comment = "--" if project_manager.language.get() == "VHDL" else "//"
-        return comment + " Default State Actions:\n" + ref.text_id.get("1.0", tk.END)
+    ref = state_actions_default.StateActionsDefault.ref_dict[item_ids[0]]
+    comment = "--" if project_manager.language.get() == "VHDL" else "//"
+    return comment + " Default State Actions:\n" + ref.text_id.get("1.0", tk.END)
 
 
 def _create_when_entry(state_action_entry) -> str:
@@ -421,10 +420,9 @@ def _get_all_signals(all_signal_declarations) -> list:
                             "VHDL may be corrupted.",
                         ],
                     )
-                else:
-                    signals = _get_the_signal_names(declaration)
-                    if signals != "":
-                        signals_list.extend(signals.split(","))
+                signals = _get_the_signal_names(declaration)
+                if signals != "":
+                    signals_list.extend(signals.split(","))
     else:
         for declaration in signal_declaration_list_extended:
             if declaration != "" and not declaration.isspace():
@@ -441,13 +439,12 @@ def _get_all_signals(all_signal_declarations) -> list:
                             "Verilog may be corrupted.",
                         ],
                     )
-                else:
-                    declaration = re.sub(" reg ", " ", declaration, flags=re.I)
-                    declaration = re.sub(" wire ", " ", declaration, flags=re.I)
-                    declaration = re.sub(" logic ", " ", declaration, flags=re.I)
-                    declaration = re.sub(" \\[.*?\\]", " ", declaration, flags=re.I)
-                    if declaration != "":
-                        signals_list.extend(declaration.split(","))
+                declaration = re.sub(" reg ", " ", declaration, flags=re.I)
+                declaration = re.sub(" wire ", " ", declaration, flags=re.I)
+                declaration = re.sub(" logic ", " ", declaration, flags=re.I)
+                declaration = re.sub(" \\[.*?\\]", " ", declaration, flags=re.I)
+                if declaration != "":
+                    signals_list.extend(declaration.split(","))
     return signals_list
 
 

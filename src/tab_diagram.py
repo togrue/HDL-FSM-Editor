@@ -9,7 +9,7 @@ import move_handling_initialization
 import undo_handling
 from constants import GuiTab
 from project_manager import project_manager
-from widgets.OptionMenu import OptionMenu
+from widgets.option_menu import OptionMenu
 
 
 class TabDiagram:
@@ -154,7 +154,7 @@ class TabDiagram:
     def _scroll_move(self, event) -> None:
         project_manager.canvas.scan_dragto(event.x, event.y, gain=1)
 
-    def _scroll_end(self, event) -> None:
+    def _scroll_end(self, _event) -> None:
         project_manager.grid_drawer.draw_grid()
 
     def _scroll_wheel(self, event) -> None:

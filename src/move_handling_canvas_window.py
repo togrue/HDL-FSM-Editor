@@ -10,6 +10,8 @@ from project_manager import project_manager
 
 
 class MoveHandlingCanvasWindow:
+    """Handles dragging of a canvas window when the user moves it."""
+
     def __init__(self, event, widget, window_id):
         self.move_active = True
         self.widget = widget

@@ -6,6 +6,8 @@ from tkinter import colorchooser
 
 
 class ColorChanger:
+    """Lets the user configure a color via a color chooser dialog."""
+
     def __init__(self, default_color: str) -> None:
         self.default_color = default_color
 

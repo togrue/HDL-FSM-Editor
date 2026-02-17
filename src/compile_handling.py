@@ -58,15 +58,15 @@ def _execute(command) -> bool:
         _insert_line_in_log(command_part + " ")
     _insert_line_in_log("\n")
     try:
-        process = subprocess.Popen(
+        with subprocess.Popen(
             command_array_new,
             text=True,  # Decoding is done by Popen.
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-        )
-        for line in process.stdout:  # Terminates when process.stdout is closed.
-            if line != "\n":  # VHDL report-statements cause empty lines which mess up the protocol.
-                _insert_line_in_log(line)
+        ) as process:
+            for line in process.stdout:  # Terminates when process.stdout is closed.
+                if line != "\n":  # VHDL report-statements cause empty lines which mess up the protocol.
+                    _insert_line_in_log(line)
     except FileNotFoundError:
         command_string = ""
         for word in command_array_new:
@@ -86,58 +86,73 @@ def _get_command_list():
 
 def _replace_variables(command_array) -> list | None:
     command_array_new = []
+    handlers = {
+        "$file": _replace_file_var,
+        "$file1": _replace_file1_var,
+        "$file2": _replace_file2_var,
+        "$name": _replace_name_var,
+    }
     for entry in command_array:
-        if entry == "$file":
-            if project_manager.select_file_number_text.get() == 2:
-                messagebox.showerror(
-                    "Error",
-                    'The compile command uses $file, but the "2 files mode" is selected,\
-so only $file1 and $file2 are allowed.',
-                )
-                return
-            language = project_manager.language.get()
-            if language == "VHDL":
-                extension = ".vhd"
-            elif language == "Verilog":
-                extension = ".v"
-            else:
-                extension = ".sv"
-            file_name = project_manager.generate_path_value.get() + "/" + project_manager.module_name.get() + extension
-            if not exists(file_name):
-                messagebox.showerror("Error", "Compile is not possible, HDL file " + file_name + " does not exist.")
-                return
-            command_array_new.append(file_name)
-        elif entry == "$file1":
-            if project_manager.select_file_number_text.get() == 1:
-                messagebox.showerror(
-                    "Error",
-                    'The compile command uses $file1, but the "1 files mode" is selected, so only $file is allowed).',
-                )
-                return
-            file_name1 = project_manager.generate_path_value.get() + "/" + project_manager.module_name.get() + "_e.vhd"
-            if not exists(file_name1):
-                messagebox.showerror("Error", "Compile is not possible, as HDL file" + file_name1 + " does not exist.")
-                return
-            command_array_new.append(file_name1)
-        elif entry == "$file2":
-            if project_manager.select_file_number_text.get() == 1:
-                messagebox.showerror(
-                    "Error",
-                    'The compile command uses $file2, but the "1 files mode" is selected, so only $file is allowed).',
-                )
-                return
-            file_name2 = (
-                project_manager.generate_path_value.get() + "/" + project_manager.module_name.get() + "_fsm.vhd"
-            )
-            if not exists(file_name2):
-                messagebox.showerror("Error", "Compile is not possible, as HDL file" + file_name2 + " does not exist.")
-                return
-            command_array_new.append(file_name2)
-        elif entry == "$name":
-            command_array_new.append(project_manager.module_name.get())
+        handler = handlers.get(entry)
+        if handler is not None:
+            result = handler()
+            if result is None:
+                return None
+            command_array_new.append(result)
         else:
             command_array_new.append(entry)
     return command_array_new
+
+
+def _replace_file_var() -> str | None:
+    if project_manager.select_file_number_text.get() == 2:
+        messagebox.showerror(
+            "Error",
+            'The compile command uses $file, but the "2 files mode" is selected, '
+            "so only $file1 and $file2 are allowed.",
+        )
+        return None
+    language = project_manager.language.get()
+    extension = ".vhd" if language == "VHDL" else (".v" if language == "Verilog" else ".sv")
+    file_name = project_manager.generate_path_value.get() + "/" + project_manager.module_name.get() + extension
+    if not exists(file_name):
+        messagebox.showerror("Error", "Compile is not possible, HDL file " + file_name + " does not exist.")
+        return None
+    return file_name
+
+
+def _replace_file1_var() -> str | None:
+    if project_manager.select_file_number_text.get() == 1:
+        messagebox.showerror(
+            "Error",
+            'The compile command uses $file1, but the "1 files mode" is selected, so only $file is allowed).',
+        )
+        return None
+    file_name = project_manager.generate_path_value.get() + "/" + project_manager.module_name.get() + "_e.vhd"
+    if not exists(file_name):
+        messagebox.showerror("Error", "Compile is not possible, as HDL file" + file_name + " does not exist.")
+        return None
+    return file_name
+
+
+def _replace_file2_var() -> str | None:
+    if project_manager.select_file_number_text.get() == 1:
+        messagebox.showerror(
+            "Error",
+            'The compile command uses $file2, but the "1 files mode" is selected, so only $file is allowed).',
+        )
+        return None
+    file_name = (
+        project_manager.generate_path_value.get() + "/" + project_manager.module_name.get() + "_fsm.vhd"
+    )
+    if not exists(file_name):
+        messagebox.showerror("Error", "Compile is not possible, as HDL file" + file_name + " does not exist.")
+        return None
+    return file_name
+
+
+def _replace_name_var() -> str:
+    return project_manager.module_name.get()
 
 
 def _insert_line_in_log(line) -> None:

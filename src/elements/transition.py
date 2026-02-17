@@ -13,7 +13,7 @@ import move_handling_initialization
 import undo_handling
 from elements import condition_action
 from project_manager import project_manager
-from widgets.OptionMenu import OptionMenu
+from widgets.option_menu import OptionMenu
 
 
 class TransitionLine:
@@ -103,7 +103,7 @@ class TransitionLine:
 
     def _evaluate_menu(
         self,
-        event,
+        _event,
         window,
         listbox,
         menu_x,
@@ -209,7 +209,7 @@ class TransitionLine:
         if design_was_changed:
             undo_handling.design_has_changed()  # It must be waited until the window for the menu is deleted.
 
-    def _close_menu(self, event, window, listbox) -> None:
+    def _close_menu(self, _event, window, listbox) -> None:
         listbox.destroy()
         project_manager.canvas.delete(window)
 
@@ -584,12 +584,11 @@ class TransitionLine:
         delta1_y = delta1 * math.sin(phi)
         if y1 >= y0 and x1 >= x0:
             return [x0 + delta0_x * modify0, y0 + delta0_y * modify0, x1 - delta1_x * modify1, y1 - delta1_y * modify1]
-        elif y1 >= y0 and x1 < x0:
+        if y1 >= y0 and x1 < x0:
             return [x0 - delta0_x * modify0, y0 + delta0_y * modify0, x1 + delta1_x * modify1, y1 - delta1_y * modify1]
-        elif y1 < y0 and x1 >= x0:
+        if y1 < y0 and x1 >= x0:
             return [x0 + delta0_x * modify0, y0 - delta0_y * modify0, x1 - delta1_x * modify1, y1 + delta1_y * modify1]
-        else:
-            return [x0 - delta0_x * modify0, y0 - delta0_y * modify0, x1 + delta1_x * modify1, y1 + delta1_y * modify1]
+        return [x0 - delta0_x * modify0, y0 - delta0_y * modify0, x1 + delta1_x * modify1, y1 + delta1_y * modify1]
 
     @classmethod
     def transition_start(cls, event) -> None:
@@ -619,12 +618,14 @@ class TransitionLine:
                         transition_id=transition_id,
                         canvas_id_of_start_item=canvas_id,
                         transition_draw_funcid=transition_draw_funcid,
-                        transition_start_object_tag=transition_start_object_tag: cls._handle_next_added_transition_point(
-                            event,
-                            transition_id,
-                            canvas_id_of_start_item,
-                            transition_draw_funcid,
-                            transition_start_object_tag,
+                        transition_start_object_tag=transition_start_object_tag: (
+                            cls._handle_next_added_transition_point(
+                                event,
+                                transition_id,
+                                canvas_id_of_start_item,
+                                transition_draw_funcid,
+                                transition_start_object_tag,
+                            )
                         ),
                     )
                     project_manager.root.bind_all(

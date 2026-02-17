@@ -55,22 +55,13 @@ class CanvasDelete:
         if self._item_is_a_not_deletable_object(tags_of_item_i):
             return
         self.item_was_deleted = True
+        self._dispatch_delete_by_type(item_type, canvas_id, tags_of_item_i)
+
+    def _dispatch_delete_by_type(self, item_type, canvas_id, tags):
         if item_type == "polygon":
             reset_entry.ResetEntry.delete()
         elif item_type == "window":
-            for tag in tags_of_item_i:
-                if tag.startswith("state_actions_default"):
-                    state_actions_default.StateActionsDefault.ref_dict[canvas_id].delete()
-                elif tag == "global_actions1":
-                    global_actions_clocked.GlobalActionsClocked.ref_dict[canvas_id].delete()
-                elif tag == "global_actions_combinatorial1":
-                    global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict[canvas_id].delete()
-                elif tag.startswith("state_action"):
-                    state_action.StateAction.ref_dict[canvas_id].delete()
-                elif tag.endswith("_comment"):
-                    state_comment.StateComment.ref_dict[canvas_id].delete()
-                elif tag.startswith("condition_action"):
-                    condition_action.ConditionAction.ref_dict[canvas_id].delete()
+            self._delete_window_item(canvas_id, tags)
         elif item_type == "oval":
             state.States.ref_dict[canvas_id].delete()
         elif item_type == "rectangle":
@@ -87,6 +78,27 @@ class CanvasDelete:
                 + " with tags "
                 + str(project_manager.canvas.gettags(canvas_id)),
             )
+
+    def _delete_window_item(self, canvas_id, tags):
+        for tag in tags:
+            if tag.startswith("state_actions_default"):
+                state_actions_default.StateActionsDefault.ref_dict[canvas_id].delete()
+                return
+            if tag == "global_actions1":
+                global_actions_clocked.GlobalActionsClocked.ref_dict[canvas_id].delete()
+                return
+            if tag == "global_actions_combinatorial1":
+                global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict[canvas_id].delete()
+                return
+            if tag.startswith("state_action"):
+                state_action.StateAction.ref_dict[canvas_id].delete()
+                return
+            if tag.endswith("_comment"):
+                state_comment.StateComment.ref_dict[canvas_id].delete()
+                return
+            if tag.startswith("condition_action"):
+                condition_action.ConditionAction.ref_dict[canvas_id].delete()
+                return
 
     def _item_is_a_not_deletable_object(self, tags_of_item_i) -> bool:
         for single_tag in tags_of_item_i:

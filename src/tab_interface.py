@@ -8,6 +8,8 @@ from project_manager import project_manager
 
 
 class TabInterface:
+    """Tab for editing interface packages and signals."""
+
     def __init__(self) -> None:
         self.paned_window_interface = ttk.PanedWindow(project_manager.notebook, orient=tk.VERTICAL, takefocus=True)
 
