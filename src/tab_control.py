@@ -1,3 +1,5 @@
+"""Control-panel tab for project configuration (module name, language, paths, etc.)."""
+
 import os
 import tkinter as tk
 from tkinter import ttk

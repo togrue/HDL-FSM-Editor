@@ -1,3 +1,5 @@
+"""Diagram tab: FSM canvas, scrollbars, and drawing tools in the main notebook."""
+
 import tkinter as tk
 from tkinter import font, ttk
 
