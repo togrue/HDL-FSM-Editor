@@ -14,6 +14,7 @@ import file_handling
 from codegen import hdl_generation_architecture_state_actions, hdl_generation_library
 from elements import global_actions_combinatorial
 from project_manager import project_manager
+from widgets.code_editor import CodeEditor
 
 FUNCTION_DECL_RE = re.compile(r"function\s+(\w+)", re.IGNORECASE)
 VHDL_ATTRIBUTE_RE = re.compile(r"\w+\s+'\s+\w+", re.IGNORECASE)
@@ -61,7 +62,7 @@ DATATYPE_PATTERNS = [
 ]
 
 
-class CustomText(tk.Text):
+class CustomText(CodeEditor):
     """
     This code was copied and extended from:
     https://stackoverflow.com/questions/40617515/python-tkinter-text-modified-callback
@@ -72,7 +73,7 @@ class CustomText(tk.Text):
 
     def __init__(self, *args, text_type, **kwargs) -> None:
         """A text widget that report on internal widget commands"""
-        tk.Text.__init__(self, *args, wrap=tk.NONE, **kwargs)
+        super().__init__(*args, wrap=tk.NONE, **kwargs)
         self.text_type = text_type
         # text_type is in:
         # ["package","generics","ports","variable","condition","generated","action","declarations","log","comment"]
@@ -83,6 +84,7 @@ class CustomText(tk.Text):
         self.tk.call("rename", self._w, self._orig)
         self.tk.createcommand(self._w, self._proxy)
         self.bind("<Tab>", lambda event: self.replace_tabs_by_blanks())
+        self.bind("<Shift-Tab>", lambda event: self.unindent_selection())
         # Overwrites the default control-o = "insert a new line", needed for opening a new file:
         self.bind("<Control-o>", lambda event: self._open())
         # After pressing a key 2 things happen:
