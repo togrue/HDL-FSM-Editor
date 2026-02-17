@@ -15,8 +15,8 @@ line-number and file-name are determined and the corresponding entry of the Link
 """
 
 import tkinter as tk
+from typing import Any
 
-import main_window
 from codegen import hdl_generation
 from codegen.hdl_generation_config import GenerationConfig
 from constants import GuiTab
@@ -29,8 +29,9 @@ class LinkDictionary:
      the generated HDL to the graphical source of the line.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, control_tab_ref: Any = None) -> None:
         self.link_dict = {}
+        self._control_tab_ref = control_tab_ref
 
     def add(
         self,
@@ -47,7 +48,7 @@ class LinkDictionary:
         if hdl_item_type == "Control-Tab":
             self.link_dict[file_name][file_line_number] = {
                 "tab_name": GuiTab.CONTROL,
-                "widget_reference": main_window,  # TODO: das hier ist Quatsch, oder ?!
+                "widget_reference": self._control_tab_ref,
                 "hdl_item_type": hdl_item_name,
                 "object_identifier": "",
                 "number_of_line": "",
@@ -93,7 +94,8 @@ class LinkDictionary:
         object_identifier = self.link_dict[selected_file][file_line_number]["object_identifier"]
         number_of_line = self.link_dict[selected_file][file_line_number]["number_of_line"]
         project_manager.notebook.show_tab(tab_to_show)
-        widget.highlight_item(hdl_item_type, object_identifier, number_of_line)
+        if widget is not None:
+            widget.highlight_item(hdl_item_type, object_identifier, number_of_line)
 
     def jump_to_hdl(self, selected_file, file_line_number) -> None:
         """Switch to Generated HDL output tab and highlight the given file/line."""
@@ -118,10 +120,10 @@ class LinkDictionary:
 _link_dictionary: LinkDictionary | None = None
 
 
-def init_link_dict(root) -> None:
+def init_link_dict(control_tab_ref: Any = None) -> None:
     """Create and store the global LinkDictionary instance."""
     global _link_dictionary
-    _link_dictionary = LinkDictionary(root)
+    _link_dictionary = LinkDictionary(control_tab_ref=control_tab_ref)
 
 
 def link_dict() -> LinkDictionary:

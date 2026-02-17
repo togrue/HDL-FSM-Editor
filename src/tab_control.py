@@ -177,6 +177,11 @@ class TabControl:
             {"stringvar": working_directory_value, "entry": _working_directory_entry},
         ]
 
+    def highlight_item(self, hdl_item_type: str, object_identifier: str, number_of_line: str) -> None:
+        """Called when jumping from HDL tab to Control tab; optionally focus the relevant field."""
+        # No-op: Control tab has no line-based highlighting. Could focus module/reset/clock entry by hdl_item_type.
+        del hdl_item_type, object_identifier, number_of_line  # unused
+
     def switch_language_mode(self) -> None:  # also called from file_handling.py
         """Apply current language (VHDL/Verilog): update highlight dict, file count, labels, and layout."""
         new_language = project_manager.language.get()
