@@ -6,8 +6,10 @@ import tkinter as tk
 from tkinter import ttk
 
 import canvas_delete
+import canvas_editing
 import custom_text
 import move_handling_canvas_window
+import tab_diagram
 import undo_handling
 from project_manager import project_manager
 
@@ -34,7 +36,11 @@ class StateComment:
         self.difference_y = 0
         self.borderwidth = 0
         self.frame_id = ttk.Frame(
-            project_manager.canvas, relief=tk.FLAT, borderwidth=self.borderwidth, style="StateActionsWindow.TFrame", padding=padding
+            project_manager.canvas,
+            relief=tk.FLAT,
+            borderwidth=self.borderwidth,
+            style="StateActionsWindow.TFrame",
+            padding=padding,
         )
         self.label_id = ttk.Label(
             self.frame_id,
@@ -88,6 +94,14 @@ class StateComment:
             "<FocusOut>",
             lambda event: project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete()),
         )
+        ids_list = (self.label_id, self.text_id)
+        seq1_list = ("<Control-MouseWheel>", "<Control-Button-4>", "<Control-Button-5>")
+        seq2_list = ("<MouseWheel>", "<Button-4>", "<Button-5>")
+        for id in ids_list:
+            for seq in seq1_list:
+                id.bind(seq, lambda event: canvas_editing.zoom_wheel_window_item(event, self.window_id))
+            for seq in seq2_list:
+                id.bind(seq, tab_diagram.TabDiagram.scroll_wheel)
 
         StateComment.ref_dict[self.window_id] = self  # Store the object-reference with the Canvas-id as key.
 
