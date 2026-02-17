@@ -14,7 +14,7 @@ import undo_handling
 from dialogs.color_changer import ColorChanger
 from elements import state_action, state_comment, transition
 from project_manager import project_manager
-from widgets.OptionMenu import OptionMenu
+from widgets.option_menu import OptionMenu
 
 
 class States:
@@ -130,7 +130,7 @@ class States:
                 transition.TransitionLine.extend_transition_to_state_middle_points(t[:-4])
                 transition.TransitionLine.shorten_to_state_border(t[:-4])
 
-    def _evaluate_menu(self, event, window, listbox, menu_x, menu_y) -> None:
+    def _evaluate_menu(self, _event, window, listbox, menu_x, menu_y) -> None:
         selected_entry = listbox.get(listbox.curselection())
         listbox.destroy()
         project_manager.canvas.delete(window)
@@ -233,8 +233,7 @@ class States:
         text_width = (
             size[2] - size[0] + 15
         )  # Make the text a little bit bigger, so that it does not touch the state circle.
-        if text_width < 2 * project_manager.state_radius:
-            text_width = 2 * project_manager.state_radius
+        text_width = max(text_width, 2 * project_manager.state_radius)
         difference = text_width - state_width
         state_coords[0] = state_coords[0] - difference // 2
         state_coords[1] = state_coords[1] - difference // 2

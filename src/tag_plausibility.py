@@ -172,10 +172,10 @@ class TagPlausibility:
                 window_was_identified = False
                 window_tags = project_manager.canvas.gettags(canvas_item)
                 for window_tag in window_tags:
-                    if (
-                        window_tag == "global_actions1"
-                        or window_tag == "global_actions_combinatorial1"
-                        or window_tag == "state_actions_default"
+                    if window_tag in (
+                        "global_actions1",
+                        "global_actions_combinatorial1",
+                        "state_actions_default",
                     ):
                         window_was_identified = True
                     elif window_tag.startswith("state_action"):

@@ -19,6 +19,8 @@ class RegexConfig:
 
 
 class RegexDialog(simpledialog.Dialog):
+    """Dialog for configuring regex patterns for log parsing."""
+
     def __init__(
         self,
         parent: tk.Tk | tk.Toplevel,
@@ -45,7 +47,7 @@ class RegexDialog(simpledialog.Dialog):
         except re.error:
             return False
 
-    def on_pattern_change(self, event: tk.Event) -> None:
+    def on_pattern_change(self, _event: tk.Event) -> None:
         """Handle pattern entry changes and update background color based on validity."""
         pattern = self.pattern_entry.get()
         is_valid = self.validate_regex(pattern)

@@ -9,7 +9,7 @@ import move_handling_initialization
 import undo_handling
 from constants import GuiTab
 from project_manager import project_manager
-from widgets.OptionMenu import OptionMenu
+from widgets.option_menu import OptionMenu
 
 
 class TabDiagram:
@@ -120,6 +120,7 @@ class TabDiagram:
         minus_button.config(command=canvas_editing.zoom_minus)
 
         canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete())
+        canvas.bind("<Home>", lambda event: canvas_editing.view_all())
         canvas.bind("<Button-1>", move_handling_initialization.move_initialization)
         canvas.bind("<Motion>", canvas_delete.CanvasDelete.store_mouse_position)
         canvas.bind("<Control-MouseWheel>", canvas_editing.zoom_wheel)  # MouseWheel used at Windows.
@@ -155,19 +156,24 @@ class TabDiagram:
     def _scroll_move(self, event) -> None:
         project_manager.canvas.scan_dragto(event.x, event.y, gain=1)
 
-    def _scroll_end(self, event) -> None:
+    def _scroll_end(self, _event) -> None:
         project_manager.grid_drawer.draw_grid()
 
     @classmethod
     def scroll_wheel(cls, event) -> None:
         project_manager.grid_drawer.remove_grid()
         project_manager.canvas.scan_mark(event.x, event.y)
-        delta_y = 0
+        scroll_delta = 10.0
+        delta = 0.0
         if event.num == 5 or event.delta < 0:  # scroll down
-            delta_y = -10
+            delta = -scroll_delta * canvas_editing._abs_zoom_factor
         elif event.num == 4 or event.delta >= 0:  # scroll up
-            delta_y = +10
-        project_manager.canvas.scan_dragto(event.x, event.y + delta_y, gain=1)
+            delta = scroll_delta * canvas_editing._abs_zoom_factor
+
+        shift_mask = 1 << 0  # Tkinter shift key bit
+        scroll_direction = "x" if (event.state & shift_mask) else "y"
+        dx, dy = (delta, 0) if scroll_direction == "x" else (0, delta)
+        project_manager.canvas.scan_dragto(int(event.x + dx), int(event.y + dy), gain=1)
         project_manager.grid_drawer.draw_grid()
 
     def _check_for_window_resize(self, _) -> None:

@@ -23,7 +23,8 @@ from elements import (
 from project_manager import project_manager
 
 stack = []
-stack_write_pointer = 0
+# Pylint expects this to be a constant with uppercase naming.
+stack_write_pointer = 0  # pylint: disable=invalid-name # module-level mutable pointer
 
 
 def update_window_title() -> None:
@@ -273,7 +274,8 @@ def _get_fill_color(canvas_id):
     return "fill=" + color + " "
 
 
-_line_index = 0
+# Pylint expects this to be a constant with uppercase naming.
+_line_index = 0  # pylint: disable=invalid-name # mutable loop index in parser
 
 
 def _set_diagram_to_version_selected_by_stack_pointer() -> None:

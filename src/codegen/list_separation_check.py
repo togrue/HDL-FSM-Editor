@@ -18,6 +18,8 @@ from codegen import hdl_generation_library
 
 
 class ListSeparationCheck:
+    """Removes illegal trailing separator from list strings in VHDL/Verilog syntax."""
+
     def __init__(self, list_string, language) -> None:
         self.list_string = list_string
         if language == "VHDL":

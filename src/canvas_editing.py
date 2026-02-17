@@ -20,6 +20,8 @@ from project_manager import project_manager
 
 # import inspect
 
+_abs_zoom_factor: float = 1.0
+
 
 def translate_window_event_coordinates_in_rounded_canvas_coordinates(event) -> list:
     canvas_grid_x_coordinate = project_manager.canvas.canvasx(event.x, gridspacing=project_manager.state_radius)
@@ -125,12 +127,14 @@ def zoom_minus() -> None:
 
 
 def canvas_zoom(zoom_center, zoom_factor) -> None:
+    global _abs_zoom_factor
     # Modify factor, so that fontsize is always an integer:
     fontsize_rounded_down = int(project_manager.fontsize * zoom_factor)
     if zoom_factor > 1 and fontsize_rounded_down == project_manager.fontsize:
         fontsize_rounded_down += 1
     if fontsize_rounded_down != 0:
         zoom_factor = fontsize_rounded_down / project_manager.fontsize
+        _abs_zoom_factor *= zoom_factor
         project_manager.canvas.scale(
             "all", 0, 0, zoom_factor, zoom_factor
         )  # Scaling must use xoffset=0 and yoffset=0 to preserve the gridspacing of state_radius.
@@ -293,94 +297,75 @@ def _modify_font_sizes_of_all_canvas_items(factor) -> None:
     project_manager.label_fontsize *= factor
     used_label_fontsize = max(project_manager.label_fontsize, 1)
     project_manager.state_name_font.configure(size=int(project_manager.fontsize))
+    _apply_fontsize_to_canvas_items(used_label_fontsize)
+
+
+def _apply_fontsize_to_canvas_items(used_label_fontsize: float) -> None:
     canvas_ids = project_manager.canvas.find_all()
-    for i in canvas_ids:
-        if project_manager.canvas.type(i) == "window":
-            if i in state_action.StateAction.ref_dict:
-                state_action.StateAction.ref_dict[i].label_id.configure(font=("Arial", int(used_label_fontsize)))
-                state_action.StateAction.ref_dict[i].text_id.configure(font=("Courier", int(project_manager.fontsize)))
-                for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
-                    state_action.StateAction.ref_dict[i].text_id.tag_configure(
-                        highlight_tag_name,
-                        font=("Courier", int(project_manager.fontsize), "normal"),
-                    )
-            elif i in state_comment.StateComment.ref_dict:
-                state_comment.StateComment.ref_dict[i].label_id.configure(font=("Arial", int(used_label_fontsize)))
-                state_comment.StateComment.ref_dict[i].text_id.configure(
-                    font=("Courier", int(project_manager.fontsize))
-                )
-                for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
-                    state_comment.StateComment.ref_dict[i].text_id.tag_configure(
-                        highlight_tag_name,
-                        font=("Courier", int(project_manager.fontsize), "normal"),
-                    )
-            elif i in condition_action.ConditionAction.ref_dict:
-                condition_action.ConditionAction.ref_dict[i].condition_label.configure(
-                    font=("Arial", int(used_label_fontsize))
-                )
-                condition_action.ConditionAction.ref_dict[i].action_label.configure(
-                    font=("Arial", int(used_label_fontsize))
-                )
-                condition_action.ConditionAction.ref_dict[i].condition_id.configure(
-                    font=("Courier", int(project_manager.fontsize))
-                )
-                condition_action.ConditionAction.ref_dict[i].action_id.configure(
-                    font=("Courier", int(project_manager.fontsize))
-                )
-                for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
-                    condition_action.ConditionAction.ref_dict[i].condition_id.tag_configure(
-                        highlight_tag_name,
-                        font=("Courier", int(project_manager.fontsize), "normal"),
-                    )
-                    condition_action.ConditionAction.ref_dict[i].action_id.tag_configure(
-                        highlight_tag_name,
-                        font=("Courier", int(project_manager.fontsize), "normal"),
-                    )
-            elif i in global_actions_clocked.GlobalActionsClocked.ref_dict:
-                global_actions_clocked.GlobalActionsClocked.ref_dict[i].label_before.configure(
-                    font=("Arial", int(used_label_fontsize))
-                )
-                global_actions_clocked.GlobalActionsClocked.ref_dict[i].label_after.configure(
-                    font=("Arial", int(used_label_fontsize))
-                )
-                global_actions_clocked.GlobalActionsClocked.ref_dict[i].text_before_id.configure(
-                    font=("Courier", int(project_manager.fontsize))
-                )
-                global_actions_clocked.GlobalActionsClocked.ref_dict[i].text_after_id.configure(
-                    font=("Courier", int(project_manager.fontsize))
-                )
-                for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
-                    global_actions_clocked.GlobalActionsClocked.ref_dict[i].text_before_id.tag_configure(
-                        highlight_tag_name,
-                        font=("Courier", int(project_manager.fontsize), "normal"),
-                    )
-                    global_actions_clocked.GlobalActionsClocked.ref_dict[i].text_after_id.tag_configure(
-                        highlight_tag_name,
-                        font=("Courier", int(project_manager.fontsize), "normal"),
-                    )
-            elif i in global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict:
-                global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict[i].label.configure(
-                    font=("Arial", int(used_label_fontsize))
-                )
-                global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict[i].text_id.configure(
-                    font=("Courier", int(project_manager.fontsize))
-                )
-                for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
-                    global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict[i].text_id.tag_configure(
-                        highlight_tag_name,
-                        font=("Courier", int(project_manager.fontsize), "normal"),
-                    )
-            elif i in state_actions_default.StateActionsDefault.ref_dict:
-                state_actions_default.StateActionsDefault.ref_dict[i].label.configure(
-                    font=("Arial", int(used_label_fontsize))
-                )
-                state_actions_default.StateActionsDefault.ref_dict[i].text_id.configure(
-                    font=("Courier", int(project_manager.fontsize))
-                )
-                for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
-                    state_actions_default.StateActionsDefault.ref_dict[i].text_id.tag_configure(
-                        highlight_tag_name,
-                        font=("Courier", int(project_manager.fontsize), "normal"),
-                    )
-            else:
-                print("canvas_editing: Fatal, unknown dictionary key ", i)
+    handlers = [
+        (state_action.StateAction.ref_dict, _apply_font_to_state_action),
+        (state_comment.StateComment.ref_dict, _apply_font_to_state_comment),
+        (condition_action.ConditionAction.ref_dict, _apply_font_to_condition_action),
+        (global_actions_clocked.GlobalActionsClocked.ref_dict, _apply_font_to_global_actions_clocked),
+        (global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict, _apply_font_to_global_actions_combinatorial),
+        (state_actions_default.StateActionsDefault.ref_dict, _apply_font_to_state_actions_default),
+    ]
+    for canvas_id in canvas_ids:
+        if project_manager.canvas.type(canvas_id) != "window":
+            continue
+        for ref_dict, handler in handlers:
+            if canvas_id in ref_dict:
+                handler(ref_dict[canvas_id], used_label_fontsize)
+                break
+        else:
+            print("canvas_editing: Fatal, unknown dictionary key ", canvas_id)
+
+
+def _apply_font_to_state_action(widget, used_label_fontsize: float) -> None:
+    widget.label_id.configure(font=("Arial", int(used_label_fontsize)))
+    widget.text_id.configure(font=("Courier", int(project_manager.fontsize)))
+    _configure_highlight_tags(widget.text_id)
+
+
+def _apply_font_to_state_comment(widget, used_label_fontsize: float) -> None:
+    widget.label_id.configure(font=("Arial", int(used_label_fontsize)))
+    widget.text_id.configure(font=("Courier", int(project_manager.fontsize)))
+    _configure_highlight_tags(widget.text_id)
+
+
+def _apply_font_to_condition_action(widget, used_label_fontsize: float) -> None:
+    widget.condition_label.configure(font=("Arial", int(used_label_fontsize)))
+    widget.action_label.configure(font=("Arial", int(used_label_fontsize)))
+    widget.condition_id.configure(font=("Courier", int(project_manager.fontsize)))
+    widget.action_id.configure(font=("Courier", int(project_manager.fontsize)))
+    _configure_highlight_tags(widget.condition_id)
+    _configure_highlight_tags(widget.action_id)
+
+
+def _apply_font_to_global_actions_clocked(widget, used_label_fontsize: float) -> None:
+    widget.label_before.configure(font=("Arial", int(used_label_fontsize)))
+    widget.label_after.configure(font=("Arial", int(used_label_fontsize)))
+    widget.text_before_id.configure(font=("Courier", int(project_manager.fontsize)))
+    widget.text_after_id.configure(font=("Courier", int(project_manager.fontsize)))
+    _configure_highlight_tags(widget.text_before_id)
+    _configure_highlight_tags(widget.text_after_id)
+
+
+def _apply_font_to_global_actions_combinatorial(widget, used_label_fontsize: float) -> None:
+    widget.label.configure(font=("Arial", int(used_label_fontsize)))
+    widget.text_id.configure(font=("Courier", int(project_manager.fontsize)))
+    _configure_highlight_tags(widget.text_id)
+
+
+def _apply_font_to_state_actions_default(widget, used_label_fontsize: float) -> None:
+    widget.label.configure(font=("Arial", int(used_label_fontsize)))
+    widget.text_id.configure(font=("Courier", int(project_manager.fontsize)))
+    _configure_highlight_tags(widget.text_id)
+
+
+def _configure_highlight_tags(text_widget) -> None:
+    for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
+        text_widget.tag_configure(
+            highlight_tag_name,
+            font=("Courier", int(project_manager.fontsize), "normal"),
+        )
