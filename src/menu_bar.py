@@ -42,7 +42,7 @@ class MenuBar:
         hdl_menu.add_command(
             label="Generate",
             accelerator="Ctrl+g",
-            command=lambda: hdl_generation.run_hdl_generation(write_to_file=True),
+            command=lambda: self._generate_hdl(),
             font=("Arial", 10),
         )
         hdl_menu.add_command(
@@ -122,9 +122,7 @@ class MenuBar:
         # Bindings of the menus:
         project_manager.root.bind_all("<Control-o>", lambda event: file_handling.open_file())
         project_manager.root.bind_all("<Control-s>", lambda event: file_handling.save())
-        project_manager.root.bind_all(
-            "<Control-g>", lambda event: hdl_generation.run_hdl_generation(write_to_file=True)
-        )
+        project_manager.root.bind_all("<Control-g>", lambda event: self._generate_hdl())
         project_manager.root.bind_all("<Control-n>", lambda event: file_handling.new_design())
         project_manager.root.bind_all("<Control-p>", lambda event: compile_handling.compile_hdl())
         project_manager.root.bind_all("<Control-f>", lambda event: search_string_entry.focus_set())
@@ -134,6 +132,12 @@ class MenuBar:
         project_manager.root.bind_all("<Control-N>", lambda event: self._capslock_warning("N"))
         project_manager.root.bind_all("<Control-P>", lambda event: self._capslock_warning("P"))
         project_manager.root.bind_all("<Control-F>", lambda event: self._capslock_warning("F"))
+
+    def _generate_hdl(self) -> None:
+        """Save project if dirty, then run HDL generation to file."""
+        if project_manager.root.title().endswith("*"):
+            file_handling.save()
+        hdl_generation.run_hdl_generation(write_to_file=True)
 
     def _handle_notebook_tab_changed_event(self) -> None:
         self._enable_undo_redo_if_diagram_tab_is_active_else_disable()

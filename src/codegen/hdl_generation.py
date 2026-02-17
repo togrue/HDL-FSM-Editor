@@ -8,7 +8,6 @@ import traceback
 from datetime import datetime
 from tkinter import messagebox
 
-import file_handling
 import tag_plausibility
 from codegen import hdl_generation_architecture, hdl_generation_library, hdl_generation_module
 from codegen.hdl_generation_config import GenerationConfig
@@ -53,8 +52,6 @@ def _generate_hdl(config: GenerationConfig, write_to_file: bool, state_tag_list_
         raise GenerationError(
             "Error", ["The database is corrupt. Therefore, no HDL is generated.", "See details at STDOUT."]
         )
-    if project_manager.root.title().endswith("*"):
-        file_handling.save()
 
     # Create header with timestamp if enabled
     at_timestamp = f" at {datetime.today().ctime()}" if config.include_timestamp else ""
