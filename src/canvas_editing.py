@@ -156,6 +156,27 @@ def zoom_wheel(event) -> None:
     canvas_modify_bindings.switch_to_move_mode()
 
 
+def zoom_wheel_window_item(event, canvas_id) -> None:
+    project_manager.grid_drawer.remove_grid()
+    # event.delta: attribute of the mouse wheel under Windows and MacOs.
+    # One "felt step" at the mouse wheel gives this value:
+    # Windows: delta=+/-120 ; MacOS: delta=+/-1 ; Linux: delta=0
+    # num: attribute of the the mouse wheel under Linux  ("scroll-up=5" and "scroll-down=4").
+    factor = 1
+    if event.num == 5 or event.delta < 0:  # scroll down
+        factor = 1 / 1.1
+    elif event.num == 4 or event.delta >= 0:  # scroll up
+        factor = 1.1
+    window_coor = project_manager.canvas.coords(canvas_id)
+    window_bbox = project_manager.canvas.bbox(canvas_id)
+    zoom_center_x = window_coor[0] + event.x
+    zoom_center_y = window_coor[1] - (window_bbox[3] - window_bbox[1]) / 2 + event.y
+    zoom_center = (zoom_center_x, zoom_center_y)
+    canvas_zoom(zoom_center, factor)
+    project_manager.grid_drawer.draw_grid()
+    canvas_modify_bindings.switch_to_move_mode()
+
+
 def _calculate_zoom_factor(complete_rectangle, visible_rectangle):
     complete_width = complete_rectangle[2] - complete_rectangle[0]
     complete_height = complete_rectangle[3] - complete_rectangle[1]

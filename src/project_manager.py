@@ -14,6 +14,7 @@ class ProjectManager:
 
     def __init__(self) -> None:
         # self._project = Project()
+        self._store_events = True
         self._root: tk.Tk = None
         self._current_file: str = ""
         self._notebook: ttk.Notebook = None
@@ -80,6 +81,11 @@ class ProjectManager:
         self._label_fontsize = 8
         self._state_name_font = None
         self._highlight_dict_ref = None  #: linting.HighLightDict
+
+    @property
+    def store_events(self):  # -> linting.HighLightDict:
+        """Get the highlight dictionary."""
+        return self._store_events
 
     @property
     def highlight_dict_ref(self):  # -> linting.HighLightDict:

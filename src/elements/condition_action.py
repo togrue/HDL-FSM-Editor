@@ -7,8 +7,10 @@ import tkinter as tk
 from tkinter import ttk
 
 import canvas_delete
+import canvas_editing
 import custom_text
 import move_handling_canvas_window
+import tab_diagram
 import undo_handling
 from project_manager import project_manager
 
@@ -143,6 +145,14 @@ class ConditionAction:
             "<FocusOut>",
             lambda event: project_manager.canvas.bind_all("<Delete>", lambda event: canvas_delete.CanvasDelete()),
         )
+        ids_list = (self.condition_label, self.action_label, self.condition_id, self.action_id)
+        seq1_list = ("<Control-MouseWheel>", "<Control-Button-4>", "<Control-Button-5>")
+        seq2_list = ("<MouseWheel>", "<Button-4>", "<Button-5>")
+        for id in ids_list:
+            for seq in seq1_list:
+                id.bind(seq, lambda event: canvas_editing.zoom_wheel_window_item(event, self.window_id))
+            for seq in seq2_list:
+                id.bind(seq, tab_diagram.TabDiagram.scroll_wheel)
 
         # Create dictionary for translating the canvas-id of the canvas-window into a reference to this object:
         ConditionAction.ref_dict[self.window_id] = self

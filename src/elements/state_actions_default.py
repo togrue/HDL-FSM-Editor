@@ -10,6 +10,7 @@ import canvas_editing
 import canvas_modify_bindings
 import custom_text
 import move_handling_canvas_window
+import tab_diagram
 import undo_handling
 from project_manager import project_manager
 
@@ -28,7 +29,11 @@ class StateActionsDefault:
         self.move_rectangle = None
         self.borderwidth = 0
         self.frame_id = ttk.Frame(
-            project_manager.canvas, relief=tk.FLAT, borderwidth=self.borderwidth, padding=padding, style="StateActionsWindow.TFrame"
+            project_manager.canvas,
+            relief=tk.FLAT,
+            borderwidth=self.borderwidth,
+            padding=padding,
+            style="StateActionsWindow.TFrame",
         )
         # Create label object inside frame:
         self.label = ttk.Label(
@@ -75,6 +80,14 @@ class StateActionsDefault:
         self.window_id = project_manager.canvas.create_window(
             menu_x, menu_y, window=self.frame_id, anchor=tk.W, tags=tags
         )
+        ids_list = (self.label, self.text_id)
+        seq1_list = ("<Control-MouseWheel>", "<Control-Button-4>", "<Control-Button-5>")
+        seq2_list = ("<MouseWheel>", "<Button-4>", "<Button-5>")
+        for id in ids_list:
+            for seq in seq1_list:
+                id.bind(seq, lambda event: canvas_editing.zoom_wheel_window_item(event, self.window_id))
+            for seq in seq2_list:
+                id.bind(seq, tab_diagram.TabDiagram.scroll_wheel)
         StateActionsDefault.ref_dict[self.window_id] = self
         canvas_modify_bindings.switch_to_move_mode()
 

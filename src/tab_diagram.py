@@ -128,7 +128,9 @@ class TabDiagram:
         canvas.bind("<Control-Button-1>", self._scroll_start)
         canvas.bind("<Control-B1-Motion>", self._scroll_move)
         canvas.bind("<Control-ButtonRelease-1>", self._scroll_end)
-        canvas.bind("<MouseWheel>", self._scroll_wheel)
+        canvas.bind("<MouseWheel>", TabDiagram.scroll_wheel)
+        canvas.bind("<Button-4>", TabDiagram.scroll_wheel)
+        canvas.bind("<Button-5>", TabDiagram.scroll_wheel)
         canvas.bind("<Button-3>", canvas_editing.start_view_rectangle)
         canvas.bind("<Configure>", self._check_for_window_resize)
 
@@ -156,7 +158,8 @@ class TabDiagram:
     def _scroll_end(self, event) -> None:
         project_manager.grid_drawer.draw_grid()
 
-    def _scroll_wheel(self, event) -> None:
+    @classmethod
+    def scroll_wheel(cls, event) -> None:
         project_manager.grid_drawer.remove_grid()
         project_manager.canvas.scan_mark(event.x, event.y)
         delta_y = 0
