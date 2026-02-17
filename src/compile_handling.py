@@ -16,6 +16,7 @@ from project_manager import project_manager
 
 
 def compile_hdl() -> None:
+    """Run the compile command and show output in the compile message tab."""
     project_manager.notebook.show_tab(GuiTab.COMPILE_MSG)
     if (
         project_manager.working_directory_value.get() != ""

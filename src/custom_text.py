@@ -130,10 +130,7 @@ class CustomText(CodeEditor):
             return None
 
     def edit_in_external_editor(self) -> None:
-        """
-        Loads the text into an external editor, and after closing the editor, the text in the CustomText
-        is replaced by the (possibly) modified text.
-        """
+        """Open current text in external editor (blocking), then replace content with edited result."""
         with tempfile.NamedTemporaryFile(
             suffix=".vhd" if project_manager.language.get() == "VHDL" else ".v",
             delete=False,
@@ -154,13 +151,14 @@ class CustomText(CodeEditor):
         self.format()
 
     def format_after_idle(self) -> None:
+        """Schedule format() after 200 ms idle (except for log text)."""
         if self.text_type != "log":
             if self.format_after_id is not None:
                 self.after_cancel(self.format_after_id)
             self.format_after_id = self.after(200, self.format)
 
     def format(self) -> None:
-        """Resizes the text box, updates several lists of signals/variables, and updates the highlighting."""
+        """Update text box size and highlighting."""
         text = self.get("1.0", tk.END)
         self._update_size_of_text_box(text)
         if self.text_type in ("declarations", "variable", "action"):
@@ -286,6 +284,7 @@ class CustomText(CodeEditor):
                 )
 
     def _replace_strings_and_attributes_by_blanks(self, copy_of_text):
+        """Replace string literals and VHDL attributes in text with spaces for safe regex search."""
         for search_string in ["'image", "'length", '".*?"', "'.*?'"]:
             while True:
                 match_object = re.search(search_string, copy_of_text, flags=re.IGNORECASE)
@@ -301,6 +300,7 @@ class CustomText(CodeEditor):
         return copy_of_text
 
     def _remove_surrounding_characters_from_the_match(self, match_object, keyword) -> tuple:
+        """Return (start, end) indices of the keyword within the match (strip word boundaries)."""
         if match_object.end() - match_object.start() == len(keyword) + 2:
             return match_object.start() + 1, match_object.end() - 1
         if match_object.end() - match_object.start() == len(keyword) + 1:
@@ -799,6 +799,7 @@ class CustomText(CodeEditor):
         self.focus_set()
 
     def _update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment(self) -> None:
+        """Schedule update of not_read, not_written, and comment highlights in all text windows after 300 ms."""
         if self.update_highlight_after_id is not None:
             project_manager.root.after_cancel(self.update_highlight_after_id)
         self.update_highlight_after_id = project_manager.root.after(

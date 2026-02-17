@@ -161,6 +161,7 @@ class TabDiagram:
 
     @classmethod
     def scroll_wheel(cls, event) -> None:
+        """Handle mouse wheel: scroll the canvas."""
         project_manager.grid_drawer.remove_grid()
         project_manager.canvas.scan_mark(event.x, event.y)
         scroll_delta = 10.0
@@ -186,6 +187,7 @@ class TabDiagram:
 
     @classmethod
     def show_canvas_background_menu(cls, zoom_coords) -> None:
+        """Show context menu at zoom_coords for background color and grid visibility."""
         canvas_menue_entries_list_with_hide = ["Change background color", "Hide grid"]
         canvas_menue_entries_list_with_show = ["Change background color", "Show grid"]
         if project_manager.grid_drawer.show_grid is True:
