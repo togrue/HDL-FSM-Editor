@@ -12,7 +12,6 @@ import config
 import constants
 import file_handling
 from codegen import hdl_text_utils
-from elements import global_actions_combinatorial
 from project_manager import project_manager
 from widgets.code_editor import CodeEditor
 
@@ -401,12 +400,7 @@ class CustomText(CodeEditor):
         _remove_items_from_list(CustomText.written_variables_of_all_windows[self], [";", "<=", ":="])
 
     def _text_is_global_actions_combinatorial(self):
-        list_of_canvas_id = project_manager.canvas.find_withtag("global_actions_combinatorial1")
-        if list_of_canvas_id:
-            canvas_id = list_of_canvas_id[0]
-            if global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict[canvas_id].text_id == self:
-                return True
-        return False
+        return project_manager.is_global_actions_combinatorial_text(self)
 
     def _fill_function_names_list(self):
         self.function_names_list = []

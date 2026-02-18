@@ -49,6 +49,7 @@ class GlobalActionsCombinatorial:
             maxundo=-1,
             font=("Courier", int(project_manager.fontsize)),
         )
+        project_manager.register_global_actions_combinatorial_text(self.text_id)
         self.label.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E))
         self.text_id.grid(row=1, column=0, sticky=(tk.E, tk.W))
         # Create canvas window for frame:
@@ -145,6 +146,7 @@ class GlobalActionsCombinatorial:
 
     def delete(self):
         """Remove window, ref_dict entry, and re-enable global_action_combinatorial button."""
+        project_manager.clear_global_actions_combinatorial_text()
         del custom_text.CustomText.read_variables_of_all_windows[self.text_id]
         del custom_text.CustomText.written_variables_of_all_windows[self.text_id]
         project_manager.canvas.delete(self.window_id)  # delete window

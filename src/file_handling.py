@@ -144,6 +144,7 @@ def _clear_design() -> bool:
     project_manager.state_action_default_button.config(state=tk.NORMAL)
     project_manager.global_action_clocked_button.config(state=tk.NORMAL)
     project_manager.global_action_combinatorial_button.config(state=tk.NORMAL)
+    project_manager.clear_global_actions_combinatorial_text()
     global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict = {}
     global_actions_clocked.GlobalActionsClocked.ref_dict = {}
     project_manager.state_radius = 20.0
