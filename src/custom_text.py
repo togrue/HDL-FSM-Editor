@@ -11,7 +11,7 @@ import tkinter as tk
 import config
 import constants
 import file_handling
-from codegen import hdl_generation_architecture_state_actions, hdl_generation_library
+from codegen import hdl_generation_architecture_state_actions, hdl_text_utils
 from elements import global_actions_combinatorial
 from project_manager import project_manager
 from widgets.code_editor import CodeEditor
@@ -325,15 +325,15 @@ class CustomText(CodeEditor):
         """Parse text and update signals_list and constants_list from declarations."""
         # ["package","generics","ports","variable","condition","generated","action","declarations","log","comment"]
         all_signal_declarations = self.get("1.0", tk.END).lower()
-        all_signal_declarations = hdl_generation_library.remove_comments_and_returns(all_signal_declarations)
-        all_signal_declarations = hdl_generation_library.remove_functions(all_signal_declarations)
-        all_signal_declarations = hdl_generation_library.remove_type_declarations(all_signal_declarations)
-        all_signal_declarations = hdl_generation_library.surround_character_by_blanks(":", all_signal_declarations)
+        all_signal_declarations = hdl_text_utils.remove_comments_and_returns(all_signal_declarations)
+        all_signal_declarations = hdl_text_utils.remove_functions(all_signal_declarations)
+        all_signal_declarations = hdl_text_utils.remove_type_declarations(all_signal_declarations)
+        all_signal_declarations = hdl_text_utils.surround_character_by_blanks(":", all_signal_declarations)
         # For VHDL processes in "global actions combinatorial":
         all_signal_declarations = re.sub(r"process\s*\(.*?\)", "", all_signal_declarations)
 
-        self.signals_list = hdl_generation_library.get_all_declared_signal_and_variable_names(all_signal_declarations)
-        self.constants_list = hdl_generation_library.get_all_declared_constant_names(all_signal_declarations)
+        self.signals_list = hdl_text_utils.get_all_declared_signal_and_variable_names(all_signal_declarations)
+        self.constants_list = hdl_text_utils.get_all_declared_constant_names(all_signal_declarations)
 
     def update_custom_text_class_ports_list(self) -> None:  # Needed at self==project_manager.interface_ports_text
         """Parse ports text and update readable_ports_list, writable_ports_list, port_types_list."""
@@ -355,7 +355,7 @@ class CustomText(CodeEditor):
         CustomText.read_variables_of_all_windows[self] = []
         CustomText.written_variables_of_all_windows[self] = []
         text = self.get("1.0", tk.END + "- 1 chars")
-        text = hdl_generation_library.convert_hdl_lines_into_a_searchable_string(text)
+        text = hdl_text_utils.convert_hdl_lines_into_a_searchable_string(text)
         if text.isspace():
             return
         if project_manager.language.get() == "VHDL" and self == project_manager.internals_architecture_text:
