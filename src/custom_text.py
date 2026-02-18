@@ -11,7 +11,7 @@ import tkinter as tk
 import config
 import constants
 import file_handling
-from codegen import hdl_generation_architecture_state_actions, hdl_text_utils
+from codegen import hdl_text_utils
 from elements import global_actions_combinatorial
 from project_manager import project_manager
 from widgets.code_editor import CodeEditor
@@ -338,18 +338,14 @@ class CustomText(CodeEditor):
     def update_custom_text_class_ports_list(self) -> None:  # Needed at self==project_manager.interface_ports_text
         """Parse ports text and update readable_ports_list, writable_ports_list, port_types_list."""
         all_port_declarations = self.get("1.0", tk.END).lower()
-        self.readable_ports_list = hdl_generation_architecture_state_actions.get_all_readable_ports(
-            all_port_declarations, check=False
-        )
-        self.writable_ports_list = hdl_generation_architecture_state_actions.get_all_writable_ports(
-            all_port_declarations
-        )
-        self.port_types_list = hdl_generation_architecture_state_actions.get_all_port_types(all_port_declarations)
+        self.readable_ports_list = hdl_text_utils.get_all_readable_ports(all_port_declarations, check=False)
+        self.writable_ports_list = hdl_text_utils.get_all_writable_ports(all_port_declarations)
+        self.port_types_list = hdl_text_utils.get_all_port_types(all_port_declarations)
 
     def update_custom_text_class_generics_list(self) -> None:
         """Parse generics text and update generics_list from interface generics."""
         all_generic_declarations = project_manager.interface_generics_text.get("1.0", tk.END).lower()
-        self.generics_list = hdl_generation_architecture_state_actions.get_all_generic_names(all_generic_declarations)
+        self.generics_list = hdl_text_utils.get_all_generic_names(all_generic_declarations)
 
     def _update_entry_of_this_window_in_list_of_read_and_written_variables_of_all_windows(self) -> None:
         CustomText.read_variables_of_all_windows[self] = []

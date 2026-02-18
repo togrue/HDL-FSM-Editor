@@ -5,6 +5,7 @@ Pure HDL text parsing helpers shared by UI and code generation.
 import re
 
 from project_manager import project_manager
+from .exceptions import GenerationError
 
 BLOCK_COMMENT_RE = re.compile(r"\/\*.*?\*\/", flags=re.DOTALL)
 
@@ -157,3 +158,119 @@ def _get_all_constant_names(declaration):
         constant_names = re.sub(" \\[.*?\\] ", " ", declaration)
     constant_names_without_blanks = re.sub(" ", "", constant_names)
     return constant_names_without_blanks
+
+
+def get_all_readable_ports(all_port_declarations, check) -> list:
+    """Returns a list with the names of all readable ports.
+    If check is True, an error is raised if an illegal port declaration is found.
+    """
+    port_declaration_list = _create_list_of_declarations(all_port_declarations)
+    readable_port_list = []
+    for declaration in port_declaration_list:
+        if declaration != "" and not declaration.isspace():
+            inputs = _get_all_readable_port_names(
+                declaration, check
+            )  # One declaration can contain a comma separated list of names!
+            if inputs != "":
+                readable_port_list.extend(inputs.split(","))
+    return readable_port_list
+
+
+def get_all_writable_ports(all_port_declarations) -> list:
+    """Returns a list with the names of all writable ports."""
+    port_declaration_list = _create_list_of_declarations(all_port_declarations)
+    writeable_port_list = []
+    for declaration in port_declaration_list:
+        if declaration != "" and not declaration.isspace():
+            outputs = _get_all_writable_port_names(declaration)
+            if outputs != "":
+                writeable_port_list.extend(outputs.split(","))
+    return writeable_port_list
+
+
+def get_all_port_types(all_port_declarations) -> list:
+    """Returns a list with the type-names of all ports."""
+    port_declaration_list = _create_list_of_declarations(all_port_declarations)
+    port_types_list = []
+    for declaration in port_declaration_list:
+        if (
+            declaration != ""
+            and not declaration.isspace()
+            and (" in " in declaration or " out " in declaration or " inout " in declaration)
+        ):
+            port_type = re.sub(".* in |.* out |.* inout ", "", declaration, flags=re.I | re.DOTALL)
+            port_type = re.sub("\\(.*", "", port_type, flags=re.I | re.DOTALL)
+            port_type = re.sub(";", "", port_type)
+            if port_type != "" and not port_type.isspace():
+                port_type = re.sub("\\s", "", port_type)
+                port_types_list.append(port_type)
+    return port_types_list
+
+
+def get_all_generic_names(all_generic_declarations) -> list:
+    """Returns a list with the names of all generics."""
+    generic_declaration_list = _create_list_of_declarations(all_generic_declarations)
+    generic_name_list = []
+    for declaration in generic_declaration_list:
+        if declaration != "" and not declaration.isspace():
+            if project_manager.language.get() == "VHDL":
+                generic_name = re.sub(" : .*", "", declaration, flags=re.I | re.DOTALL)
+                generic_name = re.sub(r"(^|\s+)constant ", "", generic_name, flags=re.I | re.DOTALL)
+                generic_name = re.sub("\\s", "", generic_name)
+            else:  # Verilog
+                generic_name = re.sub("=.*", "", declaration, flags=re.I | re.DOTALL)
+                generic_name = re.sub("\\s", "", generic_name)
+            generic_name_list.append(generic_name)
+    return generic_name_list
+
+
+def _create_list_of_declarations(all_declarations):
+    all_declarations_without_comments = remove_comments_and_returns(all_declarations)
+    all_declarations_separated = surround_character_by_blanks(
+        ":", all_declarations_without_comments
+    )  # only needed for VHDL
+    split_char = ";" if project_manager.language.get() == "VHDL" else ","
+    return all_declarations_separated.split(split_char)
+
+
+def _get_all_readable_port_names(declaration, check) -> str:
+    port_names = ""
+    if " in " in declaration and project_manager.language.get() == "VHDL":
+        if ":" not in declaration:
+            if check is True:
+                raise GenerationError(
+                    "Error",
+                    [
+                        f'There is an illegal port declaration, which will be ignored: "{declaration}"',
+                        "VHDL may be corrupted.",
+                    ],
+                )
+        else:
+            port_names = re.sub(":.*", "", declaration)
+    elif " input " in declaration and project_manager.language.get() != "VHDL":
+        declaration = re.sub(" input ", " ", declaration, flags=re.I)
+        declaration = re.sub(" reg ", " ", declaration, flags=re.I)
+        declaration = re.sub(" logic ", " ", declaration, flags=re.I)
+        port_names = re.sub(" \\[.*?\\] ", " ", declaration)
+    else:
+        return ""
+    port_names_without_blanks = re.sub(" ", "", port_names)
+    return port_names_without_blanks
+
+
+def _get_all_writable_port_names(declaration) -> str:
+    port_names = ""
+    if " out " in declaration and project_manager.language.get() == "VHDL":
+        if ":" in declaration:
+            port_names = re.sub(":.*", "", declaration)
+    elif " output " in declaration and project_manager.language.get() != "VHDL":
+        declaration = re.sub(" output ", " ", declaration, flags=re.I)
+        declaration = re.sub(" reg ", " ", declaration, flags=re.I)
+        declaration = re.sub(" logic ", " ", declaration, flags=re.I)
+        declaration = re.sub(" unsigned ", " ", declaration, flags=re.I)
+        declaration = re.sub(" signed ", " ", declaration, flags=re.I)
+        port_names = re.sub(" \\[.*?\\] ", " ", declaration)
+    else:
+        return ""
+    port_names_without_blanks = re.sub(" ", "", port_names)
+    return port_names_without_blanks

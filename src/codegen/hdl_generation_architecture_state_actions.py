@@ -5,7 +5,7 @@ All methods needed for the state action process in VHDL or Verilog
 import re
 import tkinter as tk
 
-from codegen import hdl_generation_library
+from codegen import hdl_generation_library, hdl_text_utils
 from elements import state_action, state_actions_default
 from project_manager import project_manager
 
@@ -279,28 +279,12 @@ def get_all_readable_ports(all_port_declarations, check) -> list:
     """Returns a list with the names of all readable ports.
     If check is True, an error is raised if an illegal port declaration is found.
     """
-    port_declaration_list = _create_list_of_declarations(all_port_declarations)
-    readable_port_list = []
-    for declaration in port_declaration_list:
-        if declaration != "" and not declaration.isspace():
-            inputs = _get_all_readable_port_names(
-                declaration, check
-            )  # One declaration can contain a comma separated list of names!
-            if inputs != "":
-                readable_port_list.extend(inputs.split(","))
-    return readable_port_list
+    return hdl_text_utils.get_all_readable_ports(all_port_declarations, check)
 
 
 def get_all_writable_ports(all_port_declarations) -> list:
     """Returns a list with the names of all writable ports."""
-    port_declaration_list = _create_list_of_declarations(all_port_declarations)
-    writeable_port_list = []
-    for declaration in port_declaration_list:
-        if declaration != "" and not declaration.isspace():
-            outputs = _get_all_writable_port_names(declaration)
-            if outputs != "":
-                writeable_port_list.extend(outputs.split(","))
-    return writeable_port_list
+    return hdl_text_utils.get_all_writable_ports(all_port_declarations)
 
 
 def _create_list_of_declarations(all_declarations):
@@ -314,38 +298,12 @@ def _create_list_of_declarations(all_declarations):
 
 def get_all_port_types(all_port_declarations) -> list:
     """Returns a list with the type-names of all ports."""
-    port_declaration_list = _create_list_of_declarations(all_port_declarations)
-    port_types_list = []
-    for declaration in port_declaration_list:
-        if (
-            declaration != ""
-            and not declaration.isspace()
-            and (" in " in declaration or " out " in declaration or " inout " in declaration)
-        ):
-            port_type = re.sub(".* in |.* out |.* inout ", "", declaration, flags=re.I | re.DOTALL)
-            port_type = re.sub("\\(.*", "", port_type, flags=re.I | re.DOTALL)
-            port_type = re.sub(";", "", port_type)
-            if port_type != "" and not port_type.isspace():
-                port_type = re.sub("\\s", "", port_type)
-                port_types_list.append(port_type)
-    return port_types_list
+    return hdl_text_utils.get_all_port_types(all_port_declarations)
 
 
 def get_all_generic_names(all_generic_declarations) -> list:
     """Returns a list with the names of all generics."""
-    generic_declaration_list = _create_list_of_declarations(all_generic_declarations)
-    generic_name_list = []
-    for declaration in generic_declaration_list:
-        if declaration != "" and not declaration.isspace():
-            if project_manager.language.get() == "VHDL":
-                generic_name = re.sub(" : .*", "", declaration, flags=re.I | re.DOTALL)
-                generic_name = re.sub(r"(^|\s+)constant ", "", generic_name, flags=re.I | re.DOTALL)
-                generic_name = re.sub("\\s", "", generic_name)
-            else:  # Verilog
-                generic_name = re.sub("=.*", "", declaration, flags=re.I | re.DOTALL)
-                generic_name = re.sub("\\s", "", generic_name)
-            generic_name_list.append(generic_name)
-    return generic_name_list
+    return hdl_text_utils.get_all_generic_names(all_generic_declarations)
 
 
 def _get_all_readable_port_names(declaration, check) -> str:
