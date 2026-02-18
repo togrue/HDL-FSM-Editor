@@ -54,6 +54,7 @@ def ask_save_unsaved_changes(title) -> str:
 
 
 def save_as() -> None:
+    old_previous_file = project_manager.previous_file
     project_manager.previous_file = project_manager.current_file
     project_manager.current_file = asksaveasfilename(
         defaultextension=".hfe",
@@ -64,6 +65,9 @@ def save_as() -> None:
         dir_name, file_name = os.path.split(project_manager.current_file)
         project_manager.root.title(f"{file_name} ({dir_name})")
         save_in_file(project_manager.current_file)
+    else:
+        project_manager.current_file = project_manager.previous_file
+        project_manager.previous_file = old_previous_file
 
 
 def save() -> None:
