@@ -81,6 +81,7 @@ class ProjectManager:
         self._label_fontsize = 8
         self._state_name_font = None
         self._highlight_dict_ref = None  #: linting.HighLightDict
+        self._global_actions_combinatorial_text: tk.Widget | None = None
 
     @property
     def store_events(self):  # -> linting.HighLightDict:
@@ -731,6 +732,18 @@ class ProjectManager:
     def previous_file(self, value: str) -> str:
         """Set the previous file path."""
         self._previous_file = value
+
+    def register_global_actions_combinatorial_text(self, widget: tk.Widget) -> None:
+        """Register the global combinatorial CustomText widget."""
+        self._global_actions_combinatorial_text = widget
+
+    def clear_global_actions_combinatorial_text(self) -> None:
+        """Clear the global combinatorial CustomText widget reference."""
+        self._global_actions_combinatorial_text = None
+
+    def is_global_actions_combinatorial_text(self, widget: tk.Widget) -> bool:
+        """Return True if widget is the registered global combinatorial CustomText widget."""
+        return self._global_actions_combinatorial_text is widget
 
     # def get(self, attr_name: str, default=None):
     #     """Get a state attribute."""
