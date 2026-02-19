@@ -22,13 +22,18 @@ from .list_separation_check import ListSeparationCheck
 last_line_number_of_file1 = 0  # pylint: disable=invalid-name # module-level mutable
 
 
-def run_hdl_generation(write_to_file, is_script_mode: bool = False) -> bool:
-    """Run HDL generation with current config; show errors in GUI or print in script mode. Return True on success."""
+def run_hdl_generation(write_to_file, is_script_mode: bool, design_data) -> bool:
+    """Run HDL generation with current config; show errors in GUI or print in script mode. Return True on success.
+    design_data must be a DesignData instance from design_data_gatherer.gather_design_data()."""
     config = GenerationConfig.from_main_window()
-    state_tag_list_sorted = _create_sorted_state_tag_list(is_script_mode)
+    state_tag_list_sorted = (
+        design_data.state_tag_list_sorted
+        if design_data.state_tag_list_sorted is not None
+        else _create_sorted_state_tag_list(is_script_mode)
+    )
     success = False
     try:
-        _generate_hdl(config, write_to_file, state_tag_list_sorted)
+        _generate_hdl(config, write_to_file, state_tag_list_sorted, design_data)
         success = True
     except GenerationError as e:
         if is_script_mode:
@@ -43,7 +48,7 @@ def run_hdl_generation(write_to_file, is_script_mode: bool = False) -> bool:
     return success
 
 
-def _generate_hdl(config: GenerationConfig, write_to_file: bool, state_tag_list_sorted: list) -> None:
+def _generate_hdl(config: GenerationConfig, write_to_file: bool, state_tag_list_sorted: list, design_data) -> None:
     errors = config.validate()
     if errors:
         raise GenerationError("Error in HDL-FSM-Editor", errors)
@@ -60,10 +65,10 @@ def _generate_hdl(config: GenerationConfig, write_to_file: bool, state_tag_list_
     else:
         header = f"// Created by HDL-FSM-Editor{at_timestamp}\n"
 
-    _create_hdl(config, header, write_to_file, state_tag_list_sorted)
+    _create_hdl(config, header, write_to_file, state_tag_list_sorted, design_data)
 
 
-def _create_hdl(config, header, write_to_file, state_tag_list_sorted) -> None:
+def _create_hdl(config, header, write_to_file, state_tag_list_sorted, design_data) -> None:
     file_name, file_name_architecture = _get_file_names(config)
 
     project_manager.link_dict_ref.clear_link_dict(file_name)
@@ -80,11 +85,13 @@ def _create_hdl(config, header, write_to_file, state_tag_list_sorted) -> None:
             file_to_use = file_name_architecture
             file_line_number_to_use = 3
         architecture = hdl_generation_architecture.create_architecture(
-            file_to_use, file_line_number_to_use, state_tag_list_sorted
+            file_to_use, file_line_number_to_use, state_tag_list_sorted, design_data
         )
     else:
         entity, file_line_number = _create_module_ports(config, file_name, file_line_number)
-        architecture = hdl_generation_module.create_module_logic(file_name, file_line_number, state_tag_list_sorted)
+        architecture = hdl_generation_module.create_module_logic(
+            file_name, file_line_number, state_tag_list_sorted, design_data
+        )
     if architecture is None:
         return  # No further actions required, because when writing to a file, always an architecture must exist.
     # write_hdl_file must be called even if hdl is not needed, as write_hdl_file sets last_line_number_of_file1,

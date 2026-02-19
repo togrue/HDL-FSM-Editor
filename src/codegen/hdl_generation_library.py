@@ -43,17 +43,12 @@ def _get_target_state_name(all_reset_transition_tags):
     return target_state_name
 
 
-def create_reset_condition_and_reset_action() -> list:
+def create_reset_condition_and_reset_action(design_data) -> list:
     """Return [condition_text, action_text, condition_widget_ref, action_widget_ref] for reset transition;
     Raises GenerationError if missing.
     """
-    reset_transition_tag = _get_reset_transition_tag()
-    ref = _get_condition_action_reference_of_transition(reset_transition_tag)
-    if ref is None:
-        reference_to_reset_condition_custom_text = None
-        reference_to_reset_action_custom_text = None
-        action = ""
-        condition = ""
+    reset = design_data.reset_condition_action
+    if reset is None:
         raise GenerationError(
             "Error",
             [
@@ -64,17 +59,18 @@ def create_reset_condition_and_reset_action() -> list:
                 "to the state, which shall be reached by active reset.",
             ],
         )
-    reference_to_reset_condition_custom_text = ref.condition_id
-    condition = reference_to_reset_condition_custom_text.get("1.0", tk.END + "-1 chars")  # without "return" at the end
+    (
+        condition,
+        action_text_from_widget,
+        reference_to_reset_condition_custom_text,
+        reference_to_reset_action_custom_text,
+    ) = reset
+    reset_transition_tag = _get_reset_transition_tag()
     all_reset_transition_tags = project_manager.canvas.gettags(reset_transition_tag)
     target_state_name = _get_target_state_name(all_reset_transition_tags)
     action = "state <= " + target_state_name + ";\n"
-    reference_to_reset_action_custom_text = ref.action_id
-    action_text = reference_to_reset_action_custom_text.get(
-        "1.0", tk.END
-    )  # action_text will always have a return as last character.
-    if action_text != "\n":  # check for empty line
-        action += action_text
+    if action_text_from_widget != "\n":
+        action += action_text_from_widget
     return [condition, action, reference_to_reset_condition_custom_text, reference_to_reset_action_custom_text]
 
 

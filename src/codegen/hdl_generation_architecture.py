@@ -10,7 +10,7 @@ from codegen import (
 from project_manager import project_manager
 
 
-def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> None:
+def create_architecture(file_name, file_line_number, state_tag_list_sorted, design_data) -> None:
     """Build VHDL architecture body and write it; update file_line_number and link dict for navigation."""
     architecture = ""
 
@@ -76,7 +76,7 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted) -> N
     file_line_number += 1
 
     [reset_condition, reset_action, reference_to_reset_condition_custom_text, reference_to_reset_action_custom_text] = (
-        hdl_generation_library.create_reset_condition_and_reset_action()
+        hdl_generation_library.create_reset_condition_and_reset_action(design_data)
     )
     if reset_condition is None:
         return  # No further actions make sense, as always a reset condition must exist.

@@ -15,7 +15,7 @@ from project_manager import project_manager
 from .exceptions import GenerationError
 
 
-def create_module_logic(file_name, file_line_number, state_tag_list_sorted) -> None:
+def create_module_logic(file_name, file_line_number, state_tag_list_sorted, design_data) -> None:
     """Build Verilog module logic (state type, signals, always block) and write; update link dict."""
     architecture = ""
     state_signal_type_definition = _create_signal_declaration_for_the_state_variable(state_tag_list_sorted)
@@ -35,7 +35,7 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted) -> N
     file_line_number += number_of_new_lines
 
     [reset_condition, reset_action, reference_to_reset_condition_custom_text, reference_to_reset_action_custom_text] = (
-        hdl_generation_library.create_reset_condition_and_reset_action()
+        hdl_generation_library.create_reset_condition_and_reset_action(design_data)
     )
     if reset_condition is None:
         return  # No further actions make sense, as always a reset condition must exist.

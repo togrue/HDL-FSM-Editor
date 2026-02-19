@@ -12,6 +12,7 @@ import find_replace
 import undo_handling
 import update_hdl_tab
 from codegen import hdl_generation
+from design_data_gatherer import gather_design_data
 from dialogs import help_selection, help_shortcuts
 from project_manager import project_manager
 
@@ -137,7 +138,8 @@ class MenuBar:
         """Save project if dirty, then run HDL generation to file."""
         if project_manager.root.title().endswith("*"):
             file_handling.save()
-        hdl_generation.run_hdl_generation(write_to_file=True)
+        design_data = gather_design_data()
+        hdl_generation.run_hdl_generation(write_to_file=True, is_script_mode=False, design_data=design_data)
 
     def _handle_notebook_tab_changed_event(self) -> None:
         self._enable_undo_redo_if_diagram_tab_is_active_else_disable()

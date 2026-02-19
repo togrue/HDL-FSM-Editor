@@ -12,6 +12,7 @@ import file_handling
 import main_window
 import undo_handling
 from codegen import hdl_generation
+from design_data_gatherer import gather_design_data
 from project_manager import project_manager
 
 
@@ -68,7 +69,8 @@ def _parse_and_process_arguments() -> None:
 
     # Handle batch generation
     if args.generate_hdl:
-        success = hdl_generation.run_hdl_generation(write_to_file=True, is_script_mode=True)
+        design_data = gather_design_data()
+        success = hdl_generation.run_hdl_generation(write_to_file=True, is_script_mode=True, design_data=design_data)
         sys.exit(0 if success else 1)
 
 
