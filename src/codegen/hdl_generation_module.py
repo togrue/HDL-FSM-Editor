@@ -103,7 +103,9 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted, desi
     architecture += "        else begin\n"
     file_line_number += 2
 
-    global_actions_before_reference, global_actions_before = hdl_generation_library.create_global_actions_before()
+    global_actions_before_reference, global_actions_before = hdl_generation_library.create_global_actions_before(
+        design_data
+    )
     if global_actions_before != "":
         global_actions_before = "// Global Actions before:\n" + global_actions_before
         file_line_number += 1
@@ -134,7 +136,9 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted, desi
     architecture += "            endcase\n"
     file_line_number += 3
 
-    global_actions_after_reference, global_actions_after = hdl_generation_library.create_global_actions_after()
+    global_actions_after_reference, global_actions_after = hdl_generation_library.create_global_actions_after(
+        design_data
+    )
     if global_actions_after != "":
         global_actions_after = "// Global Actions after:\n" + global_actions_after
         file_line_number += 1
@@ -158,7 +162,7 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted, desi
     )
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_actions_process)
 
-    concurrent_actions_reference, concurrent_actions = hdl_generation_library.create_concurrent_actions()
+    concurrent_actions_reference, concurrent_actions = hdl_generation_library.create_concurrent_actions(design_data)
     if concurrent_actions != "":
         concurrent_actions = "// Global Actions combinatorial:\n" + concurrent_actions
         file_line_number += 1

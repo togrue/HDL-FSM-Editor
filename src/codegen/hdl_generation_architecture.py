@@ -119,7 +119,7 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
     file_line_number += 1
 
     reference_to_global_actions_before_custom_text, global_actions_before = (
-        hdl_generation_library.create_global_actions_before()
+        hdl_generation_library.create_global_actions_before(design_data)
     )
     if global_actions_before != "":
         global_actions_before = "-- Global Actions before:\n" + global_actions_before
@@ -151,7 +151,7 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
     file_line_number += 1
 
     reference_to_global_actions_after_custom_text, global_actions_after = (
-        hdl_generation_library.create_global_actions_after()
+        hdl_generation_library.create_global_actions_after(design_data)
     )
     if global_actions_after != "":
         global_actions_after = "-- Global Actions after:\n" + global_actions_after
@@ -177,7 +177,9 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
     )
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_actions_process)
 
-    reference_to_concurrent_actions_custom_text, concurrent_actions = hdl_generation_library.create_concurrent_actions()
+    reference_to_concurrent_actions_custom_text, concurrent_actions = hdl_generation_library.create_concurrent_actions(
+        design_data
+    )
     if concurrent_actions != "":
         concurrent_actions = "-- Global Actions combinatorial:\n" + concurrent_actions
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, concurrent_actions)

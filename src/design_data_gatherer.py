@@ -17,7 +17,7 @@ def _get_reset_transition_tag() -> str:
 
 def gather_design_data() -> DesignData:
     """Build DesignData from canvas and element ref_dicts. Call before run_hdl_generation."""
-    from elements import condition_action
+    from elements import condition_action, global_actions_clocked, global_actions_combinatorial
 
     reset_condition_action: tuple[str, str, object, object] | None = None
     reset_transition_tag = _get_reset_transition_tag()
@@ -41,6 +41,24 @@ def gather_design_data() -> DesignData:
                         )
                 break
 
+    global_actions_before: tuple[str, object] = ("", None)
+    global_actions_after: tuple[str, object] = ("", None)
+    concurrent_actions: tuple[str, object] = ("", None)
+    canvas_item_ids_clocked = project_manager.canvas.find_withtag("global_actions1")
+    if canvas_item_ids_clocked:
+        ref = global_actions_clocked.GlobalActionsClocked.ref_dict.get(canvas_item_ids_clocked[0])
+        if ref is not None:
+            global_actions_before = (ref.text_before_id.get("1.0", "end"), ref.text_before_id)
+            global_actions_after = (ref.text_after_id.get("1.0", "end"), ref.text_after_id)
+    canvas_item_ids_comb = project_manager.canvas.find_withtag("global_actions_combinatorial1")
+    if canvas_item_ids_comb:
+        ref = global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict.get(canvas_item_ids_comb[0])
+        if ref is not None:
+            concurrent_actions = (ref.text_id.get("1.0", "end"), ref.text_id)
+
     return DesignData(
         reset_condition_action=reset_condition_action,
+        global_actions_before=global_actions_before,
+        global_actions_after=global_actions_after,
+        concurrent_actions=concurrent_actions,
     )
