@@ -23,5 +23,7 @@ class DesignData:
     state_tag_list_sorted: list[str] | None = None
     # canvas_id -> (condition_text, action_text, condition_ref, action_ref)
     condition_action_by_canvas_id: dict[int, tuple[str, str, Any, Any]] | None = None
+    # (full_text_incl_comment_line, widget_ref)
     state_actions_default: tuple[str, Any] = ("", None)
+    # (state_name, action_text, widget_ref)
     state_action_list: list[tuple[str, str, Any]] | None = None

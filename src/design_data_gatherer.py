@@ -26,6 +26,8 @@ def gather_design_data(is_script_mode: bool = False) -> DesignData:
         global_actions_clocked,
         global_actions_combinatorial,
         state_comment,
+        state_action,
+        state_actions_default,
     )
 
     reset_condition_action: tuple[str, str, object, object] | None = None
@@ -148,6 +150,32 @@ def gather_design_data(is_script_mode: bool = False) -> DesignData:
     state_tag_list_sorted = [tag for _, tag in sorted(state_tag_dict_with_prio.items())]
     state_tag_list_sorted.extend(state_tag_list)
 
+    state_actions_default_tuple: tuple[str, object] = ("", None)
+    item_ids = project_manager.canvas.find_withtag("state_actions_default")
+    if item_ids:
+        ref = state_actions_default.StateActionsDefault.ref_dict.get(item_ids[0])
+        if ref is not None:
+            comment = "--" if project_manager.language.get() == "VHDL" else "//"
+            text = comment + " Default State Actions:\n" + ref.text_id.get("1.0", "end")
+            state_actions_default_tuple = (text, ref.text_id)
+
+    state_action_list_built: list[tuple[str, str, object]] = []
+    for state_tag in state_tag_list_sorted:
+        state_action_text = "null;\n"
+        state_action_ref = None
+        for tag_of_state in project_manager.canvas.gettags(state_tag):
+            if tag_of_state.startswith("connection") and tag_of_state.endswith("_end"):
+                connection_name = tag_of_state[:-4]
+                state_action_ids = project_manager.canvas.find_withtag(connection_name + "_start")
+                if state_action_ids:
+                    ref = state_action.StateAction.ref_dict.get(state_action_ids[0])
+                    if ref is not None:
+                        state_action_text = ref.text_id.get("1.0", "end")
+                        state_action_ref = ref.text_id
+                    break
+        state_name = project_manager.canvas.itemcget(state_tag + "_name", "text")
+        state_action_list_built.append((state_name, state_action_text, state_action_ref))
+
     return DesignData(
         reset_condition_action=reset_condition_action,
         global_actions_before=global_actions_before,
@@ -156,4 +184,6 @@ def gather_design_data(is_script_mode: bool = False) -> DesignData:
         state_comments_by_state_tag=state_comments_by_state_tag,
         state_tag_list_sorted=state_tag_list_sorted,
         condition_action_by_canvas_id=condition_action_by_canvas_id,
+        state_actions_default=state_actions_default_tuple,
+        state_action_list=state_action_list_built,
     )

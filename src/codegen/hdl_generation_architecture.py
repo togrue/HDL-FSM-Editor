@@ -173,7 +173,7 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
     architecture += "    end process;\n"
     file_line_number += 2
     state_actions_process, file_line_number = hdl_generation_architecture_state_actions.create_state_action_process(
-        file_name, file_line_number, state_tag_list_sorted
+        file_name, file_line_number, state_tag_list_sorted, design_data
     )
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_actions_process)
 

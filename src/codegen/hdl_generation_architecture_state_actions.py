@@ -6,18 +6,15 @@ import re
 import tkinter as tk
 
 from codegen import hdl_generation_library, hdl_text_utils
-from elements import state_action, state_actions_default
 from project_manager import project_manager
 
 from .exceptions import GenerationError
 
 
-def create_state_action_process(file_name, file_line_number, state_tag_list_sorted) -> tuple:
+def create_state_action_process(file_name, file_line_number, state_tag_list_sorted, design_data) -> tuple:
     """Returns the state action process as string and the updated file_line_number."""
-    default_state_actions = _get_default_state_actions()
-    state_action_list = _create_state_action_list(
-        state_tag_list_sorted
-    )  # Each entry is : ["state_name", "state_actions", "state_action_reference"]
+    default_state_actions = _get_default_state_actions(design_data)
+    state_action_list = design_data.state_action_list or []
     if default_state_actions == "" and _state_actions_contain_only_null_for_each_state(state_action_list):
         return "", file_line_number
     # Get from Interface/Ports and from Internals/Architecture Declarations:
@@ -33,6 +30,7 @@ def create_state_action_process(file_name, file_line_number, state_tag_list_sort
             default_state_actions,
             all_possible_sensitivity_entries,
             variable_declarations,
+            design_data,
         )
     else:
         state_action_process, file_line_number = _create_state_action_process_for_verilog(
@@ -42,6 +40,7 @@ def create_state_action_process(file_name, file_line_number, state_tag_list_sort
             default_state_actions,
             all_possible_sensitivity_entries,
             variable_declarations,
+            design_data,
         )
     return state_action_process, file_line_number
 
@@ -57,6 +56,7 @@ def _create_state_action_process_for_vhdl(
     default_state_actions,
     all_possible_sensitivity_entries,
     variable_declarations,
+    design_data,
 ) -> tuple:
     state_action_process = "p_state_actions: process "
     state_action_process += (
@@ -81,16 +81,16 @@ def _create_state_action_process_for_vhdl(
     state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, default_state_actions)
     number_of_lines = default_state_actions.count("\n")
     if number_of_lines != 0:
-        item_ids = project_manager.canvas.find_withtag("state_actions_default")
-        reference_to_default_state_actions_custom_text = state_actions_default.StateActionsDefault.ref_dict[item_ids[0]]
+        default_ref = design_data.state_actions_default[1]
         file_line_number += 1  # default_state_actions starts always with "-- Default State Actions:"
-        project_manager.link_dict_ref.add(
-            file_name,
-            file_line_number,
-            "custom_text_in_diagram_tab",
-            number_of_lines - 1,
-            reference_to_default_state_actions_custom_text.text_id,
-        )
+        if default_ref is not None:
+            project_manager.link_dict_ref.add(
+                file_name,
+                file_line_number,
+                "custom_text_in_diagram_tab",
+                number_of_lines - 1,
+                default_ref,
+            )
         file_line_number += number_of_lines - 1
 
     state_action_process += "    -- State Actions:\n"
@@ -120,6 +120,7 @@ def _create_state_action_process_for_verilog(
     default_state_actions,
     all_possible_sensitivity_entries,
     variable_declarations,
+    design_data,
 ) -> tuple:
     state_action_process = "always @"
     state_action_process += _create_sensitivity_list(
@@ -143,16 +144,16 @@ def _create_state_action_process_for_verilog(
     state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, default_state_actions)
     number_of_lines = default_state_actions.count("\n")
     if number_of_lines != 0:
-        item_ids = project_manager.canvas.find_withtag("state_actions_default")
-        reference_to_default_state_actions_custom_text = state_actions_default.StateActionsDefault.ref_dict[item_ids[0]]
+        default_ref = design_data.state_actions_default[1]
         file_line_number += 1  # default_state_actions starts always with "-- Default State Actions:"
-        project_manager.link_dict_ref.add(
-            file_name,
-            file_line_number,
-            "custom_text_in_diagram_tab",
-            number_of_lines - 1,
-            reference_to_default_state_actions_custom_text.text_id,
-        )
+        if default_ref is not None:
+            project_manager.link_dict_ref.add(
+                file_name,
+                file_line_number,
+                "custom_text_in_diagram_tab",
+                number_of_lines - 1,
+                default_ref,
+            )
         file_line_number += number_of_lines - 1
 
     state_action_process += "    // State Actions:\n"
@@ -193,27 +194,6 @@ def _create_a_list_with_all_possible_sensitivity_entries() -> list:
     return signals_list
 
 
-def _create_state_action_list(state_tag_list_sorted):
-    state_action_list = []
-    for state_tag in state_tag_list_sorted:
-        state_action_text = "null;\n"
-        state_action_reference = None
-        for tag_of_state in project_manager.canvas.gettags(state_tag):
-            if tag_of_state.startswith("connection") and tag_of_state.endswith(
-                "_end"
-            ):  # This is a tag which exists only at states.
-                connection_name = tag_of_state[:-4]
-                state_action_ids = project_manager.canvas.find_withtag(connection_name + "_start")
-                if state_action_ids:
-                    ref = state_action.StateAction.ref_dict[state_action_ids[0]]
-                    state_action_text = ref.text_id.get("1.0", tk.END)
-                    state_action_reference = ref.text_id
-                    break
-        state_name = project_manager.canvas.itemcget(state_tag + "_name", "text")
-        state_action_list.append([state_name, state_action_text, state_action_reference])
-    return state_action_list
-
-
 def _create_sensitivity_list(state_action_list, default_state_actions, all_possible_sensitivity_entries) -> str:
     sensitivity_list = "("
     default_state_actions_separated = hdl_generation_library.convert_hdl_lines_into_a_searchable_string(
@@ -251,13 +231,8 @@ def _remove_record_element_names(state_action_text) -> str:
     return state_action_text
 
 
-def _get_default_state_actions() -> str:
-    item_ids = project_manager.canvas.find_withtag("state_actions_default")
-    if item_ids == ():
-        return ""
-    ref = state_actions_default.StateActionsDefault.ref_dict[item_ids[0]]
-    comment = "--" if project_manager.language.get() == "VHDL" else "//"
-    return comment + " Default State Actions:\n" + ref.text_id.get("1.0", tk.END)
+def _get_default_state_actions(design_data) -> str:
+    return design_data.state_actions_default[0]
 
 
 def _create_when_entry(state_action_entry) -> str:
