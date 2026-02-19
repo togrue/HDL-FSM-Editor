@@ -50,6 +50,27 @@ def gather_design_data(is_script_mode: bool = False) -> DesignData:
                         )
                 break
 
+    condition_action_by_canvas_id: dict[int, tuple[str, str, object, object]] = {}
+    reg_ca = re.compile(r"^condition_action[0-9]+$")
+    seen_tags: set[str] = set()
+    for canvas_id in project_manager.canvas.find_all():
+        for tag in project_manager.canvas.gettags(canvas_id):
+            if reg_ca.match(tag) and tag not in seen_tags:
+                seen_tags.add(tag)
+                ids = project_manager.canvas.find_withtag(tag)
+                ref = None
+                for i in ids:
+                    ref = condition_action.ConditionAction.ref_dict.get(i)
+                    if ref is not None:
+                        break
+                if ref is not None:
+                    cond_text = ref.condition_id.get("1.0", "end-1c")
+                    act_text = ref.action_id.get("1.0", "end-1c")
+                    entry = (cond_text, act_text, ref.condition_id, ref.action_id)
+                    for i in ids:
+                        condition_action_by_canvas_id[i] = entry
+                break
+
     global_actions_before: tuple[str, object] = ("", None)
     global_actions_after: tuple[str, object] = ("", None)
     concurrent_actions: tuple[str, object] = ("", None)
@@ -134,4 +155,5 @@ def gather_design_data(is_script_mode: bool = False) -> DesignData:
         concurrent_actions=concurrent_actions,
         state_comments_by_state_tag=state_comments_by_state_tag,
         state_tag_list_sorted=state_tag_list_sorted,
+        condition_action_by_canvas_id=condition_action_by_canvas_id,
     )

@@ -21,6 +21,7 @@ class DesignData:
     concurrent_actions: tuple[str, Any] = ("", None)
     state_comments_by_state_tag: dict[str, tuple[str | None, Any | None]] | None = None
     state_tag_list_sorted: list[str] | None = None
+    # canvas_id -> (condition_text, action_text, condition_ref, action_ref)
     condition_action_by_canvas_id: dict[int, tuple[str, str, Any, Any]] | None = None
     state_actions_default: tuple[str, Any] = ("", None)
     state_action_list: list[tuple[str, str, Any]] | None = None

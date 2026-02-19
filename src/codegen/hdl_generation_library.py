@@ -83,7 +83,8 @@ def _get_reset_transition_tag() -> str:
     return reset_transition_tag
 
 
-def _get_transition_target_condition_action(transition_tag) -> tuple[str, str, str, str]:
+def _get_transition_target_condition_action(transition_tag, design_data) -> tuple[str, str, str, object]:
+    # design_data.condition_action_by_canvas_id populated by gatherer; library still uses ref_dict for lookup
     tags = project_manager.canvas.gettags(transition_tag)
     transition_condition = ""
     transition_action = ""
@@ -106,7 +107,8 @@ def _get_transition_target_condition_action(transition_tag) -> tuple[str, str, s
     return transition_target, transition_condition, transition_action, condition_action_reference
 
 
-def _get_condition_action_reference_of_transition(transition_tag) -> None:
+def _get_condition_action_reference_of_transition(transition_tag, design_data) -> None:
+    # design_data.condition_action_by_canvas_id available; library still uses ref_dict
     tags = project_manager.canvas.gettags(transition_tag)
     for tag in tags:
         if tag.startswith("ca_connection"):  # Complete tag: ca_connection<n>_end
@@ -143,7 +145,7 @@ def extract_transition_specifications_from_the_graph(state_tag_list_sorted, desi
             }
         )
         _extract_conditions_for_all_outgoing_transitions_of_the_state(
-            state_name, state_tag, moved_actions, condition_level, trace, trace_array
+            state_name, state_tag, moved_actions, condition_level, trace, trace_array, design_data
         )
         # The separated paths of trace_array are merged together by adding "else" commands,
         # so if the first trace depends on an "if", then the inserted "else" path of the first trace
@@ -569,6 +571,7 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
     condition_level,
     trace,
     trace_array,  # initialized by trace_array = []
+    design_data,
 ) -> None:
     outgoing_transition_tags = _get_all_outgoing_transitions_in_priority_order(start_tag)
     if not outgoing_transition_tags and start_tag.startswith("connector"):
@@ -590,7 +593,7 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
     for _, transition_tag in enumerate(outgoing_transition_tags):
         # Collect information about the transition:
         transition_target, transition_condition, transition_action, condition_action_reference = (
-            _get_transition_target_condition_action(transition_tag)
+            _get_transition_target_condition_action(transition_tag, design_data)
         )
         transition_condition_is_a_comment = _check_if_condition_is_a_comment(transition_condition)
         # Handle the transition actions:
@@ -647,7 +650,8 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
                 transition_action_new,
                 condition_level_new,
                 trace_new,
-                trace_array,  # initialized by transition_specifications = []
+                trace_array,
+                design_data,
             )
         else:  # Target is a state.
             transition_target_tmp = transition_target if transition_target != state_name else ""
