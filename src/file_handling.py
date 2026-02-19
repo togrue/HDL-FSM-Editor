@@ -589,7 +589,6 @@ def _load_canvas_polygons(design_dictionary: dict[str, Any]) -> list[str]:
 def _load_canvas_text_elements(design_dictionary: dict[str, Any], transition_dict: dict[str, Any]) -> None:
     """Load text elements (state names, reset text, priority numbers) into canvas and transition_dict."""
     for definition in design_dictionary["text"]:
-        coords = definition[0]
         tags = definition[1]
         text = definition[2]
         text_is_state_name = False
@@ -649,9 +648,7 @@ def _load_canvas_rectangles(design_dictionary: dict[str, Any]) -> list[str]:
                 single_id = _single_outgoing_transition_id(tags)
                 if single_id:
                     hide_list.append(single_id)
-                # TODO: In all tracked FSM's there is just one connector per transition
-                # so we could likely add a break here.
-                # break
+                break
     return hide_list
 
 
