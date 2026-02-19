@@ -60,7 +60,7 @@ class UpdateHdlTab:
                         + " (architecture-file) could not be opened for copying into HDL-Tab.",
                     )
             # Create hdl without writing to file for Link-Generation:
-            design_data = gather_design_data()
+            design_data = gather_design_data(is_script_mode=False)
             hdl_generation.run_hdl_generation(write_to_file=False, is_script_mode=False, design_data=design_data)
         project_manager.hdl_frame_text.config(state=tk.NORMAL)
         project_manager.hdl_frame_text.insert("1.0", hdl)

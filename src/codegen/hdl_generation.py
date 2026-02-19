@@ -12,7 +12,6 @@ import tag_plausibility
 from codegen import hdl_generation_architecture, hdl_generation_library, hdl_generation_module
 from codegen.hdl_generation_config import GenerationConfig
 from constants import GuiTab
-from elements import state_comment
 from project_manager import project_manager
 
 from .exceptions import GenerationError
@@ -26,11 +25,7 @@ def run_hdl_generation(write_to_file, is_script_mode: bool, design_data) -> bool
     """Run HDL generation with current config; show errors in GUI or print in script mode. Return True on success.
     design_data must be a DesignData instance from design_data_gatherer.gather_design_data()."""
     config = GenerationConfig.from_main_window()
-    state_tag_list_sorted = (
-        design_data.state_tag_list_sorted
-        if design_data.state_tag_list_sorted is not None
-        else _create_sorted_state_tag_list(is_script_mode)
-    )
+    state_tag_list_sorted = design_data.state_tag_list_sorted
     success = False
     try:
         _generate_hdl(config, write_to_file, state_tag_list_sorted, design_data)
@@ -303,52 +298,3 @@ def _add_line_numbers(text) -> str:
     for line_number, line in enumerate(text_lines, start=1):
         content_with_numbers += format(line_number, "0" + number_of_needed_digits_as_string + "d") + ": " + line + "\n"
     return content_with_numbers
-
-
-def _create_sorted_state_tag_list(is_script_mode) -> list:
-    state_tag_dict_with_prio = {}
-    state_tag_list = []
-    reg_ex_for_state_tag = re.compile("^state[0-9]+$")
-    for canvas_id in project_manager.canvas.find_all():
-        for tag in project_manager.canvas.gettags(canvas_id):
-            if reg_ex_for_state_tag.match(tag):
-                single_element_list = project_manager.canvas.find_withtag(tag + "_comment")
-                if not single_element_list:
-                    state_tag_list.append(tag)
-                else:
-                    reference_to_state_comment_window = state_comment.StateComment.ref_dict[single_element_list[0]]
-                    state_comments = reference_to_state_comment_window.text_id.get("1.0", "end - 1 chars")
-                    state_comments_list = state_comments.split("\n")
-                    first_line_of_state_comments = state_comments_list[0].strip()
-                    if first_line_of_state_comments == "":
-                        state_tag_list.append(tag)
-                    else:
-                        first_line_is_a_number = bool(all(c in "0123456789" for c in first_line_of_state_comments))
-                        if not first_line_is_a_number:
-                            state_tag_list.append(tag)
-                        else:
-                            if int(first_line_of_state_comments) in state_tag_dict_with_prio:
-                                state_tag_list.append(tag)
-                                if is_script_mode:
-                                    print(
-                                        "Warning in HDL-FSM-Editor: "
-                                        + "The state '"
-                                        + project_manager.canvas.itemcget(tag + "_name", "text")
-                                        + "' uses the order-number "
-                                        + first_line_of_state_comments
-                                        + " which is already used at another state."
-                                    )
-                                else:
-                                    messagebox.showwarning(
-                                        "Warning in HDL-FSM-Editor",
-                                        "The state '"
-                                        + project_manager.canvas.itemcget(tag + "_name", "text")
-                                        + "' uses the order-number "
-                                        + first_line_of_state_comments
-                                        + " which is already used at another state.",
-                                    )
-                            else:
-                                state_tag_dict_with_prio[int(first_line_of_state_comments)] = tag
-    for _, tag in sorted(state_tag_dict_with_prio.items(), reverse=True):
-        state_tag_list.insert(0, tag)
-    return state_tag_list

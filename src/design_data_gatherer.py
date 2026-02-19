@@ -3,6 +3,8 @@ Gathers design data from elements and canvas for HDL generation.
 Imports elements; callers pass DesignData into codegen.
 """
 
+import re
+
 from design_data import DesignData
 from project_manager import project_manager
 
@@ -15,9 +17,16 @@ def _get_reset_transition_tag() -> str:
     return ""
 
 
-def gather_design_data() -> DesignData:
+def gather_design_data(is_script_mode: bool = False) -> DesignData:
     """Build DesignData from canvas and element ref_dicts. Call before run_hdl_generation."""
-    from elements import condition_action, global_actions_clocked, global_actions_combinatorial
+    from tkinter import messagebox
+
+    from elements import (
+        condition_action,
+        global_actions_clocked,
+        global_actions_combinatorial,
+        state_comment,
+    )
 
     reset_condition_action: tuple[str, str, object, object] | None = None
     reset_transition_tag = _get_reset_transition_tag()
@@ -56,9 +65,73 @@ def gather_design_data() -> DesignData:
         if ref is not None:
             concurrent_actions = (ref.text_id.get("1.0", "end"), ref.text_id)
 
+    state_comments_by_state_tag: dict[str, tuple[str | None, object | None]] = {}
+    state_tag_dict_with_prio: dict[int, str] = {}
+    state_tag_list: list[str] = []
+    reg_ex_for_state_tag = re.compile("^state[0-9]+$")
+    for canvas_id in project_manager.canvas.find_all():
+        for tag in project_manager.canvas.gettags(canvas_id):
+            if reg_ex_for_state_tag.match(tag):
+                single_element_list = project_manager.canvas.find_withtag(tag + "_comment")
+                if not single_element_list:
+                    state_tag_list.append(tag)
+                    state_comments_by_state_tag[tag] = ("", None)
+                else:
+                    ref_sc = state_comment.StateComment.ref_dict.get(single_element_list[0])
+                    if ref_sc is not None:
+                        all_tags_of_state = project_manager.canvas.gettags(canvas_id)
+                        if tag + "_comment_line_end" in all_tags_of_state:
+                            state_comments_raw = ref_sc.text_id.get("1.0", "end")
+                            state_comments = re.sub(r"^\s*[0-9]*\s*", "", state_comments_raw)
+                            widget_ref = ref_sc.text_id if state_comments != "" else None
+                            state_comments_by_state_tag[tag] = (state_comments, widget_ref)
+                        else:
+                            state_comments_by_state_tag[tag] = ("", None)
+                    else:
+                        state_comments_by_state_tag[tag] = ("", None)
+                    state_comments_for_prio = ref_sc.text_id.get("1.0", "end-1c") if ref_sc else ""
+                    state_comments_list = state_comments_for_prio.split("\n")
+                    first_line = state_comments_list[0].strip() if state_comments_list else ""
+                    if first_line == "":
+                        state_tag_list.append(tag)
+                    else:
+                        first_line_is_number = bool(all(c in "0123456789" for c in first_line))
+                        if not first_line_is_number:
+                            state_tag_list.append(tag)
+                        else:
+                            prio = int(first_line)
+                            if prio in state_tag_dict_with_prio:
+                                state_tag_list.append(tag)
+                                if is_script_mode:
+                                    print(
+                                        "Warning in HDL-FSM-Editor: "
+                                        + "The state '"
+                                        + project_manager.canvas.itemcget(tag + "_name", "text")
+                                        + "' uses the order-number "
+                                        + first_line
+                                        + " which is already used at another state."
+                                    )
+                                else:
+                                    messagebox.showwarning(
+                                        "Warning in HDL-FSM-Editor",
+                                        "The state '"
+                                        + project_manager.canvas.itemcget(tag + "_name", "text")
+                                        + "' uses the order-number "
+                                        + first_line
+                                        + " which is already used at another state.",
+                                    )
+                            else:
+                                state_tag_dict_with_prio[prio] = tag
+                break
+
+    state_tag_list_sorted = [tag for _, tag in sorted(state_tag_dict_with_prio.items())]
+    state_tag_list_sorted.extend(state_tag_list)
+
     return DesignData(
         reset_condition_action=reset_condition_action,
         global_actions_before=global_actions_before,
         global_actions_after=global_actions_after,
         concurrent_actions=concurrent_actions,
+        state_comments_by_state_tag=state_comments_by_state_tag,
+        state_tag_list_sorted=state_tag_list_sorted,
     )

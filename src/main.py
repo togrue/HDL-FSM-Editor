@@ -69,7 +69,7 @@ def _parse_and_process_arguments() -> None:
 
     # Handle batch generation
     if args.generate_hdl:
-        design_data = gather_design_data()
+        design_data = gather_design_data(is_script_mode=True)
         success = hdl_generation.run_hdl_generation(write_to_file=True, is_script_mode=True, design_data=design_data)
         sys.exit(0 if success else 1)
 

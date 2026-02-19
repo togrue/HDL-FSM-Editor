@@ -6,7 +6,7 @@ import re
 import tkinter as tk
 
 import canvas_editing
-from elements import condition_action, state_comment
+from elements import condition_action
 from project_manager import project_manager
 
 from .exceptions import GenerationError
@@ -118,11 +118,11 @@ def _get_condition_action_reference_of_transition(transition_tag) -> None:
     return None
 
 
-def extract_transition_specifications_from_the_graph(state_tag_list_sorted) -> list:
+def extract_transition_specifications_from_the_graph(state_tag_list_sorted, design_data) -> list:
     """For each state in state_tag_list_sorted, all outgoing transitions are analyzed."""
     transition_specifications = []
     for state_tag in state_tag_list_sorted:
-        canvas_id_of_comment_text_widget, state_comments = _get_state_comments(state_tag)
+        canvas_id_of_comment_text_widget, state_comments = _get_state_comments(state_tag, design_data)
         condition_level = 0
         moved_actions = []
         trace = []  # Is temporarily used when a path from a state to a target state passes connectors.
@@ -160,20 +160,13 @@ def extract_transition_specifications_from_the_graph(state_tag_list_sorted) -> l
     return transition_specifications
 
 
-def _get_state_comments(state_tag):
-    all_tags_of_state = project_manager.canvas.gettags(state_tag)
-    if state_tag + "_comment_line_end" in all_tags_of_state:
-        canvas_id_of_comment_window = project_manager.canvas.find_withtag(state_tag + "_comment")[0]
-        reference_to_state_comment_window = state_comment.StateComment.ref_dict[canvas_id_of_comment_window]
-        canvas_id_of_comment_text_widget = reference_to_state_comment_window.text_id
-        state_comments = canvas_id_of_comment_text_widget.get("1.0", "end")
-        state_comments = re.sub(r"^\s*[0-9]*\s*", "", state_comments)  # Remove order comment at comment start.
-        if state_comments == "":
-            canvas_id_of_comment_text_widget = None
-    else:
-        canvas_id_of_comment_text_widget = None
+def _get_state_comments(state_tag, design_data):
+    """Return (comment_widget_ref, state_comments) for link_dict and HDL embedding."""
+    entry = design_data.state_comments_by_state_tag.get(state_tag, (None, None))
+    state_comments, widget_ref = entry
+    if state_comments is None:
         state_comments = ""
-    return canvas_id_of_comment_text_widget, state_comments
+    return widget_ref, state_comments
 
 
 def _optimize_transition_specifications(transition_specifications) -> None:
@@ -564,28 +557,9 @@ def _get_a_list_of_all_state_tags():
     return sorted(state_tag_list)
 
 
-def _sort_list_of_all_state_tags(list_of_all_state_tags):
-    state_tag_dict_with_prio = {}
-    state_tag_list = []
-    sorted_list_of_all_state_tags = []
-    for state_tag in list_of_all_state_tags:
-        list_of_canvas_ids = project_manager.canvas.find_withtag(state_tag + "_comment")
-        if list_of_canvas_ids:
-            canvas_id_of_comment_window = list_of_canvas_ids[0]
-            reference_to_state_comment_window = state_comment.StateComment.ref_dict[canvas_id_of_comment_window]
-            state_comments = reference_to_state_comment_window.text_id.get("1.0", "end")
-            state_comments_list = state_comments.split("\n")
-            if state_comments_list:
-                first_line_of_state_comments = state_comments_list[0].strip()
-                first_line_is_a_number = bool(all(c in "0123456789" for c in first_line_of_state_comments))
-                if first_line_is_a_number:
-                    state_tag_dict_with_prio[int(first_line_of_state_comments)] = state_tag
-                else:
-                    state_tag_list.append(state_tag)
-    for _, tag in sorted(state_tag_dict_with_prio.items()):
-        sorted_list_of_all_state_tags.append(tag)
-    sorted_list_of_all_state_tags.extend(state_tag_list)
-    return sorted_list_of_all_state_tags
+def _sort_list_of_all_state_tags(list_of_all_state_tags, design_data):
+    """Return design_data.state_tag_list_sorted (sorting is done in the gatherer)."""
+    return design_data.state_tag_list_sorted
 
 
 def _extract_conditions_for_all_outgoing_transitions_of_the_state(

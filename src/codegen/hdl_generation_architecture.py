@@ -141,7 +141,7 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
     architecture += "            case state is\n"
     file_line_number += 2
     transition_specifications = hdl_generation_library.extract_transition_specifications_from_the_graph(
-        state_tag_list_sorted
+        state_tag_list_sorted, design_data
     )
     state_sequence, file_line_number = hdl_generation_architecture_state_sequence.create_vhdl_for_the_state_sequence(
         transition_specifications, file_name, file_line_number
