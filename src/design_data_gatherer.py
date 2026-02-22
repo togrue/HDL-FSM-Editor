@@ -17,6 +17,13 @@ def _get_reset_transition_tag() -> str:
     return ""
 
 
+def _interface_text_tuple(widget) -> tuple[str, object]:
+    """Return (content, widget_ref) with content normalized like get_text_from_text_widget."""
+    text = widget.get("1.0", "end")
+    content = "" if text == "\n" else text
+    return (content, widget)
+
+
 def gather_design_data(is_script_mode: bool = False) -> DesignData:
     """Build DesignData from canvas and element ref_dicts. Call before run_hdl_generation."""
     from tkinter import messagebox
@@ -176,8 +183,15 @@ def gather_design_data(is_script_mode: bool = False) -> DesignData:
         state_name = project_manager.canvas.itemcget(state_tag + "_name", "text")
         state_action_list_built.append((state_name, state_action_text, state_action_ref))
 
+    interface_package_text = _interface_text_tuple(project_manager.interface_package_text)
+    interface_generics_text = _interface_text_tuple(project_manager.interface_generics_text)
+    interface_ports_text = _interface_text_tuple(project_manager.interface_ports_text)
+
     return DesignData(
         reset_condition_action=reset_condition_action,
+        interface_package_text=interface_package_text,
+        interface_generics_text=interface_generics_text,
+        interface_ports_text=interface_ports_text,
         global_actions_before=global_actions_before,
         global_actions_after=global_actions_after,
         concurrent_actions=concurrent_actions,

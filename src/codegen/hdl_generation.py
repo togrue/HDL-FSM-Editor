@@ -72,7 +72,7 @@ def _create_hdl(config, header, write_to_file, state_tag_list_sorted, design_dat
     file_line_number = 3  # Line 1 = Filename, Line 2 = Header
 
     if config.language == "VHDL":
-        entity, file_line_number = _create_entity(config, file_name, file_line_number)
+        entity, file_line_number = _create_entity(config, file_name, file_line_number, design_data)
         if file_name_architecture == "":  # All VHDL is written in 1 file.
             file_to_use = file_name
             file_line_number_to_use = file_line_number
@@ -83,7 +83,7 @@ def _create_hdl(config, header, write_to_file, state_tag_list_sorted, design_dat
             file_to_use, file_line_number_to_use, state_tag_list_sorted, design_data
         )
     else:
-        entity, file_line_number = _create_module_ports(config, file_name, file_line_number)
+        entity, file_line_number = _create_module_ports(config, file_name, file_line_number, design_data)
         architecture = hdl_generation_module.create_module_logic(
             file_name, file_line_number, state_tag_list_sorted, design_data
         )
@@ -111,10 +111,10 @@ def _copy_hdl_into_generated_hdl_tab(hdl, file_name, file_name_architecture) -> 
     project_manager.notebook.show_tab(GuiTab.GENERATED_HDL)
 
 
-def _create_entity(config, file_name, file_line_number) -> tuple:
+def _create_entity(config, file_name, file_line_number, design_data) -> tuple:
     entity = ""
 
-    package_statements = hdl_generation_library.get_text_from_text_widget(project_manager.interface_package_text)
+    package_statements, package_ref = design_data.interface_package_text[0], design_data.interface_package_text[1]
     entity += package_statements
     number_of_new_lines = package_statements.count("\n")
     project_manager.link_dict_ref.add(
@@ -122,7 +122,7 @@ def _create_entity(config, file_name, file_line_number) -> tuple:
         file_line_number,
         "custom_text_in_interface_tab",
         number_of_new_lines,
-        project_manager.interface_package_text,
+        package_ref,
     )
     file_line_number += number_of_new_lines
 
@@ -133,8 +133,8 @@ def _create_entity(config, file_name, file_line_number) -> tuple:
     project_manager.link_dict_ref.add(file_name, file_line_number, "Control-Tab", 1, "module_name")
     file_line_number += 1
 
-    generic_declarations = hdl_generation_library.get_text_from_text_widget(project_manager.interface_generics_text)
-    generic_declarations = ListSeparationCheck(generic_declarations, "VHDL").get_fixed_list()
+    generics_text, generics_ref = design_data.interface_generics_text[0], design_data.interface_generics_text[1]
+    generic_declarations = ListSeparationCheck(generics_text, "VHDL").get_fixed_list()
     if generic_declarations != "":
         generic_declarations = (
             "    generic (\n"
@@ -148,13 +148,13 @@ def _create_entity(config, file_name, file_line_number) -> tuple:
             file_line_number,
             "custom_text_in_interface_tab",
             number_of_new_lines,
-            project_manager.interface_generics_text,
+            generics_ref,
         )
         file_line_number += number_of_new_lines + 1
     entity += generic_declarations
 
-    port_declarations = hdl_generation_library.get_text_from_text_widget(project_manager.interface_ports_text)
-    port_declarations = ListSeparationCheck(port_declarations, "VHDL").get_fixed_list()
+    ports_text, ports_ref = design_data.interface_ports_text[0], design_data.interface_ports_text[1]
+    port_declarations = ListSeparationCheck(ports_text, "VHDL").get_fixed_list()
     if port_declarations != "":
         port_declarations = (
             "    port (\n"
@@ -168,7 +168,7 @@ def _create_entity(config, file_name, file_line_number) -> tuple:
             file_line_number,
             "custom_text_in_interface_tab",
             number_of_new_lines,
-            project_manager.interface_ports_text,
+            ports_ref,
         )
         file_line_number += number_of_new_lines + 1
     entity += port_declarations
@@ -178,15 +178,15 @@ def _create_entity(config, file_name, file_line_number) -> tuple:
     return entity, file_line_number
 
 
-def _create_module_ports(config, file_name, file_line_number) -> tuple:
+def _create_module_ports(config, file_name, file_line_number, design_data) -> tuple:
     module = ""
     file_line_number = 3  # Line 1 = Filename, Line 2 = Header
     module += "module " + config.module_name + "\n"
     project_manager.link_dict_ref.add(file_name, file_line_number, "Control-Tab", 1, "module_name")
     file_line_number += 1
 
-    parameters = hdl_generation_library.get_text_from_text_widget(project_manager.interface_generics_text)
-    parameters = ListSeparationCheck(parameters, "Verilog").get_fixed_list()
+    parameters_text, parameters_ref = design_data.interface_generics_text[0], design_data.interface_generics_text[1]
+    parameters = ListSeparationCheck(parameters_text, "Verilog").get_fixed_list()
     if parameters != "":
         parameters = (
             "    #(parameter\n"
@@ -200,13 +200,13 @@ def _create_module_ports(config, file_name, file_line_number) -> tuple:
             file_line_number,
             "custom_text_in_interface_tab",
             number_of_new_lines,
-            project_manager.interface_generics_text,
+            parameters_ref,
         )
         file_line_number += number_of_new_lines + 1
         module += parameters
 
-    ports = hdl_generation_library.get_text_from_text_widget(project_manager.interface_ports_text)
-    ports = ListSeparationCheck(ports, "Verilog").get_fixed_list()
+    ports_text, ports_ref = design_data.interface_ports_text[0], design_data.interface_ports_text[1]
+    ports = ListSeparationCheck(ports_text, "Verilog").get_fixed_list()
     if ports != "":
         ports = "    (\n" + hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, ports) + "    );\n"
         number_of_new_lines = ports.count("\n") - 2  # Subtract first and last line
@@ -216,7 +216,7 @@ def _create_module_ports(config, file_name, file_line_number) -> tuple:
             file_line_number,
             "custom_text_in_interface_tab",
             number_of_new_lines,
-            project_manager.interface_ports_text,
+            ports_ref,
         )
         file_line_number += number_of_new_lines + 1
         module += ports

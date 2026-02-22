@@ -5,8 +5,6 @@ Populated by design_data_gatherer; read by codegen.
 Missing from DesignData (still read directly in codegen):
 - Control-tab / config: module_name, language, reset_signal_name, clock_signal_name
   (also available via GenerationConfig.from_main_window(); codegen often uses project_manager).
-- Interface text widgets (content + ref for link_dict): interface_package_text,
-  interface_generics_text, interface_ports_text (header + state_actions port/signal parsing).
 - Internals text widgets: internals_package_text, internals_architecture_text (content + ref);
   internals_process_clocked_text, internals_process_combinatorial_text (widget ref for link_dict).
 - State display names: codegen uses canvas.itemcget(state_tag + "_name", "text") for case
@@ -30,6 +28,12 @@ class DesignData:
     # action_text_from_widget is user text only; codegen prepends "state <= X;\n".
     # None when no reset condition is specified (codegen raises).
     reset_condition_action: tuple[str, str, Any, Any] | None
+
+    # Interface text widgets: (content, widget_ref for link_dict).
+    # Content normalized like get_text_from_text_widget (single newline -> empty string).
+    interface_package_text: tuple[str, Any] = ("", None)
+    interface_generics_text: tuple[str, Any] = ("", None)
+    interface_ports_text: tuple[str, Any] = ("", None)
 
     # Global actions emitted before the main state/transition logic (e.g. declarations).
     # Tuple: (full_text_incl_comment_line, widget_ref for link_dict).

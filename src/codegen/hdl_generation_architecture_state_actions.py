@@ -18,7 +18,7 @@ def create_state_action_process(file_name, file_line_number, state_tag_list_sort
     if default_state_actions == "" and _state_actions_contain_only_null_for_each_state(state_action_list):
         return "", file_line_number
     # Get from Interface/Ports and from Internals/Architecture Declarations:
-    all_possible_sensitivity_entries = _create_a_list_with_all_possible_sensitivity_entries()
+    all_possible_sensitivity_entries = _create_a_list_with_all_possible_sensitivity_entries(design_data)
     variable_declarations = hdl_generation_library.get_text_from_text_widget(
         project_manager.internals_process_combinatorial_text
     )
@@ -185,8 +185,8 @@ def _create_state_action_process_for_verilog(
     return state_action_process, file_line_number
 
 
-def _create_a_list_with_all_possible_sensitivity_entries() -> list:
-    all_port_declarations = project_manager.interface_ports_text.get("1.0", tk.END).lower()
+def _create_a_list_with_all_possible_sensitivity_entries(design_data) -> list:
+    all_port_declarations = design_data.interface_ports_text[0].lower()
     readable_ports_list = get_all_readable_ports(all_port_declarations, check=True)
     all_signal_declarations = project_manager.internals_architecture_text.get("1.0", tk.END).lower()
     signals_list = _get_all_signals(all_signal_declarations)
