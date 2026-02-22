@@ -40,9 +40,14 @@ def gather_design_data(is_script_mode: bool = False) -> DesignData:
     )
 
     reset_condition_action: tuple[str, str, object, object] | None = None
+    reset_target_state_name: str | None = None
     reset_transition_tag = _get_reset_transition_tag()
     if reset_transition_tag:
         tags = project_manager.canvas.gettags(reset_transition_tag)
+        for tag in tags:
+            if tag.startswith("going_to_state"):
+                reset_target_state_name = project_manager.canvas.itemcget(tag[9:] + "_name", "text")
+                break
         for tag in tags:
             if tag.startswith("ca_connection"):  # ca_connection<n>_end
                 condition_action_number = tag[13:-4]
@@ -195,6 +200,7 @@ def gather_design_data(is_script_mode: bool = False) -> DesignData:
 
     return DesignData(
         reset_condition_action=reset_condition_action,
+        reset_target_state_name=reset_target_state_name,
         interface_package_text=interface_package_text,
         interface_generics_text=interface_generics_text,
         interface_ports_text=interface_ports_text,

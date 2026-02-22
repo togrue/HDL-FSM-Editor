@@ -34,15 +34,6 @@ def get_text_from_text_widget(wiget_id) -> str:
     return ""
 
 
-def _get_target_state_name(all_reset_transition_tags):
-    target_state_tag = ""
-    for t in all_reset_transition_tags:
-        if t.startswith("going_to_state"):
-            target_state_tag = t[9:]
-    target_state_name = project_manager.canvas.itemcget(target_state_tag + "_name", "text")
-    return target_state_name
-
-
 def create_reset_condition_and_reset_action(design_data) -> list:
     """Return [condition_text, action_text, condition_widget_ref, action_widget_ref] for reset transition;
     Raises GenerationError if missing.
@@ -59,28 +50,25 @@ def create_reset_condition_and_reset_action(design_data) -> list:
                 "to the state, which shall be reached by active reset.",
             ],
         )
+    target_state_name = design_data.reset_target_state_name
+    if not target_state_name:
+        raise GenerationError(
+            "Error",
+            [
+                "Reset target state could not be determined.",
+                "The transition from the reset-connector must go to a state.",
+            ],
+        )
     (
         condition,
         action_text_from_widget,
         reference_to_reset_condition_custom_text,
         reference_to_reset_action_custom_text,
     ) = reset
-    reset_transition_tag = _get_reset_transition_tag()
-    all_reset_transition_tags = project_manager.canvas.gettags(reset_transition_tag)
-    target_state_name = _get_target_state_name(all_reset_transition_tags)
     action = "state <= " + target_state_name + ";\n"
     if action_text_from_widget != "\n":
         action += action_text_from_widget
     return [condition, action, reference_to_reset_condition_custom_text, reference_to_reset_action_custom_text]
-
-
-def _get_reset_transition_tag() -> str:
-    reset_entry_tags = project_manager.canvas.gettags("reset_entry")
-    reset_transition_tag = ""
-    for t in reset_entry_tags:
-        if t.startswith("transition"):  # look for transition<n>_start
-            reset_transition_tag = t[:-6]
-    return reset_transition_tag
 
 
 def _get_transition_target_condition_action(transition_tag, design_data) -> tuple[str, str, str, object]:

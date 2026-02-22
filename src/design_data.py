@@ -7,8 +7,6 @@ Missing from DesignData (still read directly in codegen):
   (also available via GenerationConfig.from_main_window(); codegen often uses project_manager).
 - State display names: codegen uses canvas.itemcget(state_tag + "_name", "text") for case
   labels in architecture/module; could be state_name_by_state_tag or derived from state_action_list.
-- Reset target state name: created in library from canvas gettags/itemcget (reset_entry,
-  going_to_state); not in DesignData.
 - Transition target and condition/action ref: library still uses canvas gettags/find_withtag
   and ConditionAction.ref_dict for transition_tag -> target state name and refs.
 """
@@ -26,6 +24,8 @@ class DesignData:
     # action_text_from_widget is user text only; codegen prepends "state <= X;\n".
     # None when no reset condition is specified (codegen raises).
     reset_condition_action: tuple[str, str, Any, Any] | None
+    # Reset target state name (display name of state reached by active reset). None when no reset transition.
+    reset_target_state_name: str | None = None
 
     # Interface text widgets: (content, widget_ref for link_dict).
     # Content normalized like get_text_from_text_widget (single newline -> empty string).
