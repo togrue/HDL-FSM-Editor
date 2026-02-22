@@ -19,6 +19,8 @@ def _get_reset_transition_tag() -> str:
 
 def _interface_text_tuple(widget) -> tuple[str, object]:
     """Return (content, widget_ref) with content normalized like get_text_from_text_widget."""
+    if widget is None:
+        return ("", None)
     text = widget.get("1.0", "end")
     content = "" if text == "\n" else text
     return (content, widget)
@@ -186,12 +188,20 @@ def gather_design_data(is_script_mode: bool = False) -> DesignData:
     interface_package_text = _interface_text_tuple(project_manager.interface_package_text)
     interface_generics_text = _interface_text_tuple(project_manager.interface_generics_text)
     interface_ports_text = _interface_text_tuple(project_manager.interface_ports_text)
+    internals_package_text = _interface_text_tuple(project_manager.internals_package_text)
+    internals_architecture_text = _interface_text_tuple(project_manager.internals_architecture_text)
+    internals_process_clocked_text = _interface_text_tuple(project_manager.internals_process_clocked_text)
+    internals_process_combinatorial_text = _interface_text_tuple(project_manager.internals_process_combinatorial_text)
 
     return DesignData(
         reset_condition_action=reset_condition_action,
         interface_package_text=interface_package_text,
         interface_generics_text=interface_generics_text,
         interface_ports_text=interface_ports_text,
+        internals_package_text=internals_package_text,
+        internals_architecture_text=internals_architecture_text,
+        internals_process_clocked_text=internals_process_clocked_text,
+        internals_process_combinatorial_text=internals_process_combinatorial_text,
         global_actions_before=global_actions_before,
         global_actions_after=global_actions_after,
         concurrent_actions=concurrent_actions,

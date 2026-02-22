@@ -22,16 +22,18 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted, desi
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_signal_type_definition)
     file_line_number += state_signal_type_definition.count("\n")
 
-    signal_declarations = hdl_generation_library.get_text_from_text_widget(project_manager.internals_architecture_text)
+    signal_declarations = design_data.internals_architecture_text[0]
+    signal_ref = design_data.internals_architecture_text[1]
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, signal_declarations)
     number_of_new_lines = signal_declarations.count("\n")
-    project_manager.link_dict_ref.add(
-        file_name,
-        file_line_number,
-        "custom_text_in_internals_tab",
-        number_of_new_lines,
-        project_manager.internals_architecture_text,
-    )
+    if signal_ref is not None:
+        project_manager.link_dict_ref.add(
+            file_name,
+            file_line_number,
+            "custom_text_in_internals_tab",
+            number_of_new_lines,
+            signal_ref,
+        )
     file_line_number += number_of_new_lines
 
     [reset_condition, reset_action, reference_to_reset_condition_custom_text, reference_to_reset_action_custom_text] = (
@@ -52,19 +54,19 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted, desi
     project_manager.link_dict_ref.add(file_name, file_line_number, "Control-Tab", 1, "reset_and_clock_signal_name")
     file_line_number += 1
 
-    variable_declarations = hdl_generation_library.get_text_from_text_widget(
-        project_manager.internals_process_clocked_text
-    )
+    variable_declarations = design_data.internals_process_clocked_text[0]
+    variable_ref = design_data.internals_process_clocked_text[1]
     if variable_declarations != "":
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, variable_declarations)
         number_of_new_lines = variable_declarations.count("\n")
-        project_manager.link_dict_ref.add(
-            file_name,
-            file_line_number,
-            "custom_text_in_internals_tab",
-            number_of_new_lines,
-            project_manager.internals_process_clocked_text,
-        )
+        if variable_ref is not None:
+            project_manager.link_dict_ref.add(
+                file_name,
+                file_line_number,
+                "custom_text_in_internals_tab",
+                number_of_new_lines,
+                variable_ref,
+            )
         file_line_number += number_of_new_lines
 
     if reset_condition.count("\n") == 0:

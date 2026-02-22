@@ -14,16 +14,17 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
     """Build VHDL architecture body and write it; update file_line_number and link dict for navigation."""
     architecture = ""
 
-    package_statements = hdl_generation_library.get_text_from_text_widget(project_manager.internals_package_text)
+    package_statements, package_ref = design_data.internals_package_text[0], design_data.internals_package_text[1]
     architecture += package_statements
     number_of_new_lines = package_statements.count("\n")
-    project_manager.link_dict_ref.add(
-        file_name,
-        file_line_number,
-        "custom_text_in_internals_tab",
-        number_of_new_lines,
-        project_manager.internals_package_text,
-    )
+    if package_ref is not None:
+        project_manager.link_dict_ref.add(
+            file_name,
+            file_line_number,
+            "custom_text_in_internals_tab",
+            number_of_new_lines,
+            package_ref,
+        )
     file_line_number += number_of_new_lines
 
     architecture += "\n"
@@ -34,16 +35,18 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
     architecture += "    signal state : t_state;\n"
     file_line_number += 4
 
-    signal_declarations = hdl_generation_library.get_text_from_text_widget(project_manager.internals_architecture_text)
+    signal_declarations = design_data.internals_architecture_text[0]
+    signal_ref = design_data.internals_architecture_text[1]
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, signal_declarations)
     number_of_new_lines = signal_declarations.count("\n")
-    project_manager.link_dict_ref.add(
-        file_name,
-        file_line_number,
-        "custom_text_in_internals_tab",
-        number_of_new_lines,
-        project_manager.internals_architecture_text,
-    )
+    if signal_ref is not None:
+        project_manager.link_dict_ref.add(
+            file_name,
+            file_line_number,
+            "custom_text_in_internals_tab",
+            number_of_new_lines,
+            signal_ref,
+        )
     file_line_number += number_of_new_lines
 
     architecture += "begin\n"
@@ -58,18 +61,18 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
     project_manager.link_dict_ref.add(file_name, file_line_number, "Control-Tab", 1, "reset_and_clock_signal_name")
     file_line_number += 1
 
-    variable_declarations = hdl_generation_library.get_text_from_text_widget(
-        project_manager.internals_process_clocked_text
-    )
+    variable_declarations = design_data.internals_process_clocked_text[0]
+    variable_ref = design_data.internals_process_clocked_text[1]
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, variable_declarations)
     number_of_new_lines = variable_declarations.count("\n")
-    project_manager.link_dict_ref.add(
-        file_name,
-        file_line_number,
-        "custom_text_in_internals_tab",
-        number_of_new_lines,
-        project_manager.internals_process_clocked_text,
-    )
+    if variable_ref is not None:
+        project_manager.link_dict_ref.add(
+            file_name,
+            file_line_number,
+            "custom_text_in_internals_tab",
+            number_of_new_lines,
+            variable_ref,
+        )
     file_line_number += number_of_new_lines
 
     architecture += "    begin\n"

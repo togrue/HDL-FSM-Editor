@@ -3,7 +3,6 @@ All methods needed for the state action process in VHDL or Verilog
 """
 
 import re
-import tkinter as tk
 
 from codegen import hdl_generation_library, hdl_text_utils
 from project_manager import project_manager
@@ -19,9 +18,7 @@ def create_state_action_process(file_name, file_line_number, state_tag_list_sort
         return "", file_line_number
     # Get from Interface/Ports and from Internals/Architecture Declarations:
     all_possible_sensitivity_entries = _create_a_list_with_all_possible_sensitivity_entries(design_data)
-    variable_declarations = hdl_generation_library.get_text_from_text_widget(
-        project_manager.internals_process_combinatorial_text
-    )
+    variable_declarations = design_data.internals_process_combinatorial_text[0]
     if project_manager.language.get() == "VHDL":
         state_action_process, file_line_number = _create_state_action_process_for_vhdl(
             file_name,
@@ -66,13 +63,14 @@ def _create_state_action_process_for_vhdl(
 
     state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, variable_declarations)
     number_of_lines = variable_declarations.count("\n")
-    if number_of_lines != 0:
+    comb_ref = design_data.internals_process_combinatorial_text[1]
+    if number_of_lines != 0 and comb_ref is not None:
         project_manager.link_dict_ref.add(
             file_name,
             file_line_number,
             "custom_text_in_internals_tab",
             number_of_lines,
-            project_manager.internals_process_combinatorial_text,
+            comb_ref,
         )
         file_line_number += number_of_lines
     state_action_process += "begin\n"
@@ -132,13 +130,15 @@ def _create_state_action_process_for_verilog(
     if variable_declarations != "":
         state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, variable_declarations)
         number_of_new_lines = variable_declarations.count("\n")
-        project_manager.link_dict_ref.add(
-            file_name,
-            file_line_number,
-            "custom_text_in_internals_tab",
-            number_of_new_lines,
-            project_manager.internals_process_combinatorial_text,
-        )
+        comb_ref = design_data.internals_process_combinatorial_text[1]
+        if comb_ref is not None:
+            project_manager.link_dict_ref.add(
+                file_name,
+                file_line_number,
+                "custom_text_in_internals_tab",
+                number_of_new_lines,
+                comb_ref,
+            )
         file_line_number += number_of_new_lines
 
     state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, default_state_actions)
@@ -188,7 +188,7 @@ def _create_state_action_process_for_verilog(
 def _create_a_list_with_all_possible_sensitivity_entries(design_data) -> list:
     all_port_declarations = design_data.interface_ports_text[0].lower()
     readable_ports_list = get_all_readable_ports(all_port_declarations, check=True)
-    all_signal_declarations = project_manager.internals_architecture_text.get("1.0", tk.END).lower()
+    all_signal_declarations = design_data.internals_architecture_text[0].lower()
     signals_list = _get_all_signals(all_signal_declarations)
     signals_list.extend(readable_ports_list)
     return signals_list
