@@ -11,11 +11,17 @@ from typing import Any
 class DesignData:
     """Gathered design data (strings + widget refs for link_dict)."""
 
+    # Control-tab / config (module name, language, reset/clock signal names).
+    language: str = "VHDL"
+    module_name: str = ""
+    reset_signal_name: str = ""
+    clock_signal_name: str = ""
+
     # Reset transition: condition and action for the single reset transition.
     # Tuple: (condition_text, action_text_from_widget, condition_ref, action_ref).
     # action_text_from_widget is user text only; codegen prepends "state <= X;\n".
     # None when no reset condition is specified (codegen raises).
-    reset_condition_action: tuple[str, str, Any, Any] | None
+    reset_condition_action: tuple[str, str, Any, Any] | None = None
     # Reset target state name (display name of state reached by active reset). None when no reset transition.
     reset_target_state_name: str | None = None
 
@@ -64,9 +70,3 @@ class DesignData:
     # Per-state action blocks (e.g. output assignments when in that state).
     # List of (state_name, action_text, widget_ref); order matches state_tag_list_sorted.
     state_action_list: list[tuple[str, str, Any]] | None = None
-
-    # Control-tab / config (module name, language, reset/clock signal names).
-    module_name: str = ""
-    language: str = "VHDL"
-    reset_signal_name: str = ""
-    clock_signal_name: str = ""

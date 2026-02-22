@@ -138,7 +138,12 @@ class MenuBar:
         """Save project if dirty, then run HDL generation to file."""
         if project_manager.root.title().endswith("*"):
             file_handling.save()
-        design_data = gather_design_data()
+        design_data, warnings = gather_design_data()
+
+        if warnings:
+            warning_message = "\n\n".join(warnings)
+            messagebox.showwarning("Warning in HDL-FSM-Editor", warning_message)
+
         hdl_generation.run_hdl_generation(write_to_file=True, is_script_mode=False, design_data=design_data)
 
     def _handle_notebook_tab_changed_event(self) -> None:

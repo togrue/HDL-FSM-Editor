@@ -26,10 +26,8 @@ def _interface_text_tuple(widget) -> tuple[str, object]:
     return (content, widget)
 
 
-def gather_design_data(is_script_mode: bool = False) -> DesignData:
-    """Build DesignData from canvas and element ref_dicts. Call before run_hdl_generation."""
-    from tkinter import messagebox
-
+def gather_design_data() -> tuple[DesignData, list[str]]:
+    """Build DesignData from canvas and element ref_dicts. Returns (data, warnings). Call before run_hdl_generation."""
     from elements import (
         condition_action,
         global_actions_clocked,
@@ -131,6 +129,7 @@ def gather_design_data(is_script_mode: bool = False) -> DesignData:
         if ref is not None:
             concurrent_actions = (ref.text_id.get("1.0", "end"), ref.text_id)
 
+    warnings: list[str] = []
     state_comments_by_state_tag: dict[str, tuple[str | None, object | None]] = {}
     state_tag_dict_with_prio: dict[int, str] = {}
     state_tag_list: list[str] = []
@@ -168,24 +167,14 @@ def gather_design_data(is_script_mode: bool = False) -> DesignData:
                             prio = int(first_line)
                             if prio in state_tag_dict_with_prio:
                                 state_tag_list.append(tag)
-                                if is_script_mode:
-                                    print(
-                                        "Warning in HDL-FSM-Editor: "
-                                        + "The state '"
-                                        + project_manager.canvas.itemcget(tag + "_name", "text")
-                                        + "' uses the order-number "
-                                        + first_line
-                                        + " which is already used at another state."
-                                    )
-                                else:
-                                    messagebox.showwarning(
-                                        "Warning in HDL-FSM-Editor",
-                                        "The state '"
-                                        + project_manager.canvas.itemcget(tag + "_name", "text")
-                                        + "' uses the order-number "
-                                        + first_line
-                                        + " which is already used at another state.",
-                                    )
+                                state_name = project_manager.canvas.itemcget(tag + "_name", "text")
+                                warnings.append(
+                                    "The state '"
+                                    + state_name
+                                    + "' uses the order-number "
+                                    + first_line
+                                    + " which is already used at another state."
+                                )
                             else:
                                 state_tag_dict_with_prio[prio] = tag
                 break
@@ -231,7 +220,7 @@ def gather_design_data(is_script_mode: bool = False) -> DesignData:
     internals_process_clocked_text = _interface_text_tuple(project_manager.internals_process_clocked_text)
     internals_process_combinatorial_text = _interface_text_tuple(project_manager.internals_process_combinatorial_text)
 
-    return DesignData(
+    design_data = DesignData(
         module_name=project_manager.module_name.get(),
         language=project_manager.language.get(),
         reset_signal_name=project_manager.reset_signal_name.get(),
@@ -256,3 +245,4 @@ def gather_design_data(is_script_mode: bool = False) -> DesignData:
         state_actions_default=state_actions_default_tuple,
         state_action_list=state_action_list_built,
     )
+    return (design_data, warnings)
