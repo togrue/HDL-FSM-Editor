@@ -196,7 +196,7 @@ class TabControl:
             project_manager.tab_internals_ref.paned_window_internals.insert(
                 0, project_manager.tab_internals_ref.internals_package_frame, weight=1
             )
-            # Internals: Architecture-Declarations, 2*Variable Declarations umbenennen
+            # Internals: Architecture-Declarations (adapt labels to VHDL)
             project_manager.internals_architecture_label.config(text="Architecture Declarations:")
             project_manager.internals_process_clocked_label.config(text="Variable Declarations for clocked process:")
             project_manager.internals_process_combinatorial_label.config(
@@ -225,7 +225,7 @@ class TabControl:
             project_manager.tab_internals_ref.paned_window_internals.forget(
                 project_manager.tab_internals_ref.internals_package_frame
             )
-            # Internals: Architecture-Declarations umbenennen, 2*Variable Declarations umbenennen
+            # Internals: Architecture-Declarations (adapt labels to Verilog)
             project_manager.internals_architecture_label.config(text="Internal Declarations:")
             project_manager.internals_process_clocked_label.config(
                 text="Local Variable Declarations for clocked always process (not supported by all Verilog compilers):"

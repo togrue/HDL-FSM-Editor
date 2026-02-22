@@ -138,14 +138,14 @@ class CustomText(CodeEditor):
             encoding="utf-8",
         ) as tf:
             tf.write(self.get("1.0", "end-1c"))
-            tmpname = tf.name
+            tmp_name = tf.name
         try:
-            cmd = project_manager.edit_cmd.get().split() + [tmpname]
+            cmd = project_manager.edit_cmd.get().split() + [tmp_name]
             subprocess.run(cmd, check=False)  # blocks efficiently
-            with open(tmpname, encoding="utf-8") as f:
+            with open(tmp_name, encoding="utf-8") as f:
                 new_text = f.read()
         finally:
-            os.unlink(tmpname)
+            os.unlink(tmp_name)
         self.delete("1.0", tk.END)
         self.insert("1.0", new_text)
         self.format()
@@ -361,8 +361,8 @@ class CustomText(CodeEditor):
         if project_manager.language.get() == "VHDL":
             text = self._remove_loop_indices(text)
         if project_manager.language.get() == "VHDL" and self._text_is_global_actions_combinatorial():
-            # "processes" are possible in this text, which might contain "uncomplete" variable usage:
-            text = self._add_uncomplete_vhdl_variables_to_read_or_written_variables_of_all_windows(text)
+            # "processes" are possible in this text, which might contain "incomplete" variable usage:
+            text = self._add_incomplete_vhdl_variables_to_read_or_written_variables_of_all_windows(text)
         text = self._add_read_constants_from_case_when_to_read_variables_of_all_windows(text)  # Keywords are used here.
         text = self._remove_keywords(text)
         text = self._remove_vhdl_attributes(text)
@@ -426,7 +426,7 @@ class CustomText(CodeEditor):
                 break
 
     def _remove_vhdl_attributes(self, text):
-        search_for_attributes = r"\w+\s+'\s+\w+"  # remove signal-name and attribute; example: "paddr ' range"
+        search_for_attributes = r"\w+\s+'\s+\w+"  # remove signal-name and attribute; example: "addr ' range"
         while True:
             match = re.search(search_for_attributes, text, flags=re.IGNORECASE)
             if match:
@@ -440,7 +440,7 @@ class CustomText(CodeEditor):
         return text
 
     def _remove_loop_indices(self, text):
-        # Suchen nach "for   in"
+        # Search for "for ... in"
         while True:
             match = LOOP_INDEX_RE.search(text)
             if match:
@@ -455,7 +455,7 @@ class CustomText(CodeEditor):
                 break
         return text
 
-    def _add_uncomplete_vhdl_variables_to_read_or_written_variables_of_all_windows(self, text):
+    def _add_incomplete_vhdl_variables_to_read_or_written_variables_of_all_windows(self, text):
         text_list, proc_list, remaining_text = self._split_in_lists_of_text_and_processes(text)
         for p_number, process in enumerate(proc_list):
             process, all_variable_names = self._remove_variable_declarations(process)
@@ -592,8 +592,8 @@ class CustomText(CodeEditor):
                 " <= ",
                 " > ",
                 " >= ",
-                " = ",  # This is an uncomplete comparison, which shall not be identified as signal by highlighting.
-                " ! ",  # This is an uncomplete comparison, which shall not be identified as signal by highlighting.
+                " = ",  # This is an incomplete comparison, which shall not be identified as signal by highlighting.
+                " ! ",  # This is an incomplete comparison, which shall not be identified as signal by highlighting.
             ):
                 text = re.sub(keyword, "  ", text, flags=re.I)  # Keep the blanks the keyword is surrounded by.
         return text
@@ -702,9 +702,9 @@ class CustomText(CodeEditor):
                     " <= ",
                     " > ",
                     " >= ",
-                    " = ",  # This is an uncomplete comparison, which shall not be identified as signal by highlighting.
+                    " = ",  # This is an incomplete comparison, which shall not be identified as signal by highlighting.
                     " ! ",
-                ):  # This is an uncomplete comparison, which shall not be identified as signal by highlighting.
+                ):  # This is an incomplete comparison, which shall not be identified as signal by highlighting.
                     condition = re.sub(keyword, "  ", condition)  # Keep the blanks the keyword is surrounded by.
             CustomText.read_variables_of_all_windows[self] += condition.split()
         return text

@@ -26,9 +26,9 @@ def indent_text_by_the_given_number_of_tabs(number_of_tabs, text) -> str:
     return result_string
 
 
-def get_text_from_text_widget(wiget_id) -> str:
+def get_text_from_text_widget(widget_id) -> str:
     """Return widget contents; empty string if only a single newline."""
-    text = wiget_id.get("1.0", tk.END)
+    text = widget_id.get("1.0", tk.END)
     if text != "\n":
         return text
     return ""
@@ -527,7 +527,7 @@ def _merge_trace_array(trace_array) -> list:
                         traces_of_a_state_reversed[trace_index + 1][-(search_index + 1) : -(search_index + 1)] = trace[
                             search_index:
                         ]
-                        # Remove superfluous (search_index+1)*"endifs", which were copied with trace:
+                        # Remove superfluous (search_index+1)*"endif", which were copied with trace:
                         traces_of_a_state_reversed[trace_index + 1] = traces_of_a_state_reversed[trace_index + 1][
                             : -(search_index + 1)
                         ]
@@ -548,7 +548,7 @@ def _merge_trace_array(trace_array) -> list:
                         ]  # copy rest of trace after the endif
                         traces_of_a_state_reversed[trace_index + 1] = traces_of_a_state_reversed[trace_index + 1][
                             :-search_index
-                        ]  # remove superfluous "endifs"
+                        ]  # remove superfluous "endif"s
     transition_specifications = []
     if traces_of_a_state_reversed:
         for entry in traces_of_a_state_reversed[-1]:
@@ -694,7 +694,7 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
                         "condition_action_reference": None,
                     }
                 )
-            # Close all opened conditions by "endif" (condition-level muss eigentlich dekrementiert werden?!):
+            # Close all opened conditions by "endif" (condition-level should be actually decremented?!):
             for _ in range(condition_level_new):
                 trace_new.append(
                     {
