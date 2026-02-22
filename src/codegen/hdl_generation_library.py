@@ -6,12 +6,21 @@ import re
 import tkinter as tk
 
 import canvas_editing
-from elements import condition_action
 from project_manager import project_manager
 
 from .exceptions import GenerationError
 
 BLOCK_COMMENT_RE = re.compile(r"\/\*.*?\*\/", flags=re.DOTALL)
+
+
+class _ConditionActionRef:
+    """Holds condition/action widget refs for link_dict; used when reading from DesignData."""
+
+    __slots__ = ("condition_id", "action_id")
+
+    def __init__(self, condition_id, action_id):
+        self.condition_id = condition_id
+        self.action_id = action_id
 
 
 def indent_text_by_the_given_number_of_tabs(number_of_tabs, text) -> str:
@@ -72,39 +81,20 @@ def create_reset_condition_and_reset_action(design_data) -> list:
 
 
 def _get_transition_target_condition_action(transition_tag, design_data) -> tuple[str, str, str, object]:
-    # design_data.condition_action_by_canvas_id populated by gatherer; library still uses ref_dict for lookup
-    tags = project_manager.canvas.gettags(transition_tag)
-    transition_condition = ""
-    transition_action = ""
-    condition_action_reference = ""
-    transition_target = ""
-    for tag in tags:
-        if tag.startswith("going_to_state"):
-            transition_target_tag = tag[9:]
-            transition_target = project_manager.canvas.itemcget(transition_target_tag + "_name", "text")
-        elif tag.startswith("going_to_connector"):
-            transition_target = tag[9:]
-        elif tag.startswith("ca_connection"):  # Complete tag: ca_connection<n>_end
-            condition_action_number = tag[13:-4]
-            condition_action_tag = "condition_action" + condition_action_number
-            condition_action_canvas_item_id = project_manager.canvas.find_withtag(condition_action_tag)[0]
-            condition_action_reference = condition_action.ConditionAction.ref_dict[condition_action_canvas_item_id]
-            if condition_action_reference is not None:
-                transition_condition = _get_transition_condition(condition_action_reference)
-                transition_action = _get_transition_action(condition_action_reference)
-    return transition_target, transition_condition, transition_action, condition_action_reference
+    data = (design_data.transition_data_by_transition_tag or {}).get(transition_tag)
+    if data is not None:
+        target, transition_condition, transition_action, cond_ref, action_ref = data
+        ref_obj = _ConditionActionRef(cond_ref, action_ref)
+        return target, transition_condition, transition_action, ref_obj
+    return "", "", "", _ConditionActionRef(None, None)
 
 
 def _get_condition_action_reference_of_transition(transition_tag, design_data) -> None:
-    # design_data.condition_action_by_canvas_id available; library still uses ref_dict
-    tags = project_manager.canvas.gettags(transition_tag)
-    for tag in tags:
-        if tag.startswith("ca_connection"):  # Complete tag: ca_connection<n>_end
-            condition_action_number = tag[13:-4]
-            condition_action_tag = "condition_action" + condition_action_number
-            condition_action_canvas_item_id = project_manager.canvas.find_withtag(condition_action_tag)[0]
-            condition_action_reference = condition_action.ConditionAction.ref_dict[condition_action_canvas_item_id]
-            return condition_action_reference
+    data = (design_data.transition_data_by_transition_tag or {}).get(transition_tag)
+    if data is not None:
+        _, _, _, cond_ref, action_ref = data
+        if cond_ref is not None or action_ref is not None:
+            return _ConditionActionRef(cond_ref, action_ref)
     return None
 
 

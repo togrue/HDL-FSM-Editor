@@ -87,6 +87,35 @@ def gather_design_data(is_script_mode: bool = False) -> DesignData:
                         condition_action_by_canvas_id[i] = entry
                 break
 
+    transition_data_by_transition_tag: dict[str, tuple[str, str, str, object | None, object | None]] = {}
+    reg_transition_tag = re.compile(r"^transition[0-9]+$")
+    for canvas_id in project_manager.canvas.find_all():
+        for tag in project_manager.canvas.gettags(canvas_id):
+            if reg_transition_tag.match(tag):
+                transition_tag = tag
+                ids = project_manager.canvas.find_withtag(transition_tag)
+                if not ids:
+                    continue
+                tags = project_manager.canvas.gettags(ids[0])
+                target = ""
+                cond_text = ""
+                act_text = ""
+                cond_ref: object | None = None
+                action_ref: object | None = None
+                for t in tags:
+                    if t.startswith("going_to_state"):
+                        target = project_manager.canvas.itemcget(t[9:] + "_name", "text")
+                    elif t.startswith("going_to_connector"):
+                        target = t[9:]
+                    elif t.startswith("ca_connection") and t.endswith("_end"):
+                        condition_action_number = t[13:-4]
+                        condition_action_tag = "condition_action" + condition_action_number
+                        ca_ids = project_manager.canvas.find_withtag(condition_action_tag)
+                        if ca_ids and ca_ids[0] in condition_action_by_canvas_id:
+                            cond_text, act_text, cond_ref, action_ref = condition_action_by_canvas_id[ca_ids[0]]
+                transition_data_by_transition_tag[transition_tag] = (target, cond_text, act_text, cond_ref, action_ref)
+                break
+
     global_actions_before: tuple[str, object] = ("", None)
     global_actions_after: tuple[str, object] = ("", None)
     concurrent_actions: tuple[str, object] = ("", None)
@@ -219,6 +248,7 @@ def gather_design_data(is_script_mode: bool = False) -> DesignData:
         state_tag_list_sorted=state_tag_list_sorted,
         state_name_by_state_tag=state_name_by_state_tag,
         condition_action_by_canvas_id=condition_action_by_canvas_id,
+        transition_data_by_transition_tag=transition_data_by_transition_tag,
         state_actions_default=state_actions_default_tuple,
         state_action_list=state_action_list_built,
     )

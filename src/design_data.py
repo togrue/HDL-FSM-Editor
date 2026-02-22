@@ -5,8 +5,6 @@ Populated by design_data_gatherer; read by codegen.
 Missing from DesignData (still read directly in codegen):
 - Control-tab / config: module_name, language, reset_signal_name, clock_signal_name
   (also available via GenerationConfig.from_main_window(); codegen often uses project_manager).
-- Transition target and condition/action ref: library still uses canvas gettags/find_withtag
-  and ConditionAction.ref_dict for transition_tag -> target state name and refs.
 """
 
 from dataclasses import dataclass
@@ -58,6 +56,11 @@ class DesignData:
     # Per-transition condition and action: keyed by canvas arc id.
     # Value: (condition_text, action_text, condition_ref, action_ref) for link_dict.
     condition_action_by_canvas_id: dict[int, tuple[str, str, Any, Any]] | None = None
+
+    # Per-transition target and condition/action: keyed by transition_tag (e.g. "transition5").
+    # Value: (target, condition_text, action_text, condition_ref, action_ref).
+    # target is state display name or "connector<n>"; refs are None when no condition/action box.
+    transition_data_by_transition_tag: dict[str, tuple[str, str, str, Any | None, Any | None]] | None = None
 
     # Default (else/others) branch actions in the main state machine.
     # Tuple: (full_text_incl_comment_line, widget_ref for link_dict).
