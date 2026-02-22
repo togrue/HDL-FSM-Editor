@@ -30,7 +30,7 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
     architecture += "\n"
     architecture += "architecture fsm of " + project_manager.module_name.get() + " is\n"
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(
-        1, _create_type_definition_for_the_state_signal(state_tag_list_sorted)
+        1, _create_type_definition_for_the_state_signal(design_data)
     )
     architecture += "    signal state : t_state;\n"
     file_line_number += 4
@@ -204,10 +204,10 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
     return architecture
 
 
-def _create_type_definition_for_the_state_signal(state_tag_list_sorted) -> None:
-    list_of_all_state_names = [
-        project_manager.canvas.itemcget(state_tag + "_name", "text") for state_tag in state_tag_list_sorted
-    ]
+def _create_type_definition_for_the_state_signal(design_data) -> None:
+    state_tag_list_sorted = design_data.state_tag_list_sorted or []
+    state_name_by_state_tag = design_data.state_name_by_state_tag or {}
+    list_of_all_state_names = [state_name_by_state_tag.get(tag, "") for tag in state_tag_list_sorted]
     if list_of_all_state_names != []:
         type_definition = "type t_state is ("
         list_of_all_state_names_reduced_by_last_entry = list_of_all_state_names[:-1]

@@ -164,6 +164,10 @@ def gather_design_data(is_script_mode: bool = False) -> DesignData:
     state_tag_list_sorted = [tag for _, tag in sorted(state_tag_dict_with_prio.items())]
     state_tag_list_sorted.extend(state_tag_list)
 
+    state_name_by_state_tag = {
+        tag: project_manager.canvas.itemcget(tag + "_name", "text") for tag in state_tag_list_sorted
+    }
+
     state_actions_default_tuple: tuple[str, object] = ("", None)
     item_ids = project_manager.canvas.find_withtag("state_actions_default")
     if item_ids:
@@ -213,6 +217,7 @@ def gather_design_data(is_script_mode: bool = False) -> DesignData:
         concurrent_actions=concurrent_actions,
         state_comments_by_state_tag=state_comments_by_state_tag,
         state_tag_list_sorted=state_tag_list_sorted,
+        state_name_by_state_tag=state_name_by_state_tag,
         condition_action_by_canvas_id=condition_action_by_canvas_id,
         state_actions_default=state_actions_default_tuple,
         state_action_list=state_action_list_built,

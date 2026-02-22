@@ -5,8 +5,6 @@ Populated by design_data_gatherer; read by codegen.
 Missing from DesignData (still read directly in codegen):
 - Control-tab / config: module_name, language, reset_signal_name, clock_signal_name
   (also available via GenerationConfig.from_main_window(); codegen often uses project_manager).
-- State display names: codegen uses canvas.itemcget(state_tag + "_name", "text") for case
-  labels in architecture/module; could be state_name_by_state_tag or derived from state_action_list.
 - Transition target and condition/action ref: library still uses canvas gettags/find_withtag
   and ConditionAction.ref_dict for transition_tag -> target state name and refs.
 """
@@ -54,6 +52,8 @@ class DesignData:
     state_comments_by_state_tag: dict[str, tuple[str | None, Any | None]] | None = None
     # Ordered list of state tags (e.g. for deterministic emission order).
     state_tag_list_sorted: list[str] | None = None
+    # Display name for each state tag (canvas label text for case/state names in HDL).
+    state_name_by_state_tag: dict[str, str] | None = None
 
     # Per-transition condition and action: keyed by canvas arc id.
     # Value: (condition_text, action_text, condition_ref, action_ref) for link_dict.

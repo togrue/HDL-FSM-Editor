@@ -123,7 +123,7 @@ def extract_transition_specifications_from_the_graph(state_tag_list_sorted, desi
         # Each entry is a ordered list of dictionaries.
         # The order of these dictionaries is defined by the order in which the HDL lines must be generated.
         # Each dictionary contains all information to create one or several HDL lines.
-        state_name = project_manager.canvas.itemcget(state_tag + "_name", "text")
+        state_name = (design_data.state_name_by_state_tag or {}).get(state_tag, "")
         transition_specifications.append(
             {
                 "state_name": state_name,
@@ -561,7 +561,7 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
     trace_array,  # initialized by trace_array = []
     design_data,
 ) -> None:
-    outgoing_transition_tags = _get_all_outgoing_transitions_in_priority_order(start_tag)
+    outgoing_transition_tags = _get_all_outgoing_transitions_in_priority_order(start_tag, design_data)
     if not outgoing_transition_tags and start_tag.startswith("connector"):
         if trace:
             raise GenerationError(
@@ -679,10 +679,10 @@ def _check_if_condition_is_a_comment(transition_condition) -> bool:
     return bool(transition_condition_without_comments == "" or transition_condition_without_comments.isspace())
 
 
-def _get_all_outgoing_transitions_in_priority_order(state_tag) -> list:
+def _get_all_outgoing_transitions_in_priority_order(state_tag, design_data) -> list:
     transition_tags_and_priority = _create_outgoing_transition_list_with_priority_information(state_tag)
     transition_tags_and_priority_sorted = sorted(transition_tags_and_priority, key=lambda entry: entry[1])
-    _check_for_equal_priorities(transition_tags_and_priority_sorted, state_tag)
+    _check_for_equal_priorities(transition_tags_and_priority_sorted, state_tag, design_data)
     transition_tags_in_priority_order = _remove_priority_information(transition_tags_and_priority_sorted)
     return transition_tags_in_priority_order
 
@@ -706,7 +706,7 @@ def _remove_priority_information(transition_tag_and_priority_sorted) -> list:
     return transition_tags_in_priority_order
 
 
-def _check_for_equal_priorities(transition_tags_and_priority_sorted, state_tag) -> None:
+def _check_for_equal_priorities(transition_tags_and_priority_sorted, state_tag, design_data) -> None:
     for n in range(len(transition_tags_and_priority_sorted) - 1):
         if transition_tags_and_priority_sorted[n][1] == transition_tags_and_priority_sorted[n + 1][1]:
             object_coords = project_manager.canvas.coords(state_tag)
@@ -719,7 +719,7 @@ def _check_for_equal_priorities(transition_tags_and_priority_sorted, state_tag) 
                 ],
                 check_fit=False,
             )
-            state_name = project_manager.canvas.itemcget(state_tag + "_name", "text")
+            state_name = (design_data.state_name_by_state_tag or {}).get(state_tag, "")
             if state_name == "":
                 state_name = "a connector"
             raise GenerationError(

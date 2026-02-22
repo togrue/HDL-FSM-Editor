@@ -18,7 +18,7 @@ from .exceptions import GenerationError
 def create_module_logic(file_name, file_line_number, state_tag_list_sorted, design_data) -> None:
     """Build Verilog module logic (state type, signals, always block) and write; update link dict."""
     architecture = ""
-    state_signal_type_definition = _create_signal_declaration_for_the_state_variable(state_tag_list_sorted)
+    state_signal_type_definition = _create_signal_declaration_for_the_state_variable(design_data)
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_signal_type_definition)
     file_line_number += state_signal_type_definition.count("\n")
 
@@ -183,10 +183,10 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted, desi
     return architecture
 
 
-def _create_signal_declaration_for_the_state_variable(state_tag_list_sorted) -> str:
-    list_of_all_state_names = [
-        project_manager.canvas.itemcget(state_tag + "_name", "text") for state_tag in state_tag_list_sorted
-    ]
+def _create_signal_declaration_for_the_state_variable(design_data) -> str:
+    state_tag_list_sorted = design_data.state_tag_list_sorted or []
+    state_name_by_state_tag = design_data.state_name_by_state_tag or {}
+    list_of_all_state_names = [state_name_by_state_tag.get(tag, "") for tag in state_tag_list_sorted]
     number_of_states = len(list_of_all_state_names)
     if project_manager.language.get() == "Verilog":
         bit_width_number_of_states = math.ceil(math.log(number_of_states, 2))
