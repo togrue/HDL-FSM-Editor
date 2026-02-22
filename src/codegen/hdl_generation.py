@@ -25,6 +25,10 @@ def run_hdl_generation(write_to_file, is_script_mode: bool, design_data) -> bool
     """Run HDL generation with current config; show errors in GUI or print in script mode. Return True on success.
     design_data must be a DesignData instance from design_data_gatherer.gather_design_data()."""
     config = GenerationConfig.from_main_window()
+    config.module_name = design_data.module_name
+    config.language = design_data.language
+    config.reset_signal_name = design_data.reset_signal_name
+    config.clock_signal_name = design_data.clock_signal_name
     state_tag_list_sorted = design_data.state_tag_list_sorted
     success = False
     try:
@@ -129,7 +133,7 @@ def _create_entity(config, file_name, file_line_number, design_data) -> tuple:
     entity += "\n"
     file_line_number += 1
 
-    entity += "entity " + config.module_name + " is\n"
+    entity += "entity " + design_data.module_name + " is\n"
     project_manager.link_dict_ref.add(file_name, file_line_number, "Control-Tab", 1, "module_name")
     file_line_number += 1
 
@@ -181,7 +185,7 @@ def _create_entity(config, file_name, file_line_number, design_data) -> tuple:
 def _create_module_ports(config, file_name, file_line_number, design_data) -> tuple:
     module = ""
     file_line_number = 3  # Line 1 = Filename, Line 2 = Header
-    module += "module " + config.module_name + "\n"
+    module += "module " + design_data.module_name + "\n"
     project_manager.link_dict_ref.add(file_name, file_line_number, "Control-Tab", 1, "module_name")
     file_line_number += 1
 

@@ -1,10 +1,6 @@
 """
 Design data for HDL generation. No element or canvas imports.
 Populated by design_data_gatherer; read by codegen.
-
-Missing from DesignData (still read directly in codegen):
-- Control-tab / config: module_name, language, reset_signal_name, clock_signal_name
-  (also available via GenerationConfig.from_main_window(); codegen often uses project_manager).
 """
 
 from dataclasses import dataclass
@@ -68,3 +64,9 @@ class DesignData:
     # Per-state action blocks (e.g. output assignments when in that state).
     # List of (state_name, action_text, widget_ref); order matches state_tag_list_sorted.
     state_action_list: list[tuple[str, str, Any]] | None = None
+
+    # Control-tab / config (module name, language, reset/clock signal names).
+    module_name: str = ""
+    language: str = "VHDL"
+    reset_signal_name: str = ""
+    clock_signal_name: str = ""

@@ -19,7 +19,7 @@ def create_state_action_process(file_name, file_line_number, state_tag_list_sort
     # Get from Interface/Ports and from Internals/Architecture Declarations:
     all_possible_sensitivity_entries = _create_a_list_with_all_possible_sensitivity_entries(design_data)
     variable_declarations = design_data.internals_process_combinatorial_text[0]
-    if project_manager.language.get() == "VHDL":
+    if design_data.language == "VHDL":
         state_action_process, file_line_number = _create_state_action_process_for_vhdl(
             file_name,
             file_line_number,
@@ -57,7 +57,10 @@ def _create_state_action_process_for_vhdl(
 ) -> tuple:
     state_action_process = "p_state_actions: process "
     state_action_process += (
-        _create_sensitivity_list(state_action_list, default_state_actions, all_possible_sensitivity_entries) + "\n"
+        _create_sensitivity_list(
+            state_action_list, default_state_actions, all_possible_sensitivity_entries, design_data
+        )
+        + "\n"
     )
     file_line_number += 1
 
@@ -96,7 +99,7 @@ def _create_state_action_process_for_vhdl(
     file_line_number += 2
 
     for state_action_entry in state_action_list:
-        when_entry = _create_when_entry(state_action_entry)
+        when_entry = _create_when_entry(state_action_entry, design_data)
         state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, when_entry)
         file_line_number += 1  # A when_entry starts always with "when ..."
         number_of_lines = when_entry.count("\n")
@@ -122,7 +125,7 @@ def _create_state_action_process_for_verilog(
 ) -> tuple:
     state_action_process = "always @"
     state_action_process += _create_sensitivity_list(
-        state_action_list, default_state_actions, all_possible_sensitivity_entries
+        state_action_list, default_state_actions, all_possible_sensitivity_entries, design_data
     )
     state_action_process += " begin: p_state_actions\n"
     file_line_number += 1
@@ -161,7 +164,7 @@ def _create_state_action_process_for_verilog(
     file_line_number += 2
 
     for state_action_entry in state_action_list:
-        when_entry = _create_when_entry(state_action_entry)
+        when_entry = _create_when_entry(state_action_entry, design_data)
         number_of_lines = when_entry.count("\n")
         state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, when_entry)
         if number_of_lines == 2 and when_entry.endswith("    ;\n"):  # Empty state action
@@ -187,17 +190,19 @@ def _create_state_action_process_for_verilog(
 
 def _create_a_list_with_all_possible_sensitivity_entries(design_data) -> list:
     all_port_declarations = design_data.interface_ports_text[0].lower()
-    readable_ports_list = get_all_readable_ports(all_port_declarations, check=True)
+    readable_ports_list = get_all_readable_ports(all_port_declarations, check=True, design_data=design_data)
     all_signal_declarations = design_data.internals_architecture_text[0].lower()
-    signals_list = _get_all_signals(all_signal_declarations)
+    signals_list = _get_all_signals(all_signal_declarations, design_data)
     signals_list.extend(readable_ports_list)
     return signals_list
 
 
-def _create_sensitivity_list(state_action_list, default_state_actions, all_possible_sensitivity_entries) -> str:
+def _create_sensitivity_list(
+    state_action_list, default_state_actions, all_possible_sensitivity_entries, design_data
+) -> str:
     sensitivity_list = "("
     default_state_actions_separated = hdl_generation_library.convert_hdl_lines_into_a_searchable_string(
-        default_state_actions
+        default_state_actions, design_data.language
     )
     default_state_actions_separated = _remove_left_hand_sides(default_state_actions_separated)
     default_state_actions_separated = _remove_record_element_names(default_state_actions_separated)
@@ -205,7 +210,9 @@ def _create_sensitivity_list(state_action_list, default_state_actions, all_possi
         if " " + entry + " " in default_state_actions_separated:
             sensitivity_list += entry + ", "
     for list_entry in state_action_list:
-        state_action_separated = hdl_generation_library.convert_hdl_lines_into_a_searchable_string(list_entry[1])
+        state_action_separated = hdl_generation_library.convert_hdl_lines_into_a_searchable_string(
+            list_entry[1], design_data.language
+        )
         state_action_separated = _remove_left_hand_sides(state_action_separated)
         state_action_separated = _remove_record_element_names(state_action_separated)
         for entry in all_possible_sensitivity_entries:
@@ -235,8 +242,8 @@ def _get_default_state_actions(design_data) -> str:
     return design_data.state_actions_default[0]
 
 
-def _create_when_entry(state_action_entry) -> str:
-    if project_manager.language.get() == "VHDL":
+def _create_when_entry(state_action_entry, design_data) -> str:
+    if design_data.language == "VHDL":
         when_entry = "when " + state_action_entry[0] + "=>\n"
         when_entry += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_action_entry[1])
     else:
@@ -250,40 +257,46 @@ def _create_when_entry(state_action_entry) -> str:
     return when_entry
 
 
-def get_all_readable_ports(all_port_declarations, check) -> list:
+def get_all_readable_ports(all_port_declarations, check, design_data=None) -> list:
     """Returns a list with the names of all readable ports.
     If check is True, an error is raised if an illegal port declaration is found.
     """
-    return hdl_text_utils.get_all_readable_ports(all_port_declarations, check)
+    language = design_data.language if design_data else None
+    return hdl_text_utils.get_all_readable_ports(all_port_declarations, check, language)
 
 
-def get_all_writable_ports(all_port_declarations) -> list:
+def get_all_writable_ports(all_port_declarations, design_data=None) -> list:
     """Returns a list with the names of all writable ports."""
-    return hdl_text_utils.get_all_writable_ports(all_port_declarations)
+    language = design_data.language if design_data else None
+    return hdl_text_utils.get_all_writable_ports(all_port_declarations, language)
 
 
 def _create_list_of_declarations(all_declarations):
-    all_declarations_without_comments = hdl_generation_library.remove_comments_and_returns(all_declarations)
+    all_declarations_without_comments = hdl_generation_library.remove_comments_and_returns(
+        all_declarations, design_data.language
+    )
     all_declarations_separated = hdl_generation_library.surround_character_by_blanks(
         ":", all_declarations_without_comments
     )  # only needed for VHDL
-    split_char = ";" if project_manager.language.get() == "VHDL" else ","
+    split_char = ";" if design_data.language == "VHDL" else ","
     return all_declarations_separated.split(split_char)
 
 
-def get_all_port_types(all_port_declarations) -> list:
+def get_all_port_types(all_port_declarations, design_data=None) -> list:
     """Returns a list with the type-names of all ports."""
-    return hdl_text_utils.get_all_port_types(all_port_declarations)
+    language = design_data.language if design_data else None
+    return hdl_text_utils.get_all_port_types(all_port_declarations, language)
 
 
-def get_all_generic_names(all_generic_declarations) -> list:
+def get_all_generic_names(all_generic_declarations, design_data=None) -> list:
     """Returns a list with the names of all generics."""
-    return hdl_text_utils.get_all_generic_names(all_generic_declarations)
+    language = design_data.language if design_data else None
+    return hdl_text_utils.get_all_generic_names(all_generic_declarations, language)
 
 
 def _get_all_readable_port_names(declaration, check) -> str:
     port_names = ""
-    if " in " in declaration and project_manager.language.get() == "VHDL":
+    if " in " in declaration and design_data.language == "VHDL":
         if ":" not in declaration:
             if check is True:
                 raise GenerationError(
@@ -295,7 +308,7 @@ def _get_all_readable_port_names(declaration, check) -> str:
                 )
         else:
             port_names = re.sub(":.*", "", declaration)
-    elif " input " in declaration and project_manager.language.get() != "VHDL":
+    elif " input " in declaration and design_data.language != "VHDL":
         declaration = re.sub(" input ", " ", declaration, flags=re.I)
         declaration = re.sub(" reg ", " ", declaration, flags=re.I)
         declaration = re.sub(" logic ", " ", declaration, flags=re.I)
@@ -308,10 +321,10 @@ def _get_all_readable_port_names(declaration, check) -> str:
 
 def _get_all_writable_port_names(declaration) -> str:
     port_names = ""
-    if " out " in declaration and project_manager.language.get() == "VHDL":
+    if " out " in declaration and design_data.language == "VHDL":
         if ":" in declaration:
             port_names = re.sub(":.*", "", declaration)
-    elif " output " in declaration and project_manager.language.get() != "VHDL":
+    elif " output " in declaration and design_data.language != "VHDL":
         declaration = re.sub(" output ", " ", declaration, flags=re.I)
         declaration = re.sub(" reg ", " ", declaration, flags=re.I)
         declaration = re.sub(" logic ", " ", declaration, flags=re.I)
@@ -324,9 +337,9 @@ def _get_all_writable_port_names(declaration) -> str:
     return port_names_without_blanks
 
 
-def _get_all_signals(all_signal_declarations) -> list:
+def _get_all_signals(all_signal_declarations, design_data) -> list:
     all_signal_declarations_without_comments = hdl_generation_library.remove_comments_and_returns(
-        all_signal_declarations
+        all_signal_declarations, design_data.language
     )
     all_signal_declarations_without_comments = hdl_generation_library.remove_functions(
         all_signal_declarations_without_comments
@@ -342,7 +355,7 @@ def _get_all_signals(all_signal_declarations) -> list:
         signal_declaration_list
     )  # needed for search of " signal "
     signals_list = []
-    if project_manager.language.get() == "VHDL":
+    if design_data.language == "VHDL":
         for declaration in signal_declaration_list_extended:
             if declaration != "" and not declaration.isspace():
                 if " signal " not in declaration and " constant " not in declaration:

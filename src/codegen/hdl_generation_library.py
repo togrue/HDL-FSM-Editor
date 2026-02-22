@@ -573,7 +573,7 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
         transition_target, transition_condition, transition_action, condition_action_reference = (
             _get_transition_target_condition_action(transition_tag, design_data)
         )
-        transition_condition_is_a_comment = _check_if_condition_is_a_comment(transition_condition)
+        transition_condition_is_a_comment = _check_if_condition_is_a_comment(transition_condition, design_data.language)
         # Handle the transition actions:
         if transition_action != "" or transition_condition_is_a_comment:
             # Create a new list which contains first all moved actions and then the action of this transition:
@@ -662,10 +662,10 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
             trace_array.append(trace_new)
 
 
-def _check_if_condition_is_a_comment(transition_condition) -> bool:
+def _check_if_condition_is_a_comment(transition_condition, language=None) -> bool:
     if transition_condition == "" or transition_condition.isspace():
         return False
-    transition_condition_without_comments = remove_comments_and_returns(transition_condition)
+    transition_condition_without_comments = remove_comments_and_returns(transition_condition, language)
     return bool(transition_condition_without_comments == "" or transition_condition_without_comments.isspace())
 
 
@@ -747,16 +747,18 @@ def create_concurrent_actions(design_data) -> tuple[str, str] | tuple:
     return ref, text if ref is not None else ""
 
 
-def remove_comments_and_returns(hdl_text) -> str:
+def remove_comments_and_returns(hdl_text, language=None) -> str:
     """Strip block and line comments, normalize to space-separated string for keyword search."""
-    if project_manager.language.get() == "VHDL":
+    if language is None:
+        language = project_manager.language.get()
+    if language == "VHDL":
         hdl_text = remove_vhdl_block_comments(hdl_text)
     else:
         hdl_text = _remove_verilog_block_comments(hdl_text)
     lines_without_return = hdl_text.split("\n")
     text = ""
     for line in lines_without_return:
-        if project_manager.language.get() != "VHDL":
+        if language != "VHDL":
             line_without_comment = re.sub("//.*$", "", line)
         else:
             line_without_comment = re.sub("--.*$", "", line)
@@ -804,9 +806,9 @@ def _remove_verilog_block_comments(hdl_text):
     return re.sub("/\\*.*\\*/", "", hdl_text, flags=re.DOTALL)
 
 
-def convert_hdl_lines_into_a_searchable_string(text):
+def convert_hdl_lines_into_a_searchable_string(text, language=None):
     """Remove comments and surround operators/punctuation with spaces for regex/keyword search."""
-    without_comments = remove_comments_and_returns(text)
+    without_comments = remove_comments_and_returns(text, language)
     separated = surround_character_by_blanks(";", without_comments)
     separated = surround_character_by_blanks("(", separated)
     separated = surround_character_by_blanks(")", separated)
@@ -839,8 +841,10 @@ def surround_character_by_blanks(character, all_port_declarations_without_commen
     return re.sub(search_character, " " + character + " ", all_port_declarations_without_comments)
 
 
-def get_all_declared_signal_and_variable_names(all_signal_declarations) -> list:
+def get_all_declared_signal_and_variable_names(all_signal_declarations, language=None) -> list:
     """Parse semicolon-separated declarations and return list of signal/variable names."""
+    if language is None:
+        language = project_manager.language.get()
     signal_declaration_list = all_signal_declarations.split(";")
     signal_list = []
     for declaration in signal_declaration_list:
@@ -848,35 +852,39 @@ def get_all_declared_signal_and_variable_names(all_signal_declarations) -> list:
             declaration = (
                 " " + declaration + " "
             )  # Splitting may have produced declarations without blanks but they are needed for keyword search.
-            signals = _get_all_signal_names(declaration)
+            signals = _get_all_signal_names(declaration, language)
             if signals != "":
                 signal_list.extend(signals.split(","))
     return signal_list
 
 
-def get_all_declared_constant_names(all_signal_declarations) -> list:
+def get_all_declared_constant_names(all_signal_declarations, language=None) -> list:
     """Parse semicolon-separated declarations and return list of constant names."""
+    if language is None:
+        language = project_manager.language.get()
     signal_declaration_list = all_signal_declarations.split(";")
     constant_list = []
     for declaration in signal_declaration_list:
         if declaration != "" and not declaration.isspace():
-            constants = _get_all_constant_names(declaration)
+            constants = _get_all_constant_names(declaration, language)
             if constants != "":
                 constant_list.extend(constants.split(","))
     return constant_list
 
 
-def _get_all_signal_names(declaration):
+def _get_all_signal_names(declaration, language=None):
+    if language is None:
+        language = project_manager.language.get()
     signal_names = ""
-    if " signal " in declaration and project_manager.language.get() == "VHDL":
+    if " signal " in declaration and language == "VHDL":
         if ":" in declaration:
             signal_names = re.sub(":.*", "", declaration)
             signal_names = re.sub(" signal ", "", signal_names)
-    elif " variable " in declaration and project_manager.language.get() == "VHDL":
+    elif " variable " in declaration and language == "VHDL":
         if ":" in declaration:
             signal_names = re.sub(":.*", "", declaration)
             signal_names = re.sub(" variable ", "", signal_names)
-    elif project_manager.language.get() != "VHDL":
+    elif language != "VHDL":
         declaration = re.sub(" integer ", " ", declaration, flags=re.I)
         declaration = re.sub(" logic ", " ", declaration, flags=re.I)
         declaration = re.sub(" reg ", " ", declaration, flags=re.I)
@@ -885,12 +893,14 @@ def _get_all_signal_names(declaration):
     return signal_names_without_blanks
 
 
-def _get_all_constant_names(declaration):
+def _get_all_constant_names(declaration, language=None):
+    if language is None:
+        language = project_manager.language.get()
     constant_names = ""
-    if " constant " in declaration and project_manager.language.get() == "VHDL" and ":" in declaration:
+    if " constant " in declaration and language == "VHDL" and ":" in declaration:
         constant_names = re.sub(":.*", "", declaration)
         constant_names = re.sub(" constant ", "", constant_names)
-    if " localparam " in declaration and project_manager.language.get() != "VHDL":
+    if " localparam " in declaration and language != "VHDL":
         declaration = re.sub(" localparam ", " ", declaration, flags=re.I)
         constant_names = re.sub(" \\[.*?\\] ", " ", declaration)
     constant_names_without_blanks = re.sub(" ", "", constant_names)

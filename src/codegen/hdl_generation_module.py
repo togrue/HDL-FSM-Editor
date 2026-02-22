@@ -44,11 +44,11 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted, desi
 
     architecture += (
         "    always @(posedge "
-        + project_manager.clock_signal_name.get()
+        + design_data.clock_signal_name
         + " or "
-        + _get_reset_edge(reset_condition)
+        + _get_reset_edge(reset_condition, design_data.language)
         + " "
-        + project_manager.reset_signal_name.get()
+        + design_data.reset_signal_name
         + ") begin: p_states\n"
     )
     project_manager.link_dict_ref.add(file_name, file_line_number, "Control-Tab", 1, "reset_and_clock_signal_name")
@@ -188,7 +188,7 @@ def _create_signal_declaration_for_the_state_variable(design_data) -> str:
     state_name_by_state_tag = design_data.state_name_by_state_tag or {}
     list_of_all_state_names = [state_name_by_state_tag.get(tag, "") for tag in state_tag_list_sorted]
     number_of_states = len(list_of_all_state_names)
-    if project_manager.language.get() == "Verilog":
+    if design_data.language == "Verilog":
         bit_width_number_of_states = math.ceil(math.log(number_of_states, 2))
         high_index = bit_width_number_of_states - 1
         signal_declaration = "reg [" + str(high_index) + ":0] state;\n"
@@ -223,8 +223,8 @@ def _indent_identically(character, actual_list) -> list:
     return new_list
 
 
-def _get_reset_edge(reset_condition) -> str:
-    reset_condition_mod = hdl_generation_library.remove_comments_and_returns(reset_condition)
+def _get_reset_edge(reset_condition, language) -> str:
+    reset_condition_mod = hdl_generation_library.remove_comments_and_returns(reset_condition, language)
     reset_condition_mod = re.sub("\\s", "", reset_condition_mod)  # remove blanks
     if reset_condition_mod.endswith("1'b0"):
         return "negedge"

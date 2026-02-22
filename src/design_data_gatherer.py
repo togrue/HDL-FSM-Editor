@@ -232,6 +232,10 @@ def gather_design_data(is_script_mode: bool = False) -> DesignData:
     internals_process_combinatorial_text = _interface_text_tuple(project_manager.internals_process_combinatorial_text)
 
     return DesignData(
+        module_name=project_manager.module_name.get(),
+        language=project_manager.language.get(),
+        reset_signal_name=project_manager.reset_signal_name.get(),
+        clock_signal_name=project_manager.clock_signal_name.get(),
         reset_condition_action=reset_condition_action,
         reset_target_state_name=reset_target_state_name,
         interface_package_text=interface_package_text,

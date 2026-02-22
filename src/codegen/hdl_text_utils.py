@@ -10,16 +10,18 @@ from .exceptions import GenerationError
 BLOCK_COMMENT_RE = re.compile(r"\/\*.*?\*\/", flags=re.DOTALL)
 
 
-def remove_comments_and_returns(hdl_text) -> str:
+def remove_comments_and_returns(hdl_text, language=None) -> str:
     """Strip block and line comments, normalize to space-separated string for keyword search."""
-    if project_manager.language.get() == "VHDL":
+    if language is None:
+        language = project_manager.language.get()
+    if language == "VHDL":
         hdl_text = remove_vhdl_block_comments(hdl_text)
     else:
         hdl_text = _remove_verilog_block_comments(hdl_text)
     lines_without_return = hdl_text.split("\n")
     text = ""
     for line in lines_without_return:
-        if project_manager.language.get() != "VHDL":
+        if language != "VHDL":
             line_without_comment = re.sub("//.*$", "", line)
         else:
             line_without_comment = re.sub("--.*$", "", line)
@@ -67,9 +69,9 @@ def _remove_verilog_block_comments(hdl_text):
     return re.sub("/\\*.*\\*/", "", hdl_text, flags=re.DOTALL)
 
 
-def convert_hdl_lines_into_a_searchable_string(text):
+def convert_hdl_lines_into_a_searchable_string(text, language=None):
     """Remove comments and surround operators/punctuation with spaces for regex/keyword search."""
-    without_comments = remove_comments_and_returns(text)
+    without_comments = remove_comments_and_returns(text, language)
     separated = surround_character_by_blanks(";", without_comments)
     separated = surround_character_by_blanks("(", separated)
     separated = surround_character_by_blanks(")", separated)
@@ -102,8 +104,10 @@ def surround_character_by_blanks(character, all_port_declarations_without_commen
     return re.sub(search_character, " " + character + " ", all_port_declarations_without_comments)
 
 
-def get_all_declared_signal_and_variable_names(all_signal_declarations) -> list:
+def get_all_declared_signal_and_variable_names(all_signal_declarations, language=None) -> list:
     """Parse semicolon-separated declarations and return list of signal/variable names."""
+    if language is None:
+        language = project_manager.language.get()
     signal_declaration_list = all_signal_declarations.split(";")
     signal_list = []
     for declaration in signal_declaration_list:
@@ -111,35 +115,39 @@ def get_all_declared_signal_and_variable_names(all_signal_declarations) -> list:
             declaration = (
                 " " + declaration + " "
             )  # Splitting may have produced declarations without blanks but they are needed for keyword search.
-            signals = _get_all_signal_names(declaration)
+            signals = _get_all_signal_names(declaration, language)
             if signals != "":
                 signal_list.extend(signals.split(","))
     return signal_list
 
 
-def get_all_declared_constant_names(all_signal_declarations) -> list:
+def get_all_declared_constant_names(all_signal_declarations, language=None) -> list:
     """Parse semicolon-separated declarations and return list of constant names."""
+    if language is None:
+        language = project_manager.language.get()
     signal_declaration_list = all_signal_declarations.split(";")
     constant_list = []
     for declaration in signal_declaration_list:
         if declaration != "" and not declaration.isspace():
-            constants = _get_all_constant_names(declaration)
+            constants = _get_all_constant_names(declaration, language)
             if constants != "":
                 constant_list.extend(constants.split(","))
     return constant_list
 
 
-def _get_all_signal_names(declaration):
+def _get_all_signal_names(declaration, language=None):
+    if language is None:
+        language = project_manager.language.get()
     signal_names = ""
-    if " signal " in declaration and project_manager.language.get() == "VHDL":
+    if " signal " in declaration and language == "VHDL":
         if ":" in declaration:
             signal_names = re.sub(":.*", "", declaration)
             signal_names = re.sub(" signal ", "", signal_names)
-    elif " variable " in declaration and project_manager.language.get() == "VHDL":
+    elif " variable " in declaration and language == "VHDL":
         if ":" in declaration:
             signal_names = re.sub(":.*", "", declaration)
             signal_names = re.sub(" variable ", "", signal_names)
-    elif project_manager.language.get() != "VHDL":
+    elif language != "VHDL":
         declaration = re.sub(" integer ", " ", declaration, flags=re.I)
         declaration = re.sub(" logic ", " ", declaration, flags=re.I)
         declaration = re.sub(" reg ", " ", declaration, flags=re.I)
@@ -148,49 +156,57 @@ def _get_all_signal_names(declaration):
     return signal_names_without_blanks
 
 
-def _get_all_constant_names(declaration):
+def _get_all_constant_names(declaration, language=None):
+    if language is None:
+        language = project_manager.language.get()
     constant_names = ""
-    if " constant " in declaration and project_manager.language.get() == "VHDL" and ":" in declaration:
+    if " constant " in declaration and language == "VHDL" and ":" in declaration:
         constant_names = re.sub(":.*", "", declaration)
         constant_names = re.sub(" constant ", "", constant_names)
-    if " localparam " in declaration and project_manager.language.get() != "VHDL":
+    if " localparam " in declaration and language != "VHDL":
         declaration = re.sub(" localparam ", " ", declaration, flags=re.I)
         constant_names = re.sub(" \\[.*?\\] ", " ", declaration)
     constant_names_without_blanks = re.sub(" ", "", constant_names)
     return constant_names_without_blanks
 
 
-def get_all_readable_ports(all_port_declarations, check) -> list:
+def get_all_readable_ports(all_port_declarations, check, language=None) -> list:
     """Returns a list with the names of all readable ports.
     If check is True, an error is raised if an illegal port declaration is found.
     """
-    port_declaration_list = _create_list_of_declarations(all_port_declarations)
+    if language is None:
+        language = project_manager.language.get()
+    port_declaration_list = _create_list_of_declarations(all_port_declarations, language)
     readable_port_list = []
     for declaration in port_declaration_list:
         if declaration != "" and not declaration.isspace():
             inputs = _get_all_readable_port_names(
-                declaration, check
+                declaration, check, language
             )  # One declaration can contain a comma separated list of names!
             if inputs != "":
                 readable_port_list.extend(inputs.split(","))
     return readable_port_list
 
 
-def get_all_writable_ports(all_port_declarations) -> list:
+def get_all_writable_ports(all_port_declarations, language=None) -> list:
     """Returns a list with the names of all writable ports."""
-    port_declaration_list = _create_list_of_declarations(all_port_declarations)
+    if language is None:
+        language = project_manager.language.get()
+    port_declaration_list = _create_list_of_declarations(all_port_declarations, language)
     writeable_port_list = []
     for declaration in port_declaration_list:
         if declaration != "" and not declaration.isspace():
-            outputs = _get_all_writable_port_names(declaration)
+            outputs = _get_all_writable_port_names(declaration, language)
             if outputs != "":
                 writeable_port_list.extend(outputs.split(","))
     return writeable_port_list
 
 
-def get_all_port_types(all_port_declarations) -> list:
+def get_all_port_types(all_port_declarations, language=None) -> list:
     """Returns a list with the type-names of all ports."""
-    port_declaration_list = _create_list_of_declarations(all_port_declarations)
+    if language is None:
+        language = project_manager.language.get()
+    port_declaration_list = _create_list_of_declarations(all_port_declarations, language)
     port_types_list = []
     for declaration in port_declaration_list:
         if (
@@ -207,13 +223,15 @@ def get_all_port_types(all_port_declarations) -> list:
     return port_types_list
 
 
-def get_all_generic_names(all_generic_declarations) -> list:
+def get_all_generic_names(all_generic_declarations, language=None) -> list:
     """Returns a list with the names of all generics."""
-    generic_declaration_list = _create_list_of_declarations(all_generic_declarations)
+    if language is None:
+        language = project_manager.language.get()
+    generic_declaration_list = _create_list_of_declarations(all_generic_declarations, language)
     generic_name_list = []
     for declaration in generic_declaration_list:
         if declaration != "" and not declaration.isspace():
-            if project_manager.language.get() == "VHDL":
+            if language == "VHDL":
                 generic_name = re.sub(" : .*", "", declaration, flags=re.I | re.DOTALL)
                 generic_name = re.sub(r"(^|\s+)constant ", "", generic_name, flags=re.I | re.DOTALL)
                 generic_name = re.sub("\\s", "", generic_name)
@@ -224,18 +242,22 @@ def get_all_generic_names(all_generic_declarations) -> list:
     return generic_name_list
 
 
-def _create_list_of_declarations(all_declarations):
-    all_declarations_without_comments = remove_comments_and_returns(all_declarations)
+def _create_list_of_declarations(all_declarations, language=None):
+    if language is None:
+        language = project_manager.language.get()
+    all_declarations_without_comments = remove_comments_and_returns(all_declarations, language)
     all_declarations_separated = surround_character_by_blanks(
         ":", all_declarations_without_comments
     )  # only needed for VHDL
-    split_char = ";" if project_manager.language.get() == "VHDL" else ","
+    split_char = ";" if language == "VHDL" else ","
     return all_declarations_separated.split(split_char)
 
 
-def _get_all_readable_port_names(declaration, check) -> str:
+def _get_all_readable_port_names(declaration, check, language=None) -> str:
+    if language is None:
+        language = project_manager.language.get()
     port_names = ""
-    if " in " in declaration and project_manager.language.get() == "VHDL":
+    if " in " in declaration and language == "VHDL":
         if ":" not in declaration:
             if check is True:
                 raise GenerationError(
@@ -247,7 +269,7 @@ def _get_all_readable_port_names(declaration, check) -> str:
                 )
         else:
             port_names = re.sub(":.*", "", declaration)
-    elif " input " in declaration and project_manager.language.get() != "VHDL":
+    elif " input " in declaration and language != "VHDL":
         declaration = re.sub(" input ", " ", declaration, flags=re.I)
         declaration = re.sub(" reg ", " ", declaration, flags=re.I)
         declaration = re.sub(" logic ", " ", declaration, flags=re.I)
@@ -258,12 +280,14 @@ def _get_all_readable_port_names(declaration, check) -> str:
     return port_names_without_blanks
 
 
-def _get_all_writable_port_names(declaration) -> str:
+def _get_all_writable_port_names(declaration, language=None) -> str:
+    if language is None:
+        language = project_manager.language.get()
     port_names = ""
-    if " out " in declaration and project_manager.language.get() == "VHDL":
+    if " out " in declaration and language == "VHDL":
         if ":" in declaration:
             port_names = re.sub(":.*", "", declaration)
-    elif " output " in declaration and project_manager.language.get() != "VHDL":
+    elif " output " in declaration and language != "VHDL":
         declaration = re.sub(" output ", " ", declaration, flags=re.I)
         declaration = re.sub(" reg ", " ", declaration, flags=re.I)
         declaration = re.sub(" logic ", " ", declaration, flags=re.I)

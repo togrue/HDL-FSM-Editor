@@ -28,7 +28,7 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
     file_line_number += number_of_new_lines
 
     architecture += "\n"
-    architecture += "architecture fsm of " + project_manager.module_name.get() + " is\n"
+    architecture += "architecture fsm of " + design_data.module_name + " is\n"
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(
         1, _create_type_definition_for_the_state_signal(design_data)
     )
@@ -52,11 +52,7 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
     architecture += "begin\n"
     file_line_number += 1
     architecture += (
-        "    p_states: process ("
-        + project_manager.reset_signal_name.get()
-        + ", "
-        + project_manager.clock_signal_name.get()
-        + ")\n"
+        "    p_states: process (" + design_data.reset_signal_name + ", " + design_data.clock_signal_name + ")\n"
     )
     project_manager.link_dict_ref.add(file_name, file_line_number, "Control-Tab", 1, "reset_and_clock_signal_name")
     file_line_number += 1
@@ -117,7 +113,7 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
     )
     file_line_number += number_of_new_lines
 
-    architecture += "        elsif rising_edge(" + project_manager.clock_signal_name.get() + ") then\n"
+    architecture += "        elsif rising_edge(" + design_data.clock_signal_name + ") then\n"
     project_manager.link_dict_ref.add(file_name, file_line_number, "Control-Tab", 1, "reset_and_clock_signal_name")
     file_line_number += 1
 
