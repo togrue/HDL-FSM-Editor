@@ -9,6 +9,18 @@ from design_data import DesignData
 from project_manager import project_manager
 
 
+def _get_text_from_widget(widget, *, include_trailing_newline: bool = False) -> str:
+    """Return widget contents; empty string if widget is None.
+    If include_trailing_newline is True, use Tk 'end' (keeps trailing newline for block text);
+    otherwise use 'end-1c' so codegen can add newlines explicitly."""
+    if widget is None:
+        return ""
+    if include_trailing_newline:
+        text = widget.get("1.0", "end")
+        return "" if text == "\n" else text
+    return widget.get("1.0", "end-1c")
+
+
 def _get_reset_transition_tag() -> str:
     reset_entry_tags = project_manager.canvas.gettags("reset_entry")
     for t in reset_entry_tags:
@@ -21,8 +33,7 @@ def _interface_text_tuple(widget) -> tuple[str, object]:
     """Return (content, widget_ref) with content normalized like get_text_from_text_widget."""
     if widget is None:
         return ("", None)
-    text = widget.get("1.0", "end")
-    content = "" if text == "\n" else text
+    content = _get_text_from_widget(widget, include_trailing_newline=True)
     return (content, widget)
 
 
@@ -54,8 +65,8 @@ def gather_design_data() -> tuple[DesignData, list[str]]:
                 if canvas_ids:
                     ref = condition_action.ConditionAction.ref_dict.get(canvas_ids[0])
                     if ref is not None:
-                        condition_text = ref.condition_id.get("1.0", "end-1c")
-                        action_text = ref.action_id.get("1.0", "end")
+                        condition_text = _get_text_from_widget(ref.condition_id)
+                        action_text = _get_text_from_widget(ref.action_id, include_trailing_newline=True)
                         reset_condition_action = (
                             condition_text,
                             action_text,
@@ -78,8 +89,8 @@ def gather_design_data() -> tuple[DesignData, list[str]]:
                     if ref is not None:
                         break
                 if ref is not None:
-                    cond_text = ref.condition_id.get("1.0", "end-1c")
-                    act_text = ref.action_id.get("1.0", "end-1c")
+                    cond_text = _get_text_from_widget(ref.condition_id)
+                    act_text = _get_text_from_widget(ref.action_id)
                     entry = (cond_text, act_text, ref.condition_id, ref.action_id)
                     for i in ids:
                         condition_action_by_canvas_id[i] = entry
@@ -121,13 +132,22 @@ def gather_design_data() -> tuple[DesignData, list[str]]:
     if canvas_item_ids_clocked:
         ref = global_actions_clocked.GlobalActionsClocked.ref_dict.get(canvas_item_ids_clocked[0])
         if ref is not None:
-            global_actions_before = (ref.text_before_id.get("1.0", "end"), ref.text_before_id)
-            global_actions_after = (ref.text_after_id.get("1.0", "end"), ref.text_after_id)
+            global_actions_before = (
+                _get_text_from_widget(ref.text_before_id, include_trailing_newline=True),
+                ref.text_before_id,
+            )
+            global_actions_after = (
+                _get_text_from_widget(ref.text_after_id, include_trailing_newline=True),
+                ref.text_after_id,
+            )
     canvas_item_ids_comb = project_manager.canvas.find_withtag("global_actions_combinatorial1")
     if canvas_item_ids_comb:
         ref = global_actions_combinatorial.GlobalActionsCombinatorial.ref_dict.get(canvas_item_ids_comb[0])
         if ref is not None:
-            concurrent_actions = (ref.text_id.get("1.0", "end"), ref.text_id)
+            concurrent_actions = (
+                _get_text_from_widget(ref.text_id, include_trailing_newline=True),
+                ref.text_id,
+            )
 
     warnings: list[str] = []
     state_comments_by_state_tag: dict[str, tuple[str | None, object | None]] = {}
@@ -146,7 +166,7 @@ def gather_design_data() -> tuple[DesignData, list[str]]:
                     if ref_sc is not None:
                         all_tags_of_state = project_manager.canvas.gettags(canvas_id)
                         if tag + "_comment_line_end" in all_tags_of_state:
-                            state_comments_raw = ref_sc.text_id.get("1.0", "end")
+                            state_comments_raw = _get_text_from_widget(ref_sc.text_id, include_trailing_newline=True)
                             state_comments = re.sub(r"^\s*[0-9]*\s*", "", state_comments_raw)
                             widget_ref = ref_sc.text_id if state_comments != "" else None
                             state_comments_by_state_tag[tag] = (state_comments, widget_ref)
@@ -154,7 +174,7 @@ def gather_design_data() -> tuple[DesignData, list[str]]:
                             state_comments_by_state_tag[tag] = ("", None)
                     else:
                         state_comments_by_state_tag[tag] = ("", None)
-                    state_comments_for_prio = ref_sc.text_id.get("1.0", "end-1c") if ref_sc else ""
+                    state_comments_for_prio = _get_text_from_widget(ref_sc.text_id) if ref_sc else ""
                     state_comments_list = state_comments_for_prio.split("\n")
                     first_line = state_comments_list[0].strip() if state_comments_list else ""
                     if first_line == "":
@@ -192,7 +212,11 @@ def gather_design_data() -> tuple[DesignData, list[str]]:
         ref = state_actions_default.StateActionsDefault.ref_dict.get(item_ids[0])
         if ref is not None:
             comment = "--" if project_manager.language.get() == "VHDL" else "//"
-            text = comment + " Default State Actions:\n" + ref.text_id.get("1.0", "end")
+            text = (
+                comment
+                + " Default State Actions:\n"
+                + _get_text_from_widget(ref.text_id, include_trailing_newline=True)
+            )
             state_actions_default_tuple = (text, ref.text_id)
 
     state_action_list_built: list[tuple[str, str, object]] = []
@@ -206,7 +230,7 @@ def gather_design_data() -> tuple[DesignData, list[str]]:
                 if state_action_ids:
                     ref = state_action.StateAction.ref_dict.get(state_action_ids[0])
                     if ref is not None:
-                        state_action_text = ref.text_id.get("1.0", "end")
+                        state_action_text = _get_text_from_widget(ref.text_id, include_trailing_newline=True)
                         state_action_ref = ref.text_id
                     break
         state_name = project_manager.canvas.itemcget(state_tag + "_name", "text")
