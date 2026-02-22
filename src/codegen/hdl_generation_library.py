@@ -25,8 +25,8 @@ def indent_text_by_the_given_number_of_tabs(number_of_tabs, text) -> str:
     return result_string
 
 
-def get_text_from_text_widget(wiget_id) -> str:
-    text = wiget_id.get("1.0", tk.END)
+def get_text_from_text_widget(widget_id) -> str:
+    text = widget_id.get("1.0", tk.END)
     if text != "\n":
         return text
     return ""
@@ -60,9 +60,7 @@ def create_reset_condition_and_reset_action() -> list:
             ],
         )
     reference_to_reset_condition_custom_text = ref.condition_id
-    condition = reference_to_reset_condition_custom_text.get(
-        "1.0", tk.END + "-1 chars"
-    )  # without "return" at the end
+    condition = reference_to_reset_condition_custom_text.get("1.0", tk.END + "-1 chars")  # without "return" at the end
     all_reset_transition_tags = project_manager.canvas.gettags(reset_transition_tag)
     target_state_name = _get_target_state_name(all_reset_transition_tags)
     action = "state <= " + target_state_name + ";\n"
@@ -524,7 +522,7 @@ def _merge_trace_array(trace_array) -> list:
                         traces_of_a_state_reversed[trace_index + 1][-(search_index + 1) : -(search_index + 1)] = trace[
                             search_index:
                         ]
-                        # Remove superfluous (search_index+1)*"endifs", which were copied with trace:
+                        # Remove superfluous (search_index+1)*"endif", which were copied with trace:
                         traces_of_a_state_reversed[trace_index + 1] = traces_of_a_state_reversed[trace_index + 1][
                             : -(search_index + 1)
                         ]
@@ -545,7 +543,7 @@ def _merge_trace_array(trace_array) -> list:
                         ]  # copy rest of trace after the endif
                         traces_of_a_state_reversed[trace_index + 1] = traces_of_a_state_reversed[trace_index + 1][
                             :-search_index
-                        ]  # remove superfluous "endifs"
+                        ]  # remove superfluous "endif"s
     transition_specifications = []
     if traces_of_a_state_reversed:
         for entry in traces_of_a_state_reversed[-1]:
@@ -691,7 +689,7 @@ def _extract_conditions_for_all_outgoing_transitions_of_the_state(
                         "condition_action_reference": None,
                     }
                 )
-            # Close all opened conditions by "endif" (condition-level muss eigentlich dekrementiert werden?!):
+            # Close all opened conditions by "endif" (condition-level should be actually decremented?!):
             for _ in range(condition_level_new):
                 trace_new.append(
                     {
