@@ -1,6 +1,20 @@
 """
 Design data for HDL generation. No element or canvas imports.
 Populated by design_data_gatherer; read by codegen.
+
+Missing from DesignData (still read directly in codegen):
+- Control-tab / config: module_name, language, reset_signal_name, clock_signal_name
+  (also available via GenerationConfig.from_main_window(); codegen often uses project_manager).
+- Interface text widgets (content + ref for link_dict): interface_package_text,
+  interface_generics_text, interface_ports_text (header + state_actions port/signal parsing).
+- Internals text widgets: internals_package_text, internals_architecture_text (content + ref);
+  internals_process_clocked_text, internals_process_combinatorial_text (widget ref for link_dict).
+- State display names: codegen uses canvas.itemcget(state_tag + "_name", "text") for case
+  labels in architecture/module; could be state_name_by_state_tag or derived from state_action_list.
+- Reset target state name: created in library from canvas gettags/itemcget (reset_entry,
+  going_to_state); not in DesignData.
+- Transition target and condition/action ref: library still uses canvas gettags/find_withtag
+  and ConditionAction.ref_dict for transition_tag -> target state name and refs.
 """
 
 from dataclasses import dataclass
