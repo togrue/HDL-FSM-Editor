@@ -27,6 +27,20 @@ _PREFIX_CA_CONNECTION = "ca_connection"
 _SUFFIX_TAG_END = "_end"
 
 
+def _find_canvas_ids_by_tag_pattern(canvas, pattern: re.Pattern[str]) -> list[tuple[str, list[int]]]:
+    """Return (tag, canvas_ids) for each tag matching the regex. Each tag once; ids = find_withtag(tag)."""
+    seen: set[str] = set()
+    result: list[tuple[str, list[int]]] = []
+    for canvas_id in canvas.find_all():
+        for tag in canvas.gettags(canvas_id):
+            if tag in seen or not pattern.match(tag):
+                continue
+            seen.add(tag)
+            result.append((tag, list(canvas.find_withtag(tag))))
+            break
+    return result
+
+
 def _get_text_from_widget(widget, *, include_trailing_newline: bool = False) -> str:
     """Return widget contents; empty string if widget is None.
     If include_trailing_newline is True, use Tk 'end' (keeps trailing newline for block text);
@@ -89,27 +103,22 @@ def _gather_reset_data() -> tuple[tuple[str, str, object, object] | None, str | 
 def _gather_condition_actions_by_canvas_id() -> dict[int, tuple[str, str, object, object]]:
     """Build condition_action_by_canvas_id from canvas."""
     condition_action_by_canvas_id: dict[int, tuple[str, str, object, object]] = {}
-    seen_tags: set[str] = set()
-    for canvas_id in project_manager.canvas.find_all():
-        for tag in project_manager.canvas.gettags(canvas_id):
-            if _RE_CONDITION_ACTION.match(tag) and tag not in seen_tags:
-                seen_tags.add(tag)
-                ids = project_manager.canvas.find_withtag(tag)
-                ref = None
-                for i in ids:
-                    ref = condition_action.ConditionAction.ref_dict.get(i)
-                    if ref is not None:
-                        break
-                if ref is not None:
-                    entry = (
-                        _get_text_from_widget(ref.condition_id),
-                        _get_text_from_widget(ref.action_id),
-                        ref.condition_id,
-                        ref.action_id,
-                    )
-                    for i in ids:
-                        condition_action_by_canvas_id[i] = entry
+    canvas = project_manager.canvas
+    for _, ids in _find_canvas_ids_by_tag_pattern(canvas, _RE_CONDITION_ACTION):
+        ref = None
+        for i in ids:
+            ref = condition_action.ConditionAction.ref_dict.get(i)
+            if ref is not None:
                 break
+        if ref is not None:
+            entry = (
+                _get_text_from_widget(ref.condition_id),
+                _get_text_from_widget(ref.action_id),
+                ref.condition_id,
+                ref.action_id,
+            )
+            for i in ids:
+                condition_action_by_canvas_id[i] = entry
     return condition_action_by_canvas_id
 
 
@@ -118,39 +127,35 @@ def _gather_transition_data(
 ) -> dict[str, tuple[str, str, str, object | None, object | None]]:
     """Build transition_data_by_transition_tag from canvas and condition_action map."""
     transition_data_by_transition_tag: dict[str, tuple[str, str, str, object | None, object | None]] = {}
-    for canvas_id in project_manager.canvas.find_all():
-        for tag in project_manager.canvas.gettags(canvas_id):
-            if _RE_TRANSITION_TAG.match(tag):
-                transition_tag = tag
-                ids = project_manager.canvas.find_withtag(transition_tag)
-                if not ids:
-                    continue
-                tags = project_manager.canvas.gettags(ids[0])
-                target = ""
-                cond_text = ""
-                act_text = ""
-                cond_ref: object | None = None
-                action_ref: object | None = None
-                for t in tags:
-                    if t.startswith("going_to_state"):
-                        state_tag_suffix = t.removeprefix(_PREFIX_GOING_TO)
-                        target = project_manager.canvas.itemcget(state_tag_suffix + "_name", "text")
-                    elif t.startswith("going_to_connector"):
-                        target = t.removeprefix(_PREFIX_GOING_TO)
-                    elif t.startswith(_PREFIX_CA_CONNECTION) and t.endswith(_SUFFIX_TAG_END):
-                        condition_action_number = t.removeprefix(_PREFIX_CA_CONNECTION).removesuffix(_SUFFIX_TAG_END)
-                        condition_action_tag = "condition_action" + condition_action_number
-                        ca_ids = project_manager.canvas.find_withtag(condition_action_tag)
-                        if ca_ids and ca_ids[0] in condition_action_by_canvas_id:
-                            cond_text, act_text, cond_ref, action_ref = condition_action_by_canvas_id[ca_ids[0]]
-                transition_data_by_transition_tag[transition_tag] = (
-                    target,
-                    cond_text,
-                    act_text,
-                    cond_ref,
-                    action_ref,
-                )
-                break
+    canvas = project_manager.canvas
+    for transition_tag, ids in _find_canvas_ids_by_tag_pattern(canvas, _RE_TRANSITION_TAG):
+        if not ids:
+            continue
+        tags = canvas.gettags(ids[0])
+        target = ""
+        cond_text = ""
+        act_text = ""
+        cond_ref: object | None = None
+        action_ref: object | None = None
+        for t in tags:
+            if t.startswith("going_to_state"):
+                state_tag_suffix = t.removeprefix(_PREFIX_GOING_TO)
+                target = canvas.itemcget(state_tag_suffix + "_name", "text")
+            elif t.startswith("going_to_connector"):
+                target = t.removeprefix(_PREFIX_GOING_TO)
+            elif t.startswith(_PREFIX_CA_CONNECTION) and t.endswith(_SUFFIX_TAG_END):
+                condition_action_number = t.removeprefix(_PREFIX_CA_CONNECTION).removesuffix(_SUFFIX_TAG_END)
+                condition_action_tag = "condition_action" + condition_action_number
+                ca_ids = canvas.find_withtag(condition_action_tag)
+                if ca_ids and ca_ids[0] in condition_action_by_canvas_id:
+                    cond_text, act_text, cond_ref, action_ref = condition_action_by_canvas_id[ca_ids[0]]
+        transition_data_by_transition_tag[transition_tag] = (
+            target,
+            cond_text,
+            act_text,
+            cond_ref,
+            action_ref,
+        )
     return transition_data_by_transition_tag
 
 
@@ -205,48 +210,45 @@ def _gather_state_comments_and_ordering(
     state_comments_by_state_tag: dict[str, tuple[str | None, object | None]] = {}
     state_tag_dict_with_prio: dict[int, str] = {}
     state_tag_list: list[str] = []
+    canvas = project_manager.canvas
 
-    for canvas_id in project_manager.canvas.find_all():
-        for tag in project_manager.canvas.gettags(canvas_id):
-            if not _RE_STATE_TAG.match(tag):
-                continue
-            single_element_list = project_manager.canvas.find_withtag(tag + "_comment")
-            if not single_element_list:
-                state_tag_list.append(tag)
-                state_comments_by_state_tag[tag] = ("", None)
-                break
+    for tag, ids in _find_canvas_ids_by_tag_pattern(canvas, _RE_STATE_TAG):
+        single_element_list = canvas.find_withtag(tag + "_comment")
+        if not single_element_list:
+            state_tag_list.append(tag)
+            state_comments_by_state_tag[tag] = ("", None)
+            continue
 
-            ref_sc = state_comment.StateComment.ref_dict.get(single_element_list[0])
-            if ref_sc is not None:
-                all_tags_of_state = project_manager.canvas.gettags(canvas_id)
-                if tag + "_comment_line_end" in all_tags_of_state:
-                    state_comments_raw = _get_text_from_widget(ref_sc.text_id, include_trailing_newline=True)
-                    state_comments = re.sub(r"^\s*[0-9]*\s*", "", state_comments_raw)
-                    widget_ref = ref_sc.text_id if state_comments != "" else None
-                    state_comments_by_state_tag[tag] = (state_comments, widget_ref)
-                else:
-                    state_comments_by_state_tag[tag] = ("", None)
-                comment_text_for_prio = _get_text_from_widget(ref_sc.text_id)
+        ref_sc = state_comment.StateComment.ref_dict.get(single_element_list[0])
+        if ref_sc is not None:
+            all_tags_of_state = canvas.gettags(ids[0]) if ids else []
+            if tag + "_comment_line_end" in all_tags_of_state:
+                state_comments_raw = _get_text_from_widget(ref_sc.text_id, include_trailing_newline=True)
+                state_comments = re.sub(r"^\s*[0-9]*\s*", "", state_comments_raw)
+                widget_ref = ref_sc.text_id if state_comments != "" else None
+                state_comments_by_state_tag[tag] = (state_comments, widget_ref)
             else:
                 state_comments_by_state_tag[tag] = ("", None)
-                comment_text_for_prio = ""
+            comment_text_for_prio = _get_text_from_widget(ref_sc.text_id)
+        else:
+            state_comments_by_state_tag[tag] = ("", None)
+            comment_text_for_prio = ""
 
-            prio = _parse_priority_from_comment_text(comment_text_for_prio)
-            if prio is None:
-                state_tag_list.append(tag)
-            elif prio in state_tag_dict_with_prio:
-                state_tag_list.append(tag)
-                state_name = project_manager.canvas.itemcget(tag + "_name", "text")
-                warnings.append(
-                    "The state '"
-                    + state_name
-                    + "' uses the order-number "
-                    + str(prio)
-                    + " which is already used at another state."
-                )
-            else:
-                state_tag_dict_with_prio[prio] = tag
-            break
+        prio = _parse_priority_from_comment_text(comment_text_for_prio)
+        if prio is None:
+            state_tag_list.append(tag)
+        elif prio in state_tag_dict_with_prio:
+            state_tag_list.append(tag)
+            state_name = canvas.itemcget(tag + "_name", "text")
+            warnings.append(
+                "The state '"
+                + state_name
+                + "' uses the order-number "
+                + str(prio)
+                + " which is already used at another state."
+            )
+        else:
+            state_tag_dict_with_prio[prio] = tag
 
     state_tag_list_sorted = [tag for _, tag in sorted(state_tag_dict_with_prio.items())]
     state_tag_list_sorted.extend(state_tag_list)
