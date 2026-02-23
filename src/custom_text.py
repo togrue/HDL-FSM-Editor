@@ -212,6 +212,8 @@ class CustomText(CodeEditor):
         - after loading HDL into HDL-Tab
         - after HDL generation
         """
+        if project_manager.is_script_mode:
+            return
         # highlight_tag_name is in ["control", "datatype", "function", "not_read", "not_written", "comment"]
         for highlight_tag_name in highlight_tag_name_list:
             self.tag_delete(highlight_tag_name)
@@ -792,6 +794,8 @@ class CustomText(CodeEditor):
 
     def update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment(self) -> None:
         """Schedule update of not_read, not_written, and comment highlights in all text windows after 300 ms."""
+        if project_manager.is_script_mode:
+            return
         if self.update_highlight_after_id is not None:
             project_manager.root.after_cancel(self.update_highlight_after_id)
         self.update_highlight_after_id = project_manager.root.after(
@@ -799,6 +803,8 @@ class CustomText(CodeEditor):
         )
 
     def _update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment_after_idle(self) -> None:
+        if project_manager.is_script_mode:
+            return
         # Comment must be the last, because in the range of a comment all other tags are deleted:
         for text_ref in CustomText.read_variables_of_all_windows:
             text_ref.update_highlight_tags(project_manager.fontsize, ["not_read", "not_written", "comment"])

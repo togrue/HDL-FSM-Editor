@@ -15,6 +15,7 @@ class ProjectManager:
     def __init__(self) -> None:
         # self._project = Project()
         self._store_events = True
+        self._is_script_mode: bool = False
         self._root: tk.Tk = None
         self._current_file: str = ""
         self._notebook: ttk.Notebook = None
@@ -722,6 +723,15 @@ class ProjectManager:
     def current_file(self, value: str) -> str:
         """Set the current file path."""
         self._current_file = value
+
+    @property
+    def is_script_mode(self) -> bool:
+        """True when running with --generate-hdl (no GUI interaction, skip highlight updates)."""
+        return self._is_script_mode
+
+    @is_script_mode.setter
+    def is_script_mode(self, value: bool) -> None:
+        self._is_script_mode = value
 
     @property
     def previous_file(self) -> str:

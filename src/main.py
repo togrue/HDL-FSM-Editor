@@ -62,6 +62,7 @@ def _parse_and_process_arguments() -> None:
             project_manager.root.title("new")
             file_handling.new_design()
             if args.generate_hdl:
+                project_manager.is_script_mode = True
                 file_handling.open_file_with_name(args.filename, is_script_mode=True)
             else:
                 file_handling.open_file_with_name(args.filename, is_script_mode=False)

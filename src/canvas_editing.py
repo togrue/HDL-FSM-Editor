@@ -374,6 +374,8 @@ def _apply_font_to_state_actions_default(widget, used_label_fontsize: float) -> 
 
 
 def _configure_highlight_tags(text_widget) -> None:
+    if project_manager.is_script_mode:
+        return
     for highlight_tag_name in constants.VHDL_HIGHLIGHT_PATTERN_DICT:
         text_widget.tag_configure(
             highlight_tag_name,
