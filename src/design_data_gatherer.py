@@ -55,36 +55,39 @@ def _interface_text_tuple(widget) -> tuple[str, object]:
     return (content, widget)
 
 
-def gather_design_data() -> tuple[DesignData, list[str]]:
-    """Build DesignData from canvas and element ref_dicts. Returns (data, warnings). Call before run_hdl_generation."""
-    reset_condition_action: tuple[str, str, object, object] | None = None
-    reset_target_state_name: str | None = None
+def _gather_reset_data() -> tuple[tuple[str, str, object, object] | None, str | None]:
+    """Return (reset_condition_action, reset_target_state_name)."""
     reset_transition_tag = _get_reset_transition_tag()
-    if reset_transition_tag:
-        tags = project_manager.canvas.gettags(reset_transition_tag)
-        for tag in tags:
-            if tag.startswith("going_to_state"):
-                state_tag_suffix = tag.removeprefix(_PREFIX_GOING_TO)
-                reset_target_state_name = project_manager.canvas.itemcget(state_tag_suffix + "_name", "text")
-                break
-        for tag in tags:
-            if tag.startswith(_PREFIX_CA_CONNECTION) and tag.endswith(_SUFFIX_TAG_END):
-                condition_action_number = tag.removeprefix(_PREFIX_CA_CONNECTION).removesuffix(_SUFFIX_TAG_END)
-                condition_action_tag = "condition_action" + condition_action_number
-                canvas_ids = project_manager.canvas.find_withtag(condition_action_tag)
-                if canvas_ids:
-                    ref = condition_action.ConditionAction.ref_dict.get(canvas_ids[0])
-                    if ref is not None:
-                        condition_text = _get_text_from_widget(ref.condition_id)
-                        action_text = _get_text_from_widget(ref.action_id, include_trailing_newline=True)
-                        reset_condition_action = (
-                            condition_text,
-                            action_text,
-                            ref.condition_id,
-                            ref.action_id,
-                        )
-                break
+    if not reset_transition_tag:
+        return (None, None)
+    tags = project_manager.canvas.gettags(reset_transition_tag)
+    reset_target_state_name: str | None = None
+    for tag in tags:
+        if tag.startswith("going_to_state"):
+            state_tag_suffix = tag.removeprefix(_PREFIX_GOING_TO)
+            reset_target_state_name = project_manager.canvas.itemcget(state_tag_suffix + "_name", "text")
+            break
+    reset_condition_action: tuple[str, str, object, object] | None = None
+    for tag in tags:
+        if tag.startswith(_PREFIX_CA_CONNECTION) and tag.endswith(_SUFFIX_TAG_END):
+            condition_action_number = tag.removeprefix(_PREFIX_CA_CONNECTION).removesuffix(_SUFFIX_TAG_END)
+            condition_action_tag = "condition_action" + condition_action_number
+            canvas_ids = project_manager.canvas.find_withtag(condition_action_tag)
+            if canvas_ids:
+                ref = condition_action.ConditionAction.ref_dict.get(canvas_ids[0])
+                if ref is not None:
+                    reset_condition_action = (
+                        _get_text_from_widget(ref.condition_id),
+                        _get_text_from_widget(ref.action_id, include_trailing_newline=True),
+                        ref.condition_id,
+                        ref.action_id,
+                    )
+            break
+    return (reset_condition_action, reset_target_state_name or "")
 
+
+def _gather_condition_actions_by_canvas_id() -> dict[int, tuple[str, str, object, object]]:
+    """Build condition_action_by_canvas_id from canvas."""
     condition_action_by_canvas_id: dict[int, tuple[str, str, object, object]] = {}
     seen_tags: set[str] = set()
     for canvas_id in project_manager.canvas.find_all():
@@ -98,13 +101,22 @@ def gather_design_data() -> tuple[DesignData, list[str]]:
                     if ref is not None:
                         break
                 if ref is not None:
-                    cond_text = _get_text_from_widget(ref.condition_id)
-                    act_text = _get_text_from_widget(ref.action_id)
-                    entry = (cond_text, act_text, ref.condition_id, ref.action_id)
+                    entry = (
+                        _get_text_from_widget(ref.condition_id),
+                        _get_text_from_widget(ref.action_id),
+                        ref.condition_id,
+                        ref.action_id,
+                    )
                     for i in ids:
                         condition_action_by_canvas_id[i] = entry
                 break
+    return condition_action_by_canvas_id
 
+
+def _gather_transition_data(
+    condition_action_by_canvas_id: dict[int, tuple[str, str, object, object]],
+) -> dict[str, tuple[str, str, str, object | None, object | None]]:
+    """Build transition_data_by_transition_tag from canvas and condition_action map."""
     transition_data_by_transition_tag: dict[str, tuple[str, str, str, object | None, object | None]] = {}
     for canvas_id in project_manager.canvas.find_all():
         for tag in project_manager.canvas.gettags(canvas_id):
@@ -131,9 +143,23 @@ def gather_design_data() -> tuple[DesignData, list[str]]:
                         ca_ids = project_manager.canvas.find_withtag(condition_action_tag)
                         if ca_ids and ca_ids[0] in condition_action_by_canvas_id:
                             cond_text, act_text, cond_ref, action_ref = condition_action_by_canvas_id[ca_ids[0]]
-                transition_data_by_transition_tag[transition_tag] = (target, cond_text, act_text, cond_ref, action_ref)
+                transition_data_by_transition_tag[transition_tag] = (
+                    target,
+                    cond_text,
+                    act_text,
+                    cond_ref,
+                    action_ref,
+                )
                 break
+    return transition_data_by_transition_tag
 
+
+def _gather_global_actions() -> tuple[
+    tuple[str, object],
+    tuple[str, object],
+    tuple[str, object],
+]:
+    """Return (global_actions_before, global_actions_after, concurrent_actions)."""
     global_actions_before: tuple[str, object] = ("", None)
     global_actions_after: tuple[str, object] = ("", None)
     concurrent_actions: tuple[str, object] = ("", None)
@@ -157,76 +183,93 @@ def gather_design_data() -> tuple[DesignData, list[str]]:
                 _get_text_from_widget(ref.text_id, include_trailing_newline=True),
                 ref.text_id,
             )
+    return (global_actions_before, global_actions_after, concurrent_actions)
 
-    warnings: list[str] = []
+
+def _parse_priority_from_comment_text(text: str) -> int | None:
+    """If the first line of text is a non-empty number, return it as int; else None."""
+    lines = text.strip().split("\n")
+    first_line = lines[0].strip() if lines else ""
+    if not first_line or not all(c in "0123456789" for c in first_line):
+        return None
+    return int(first_line)
+
+
+def _gather_state_comments_and_ordering(
+    warnings: list[str],
+) -> tuple[
+    dict[str, tuple[str | None, object | None]],
+    list[str],
+]:
+    """Build state_comments_by_state_tag and ordered state_tag_list_sorted (priority then fallback)."""
     state_comments_by_state_tag: dict[str, tuple[str | None, object | None]] = {}
     state_tag_dict_with_prio: dict[int, str] = {}
     state_tag_list: list[str] = []
+
     for canvas_id in project_manager.canvas.find_all():
         for tag in project_manager.canvas.gettags(canvas_id):
-            if _RE_STATE_TAG.match(tag):
-                single_element_list = project_manager.canvas.find_withtag(tag + "_comment")
-                if not single_element_list:
-                    state_tag_list.append(tag)
-                    state_comments_by_state_tag[tag] = ("", None)
-                else:
-                    ref_sc = state_comment.StateComment.ref_dict.get(single_element_list[0])
-                    if ref_sc is not None:
-                        all_tags_of_state = project_manager.canvas.gettags(canvas_id)
-                        if tag + "_comment_line_end" in all_tags_of_state:
-                            state_comments_raw = _get_text_from_widget(ref_sc.text_id, include_trailing_newline=True)
-                            state_comments = re.sub(r"^\s*[0-9]*\s*", "", state_comments_raw)
-                            widget_ref = ref_sc.text_id if state_comments != "" else None
-                            state_comments_by_state_tag[tag] = (state_comments, widget_ref)
-                        else:
-                            state_comments_by_state_tag[tag] = ("", None)
-                    else:
-                        state_comments_by_state_tag[tag] = ("", None)
-                    state_comments_for_prio = _get_text_from_widget(ref_sc.text_id) if ref_sc else ""
-                    state_comments_list = state_comments_for_prio.split("\n")
-                    first_line = state_comments_list[0].strip() if state_comments_list else ""
-                    if first_line == "":
-                        state_tag_list.append(tag)
-                    else:
-                        first_line_is_number = bool(all(c in "0123456789" for c in first_line))
-                        if not first_line_is_number:
-                            state_tag_list.append(tag)
-                        else:
-                            prio = int(first_line)
-                            if prio in state_tag_dict_with_prio:
-                                state_tag_list.append(tag)
-                                state_name = project_manager.canvas.itemcget(tag + "_name", "text")
-                                warnings.append(
-                                    "The state '"
-                                    + state_name
-                                    + "' uses the order-number "
-                                    + first_line
-                                    + " which is already used at another state."
-                                )
-                            else:
-                                state_tag_dict_with_prio[prio] = tag
+            if not _RE_STATE_TAG.match(tag):
+                continue
+            single_element_list = project_manager.canvas.find_withtag(tag + "_comment")
+            if not single_element_list:
+                state_tag_list.append(tag)
+                state_comments_by_state_tag[tag] = ("", None)
                 break
+
+            ref_sc = state_comment.StateComment.ref_dict.get(single_element_list[0])
+            if ref_sc is not None:
+                all_tags_of_state = project_manager.canvas.gettags(canvas_id)
+                if tag + "_comment_line_end" in all_tags_of_state:
+                    state_comments_raw = _get_text_from_widget(ref_sc.text_id, include_trailing_newline=True)
+                    state_comments = re.sub(r"^\s*[0-9]*\s*", "", state_comments_raw)
+                    widget_ref = ref_sc.text_id if state_comments != "" else None
+                    state_comments_by_state_tag[tag] = (state_comments, widget_ref)
+                else:
+                    state_comments_by_state_tag[tag] = ("", None)
+                comment_text_for_prio = _get_text_from_widget(ref_sc.text_id)
+            else:
+                state_comments_by_state_tag[tag] = ("", None)
+                comment_text_for_prio = ""
+
+            prio = _parse_priority_from_comment_text(comment_text_for_prio)
+            if prio is None:
+                state_tag_list.append(tag)
+            elif prio in state_tag_dict_with_prio:
+                state_tag_list.append(tag)
+                state_name = project_manager.canvas.itemcget(tag + "_name", "text")
+                warnings.append(
+                    "The state '"
+                    + state_name
+                    + "' uses the order-number "
+                    + str(prio)
+                    + " which is already used at another state."
+                )
+            else:
+                state_tag_dict_with_prio[prio] = tag
+            break
 
     state_tag_list_sorted = [tag for _, tag in sorted(state_tag_dict_with_prio.items())]
     state_tag_list_sorted.extend(state_tag_list)
+    return (state_comments_by_state_tag, state_tag_list_sorted)
 
-    state_name_by_state_tag = {
-        tag: project_manager.canvas.itemcget(tag + "_name", "text") for tag in state_tag_list_sorted
-    }
 
-    state_actions_default_tuple: tuple[str, object] = ("", None)
+def _gather_state_actions_default() -> tuple[str, object]:
+    """Return (state_actions_default_text, widget_ref)."""
     item_ids = project_manager.canvas.find_withtag("state_actions_default")
-    if item_ids:
-        ref = state_actions_default.StateActionsDefault.ref_dict.get(item_ids[0])
-        if ref is not None:
-            comment = "--" if project_manager.language.get() == "VHDL" else "//"
-            text = (
-                comment
-                + " Default State Actions:\n"
-                + _get_text_from_widget(ref.text_id, include_trailing_newline=True)
-            )
-            state_actions_default_tuple = (text, ref.text_id)
+    if not item_ids:
+        return ("", None)
+    ref = state_actions_default.StateActionsDefault.ref_dict.get(item_ids[0])
+    if ref is None:
+        return ("", None)
+    comment = "--" if project_manager.language.get() == "VHDL" else "//"
+    text = comment + " Default State Actions:\n" + _get_text_from_widget(ref.text_id, include_trailing_newline=True)
+    return (text, ref.text_id)
 
+
+def _gather_state_action_list(
+    state_tag_list_sorted: list[str],
+) -> list[tuple[str, str, object]]:
+    """Build list of (state_name, state_action_text, state_action_ref) in state order."""
     state_action_list_built: list[tuple[str, str, object]] = []
     for state_tag in state_tag_list_sorted:
         state_action_text = "null;\n"
@@ -240,9 +283,26 @@ def gather_design_data() -> tuple[DesignData, list[str]]:
                     if ref is not None:
                         state_action_text = _get_text_from_widget(ref.text_id, include_trailing_newline=True)
                         state_action_ref = ref.text_id
-                    break
+                break
         state_name = project_manager.canvas.itemcget(state_tag + "_name", "text")
         state_action_list_built.append((state_name, state_action_text, state_action_ref))
+    return state_action_list_built
+
+
+def gather_design_data() -> tuple[DesignData, list[str]]:
+    """Build DesignData from canvas and element ref_dicts. Returns (data, warnings). Call before run_hdl_generation."""
+    warnings: list[str] = []
+
+    reset_condition_action, reset_target_state_name = _gather_reset_data()
+    condition_action_by_canvas_id = _gather_condition_actions_by_canvas_id()
+    transition_data_by_transition_tag = _gather_transition_data(condition_action_by_canvas_id)
+    global_actions_before, global_actions_after, concurrent_actions = _gather_global_actions()
+    state_comments_by_state_tag, state_tag_list_sorted = _gather_state_comments_and_ordering(warnings)
+    state_name_by_state_tag = {
+        tag: project_manager.canvas.itemcget(tag + "_name", "text") for tag in state_tag_list_sorted
+    }
+    state_actions_default_tuple = _gather_state_actions_default()
+    state_action_list_built = _gather_state_action_list(state_tag_list_sorted)
 
     interface_package_text = _interface_text_tuple(project_manager.interface_package_text)
     interface_generics_text = _interface_text_tuple(project_manager.interface_generics_text)
