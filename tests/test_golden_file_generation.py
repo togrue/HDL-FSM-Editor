@@ -164,7 +164,17 @@ def test_golden_file_generation(test_id: str, hfe_file: Path, test_output_dir: P
         if status.strip() and path.endswith(tuple(f.name for f in output_files)):
             dirty_files.append(path)
 
-    assert len(dirty_files) == 0, f"Dirty test_output files after generation: {dirty_files}"
+    if dirty_files:
+        diff_result = subprocess.run(
+            ["git", "diff", str(test_output_dir)],
+            capture_output=True,
+            text=True,
+            cwd=Path(__file__).parent.parent,
+        )
+        diff_msg = diff_result.stdout if diff_result.returncode == 0 else "(git diff failed)"
+        raise AssertionError(
+            f"Dirty test_output files after generation: {dirty_files}\n\nGit diff of tests/test_output:\n\n{diff_msg}"
+        )
 
 
 if __name__ == "__main__":
