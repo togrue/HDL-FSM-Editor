@@ -20,6 +20,12 @@ _RE_CONDITION_ACTION = re.compile(r"^condition_action[0-9]+$")
 _RE_TRANSITION_TAG = re.compile(r"^transition[0-9]+$")
 _RE_STATE_TAG = re.compile(r"^state[0-9]+$")
 
+# Tag prefix/suffix for parsing canvas tags (avoid magic indices)
+_PREFIX_GOING_TO = "going_to_"
+_SUFFIX_TRANSITION_START = "_start"
+_PREFIX_CA_CONNECTION = "ca_connection"
+_SUFFIX_TAG_END = "_end"
+
 
 def _get_text_from_widget(widget, *, include_trailing_newline: bool = False) -> str:
     """Return widget contents; empty string if widget is None.
@@ -36,8 +42,8 @@ def _get_text_from_widget(widget, *, include_trailing_newline: bool = False) -> 
 def _get_reset_transition_tag() -> str:
     reset_entry_tags = project_manager.canvas.gettags("reset_entry")
     for t in reset_entry_tags:
-        if t.startswith("transition"):  # look for transition<n>_start
-            return t[:-6]
+        if t.startswith("transition") and t.endswith(_SUFFIX_TRANSITION_START):
+            return t.removesuffix(_SUFFIX_TRANSITION_START)
     return ""
 
 
@@ -58,11 +64,12 @@ def gather_design_data() -> tuple[DesignData, list[str]]:
         tags = project_manager.canvas.gettags(reset_transition_tag)
         for tag in tags:
             if tag.startswith("going_to_state"):
-                reset_target_state_name = project_manager.canvas.itemcget(tag[9:] + "_name", "text")
+                state_tag_suffix = tag.removeprefix(_PREFIX_GOING_TO)
+                reset_target_state_name = project_manager.canvas.itemcget(state_tag_suffix + "_name", "text")
                 break
         for tag in tags:
-            if tag.startswith("ca_connection"):  # ca_connection<n>_end
-                condition_action_number = tag[13:-4]
+            if tag.startswith(_PREFIX_CA_CONNECTION) and tag.endswith(_SUFFIX_TAG_END):
+                condition_action_number = tag.removeprefix(_PREFIX_CA_CONNECTION).removesuffix(_SUFFIX_TAG_END)
                 condition_action_tag = "condition_action" + condition_action_number
                 canvas_ids = project_manager.canvas.find_withtag(condition_action_tag)
                 if canvas_ids:
@@ -114,11 +121,12 @@ def gather_design_data() -> tuple[DesignData, list[str]]:
                 action_ref: object | None = None
                 for t in tags:
                     if t.startswith("going_to_state"):
-                        target = project_manager.canvas.itemcget(t[9:] + "_name", "text")
+                        state_tag_suffix = t.removeprefix(_PREFIX_GOING_TO)
+                        target = project_manager.canvas.itemcget(state_tag_suffix + "_name", "text")
                     elif t.startswith("going_to_connector"):
-                        target = t[9:]
-                    elif t.startswith("ca_connection") and t.endswith("_end"):
-                        condition_action_number = t[13:-4]
+                        target = t.removeprefix(_PREFIX_GOING_TO)
+                    elif t.startswith(_PREFIX_CA_CONNECTION) and t.endswith(_SUFFIX_TAG_END):
+                        condition_action_number = t.removeprefix(_PREFIX_CA_CONNECTION).removesuffix(_SUFFIX_TAG_END)
                         condition_action_tag = "condition_action" + condition_action_number
                         ca_ids = project_manager.canvas.find_withtag(condition_action_tag)
                         if ca_ids and ca_ids[0] in condition_action_by_canvas_id:
@@ -224,8 +232,8 @@ def gather_design_data() -> tuple[DesignData, list[str]]:
         state_action_text = "null;\n"
         state_action_ref = None
         for tag_of_state in project_manager.canvas.gettags(state_tag):
-            if tag_of_state.startswith("connection") and tag_of_state.endswith("_end"):
-                connection_name = tag_of_state[:-4]
+            if tag_of_state.startswith("connection") and tag_of_state.endswith(_SUFFIX_TAG_END):
+                connection_name = tag_of_state.removesuffix(_SUFFIX_TAG_END)
                 state_action_ids = project_manager.canvas.find_withtag(connection_name + "_start")
                 if state_action_ids:
                     ref = state_action.StateAction.ref_dict.get(state_action_ids[0])
