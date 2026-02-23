@@ -8,6 +8,10 @@ import re
 from design_data import DesignData
 from project_manager import project_manager
 
+_RE_CONDITION_ACTION = re.compile(r"^condition_action[0-9]+$")
+_RE_TRANSITION_TAG = re.compile(r"^transition[0-9]+$")
+_RE_STATE_TAG = re.compile(r"^state[0-9]+$")
+
 
 def _get_text_from_widget(widget, *, include_trailing_newline: bool = False) -> str:
     """Return widget contents; empty string if widget is None.
@@ -76,11 +80,10 @@ def gather_design_data() -> tuple[DesignData, list[str]]:
                 break
 
     condition_action_by_canvas_id: dict[int, tuple[str, str, object, object]] = {}
-    reg_ca = re.compile(r"^condition_action[0-9]+$")
     seen_tags: set[str] = set()
     for canvas_id in project_manager.canvas.find_all():
         for tag in project_manager.canvas.gettags(canvas_id):
-            if reg_ca.match(tag) and tag not in seen_tags:
+            if _RE_CONDITION_ACTION.match(tag) and tag not in seen_tags:
                 seen_tags.add(tag)
                 ids = project_manager.canvas.find_withtag(tag)
                 ref = None
@@ -97,10 +100,9 @@ def gather_design_data() -> tuple[DesignData, list[str]]:
                 break
 
     transition_data_by_transition_tag: dict[str, tuple[str, str, str, object | None, object | None]] = {}
-    reg_transition_tag = re.compile(r"^transition[0-9]+$")
     for canvas_id in project_manager.canvas.find_all():
         for tag in project_manager.canvas.gettags(canvas_id):
-            if reg_transition_tag.match(tag):
+            if _RE_TRANSITION_TAG.match(tag):
                 transition_tag = tag
                 ids = project_manager.canvas.find_withtag(transition_tag)
                 if not ids:
@@ -153,10 +155,9 @@ def gather_design_data() -> tuple[DesignData, list[str]]:
     state_comments_by_state_tag: dict[str, tuple[str | None, object | None]] = {}
     state_tag_dict_with_prio: dict[int, str] = {}
     state_tag_list: list[str] = []
-    reg_ex_for_state_tag = re.compile("^state[0-9]+$")
     for canvas_id in project_manager.canvas.find_all():
         for tag in project_manager.canvas.gettags(canvas_id):
-            if reg_ex_for_state_tag.match(tag):
+            if _RE_STATE_TAG.match(tag):
                 single_element_list = project_manager.canvas.find_withtag(tag + "_comment")
                 if not single_element_list:
                     state_tag_list.append(tag)
