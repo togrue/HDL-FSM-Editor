@@ -6,6 +6,14 @@ Imports elements; callers pass DesignData into codegen.
 import re
 
 from design_data import DesignData
+from elements import (
+    condition_action,
+    global_actions_clocked,
+    global_actions_combinatorial,
+    state_action,
+    state_actions_default,
+    state_comment,
+)
 from project_manager import project_manager
 
 _RE_CONDITION_ACTION = re.compile(r"^condition_action[0-9]+$")
@@ -43,15 +51,6 @@ def _interface_text_tuple(widget) -> tuple[str, object]:
 
 def gather_design_data() -> tuple[DesignData, list[str]]:
     """Build DesignData from canvas and element ref_dicts. Returns (data, warnings). Call before run_hdl_generation."""
-    from elements import (
-        condition_action,
-        global_actions_clocked,
-        global_actions_combinatorial,
-        state_comment,
-        state_action,
-        state_actions_default,
-    )
-
     reset_condition_action: tuple[str, str, object, object] | None = None
     reset_target_state_name: str | None = None
     reset_transition_tag = _get_reset_transition_tag()
