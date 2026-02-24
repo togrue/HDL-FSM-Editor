@@ -257,21 +257,19 @@ def _create_when_entry(state_action_entry, design_data) -> str:
     return when_entry
 
 
-def get_all_readable_ports(all_port_declarations, check, design_data=None) -> list:
+def get_all_readable_ports(all_port_declarations, check, design_data) -> list:
     """Returns a list with the names of all readable ports.
     If check is True, an error is raised if an illegal port declaration is found.
     """
-    language = design_data.language if design_data else None
-    return hdl_text_utils.get_all_readable_ports(all_port_declarations, check, language)
+    return hdl_text_utils.get_all_readable_ports(all_port_declarations, check, design_data.language)
 
 
-def get_all_writable_ports(all_port_declarations, design_data=None) -> list:
+def get_all_writable_ports(all_port_declarations, design_data) -> list:
     """Returns a list with the names of all writable ports."""
-    language = design_data.language if design_data else None
-    return hdl_text_utils.get_all_writable_ports(all_port_declarations, language)
+    return hdl_text_utils.get_all_writable_ports(all_port_declarations, design_data.language)
 
 
-def _create_list_of_declarations(all_declarations):
+def _create_list_of_declarations(all_declarations, design_data):
     all_declarations_without_comments = hdl_generation_library.remove_comments_and_returns(
         all_declarations, design_data.language
     )
@@ -282,19 +280,17 @@ def _create_list_of_declarations(all_declarations):
     return all_declarations_separated.split(split_char)
 
 
-def get_all_port_types(all_port_declarations, design_data=None) -> list:
+def get_all_port_types(all_port_declarations, design_data) -> list:
     """Returns a list with the type-names of all ports."""
-    language = design_data.language if design_data else None
-    return hdl_text_utils.get_all_port_types(all_port_declarations, language)
+    return hdl_text_utils.get_all_port_types(all_port_declarations, design_data.language)
 
 
-def get_all_generic_names(all_generic_declarations, design_data=None) -> list:
+def get_all_generic_names(all_generic_declarations, design_data) -> list:
     """Returns a list with the names of all generics."""
-    language = design_data.language if design_data else None
-    return hdl_text_utils.get_all_generic_names(all_generic_declarations, language)
+    return hdl_text_utils.get_all_generic_names(all_generic_declarations, design_data.language)
 
 
-def _get_all_readable_port_names(declaration, check) -> str:
+def _get_all_readable_port_names(declaration, check, design_data) -> str:
     port_names = ""
     if " in " in declaration and design_data.language == "VHDL":
         if ":" not in declaration:
@@ -319,7 +315,7 @@ def _get_all_readable_port_names(declaration, check) -> str:
     return port_names_without_blanks
 
 
-def _get_all_writable_port_names(declaration) -> str:
+def _get_all_writable_port_names(declaration, design_data) -> str:
     port_names = ""
     if " out " in declaration and design_data.language == "VHDL":
         if ":" in declaration:

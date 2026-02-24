@@ -4,17 +4,13 @@ Pure HDL text parsing helpers shared by UI and code generation.
 
 import re
 
-from project_manager import project_manager
-
 from .exceptions import GenerationError
 
 BLOCK_COMMENT_RE = re.compile(r"\/\*.*?\*\/", flags=re.DOTALL)
 
 
-def remove_comments_and_returns(hdl_text, language=None) -> str:
+def remove_comments_and_returns(hdl_text: str, language: str) -> str:
     """Strip block and line comments, normalize to space-separated string for keyword search."""
-    if language is None:
-        language = project_manager.language.get()
     hdl_text = _remove_vhdl_block_comments(hdl_text) if language == "VHDL" else _remove_verilog_block_comments(hdl_text)
     lines_without_return = hdl_text.split("\n")
     text = ""
@@ -64,7 +60,7 @@ def _remove_verilog_block_comments(hdl_text):
     return re.sub("/\\*.*\\*/", "", hdl_text, flags=re.DOTALL)
 
 
-def convert_hdl_lines_into_a_searchable_string(text, language=None):
+def convert_hdl_lines_into_a_searchable_string(text: str, language: str) -> str:
     """Remove comments and surround operators/punctuation with spaces for regex/keyword search."""
     without_comments = remove_comments_and_returns(text, language)
     separated = surround_character_by_blanks(";", without_comments)
@@ -99,10 +95,8 @@ def surround_character_by_blanks(character, all_port_declarations_without_commen
     return re.sub(search_character, " " + character + " ", all_port_declarations_without_comments)
 
 
-def get_all_declared_signal_and_variable_names(all_signal_declarations, language=None) -> list:
+def get_all_declared_signal_and_variable_names(all_signal_declarations: str, language: str) -> list:
     """Parse semicolon-separated declarations and return list of signal/variable names."""
-    if language is None:
-        language = project_manager.language.get()
     signal_declaration_list = all_signal_declarations.split(";")
     signal_list = []
     for declaration in signal_declaration_list:
@@ -116,10 +110,8 @@ def get_all_declared_signal_and_variable_names(all_signal_declarations, language
     return signal_list
 
 
-def get_all_declared_constant_names(all_signal_declarations, language=None) -> list:
+def get_all_declared_constant_names(all_signal_declarations: str, language: str) -> list:
     """Parse semicolon-separated declarations and return list of constant names."""
-    if language is None:
-        language = project_manager.language.get()
     signal_declaration_list = all_signal_declarations.split(";")
     constant_list = []
     for declaration in signal_declaration_list:
@@ -130,9 +122,7 @@ def get_all_declared_constant_names(all_signal_declarations, language=None) -> l
     return constant_list
 
 
-def _get_all_signal_names(declaration, language=None):
-    if language is None:
-        language = project_manager.language.get()
+def _get_all_signal_names(declaration: str, language: str) -> str:
     signal_names = ""
     if " signal " in declaration and language == "VHDL":
         if ":" in declaration:
@@ -151,9 +141,7 @@ def _get_all_signal_names(declaration, language=None):
     return signal_names_without_blanks
 
 
-def _get_all_constant_names(declaration, language=None):
-    if language is None:
-        language = project_manager.language.get()
+def _get_all_constant_names(declaration: str, language: str) -> str:
     constant_names = ""
     if " constant " in declaration and language == "VHDL" and ":" in declaration:
         constant_names = re.sub(":.*", "", declaration)
@@ -165,12 +153,10 @@ def _get_all_constant_names(declaration, language=None):
     return constant_names_without_blanks
 
 
-def get_all_readable_ports(all_port_declarations, check, language=None) -> list:
+def get_all_readable_ports(all_port_declarations: str, check: bool, language: str) -> list:
     """Returns a list with the names of all readable ports.
     If check is True, an error is raised if an illegal port declaration is found.
     """
-    if language is None:
-        language = project_manager.language.get()
     port_declaration_list = _create_list_of_declarations(all_port_declarations, language)
     readable_port_list = []
     for declaration in port_declaration_list:
@@ -183,10 +169,8 @@ def get_all_readable_ports(all_port_declarations, check, language=None) -> list:
     return readable_port_list
 
 
-def get_all_writable_ports(all_port_declarations, language=None) -> list:
+def get_all_writable_ports(all_port_declarations: str, language: str) -> list:
     """Returns a list with the names of all writable ports."""
-    if language is None:
-        language = project_manager.language.get()
     port_declaration_list = _create_list_of_declarations(all_port_declarations, language)
     writeable_port_list = []
     for declaration in port_declaration_list:
@@ -197,10 +181,8 @@ def get_all_writable_ports(all_port_declarations, language=None) -> list:
     return writeable_port_list
 
 
-def get_all_port_types(all_port_declarations, language=None) -> list:
+def get_all_port_types(all_port_declarations: str, language: str) -> list:
     """Returns a list with the type-names of all ports."""
-    if language is None:
-        language = project_manager.language.get()
     port_declaration_list = _create_list_of_declarations(all_port_declarations, language)
     port_types_list = []
     for declaration in port_declaration_list:
@@ -218,10 +200,8 @@ def get_all_port_types(all_port_declarations, language=None) -> list:
     return port_types_list
 
 
-def get_all_generic_names(all_generic_declarations, language=None) -> list:
+def get_all_generic_names(all_generic_declarations: str, language: str) -> list:
     """Returns a list with the names of all generics."""
-    if language is None:
-        language = project_manager.language.get()
     generic_declaration_list = _create_list_of_declarations(all_generic_declarations, language)
     generic_name_list = []
     for declaration in generic_declaration_list:
@@ -237,9 +217,7 @@ def get_all_generic_names(all_generic_declarations, language=None) -> list:
     return generic_name_list
 
 
-def _create_list_of_declarations(all_declarations, language=None):
-    if language is None:
-        language = project_manager.language.get()
+def _create_list_of_declarations(all_declarations: str, language: str) -> list:
     all_declarations_without_comments = remove_comments_and_returns(all_declarations, language)
     all_declarations_separated = surround_character_by_blanks(
         ":", all_declarations_without_comments
@@ -248,9 +226,7 @@ def _create_list_of_declarations(all_declarations, language=None):
     return all_declarations_separated.split(split_char)
 
 
-def _get_all_readable_port_names(declaration, check, language=None) -> str:
-    if language is None:
-        language = project_manager.language.get()
+def _get_all_readable_port_names(declaration: str, check: bool, language: str) -> str:
     port_names = ""
     if " in " in declaration and language == "VHDL":
         if ":" not in declaration:
@@ -275,9 +251,7 @@ def _get_all_readable_port_names(declaration, check, language=None) -> str:
     return port_names_without_blanks
 
 
-def _get_all_writable_port_names(declaration, language=None) -> str:
-    if language is None:
-        language = project_manager.language.get()
+def _get_all_writable_port_names(declaration: str, language: str) -> str:
     port_names = ""
     if " out " in declaration and language == "VHDL":
         if ":" in declaration:

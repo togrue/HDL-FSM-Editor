@@ -747,21 +747,13 @@ def create_concurrent_actions(design_data) -> tuple[str, str] | tuple:
     return ref, text if ref is not None else ""
 
 
-def remove_comments_and_returns(hdl_text, language=None) -> str:
+def remove_comments_and_returns(hdl_text: str, language: str) -> str:
     """Strip block and line comments, normalize to space-separated string for keyword search."""
-    if language is None:
-        language = project_manager.language.get()
-    if language == "VHDL":
-        hdl_text = remove_vhdl_block_comments(hdl_text)
-    else:
-        hdl_text = _remove_verilog_block_comments(hdl_text)
+    hdl_text = remove_vhdl_block_comments(hdl_text) if language == "VHDL" else _remove_verilog_block_comments(hdl_text)
     lines_without_return = hdl_text.split("\n")
     text = ""
     for line in lines_without_return:
-        if language != "VHDL":
-            line_without_comment = re.sub("//.*$", "", line)
-        else:
-            line_without_comment = re.sub("--.*$", "", line)
+        line_without_comment = re.sub("//.*$", "", line) if language != "VHDL" else re.sub("--.*$", "", line)
         # Add " " at the beginning of the line. Then it is possible to search for keywords
         # surrounded by blanks also at the beginning of text:
         text += " " + line_without_comment
@@ -806,7 +798,7 @@ def _remove_verilog_block_comments(hdl_text):
     return re.sub("/\\*.*\\*/", "", hdl_text, flags=re.DOTALL)
 
 
-def convert_hdl_lines_into_a_searchable_string(text, language=None):
+def convert_hdl_lines_into_a_searchable_string(text: str, language: str) -> str:
     """Remove comments and surround operators/punctuation with spaces for regex/keyword search."""
     without_comments = remove_comments_and_returns(text, language)
     separated = surround_character_by_blanks(";", without_comments)
@@ -841,10 +833,8 @@ def surround_character_by_blanks(character, all_port_declarations_without_commen
     return re.sub(search_character, " " + character + " ", all_port_declarations_without_comments)
 
 
-def get_all_declared_signal_and_variable_names(all_signal_declarations, language=None) -> list:
+def get_all_declared_signal_and_variable_names(all_signal_declarations: str, language: str) -> list:
     """Parse semicolon-separated declarations and return list of signal/variable names."""
-    if language is None:
-        language = project_manager.language.get()
     signal_declaration_list = all_signal_declarations.split(";")
     signal_list = []
     for declaration in signal_declaration_list:
@@ -858,10 +848,8 @@ def get_all_declared_signal_and_variable_names(all_signal_declarations, language
     return signal_list
 
 
-def get_all_declared_constant_names(all_signal_declarations, language=None) -> list:
+def get_all_declared_constant_names(all_signal_declarations: str, language: str) -> list:
     """Parse semicolon-separated declarations and return list of constant names."""
-    if language is None:
-        language = project_manager.language.get()
     signal_declaration_list = all_signal_declarations.split(";")
     constant_list = []
     for declaration in signal_declaration_list:
@@ -872,9 +860,7 @@ def get_all_declared_constant_names(all_signal_declarations, language=None) -> l
     return constant_list
 
 
-def _get_all_signal_names(declaration, language=None):
-    if language is None:
-        language = project_manager.language.get()
+def _get_all_signal_names(declaration: str, language: str) -> str:
     signal_names = ""
     if " signal " in declaration and language == "VHDL":
         if ":" in declaration:
@@ -893,9 +879,7 @@ def _get_all_signal_names(declaration, language=None):
     return signal_names_without_blanks
 
 
-def _get_all_constant_names(declaration, language=None):
-    if language is None:
-        language = project_manager.language.get()
+def _get_all_constant_names(declaration: str, language: str) -> str:
     constant_names = ""
     if " constant " in declaration and language == "VHDL" and ":" in declaration:
         constant_names = re.sub(":.*", "", declaration)
