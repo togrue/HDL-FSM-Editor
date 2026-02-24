@@ -7,18 +7,21 @@ from codegen import (
     hdl_generation_architecture_state_sequence,
     hdl_generation_library,
 )
-from project_manager import project_manager
+
+from .link_sink import LinkSink
 
 
-def create_architecture(file_name, file_line_number, state_tag_list_sorted, design_data) -> None:
+def create_architecture(
+    file_name, file_line_number, state_tag_list_sorted, design_data, link_sink: LinkSink | None = None
+) -> None:
     """Build VHDL architecture body and write it; update file_line_number and link dict for navigation."""
     architecture = ""
 
     package_statements, package_ref = design_data.internals_package_text[0], design_data.internals_package_text[1]
     architecture += package_statements
     number_of_new_lines = package_statements.count("\n")
-    if package_ref is not None:
-        project_manager.link_dict_ref.add(
+    if package_ref is not None and link_sink is not None:
+        link_sink.add(
             file_name,
             file_line_number,
             "custom_text_in_internals_tab",
@@ -39,8 +42,8 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
     signal_ref = design_data.internals_architecture_text[1]
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, signal_declarations)
     number_of_new_lines = signal_declarations.count("\n")
-    if signal_ref is not None:
-        project_manager.link_dict_ref.add(
+    if signal_ref is not None and link_sink is not None:
+        link_sink.add(
             file_name,
             file_line_number,
             "custom_text_in_internals_tab",
@@ -54,15 +57,16 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
     architecture += (
         "    p_states: process (" + design_data.reset_signal_name + ", " + design_data.clock_signal_name + ")\n"
     )
-    project_manager.link_dict_ref.add(file_name, file_line_number, "Control-Tab", 1, "reset_and_clock_signal_name")
+    if link_sink is not None:
+        link_sink.add(file_name, file_line_number, "Control-Tab", 1, "reset_and_clock_signal_name")
     file_line_number += 1
 
     variable_declarations = design_data.internals_process_clocked_text[0]
     variable_ref = design_data.internals_process_clocked_text[1]
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, variable_declarations)
     number_of_new_lines = variable_declarations.count("\n")
-    if variable_ref is not None:
-        project_manager.link_dict_ref.add(
+    if variable_ref is not None and link_sink is not None:
+        link_sink.add(
             file_name,
             file_line_number,
             "custom_text_in_internals_tab",
@@ -90,13 +94,14 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
                 architecture += "           " + line + "\n"
         architecture += "        then\n"
     number_of_new_lines = reset_condition.count("\n") + 1  # No return after the last line of the condition
-    project_manager.link_dict_ref.add(
-        file_name,
-        file_line_number,
-        "custom_text_in_diagram_tab",
-        number_of_new_lines,
-        reference_to_reset_condition_custom_text,
-    )
+    if link_sink is not None:
+        link_sink.add(
+            file_name,
+            file_line_number,
+            "custom_text_in_diagram_tab",
+            number_of_new_lines,
+            reference_to_reset_condition_custom_text,
+        )
     file_line_number += number_of_new_lines
 
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, reset_action)
@@ -104,17 +109,19 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
     # and therefore cannot be linked:
     file_line_number += 1
     number_of_new_lines = reset_action.count("\n") - 1
-    project_manager.link_dict_ref.add(
-        file_name,
-        file_line_number,
-        "custom_text_in_diagram_tab",
-        number_of_new_lines,
-        reference_to_reset_action_custom_text,
-    )
+    if link_sink is not None:
+        link_sink.add(
+            file_name,
+            file_line_number,
+            "custom_text_in_diagram_tab",
+            number_of_new_lines,
+            reference_to_reset_action_custom_text,
+        )
     file_line_number += number_of_new_lines
 
     architecture += "        elsif rising_edge(" + design_data.clock_signal_name + ") then\n"
-    project_manager.link_dict_ref.add(file_name, file_line_number, "Control-Tab", 1, "reset_and_clock_signal_name")
+    if link_sink is not None:
+        link_sink.add(file_name, file_line_number, "Control-Tab", 1, "reset_and_clock_signal_name")
     file_line_number += 1
 
     reference_to_global_actions_before_custom_text, global_actions_before = (
@@ -127,13 +134,14 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
         # and therefore cannot be linked:
         file_line_number += 1
         number_of_new_lines = global_actions_before.count("\n") - 1
-        project_manager.link_dict_ref.add(
-            file_name,
-            file_line_number,
-            "custom_text_in_diagram_tab",
-            number_of_new_lines,
-            reference_to_global_actions_before_custom_text,
-        )
+        if link_sink is not None:
+            link_sink.add(
+                file_name,
+                file_line_number,
+                "custom_text_in_diagram_tab",
+                number_of_new_lines,
+                reference_to_global_actions_before_custom_text,
+            )
         file_line_number += number_of_new_lines
 
     architecture += "            -- State Machine:\n"
@@ -143,7 +151,7 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
         state_tag_list_sorted, design_data
     )
     state_sequence, file_line_number = hdl_generation_architecture_state_sequence.create_vhdl_for_the_state_sequence(
-        transition_specifications, file_name, file_line_number
+        transition_specifications, file_name, file_line_number, link_sink
     )
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(4, state_sequence)
     architecture += "            end case;\n"
@@ -159,20 +167,21 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
         # and therefore cannot be linked:
         file_line_number += 1
         number_of_new_lines = global_actions_after.count("\n") - 1
-        project_manager.link_dict_ref.add(
-            file_name,
-            file_line_number,
-            "custom_text_in_diagram_tab",
-            number_of_new_lines,
-            reference_to_global_actions_after_custom_text,
-        )
+        if link_sink is not None:
+            link_sink.add(
+                file_name,
+                file_line_number,
+                "custom_text_in_diagram_tab",
+                number_of_new_lines,
+                reference_to_global_actions_after_custom_text,
+            )
         file_line_number += number_of_new_lines
 
     architecture += "        end if;\n"
     architecture += "    end process;\n"
     file_line_number += 2
     state_actions_process, file_line_number = hdl_generation_architecture_state_actions.create_state_action_process(
-        file_name, file_line_number, state_tag_list_sorted, design_data
+        file_name, file_line_number, state_tag_list_sorted, design_data, link_sink
     )
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_actions_process)
 
@@ -186,13 +195,14 @@ def create_architecture(file_name, file_line_number, state_tag_list_sorted, desi
         # the user, and therefore cannot be linked:
         file_line_number += 1
         number_of_new_lines = concurrent_actions.count("\n") - 1
-        project_manager.link_dict_ref.add(
-            file_name,
-            file_line_number,
-            "custom_text_in_diagram_tab",
-            number_of_new_lines,
-            reference_to_concurrent_actions_custom_text,
-        )
+        if link_sink is not None:
+            link_sink.add(
+                file_name,
+                file_line_number,
+                "custom_text_in_diagram_tab",
+                number_of_new_lines,
+                reference_to_concurrent_actions_custom_text,
+            )
         file_line_number += number_of_new_lines
 
     architecture += "end architecture;\n"

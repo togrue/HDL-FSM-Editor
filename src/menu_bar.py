@@ -146,7 +146,13 @@ class MenuBar:
             messagebox.showwarning("Warning in HDL-FSM-Editor", warning_message)
 
         config = build_config_from_main_window()
-        hdl_generation.run_hdl_generation(config, write_to_file=True, is_script_mode=False, design_data=design_data)
+        hdl_generation.run_hdl_generation(
+            config,
+            write_to_file=True,
+            is_script_mode=False,
+            design_data=design_data,
+            link_sink=project_manager.link_dict_ref,
+        )
 
     def _handle_notebook_tab_changed_event(self) -> None:
         self._enable_undo_redo_if_diagram_tab_is_active_else_disable()

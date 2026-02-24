@@ -10,12 +10,14 @@ from codegen import (
     hdl_generation_architecture_state_sequence,
     hdl_generation_library,
 )
-from project_manager import project_manager
 
 from .exceptions import GenerationError
+from .link_sink import LinkSink
 
 
-def create_module_logic(file_name, file_line_number, state_tag_list_sorted, design_data) -> None:
+def create_module_logic(
+    file_name, file_line_number, state_tag_list_sorted, design_data, link_sink: LinkSink | None = None
+) -> None:
     """Build Verilog module logic (state type, signals, always block) and write; update link dict."""
     architecture = ""
     state_signal_type_definition = _create_signal_declaration_for_the_state_variable(design_data)
@@ -26,8 +28,8 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted, desi
     signal_ref = design_data.internals_architecture_text[1]
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, signal_declarations)
     number_of_new_lines = signal_declarations.count("\n")
-    if signal_ref is not None:
-        project_manager.link_dict_ref.add(
+    if signal_ref is not None and link_sink is not None:
+        link_sink.add(
             file_name,
             file_line_number,
             "custom_text_in_internals_tab",
@@ -51,7 +53,8 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted, desi
         + design_data.reset_signal_name
         + ") begin: p_states\n"
     )
-    project_manager.link_dict_ref.add(file_name, file_line_number, "Control-Tab", 1, "reset_and_clock_signal_name")
+    if link_sink is not None:
+        link_sink.add(file_name, file_line_number, "Control-Tab", 1, "reset_and_clock_signal_name")
     file_line_number += 1
 
     variable_declarations = design_data.internals_process_clocked_text[0]
@@ -59,8 +62,8 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted, desi
     if variable_declarations != "":
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, variable_declarations)
         number_of_new_lines = variable_declarations.count("\n")
-        if variable_ref is not None:
-            project_manager.link_dict_ref.add(
+        if variable_ref is not None and link_sink is not None:
+            link_sink.add(
                 file_name,
                 file_line_number,
                 "custom_text_in_internals_tab",
@@ -80,25 +83,27 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted, desi
                 architecture += "            " + line + "\n"
         architecture += "        ) begin\n"
     number_of_new_lines = reset_condition.count("\n") + 1  # No return after the last line of the condition
-    project_manager.link_dict_ref.add(
-        file_name,
-        file_line_number,
-        "custom_text_in_diagram_tab",
-        number_of_new_lines,
-        reference_to_reset_condition_custom_text,
-    )
+    if link_sink is not None:
+        link_sink.add(
+            file_name,
+            file_line_number,
+            "custom_text_in_diagram_tab",
+            number_of_new_lines,
+            reference_to_reset_condition_custom_text,
+        )
     file_line_number += number_of_new_lines
 
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, reset_action)
     file_line_number += 1  # There is always a "state <=  ..." assignment which must be skipped
     number_of_new_lines = reset_action.count("\n") - 1
-    project_manager.link_dict_ref.add(
-        file_name,
-        file_line_number,
-        "custom_text_in_diagram_tab",
-        number_of_new_lines,
-        reference_to_reset_action_custom_text,
-    )
+    if link_sink is not None:
+        link_sink.add(
+            file_name,
+            file_line_number,
+            "custom_text_in_diagram_tab",
+            number_of_new_lines,
+            reference_to_reset_action_custom_text,
+        )
     file_line_number += number_of_new_lines
 
     architecture += "        end\n"
@@ -113,13 +118,14 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted, desi
         file_line_number += 1
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, global_actions_before)
         number_of_new_lines = global_actions_before.count("\n") - 1
-        project_manager.link_dict_ref.add(
-            file_name,
-            file_line_number,
-            "custom_text_in_diagram_tab",
-            number_of_new_lines,
-            global_actions_before_reference,
-        )
+        if link_sink is not None:
+            link_sink.add(
+                file_name,
+                file_line_number,
+                "custom_text_in_diagram_tab",
+                number_of_new_lines,
+                global_actions_before_reference,
+            )
         file_line_number += number_of_new_lines
 
     architecture += "            // State Machine:\n"
@@ -130,7 +136,7 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted, desi
         state_tag_list_sorted, design_data
     )
     state_sequence, file_line_number = hdl_generation_architecture_state_sequence.create_verilog_for_the_state_sequence(
-        transition_specifications, file_name, file_line_number
+        transition_specifications, file_name, file_line_number, link_sink
     )
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(4, state_sequence)
     architecture += "                default:\n"
@@ -146,13 +152,14 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted, desi
         file_line_number += 1
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(3, global_actions_after)
         number_of_new_lines = global_actions_after.count("\n") - 1
-        project_manager.link_dict_ref.add(
-            file_name,
-            file_line_number,
-            "custom_text_in_diagram_tab",
-            number_of_new_lines,
-            global_actions_after_reference,
-        )
+        if link_sink is not None:
+            link_sink.add(
+                file_name,
+                file_line_number,
+                "custom_text_in_diagram_tab",
+                number_of_new_lines,
+                global_actions_after_reference,
+            )
         file_line_number += number_of_new_lines
 
     architecture += "        end\n"
@@ -160,7 +167,7 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted, desi
     file_line_number += 2
 
     state_actions_process, file_line_number = hdl_generation_architecture_state_actions.create_state_action_process(
-        file_name, file_line_number, state_tag_list_sorted, design_data
+        file_name, file_line_number, state_tag_list_sorted, design_data, link_sink
     )
     architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, state_actions_process)
 
@@ -170,13 +177,14 @@ def create_module_logic(file_name, file_line_number, state_tag_list_sorted, desi
         file_line_number += 1
         architecture += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, concurrent_actions)
         number_of_new_lines = concurrent_actions.count("\n") - 1
-        project_manager.link_dict_ref.add(
-            file_name,
-            file_line_number,
-            "custom_text_in_diagram_tab",
-            number_of_new_lines,
-            concurrent_actions_reference,
-        )
+        if link_sink is not None:
+            link_sink.add(
+                file_name,
+                file_line_number,
+                "custom_text_in_diagram_tab",
+                number_of_new_lines,
+                concurrent_actions_reference,
+            )
         file_line_number += number_of_new_lines
 
     architecture += "endmodule\n"

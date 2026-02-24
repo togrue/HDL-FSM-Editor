@@ -15,19 +15,27 @@ from constants import GuiTab
 from project_manager import project_manager
 
 from .exceptions import GenerationError
+from .link_sink import LinkSink
 from .list_separation_check import ListSeparationCheck
 
 # Pylint expects this to be a constant with uppercase naming.
 last_line_number_of_file1 = 0  # pylint: disable=invalid-name # module-level mutable
 
 
-def run_hdl_generation(config: GenerationConfig, write_to_file: bool, is_script_mode: bool, design_data) -> bool:
+def run_hdl_generation(
+    config: GenerationConfig,
+    write_to_file: bool,
+    is_script_mode: bool,
+    design_data,
+    link_sink: LinkSink | None = None,
+) -> bool:
     """Run HDL generation with the given config; show errors in GUI or print in script mode. Return True on success.
-    config must be built by the caller (e.g. generation_config_builder). design_data from design_data_gatherer."""
+    config must be built by the caller (e.g. generation_config_builder). design_data from design_data_gatherer.
+    link_sink: optional sink for HDL-to-source links (GUI passes link_dict_ref; script mode passes None)."""
     state_tag_list_sorted = design_data.state_tag_list_sorted
     success = False
     try:
-        _generate_hdl(config, write_to_file, state_tag_list_sorted, design_data)
+        _generate_hdl(config, write_to_file, state_tag_list_sorted, design_data, link_sink)
         success = True
     except GenerationError as e:
         if is_script_mode:
@@ -42,7 +50,13 @@ def run_hdl_generation(config: GenerationConfig, write_to_file: bool, is_script_
     return success
 
 
-def _generate_hdl(config: GenerationConfig, write_to_file: bool, state_tag_list_sorted: list, design_data) -> None:
+def _generate_hdl(
+    config: GenerationConfig,
+    write_to_file: bool,
+    state_tag_list_sorted: list,
+    design_data,
+    link_sink: LinkSink | None = None,
+) -> None:
     errors = config.validate()
     if errors:
         raise GenerationError("Error in HDL-FSM-Editor", errors)
@@ -59,19 +73,20 @@ def _generate_hdl(config: GenerationConfig, write_to_file: bool, state_tag_list_
     else:
         header = f"// Created by HDL-FSM-Editor{at_timestamp}\n"
 
-    _create_hdl(config, header, write_to_file, state_tag_list_sorted, design_data)
+    _create_hdl(config, header, write_to_file, state_tag_list_sorted, design_data, link_sink)
 
 
-def _create_hdl(config, header, write_to_file, state_tag_list_sorted, design_data) -> None:
+def _create_hdl(config, header, write_to_file, state_tag_list_sorted, design_data, link_sink=None) -> None:
     file_name, file_name_architecture = _get_file_names(config)
 
-    project_manager.link_dict_ref.clear_link_dict(file_name)
-    if file_name_architecture:
-        project_manager.link_dict_ref.clear_link_dict(file_name_architecture)
+    if link_sink is not None:
+        link_sink.clear_link_dict(file_name)
+        if file_name_architecture:
+            link_sink.clear_link_dict(file_name_architecture)
     file_line_number = 3  # Line 1 = Filename, Line 2 = Header
 
     if config.language == "VHDL":
-        entity, file_line_number = _create_entity(config, file_name, file_line_number, design_data)
+        entity, file_line_number = _create_entity(config, file_name, file_line_number, design_data, link_sink)
         if file_name_architecture == "":  # All VHDL is written in 1 file.
             file_to_use = file_name
             file_line_number_to_use = file_line_number
@@ -79,12 +94,12 @@ def _create_hdl(config, header, write_to_file, state_tag_list_sorted, design_dat
             file_to_use = file_name_architecture
             file_line_number_to_use = 3
         architecture = hdl_generation_architecture.create_architecture(
-            file_to_use, file_line_number_to_use, state_tag_list_sorted, design_data
+            file_to_use, file_line_number_to_use, state_tag_list_sorted, design_data, link_sink
         )
     else:
-        entity, file_line_number = _create_module_ports(config, file_name, file_line_number, design_data)
+        entity, file_line_number = _create_module_ports(config, file_name, file_line_number, design_data, link_sink)
         architecture = hdl_generation_module.create_module_logic(
-            file_name, file_line_number, state_tag_list_sorted, design_data
+            file_name, file_line_number, state_tag_list_sorted, design_data, link_sink
         )
     if architecture is None:
         return  # No further actions required, because when writing to a file, always an architecture must exist.
@@ -110,26 +125,28 @@ def _copy_hdl_into_generated_hdl_tab(hdl, file_name, file_name_architecture) -> 
     project_manager.notebook.show_tab(GuiTab.GENERATED_HDL)
 
 
-def _create_entity(config, file_name, file_line_number, design_data) -> tuple:
+def _create_entity(config, file_name, file_line_number, design_data, link_sink=None) -> tuple:
     entity = ""
 
     package_statements, package_ref = design_data.interface_package_text[0], design_data.interface_package_text[1]
     entity += package_statements
     number_of_new_lines = package_statements.count("\n")
-    project_manager.link_dict_ref.add(
-        file_name,
-        file_line_number,
-        "custom_text_in_interface_tab",
-        number_of_new_lines,
-        package_ref,
-    )
+    if link_sink is not None:
+        link_sink.add(
+            file_name,
+            file_line_number,
+            "custom_text_in_interface_tab",
+            number_of_new_lines,
+            package_ref,
+        )
     file_line_number += number_of_new_lines
 
     entity += "\n"
     file_line_number += 1
 
     entity += "entity " + design_data.module_name + " is\n"
-    project_manager.link_dict_ref.add(file_name, file_line_number, "Control-Tab", 1, "module_name")
+    if link_sink is not None:
+        link_sink.add(file_name, file_line_number, "Control-Tab", 1, "module_name")
     file_line_number += 1
 
     generics_text, generics_ref = design_data.interface_generics_text[0], design_data.interface_generics_text[1]
@@ -142,13 +159,14 @@ def _create_entity(config, file_name, file_line_number, design_data) -> tuple:
         )
         file_line_number += 1  # switch to first line with generic value.
         number_of_new_lines = generic_declarations.count("\n") - 2  # Subtract first and last line
-        project_manager.link_dict_ref.add(
-            file_name,
-            file_line_number,
-            "custom_text_in_interface_tab",
-            number_of_new_lines,
-            generics_ref,
-        )
+        if link_sink is not None:
+            link_sink.add(
+                file_name,
+                file_line_number,
+                "custom_text_in_interface_tab",
+                number_of_new_lines,
+                generics_ref,
+            )
         file_line_number += number_of_new_lines + 1
     entity += generic_declarations
 
@@ -162,13 +180,14 @@ def _create_entity(config, file_name, file_line_number, design_data) -> tuple:
         )
         file_line_number += 1  # switch to first line with port.
         number_of_new_lines = port_declarations.count("\n") - 2  # Subtract first and last line
-        project_manager.link_dict_ref.add(
-            file_name,
-            file_line_number,
-            "custom_text_in_interface_tab",
-            number_of_new_lines,
-            ports_ref,
-        )
+        if link_sink is not None:
+            link_sink.add(
+                file_name,
+                file_line_number,
+                "custom_text_in_interface_tab",
+                number_of_new_lines,
+                ports_ref,
+            )
         file_line_number += number_of_new_lines + 1
     entity += port_declarations
 
@@ -177,11 +196,12 @@ def _create_entity(config, file_name, file_line_number, design_data) -> tuple:
     return entity, file_line_number
 
 
-def _create_module_ports(config, file_name, file_line_number, design_data) -> tuple:
+def _create_module_ports(config, file_name, file_line_number, design_data, link_sink=None) -> tuple:
     module = ""
     file_line_number = 3  # Line 1 = Filename, Line 2 = Header
     module += "module " + design_data.module_name + "\n"
-    project_manager.link_dict_ref.add(file_name, file_line_number, "Control-Tab", 1, "module_name")
+    if link_sink is not None:
+        link_sink.add(file_name, file_line_number, "Control-Tab", 1, "module_name")
     file_line_number += 1
 
     parameters_text, parameters_ref = design_data.interface_generics_text[0], design_data.interface_generics_text[1]
@@ -194,13 +214,14 @@ def _create_module_ports(config, file_name, file_line_number, design_data) -> tu
         )
         file_line_number += 1  # switch to first line with parameters.
         number_of_new_lines = parameters.count("\n") - 2  # Subtract first and last line
-        project_manager.link_dict_ref.add(
-            file_name,
-            file_line_number,
-            "custom_text_in_interface_tab",
-            number_of_new_lines,
-            parameters_ref,
-        )
+        if link_sink is not None:
+            link_sink.add(
+                file_name,
+                file_line_number,
+                "custom_text_in_interface_tab",
+                number_of_new_lines,
+                parameters_ref,
+            )
         file_line_number += number_of_new_lines + 1
         module += parameters
 
@@ -210,13 +231,14 @@ def _create_module_ports(config, file_name, file_line_number, design_data) -> tu
         ports = "    (\n" + hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, ports) + "    );\n"
         number_of_new_lines = ports.count("\n") - 2  # Subtract first and last line
         file_line_number += 1  # switch to first line with port.
-        project_manager.link_dict_ref.add(
-            file_name,
-            file_line_number,
-            "custom_text_in_interface_tab",
-            number_of_new_lines,
-            ports_ref,
-        )
+        if link_sink is not None:
+            link_sink.add(
+                file_name,
+                file_line_number,
+                "custom_text_in_interface_tab",
+                number_of_new_lines,
+                ports_ref,
+            )
         file_line_number += number_of_new_lines + 1
         module += ports
     return module, file_line_number

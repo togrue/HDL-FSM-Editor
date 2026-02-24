@@ -5,10 +5,12 @@ The methods create only the HDL for the state sequence.
 
 import re
 
-from project_manager import project_manager
+from .link_sink import LinkSink
 
 
-def create_vhdl_for_the_state_sequence(transition_specifications, file_name, file_line_number) -> tuple:
+def create_vhdl_for_the_state_sequence(
+    transition_specifications, file_name, file_line_number, link_sink: LinkSink | None = None
+) -> tuple:
     """Generate VHDL when/if/else state sequence; return (indented_vhdl_string, updated_file_line_number)."""
     vhdl = []
     ignore_control_for_vhdl_indent = []
@@ -23,13 +25,14 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                 vhdl.append(state_comments)
                 ignore_control_for_vhdl_indent.append(False)
                 number_of_comment_lines = state_comments.count("\n")
-                project_manager.link_dict_ref.add(
-                    file_name,
-                    file_line_number,
-                    "custom_text_in_diagram_tab",
-                    number_of_comment_lines,
-                    transition_specification["state_comments_canvas_id"],
-                )
+                if link_sink is not None:
+                    link_sink.add(
+                        file_name,
+                        file_line_number,
+                        "custom_text_in_diagram_tab",
+                        number_of_comment_lines,
+                        transition_specification["state_comments_canvas_id"],
+                    )
                 file_line_number += number_of_comment_lines
         elif transition_specification["command"] == "if":
             transition_condition = transition_specification["condition"]
@@ -43,13 +46,14 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                 else:
                     vhdl.append("if " + transition_condition + " then\n")
                 ignore_control_for_vhdl_indent.append(False)
-                project_manager.link_dict_ref.add(
-                    file_name,
-                    file_line_number,
-                    "custom_text_in_diagram_tab",
-                    1,
-                    transition_specification["condition_action_reference"],
-                )
+                if link_sink is not None:
+                    link_sink.add(
+                        file_name,
+                        file_line_number,
+                        "custom_text_in_diagram_tab",
+                        1,
+                        transition_specification["condition_action_reference"],
+                    )
                 file_line_number += 1
                 # print("\ntransition_condition =", transition_condition)
             else:
@@ -60,13 +64,14 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                     else:
                         vhdl.append("   " + line + "\n")
                     ignore_control_for_vhdl_indent.append(False)
-                project_manager.link_dict_ref.add(
-                    file_name,
-                    file_line_number,
-                    "custom_text_in_diagram_tab",
-                    index + 1,
-                    transition_specification["condition_action_reference"],
-                )
+                if link_sink is not None:
+                    link_sink.add(
+                        file_name,
+                        file_line_number,
+                        "custom_text_in_diagram_tab",
+                        index + 1,
+                        transition_specification["condition_action_reference"],
+                    )
                 file_line_number += index + 1
                 vhdl.append("then\n")
                 ignore_control_for_vhdl_indent.append(False)
@@ -78,13 +83,14 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
             if transition_condition.count("\n") == 0:
                 vhdl.append("elsif " + transition_condition + " then\n")
                 ignore_control_for_vhdl_indent.append(False)
-                project_manager.link_dict_ref.add(
-                    file_name,
-                    file_line_number,
-                    "custom_text_in_diagram_tab",
-                    1,
-                    transition_specification["condition_action_reference"],
-                )
+                if link_sink is not None:
+                    link_sink.add(
+                        file_name,
+                        file_line_number,
+                        "custom_text_in_diagram_tab",
+                        1,
+                        transition_specification["condition_action_reference"],
+                    )
                 file_line_number += 1
             else:
                 transition_condition_list = transition_condition.split("\n")
@@ -94,13 +100,14 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                     else:
                         vhdl.append("      " + line + "\n")
                     ignore_control_for_vhdl_indent.append(False)
-                project_manager.link_dict_ref.add(
-                    file_name,
-                    file_line_number,
-                    "custom_text_in_diagram_tab",
-                    index + 1,
-                    transition_specification["condition_action_reference"],
-                )
+                if link_sink is not None:
+                    link_sink.add(
+                        file_name,
+                        file_line_number,
+                        "custom_text_in_diagram_tab",
+                        index + 1,
+                        transition_specification["condition_action_reference"],
+                    )
                 file_line_number += index + 1
                 vhdl.append("then\n")
                 ignore_control_for_vhdl_indent.append(False)
@@ -117,14 +124,15 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                     for single_comment in comment_list:
                         vhdl.append(" " * 4 + single_comment + "\n")
                         ignore_control_for_vhdl_indent.append(False)
-                    project_manager.link_dict_ref.add(
-                        file_name,
-                        file_line_number,
-                        "custom_text_in_diagram_tab",
-                        index + 1,
-                        reference_to_custom_text_comment,
-                    )
-                    file_line_number += index + 1
+                    if link_sink is not None:
+                        link_sink.add(
+                            file_name,
+                            file_line_number,
+                            "custom_text_in_diagram_tab",
+                            number_of_comment_lines,
+                            reference_to_custom_text_comment,
+                        )
+                    file_line_number += number_of_comment_lines
                 else:
                     action_list = entry["moved_action"].split("\n")
                 for single_action in action_list:
@@ -136,13 +144,14 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
                         ignore_control_for_vhdl_indent.append(True)
                     else:
                         ignore_control_for_vhdl_indent.append(False)
-                project_manager.link_dict_ref.add(
-                    file_name,
-                    file_line_number,
-                    "custom_text_in_diagram_tab",
-                    len(action_list),
-                    reference_to_custom_text,
-                )
+                if link_sink is not None:
+                    link_sink.add(
+                        file_name,
+                        file_line_number,
+                        "custom_text_in_diagram_tab",
+                        len(action_list),
+                        reference_to_custom_text,
+                    )
                 file_line_number += len(action_list)
             if transition_specification["target"] != "":
                 vhdl.append(" " * 4 + "state <= " + transition_specification["target"] + ";\n")
@@ -167,7 +176,9 @@ def create_vhdl_for_the_state_sequence(transition_specifications, file_name, fil
     return vhdl_indented, file_line_number
 
 
-def create_verilog_for_the_state_sequence(transition_specifications, file_name, file_line_number) -> tuple:
+def create_verilog_for_the_state_sequence(
+    transition_specifications, file_name, file_line_number, link_sink: LinkSink | None = None
+) -> tuple:
     """Generate Verilog state sequence (begin/end, case items); return (verilog_string, updated_file_line_number)."""
     verilog = []
     ignore_control_for_verilog_indent = []
@@ -186,13 +197,14 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                 verilog.append(state_comments)
                 ignore_control_for_verilog_indent.append(False)
                 number_of_comment_lines = state_comments.count("\n")
-                project_manager.link_dict_ref.add(
-                    file_name,
-                    file_line_number,
-                    "custom_text_in_diagram_tab",
-                    number_of_comment_lines,
-                    transition_specification["state_comments_canvas_id"],
-                )
+                if link_sink is not None:
+                    link_sink.add(
+                        file_name,
+                        file_line_number,
+                        "custom_text_in_diagram_tab",
+                        number_of_comment_lines,
+                        transition_specification["state_comments_canvas_id"],
+                    )
                 file_line_number += number_of_comment_lines
         elif transition_specification["command"] == "if":
             transition_condition = transition_specification["condition"]
@@ -206,13 +218,14 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                 else:
                     verilog.append("if (" + transition_specification["condition"] + ") begin\n")
                 ignore_control_for_verilog_indent.append(False)
-                project_manager.link_dict_ref.add(
-                    file_name,
-                    file_line_number,
-                    "custom_text_in_diagram_tab",
-                    1,
-                    transition_specification["condition_action_reference"],
-                )
+                if link_sink is not None:
+                    link_sink.add(
+                        file_name,
+                        file_line_number,
+                        "custom_text_in_diagram_tab",
+                        1,
+                        transition_specification["condition_action_reference"],
+                    )
                 file_line_number += 1
                 # print("\ntransition_condition =", transition_condition)
             else:
@@ -223,13 +236,14 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                     else:
                         verilog.append("    " + line + "\n")
                     ignore_control_for_verilog_indent.append(False)
-                project_manager.link_dict_ref.add(
-                    file_name,
-                    file_line_number,
-                    "custom_text_in_diagram_tab",
-                    index + 1,
-                    transition_specification["condition_action_reference"],
-                )
+                if link_sink is not None:
+                    link_sink.add(
+                        file_name,
+                        file_line_number,
+                        "custom_text_in_diagram_tab",
+                        index + 1,
+                        transition_specification["condition_action_reference"],
+                    )
                 file_line_number += index + 1
                 verilog.append("   ) begin\n")
                 ignore_control_for_verilog_indent.append(False)
@@ -241,13 +255,14 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
             if transition_condition.count("\n") == 0:
                 verilog.append("end else if (" + transition_specification["condition"] + ") begin\n")
                 ignore_control_for_verilog_indent.append(False)
-                project_manager.link_dict_ref.add(
-                    file_name,
-                    file_line_number,
-                    "custom_text_in_diagram_tab",
-                    1,
-                    transition_specification["condition_action_reference"],
-                )
+                if link_sink is not None:
+                    link_sink.add(
+                        file_name,
+                        file_line_number,
+                        "custom_text_in_diagram_tab",
+                        1,
+                        transition_specification["condition_action_reference"],
+                    )
                 file_line_number += 1
             else:
                 transition_condition_list = transition_condition.split("\n")
@@ -257,13 +272,14 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                     else:
                         verilog.append("             " + line + "\n")
                     ignore_control_for_verilog_indent.append(False)
-                project_manager.link_dict_ref.add(
-                    file_name,
-                    file_line_number,
-                    "custom_text_in_diagram_tab",
-                    index + 1,
-                    transition_specification["condition_action_reference"],
-                )
+                if link_sink is not None:
+                    link_sink.add(
+                        file_name,
+                        file_line_number,
+                        "custom_text_in_diagram_tab",
+                        index + 1,
+                        transition_specification["condition_action_reference"],
+                    )
                 file_line_number += index + 1
                 verilog.append("            ) begin\n")
                 ignore_control_for_verilog_indent.append(False)
@@ -280,14 +296,15 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                     for single_comment in comment_list:
                         verilog.append(" " * 4 + single_comment + "\n")
                         ignore_control_for_verilog_indent.append(False)
-                    project_manager.link_dict_ref.add(
-                        file_name,
-                        file_line_number,
-                        "custom_text_in_diagram_tab",
-                        index + 1,
-                        reference_to_custom_text_comment,
-                    )
-                    file_line_number += index + 1
+                    if link_sink is not None:
+                        link_sink.add(
+                            file_name,
+                            file_line_number,
+                            "custom_text_in_diagram_tab",
+                            number_of_comment_lines,
+                            reference_to_custom_text_comment,
+                        )
+                    file_line_number += number_of_comment_lines
                 else:
                     action_list = entry["moved_action"].split("\n")
                 for single_action in action_list:
@@ -299,13 +316,14 @@ def create_verilog_for_the_state_sequence(transition_specifications, file_name, 
                         ignore_control_for_verilog_indent.append(True)
                     else:
                         ignore_control_for_verilog_indent.append(False)
-                project_manager.link_dict_ref.add(
-                    file_name,
-                    file_line_number,
-                    "custom_text_in_diagram_tab",
-                    len(action_list),
-                    reference_to_custom_text,
-                )
+                if link_sink is not None:
+                    link_sink.add(
+                        file_name,
+                        file_line_number,
+                        "custom_text_in_diagram_tab",
+                        len(action_list),
+                        reference_to_custom_text,
+                    )
                 file_line_number += len(action_list)
             if transition_specification["target"] != "":
                 verilog.append(" " * 4 + "state <= " + transition_specification["target"] + ";\n")

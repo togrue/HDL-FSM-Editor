@@ -66,7 +66,11 @@ class UpdateHdlTab:
                 messagebox.showwarning("Warning in HDL-FSM-Editor", msg)
             config = build_config_from_main_window()
             hdl_generation.run_hdl_generation(
-                config, write_to_file=False, is_script_mode=False, design_data=design_data
+                config,
+                write_to_file=False,
+                is_script_mode=False,
+                design_data=design_data,
+                link_sink=project_manager.link_dict_ref,
             )
         project_manager.hdl_frame_text.config(state=tk.NORMAL)
         project_manager.hdl_frame_text.insert("1.0", hdl)

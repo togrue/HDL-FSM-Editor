@@ -5,12 +5,14 @@ All methods needed for the state action process in VHDL or Verilog
 import re
 
 from codegen import hdl_generation_library, hdl_text_utils
-from project_manager import project_manager
 
 from .exceptions import GenerationError
+from .link_sink import LinkSink
 
 
-def create_state_action_process(file_name, file_line_number, state_tag_list_sorted, design_data) -> tuple:
+def create_state_action_process(
+    file_name, file_line_number, state_tag_list_sorted, design_data, link_sink: LinkSink | None = None
+) -> tuple:
     """Returns the state action process as string and the updated file_line_number."""
     default_state_actions = _get_default_state_actions(design_data)
     state_action_list = design_data.state_action_list or []
@@ -28,6 +30,7 @@ def create_state_action_process(file_name, file_line_number, state_tag_list_sort
             all_possible_sensitivity_entries,
             variable_declarations,
             design_data,
+            link_sink,
         )
     else:
         state_action_process, file_line_number = _create_state_action_process_for_verilog(
@@ -38,6 +41,7 @@ def create_state_action_process(file_name, file_line_number, state_tag_list_sort
             all_possible_sensitivity_entries,
             variable_declarations,
             design_data,
+            link_sink,
         )
     return state_action_process, file_line_number
 
@@ -54,6 +58,7 @@ def _create_state_action_process_for_vhdl(
     all_possible_sensitivity_entries,
     variable_declarations,
     design_data,
+    link_sink: LinkSink | None = None,
 ) -> tuple:
     state_action_process = "p_state_actions: process "
     state_action_process += (
@@ -67,14 +72,15 @@ def _create_state_action_process_for_vhdl(
     state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, variable_declarations)
     number_of_lines = variable_declarations.count("\n")
     comb_ref = design_data.internals_process_combinatorial_text[1]
-    if number_of_lines != 0 and comb_ref is not None:
-        project_manager.link_dict_ref.add(
+    if number_of_lines != 0 and comb_ref is not None and link_sink is not None:
+        link_sink.add(
             file_name,
             file_line_number,
             "custom_text_in_internals_tab",
             number_of_lines,
             comb_ref,
         )
+    if number_of_lines != 0:
         file_line_number += number_of_lines
     state_action_process += "begin\n"
     file_line_number += 1
@@ -84,8 +90,8 @@ def _create_state_action_process_for_vhdl(
     if number_of_lines != 0:
         default_ref = design_data.state_actions_default[1]
         file_line_number += 1  # default_state_actions starts always with "-- Default State Actions:"
-        if default_ref is not None:
-            project_manager.link_dict_ref.add(
+        if default_ref is not None and link_sink is not None:
+            link_sink.add(
                 file_name,
                 file_line_number,
                 "custom_text_in_diagram_tab",
@@ -103,9 +109,10 @@ def _create_state_action_process_for_vhdl(
         state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(2, when_entry)
         file_line_number += 1  # A when_entry starts always with "when ..."
         number_of_lines = when_entry.count("\n")
-        project_manager.link_dict_ref.add(
-            file_name, file_line_number, "custom_text_in_diagram_tab", number_of_lines - 1, state_action_entry[2]
-        )
+        if link_sink is not None:
+            link_sink.add(
+                file_name, file_line_number, "custom_text_in_diagram_tab", number_of_lines - 1, state_action_entry[2]
+            )
         file_line_number += number_of_lines - 1
 
     state_action_process += "    end case;\n"
@@ -122,6 +129,7 @@ def _create_state_action_process_for_verilog(
     all_possible_sensitivity_entries,
     variable_declarations,
     design_data,
+    link_sink: LinkSink | None = None,
 ) -> tuple:
     state_action_process = "always @"
     state_action_process += _create_sensitivity_list(
@@ -134,8 +142,8 @@ def _create_state_action_process_for_verilog(
         state_action_process += hdl_generation_library.indent_text_by_the_given_number_of_tabs(1, variable_declarations)
         number_of_new_lines = variable_declarations.count("\n")
         comb_ref = design_data.internals_process_combinatorial_text[1]
-        if comb_ref is not None:
-            project_manager.link_dict_ref.add(
+        if comb_ref is not None and link_sink is not None:
+            link_sink.add(
                 file_name,
                 file_line_number,
                 "custom_text_in_internals_tab",
@@ -149,8 +157,8 @@ def _create_state_action_process_for_verilog(
     if number_of_lines != 0:
         default_ref = design_data.state_actions_default[1]
         file_line_number += 1  # default_state_actions starts always with "-- Default State Actions:"
-        if default_ref is not None:
-            project_manager.link_dict_ref.add(
+        if default_ref is not None and link_sink is not None:
+            link_sink.add(
                 file_name,
                 file_line_number,
                 "custom_text_in_diagram_tab",
@@ -171,13 +179,14 @@ def _create_state_action_process_for_verilog(
             file_line_number += 2
         else:
             file_line_number += 1  # A when_entry starts always with "<State-Name: ..."
-            project_manager.link_dict_ref.add(
-                file_name,
-                file_line_number,
-                "custom_text_in_diagram_tab",
-                number_of_lines - 2,  # a when entry always ends with "end"
-                state_action_entry[2],
-            )
+            if link_sink is not None:
+                link_sink.add(
+                    file_name,
+                    file_line_number,
+                    "custom_text_in_diagram_tab",
+                    number_of_lines - 2,  # a when entry always ends with "end"
+                    state_action_entry[2],
+                )
             file_line_number += number_of_lines - 1
 
     state_action_process += "        default:\n"
