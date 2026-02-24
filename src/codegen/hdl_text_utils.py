@@ -5,6 +5,7 @@ Pure HDL text parsing helpers shared by UI and code generation.
 import re
 
 from project_manager import project_manager
+
 from .exceptions import GenerationError
 
 BLOCK_COMMENT_RE = re.compile(r"\/\*.*?\*\/", flags=re.DOTALL)
@@ -14,17 +15,11 @@ def remove_comments_and_returns(hdl_text, language=None) -> str:
     """Strip block and line comments, normalize to space-separated string for keyword search."""
     if language is None:
         language = project_manager.language.get()
-    if language == "VHDL":
-        hdl_text = remove_vhdl_block_comments(hdl_text)
-    else:
-        hdl_text = _remove_verilog_block_comments(hdl_text)
+    hdl_text = _remove_vhdl_block_comments(hdl_text) if language == "VHDL" else _remove_verilog_block_comments(hdl_text)
     lines_without_return = hdl_text.split("\n")
     text = ""
     for line in lines_without_return:
-        if language != "VHDL":
-            line_without_comment = re.sub("//.*$", "", line)
-        else:
-            line_without_comment = re.sub("--.*$", "", line)
+        line_without_comment = re.sub("//.*$", "", line) if language != "VHDL" else re.sub("--.*$", "", line)
         # Add " " at the beginning of the line. Then it is possible to search for keywords
         # surrounded by blanks also at the beginning of text:
         text += " " + line_without_comment
@@ -48,7 +43,7 @@ def remove_type_declarations(hdl_text):
     return text
 
 
-def remove_vhdl_block_comments(list_string):
+def _remove_vhdl_block_comments(list_string):
     """Replace /* ... */ block comments with spaces to preserve character positions."""
     # block comments are replaced by blanks, so all remaining text holds its position.
     while True:
