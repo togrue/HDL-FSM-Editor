@@ -14,6 +14,7 @@ import update_hdl_tab
 from codegen import hdl_generation
 from design_data_gatherer import gather_design_data
 from dialogs import help_selection, help_shortcuts
+from generation_config_builder import build_config_from_main_window
 from project_manager import project_manager
 
 
@@ -138,13 +139,14 @@ class MenuBar:
         """Save project if dirty, then run HDL generation to file."""
         if project_manager.root.title().endswith("*"):
             file_handling.save()
-        design_data, warnings = gather_design_data()
 
+        design_data, warnings = gather_design_data()
         if warnings:
             warning_message = "\n\n".join(warnings)
             messagebox.showwarning("Warning in HDL-FSM-Editor", warning_message)
 
-        hdl_generation.run_hdl_generation(write_to_file=True, is_script_mode=False, design_data=design_data)
+        config = build_config_from_main_window()
+        hdl_generation.run_hdl_generation(config, write_to_file=True, is_script_mode=False, design_data=design_data)
 
     def _handle_notebook_tab_changed_event(self) -> None:
         self._enable_undo_redo_if_diagram_tab_is_active_else_disable()

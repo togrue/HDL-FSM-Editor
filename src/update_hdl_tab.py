@@ -8,6 +8,7 @@ from tkinter import messagebox
 
 from codegen import hdl_generation
 from design_data_gatherer import gather_design_data
+from generation_config_builder import build_config_from_main_window
 from project_manager import project_manager
 
 
@@ -63,7 +64,10 @@ class UpdateHdlTab:
             design_data, warnings = gather_design_data()
             for msg in warnings:
                 messagebox.showwarning("Warning in HDL-FSM-Editor", msg)
-            hdl_generation.run_hdl_generation(write_to_file=False, is_script_mode=False, design_data=design_data)
+            config = build_config_from_main_window()
+            hdl_generation.run_hdl_generation(
+                config, write_to_file=False, is_script_mode=False, design_data=design_data
+            )
         project_manager.hdl_frame_text.config(state=tk.NORMAL)
         project_manager.hdl_frame_text.insert("1.0", hdl)
         project_manager.hdl_frame_text.config(state=tk.DISABLED)

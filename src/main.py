@@ -13,6 +13,7 @@ import main_window
 import undo_handling
 from codegen import hdl_generation
 from design_data_gatherer import gather_design_data
+from generation_config_builder import build_config_for_script_mode
 from project_manager import project_manager
 
 
@@ -73,7 +74,10 @@ def _parse_and_process_arguments() -> None:
         design_data, warnings = gather_design_data()
         for msg in warnings:
             print("Warning in HDL-FSM-Editor: " + msg)
-        success = hdl_generation.run_hdl_generation(write_to_file=True, is_script_mode=True, design_data=design_data)
+        config = build_config_for_script_mode(design_data)
+        success = hdl_generation.run_hdl_generation(
+            config, write_to_file=True, is_script_mode=True, design_data=design_data
+        )
         sys.exit(0 if success else 1)
 
 

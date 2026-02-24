@@ -5,8 +5,6 @@ Configuration class for HDL generation settings
 from pathlib import Path
 from typing import Optional
 
-from project_manager import project_manager
-
 
 class GenerationConfig:
     """Configuration for HDL code generation"""
@@ -27,21 +25,6 @@ class GenerationConfig:
         self.indentation: str = "    "  # 4 spaces
 
         self.write_to_file: bool = False
-
-    @classmethod
-    def from_main_window(cls) -> "GenerationConfig":
-        """Create a GenerationConfig instance from main_window settings"""
-
-        config = cls()
-        config.language = project_manager.language.get()
-        config.module_name = project_manager.module_name.get()
-        config.generate_path = project_manager.generate_path_value.get()
-        config.select_file_number = project_manager.select_file_number_text.get()
-        config.include_timestamp = project_manager.include_timestamp_in_output.get()
-        config.clock_signal_name = project_manager.clock_signal_name.get()
-        config.reset_signal_name = project_manager.reset_signal_name.get()
-
-        return config
 
     def get_comment_style(self) -> str:
         """Get the appropriate comment style for the current language"""

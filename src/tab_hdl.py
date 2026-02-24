@@ -6,8 +6,8 @@ from tkinter import ttk
 
 import custom_text
 from codegen import hdl_generation
-from codegen.hdl_generation_config import GenerationConfig
 from constants import GuiTab
+from generation_config_builder import build_config_from_main_window
 from project_manager import project_manager
 
 
@@ -53,7 +53,7 @@ class TabHDL:
         # Check if cursor is on a different line than before:
         if line_number != self._line_number_under_pointer_hdl_tab:
             project_manager.hdl_frame_text.tag_delete("underline")  # remove previous underline
-            config = GenerationConfig.from_main_window()
+            config = build_config_from_main_window()
             if line_number > hdl_generation.last_line_number_of_file1:
                 # Cursor is in file 2 (architecture file)
                 line_number_in_file = line_number - hdl_generation.last_line_number_of_file1

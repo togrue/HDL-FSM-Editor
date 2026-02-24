@@ -18,8 +18,8 @@ import tkinter as tk
 from typing import Any
 
 from codegen import hdl_generation
-from codegen.hdl_generation_config import GenerationConfig
 from constants import GuiTab
+from generation_config_builder import build_config_from_main_window
 from project_manager import project_manager
 
 
@@ -100,7 +100,7 @@ class LinkDictionary:
     def jump_to_hdl(self, selected_file, file_line_number) -> None:
         """Switch to Generated HDL output tab and highlight the given file/line."""
         if project_manager.select_file_number_text.get() == 2:
-            gen_config = GenerationConfig.from_main_window()
+            gen_config = build_config_from_main_window()
             file_name_architecture = gen_config.get_architecture_file()
             if file_name_architecture and selected_file == file_name_architecture:
                 file_line_number += hdl_generation.last_line_number_of_file1

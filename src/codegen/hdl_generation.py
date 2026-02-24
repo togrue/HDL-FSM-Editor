@@ -21,14 +21,9 @@ from .list_separation_check import ListSeparationCheck
 last_line_number_of_file1 = 0  # pylint: disable=invalid-name # module-level mutable
 
 
-def run_hdl_generation(write_to_file, is_script_mode: bool, design_data) -> bool:
-    """Run HDL generation with current config; show errors in GUI or print in script mode. Return True on success.
-    design_data must be a DesignData instance from design_data_gatherer.gather_design_data()."""
-    config = GenerationConfig.from_main_window()
-    config.module_name = design_data.module_name
-    config.language = design_data.language
-    config.reset_signal_name = design_data.reset_signal_name
-    config.clock_signal_name = design_data.clock_signal_name
+def run_hdl_generation(config: GenerationConfig, write_to_file: bool, is_script_mode: bool, design_data) -> bool:
+    """Run HDL generation with the given config; show errors in GUI or print in script mode. Return True on success.
+    config must be built by the caller (e.g. generation_config_builder). design_data from design_data_gatherer."""
     state_tag_list_sorted = design_data.state_tag_list_sorted
     success = False
     try:
