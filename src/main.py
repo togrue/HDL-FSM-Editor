@@ -32,6 +32,11 @@ def _parse_and_process_arguments() -> None:
     parser.add_argument("--generate-hdl", action="store_true", help="Generate HDL and exit")
     args = parser.parse_args()
 
+    # In batch generation mode, skip version and message checks by default
+    if args.generate_hdl:
+        args.no_version_check = True
+        args.no_message = True
+
     # Handle version and message checks
     if not args.no_version_check:
         main_window.check_version()
