@@ -32,8 +32,8 @@ class MenuBar:
         )
         file_menu.add_command(label="Save", accelerator="Ctrl+s", command=file_handling.save, font=("Arial", 10))
         file_menu.add_command(label="Save as ...", command=file_handling.save_as, font=("Arial", 10))
-        file_menu.add_command(label="Exit", command=self.close_tool, font=("Arial", 10))
-        project_manager.root.protocol("WM_DELETE_WINDOW", self.close_tool)
+        file_menu.add_command(label="Exit", command=self._close_tool, font=("Arial", 10))
+        project_manager.root.protocol("WM_DELETE_WINDOW", self._close_tool)
 
         hdl_menu_button = ttk.Menubutton(menue_frame, text="HDL", style="Window.TMenubutton")
         hdl_menu = tk.Menu(hdl_menu_button)
@@ -180,7 +180,7 @@ class MenuBar:
             "The character " + character + " is not bound to any action.\nPerhaps Capslock is active?",
         )
 
-    def close_tool(self) -> None:
+    def _close_tool(self) -> None:
         title = project_manager.root.title()
         if title.endswith("*"):
             action = file_handling.ask_save_unsaved_changes(title)
