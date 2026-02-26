@@ -66,6 +66,64 @@ class CustomText(CodeEditor):
     """
     This code was copied and extended from:
     https://stackoverflow.com/questions/40617515/python-tkinter-text-modified-callback
+    The Tk-Text-widget supports default bindings described here:
+    https://www.tcl-lang.org/man/tcl8.4/TkCmd/text.htm#M152
+
+    Punkt 1-5 Selection:
+    Works with double- (word) and triple- (line) mouse button clicks.
+    Selections can be extended (as usual) with "shift and click" or "single/double/triple click and drag".
+    Clicking mouse button 1 with the Control key down will reposition the insertion cursor without affecting
+    the selection.
+    Punkt 6: funktioniert
+    Punkt 7: funktioniert
+    Punkt 8: funktioniert
+    Punkt 9: funktioniert, aber ctrl-f öffnet die Suchfunktion anstelle Cursor forward
+    Punkt 10: Ctrl-p kompiliert, alles andere funktioniert
+    Punkt 11 funktioniert nicht, weil control-v einfügt.
+    Punkt 12 funktioniert nicht.
+    Punkt 13/14: Control-A sollte besser alles selektieren.
+    Punkt 15/16: Meta-Key gibts bei mir nicht.
+    Punkt 17: funktioniert nicht.
+    Punkt 18/19: Anstatt / sollte a alles selektieren.
+    Punkt 20: Tasten gibts bei mir nicht.
+    Punkt 21/22: control-w, control-y
+    Punkt 24: control-h beachtet die selektion nicht, sondern löscht immer das Zeichen vor dem Cursor.
+    Punkt 26: es gibt keinen meta key
+    Punkt 27: funktioniert
+    Punkt 28: ctrl-o wird hier überschrieben
+    Punkt 29: s gibt keinen meta key
+    Punkt 30: funktioniert
+    Punkt 31: funktioniert
+    Punkt 32: funktioniert
+    Punkt 33: funktioniert
+
+    Keyboard shortcuts:
+    1. Control-b and Control-f behave the same as Left and Right, respectively.
+       Meta-b and Meta-f behave the same as Control-Left and Control-Right, respectively.
+    2. Control-p (NEIN nicht bei HFE) and Control-n behave the same as Up and Down, respectively.
+
+    Working with selections:
+    1. Clicking mouse button 1 positions the insertion cursor and clears the selection.
+    2. Dragging with mouse button 1 strokes out a selection between the insertion cursor and the character under the mouse.
+    3. Double-clicking with mouse button 1 selects the word under the mouse.
+    4. Dragging after a double click will stroke out a selection consisting of whole words.
+    5. Triple-clicking with mouse button 1 selects the line under the mouse.
+    6. Dragging after a triple click will stroke out a selection consisting of whole lines.
+    7. The end of the selection can be adjusted by dragging with mouse button 1 (before the last release of
+       a single, double or triple clicking) while the Shift key is down.
+    7. The end of the selection can be adjusted character-wise when Left or Right is typed with the Shift key down.
+    7. The end of the selection can be adjusted word-wise when Ctrl-Left or Ctrl-Right is typed with the Shift key down.
+    7. The end of the selection can be adjusted line-wise when Up or Down is typed with the Shift key down.
+    7. The end of the selection can be adjusted page-wise when PageUp or PageDown is typed with the Shift key down.
+    8. Clicking mouse button 1 with the Control keydragging down will reposition the insertion cursor without affecting the selection.
+    9. The Insert key inserts the selection at the position of the insertion cursor.
+    10. If mouse button 2 (scroll wheel) is clicked without moving the mouse,
+       the selection is copied into the text at the position of the mouse cursor.
+
+    Changing the view:
+    1. The insertion cursor can be moved character-wise with Left or Right, word-wise with Ctrl-Left or Ctrl-Right, and line-wise with Up or Down.
+    1. The view in the widget can be adjusted by using the scroll wheel (or dragging with mouse button 2).
+    2. If the mouse is dragged out of the widget while button 1 is pressed, the entry will automatically scroll to make more text visible
     """
 
     read_variables_of_all_windows = {}
