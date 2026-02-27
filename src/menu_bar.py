@@ -12,6 +12,7 @@ import find_replace
 import undo_handling
 import update_hdl_tab
 from codegen import hdl_generation
+from dialogs import help_selection, help_shortcuts
 from project_manager import project_manager
 
 
@@ -86,9 +87,26 @@ class MenuBar:
         replace_string_entry.grid(row=0, column=2)
         replace_button.grid(row=0, column=3)
 
+        help_menu = tk.Menu(project_manager.root, tearoff=0)
+        help_menu.add_command(
+            label="Editing Shortcuts",
+            command=help_shortcuts.ShortCutsDialog,
+            font=("Arial", 10),
+        )
+        help_menu.add_command(
+            label="Text Selection",
+            command=help_selection.SelectionDialog,
+            font=("Arial", 10),
+        )
+
         info_menu_button = ttk.Menubutton(menue_frame, text="Info", style="Window.TMenubutton")
         info_menu = tk.Menu(info_menu_button)
         info_menu_button.configure(menu=info_menu)
+        info_menu.add_cascade(
+            label="Help",
+            menu=help_menu,
+            font=("Arial", 10),
+        )
         info_menu.add_command(
             label="About", command=lambda: messagebox.showinfo("About:", constants.HEADER_STRING), font=("Arial", 10)
         )
