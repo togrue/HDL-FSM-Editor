@@ -748,46 +748,7 @@ def _load_window_elements(
         comment_ref.text_id.insert("1.0", text)
         comment_ref.text_id.format()
 
-    # Load condition action blocks
-    for definition in design_dictionary["window_condition_action_block"]:
-        coords = definition[0]
-        condition = definition[1]
-        action = definition[2]
-        tags = definition[3]
-        connected_to_reset_entry = False
-        for t in tags:
-            if t == "connected_to_reset_transition":
-                connected_to_reset_entry = True
-            if t.startswith("ca_connection") and t.endswith("_anchor"):
-                ca_connection = t[:-7]
-                line_coords = condition_action_line_dictionary[ca_connection]["coords"]
-                line_tags = condition_action_line_dictionary[ca_connection]["tags"]
-                condition_action_ref = condition_action.ConditionAction(
-                    coords[0],
-                    coords[1],
-                    connected_to_reset_entry,
-                    height=1,
-                    width=8,
-                    padding=1,
-                    tags=tags,
-                    condition=condition,
-                    action=action,
-                    line_coords=line_coords,
-                    line_tags=line_tags,
-                    increment=False,
-                )
-                if (
-                    condition_action_ref.condition_id.get("1.0", tk.END) == "\n"
-                    and condition_action_ref.action_id.get("1.0", tk.END) != "\n"
-                ):
-                    condition_action_ref.condition_label.grid_forget()
-                    condition_action_ref.condition_id.grid_forget()
-                if (
-                    condition_action_ref.condition_id.get("1.0", tk.END) != "\n"
-                    and condition_action_ref.action_id.get("1.0", tk.END) == "\n"
-                ):
-                    condition_action_ref.action_label.grid_forget()
-                    condition_action_ref.action_id.grid_forget()
+    _load_condition_action_blocks(design_dictionary, condition_action_line_dictionary)
 
     # Load global actions
     for definition in design_dictionary["window_global_actions"]:
@@ -829,22 +790,65 @@ def _load_window_elements(
         action_ref.text_id.insert("1.0", text)
         action_ref.text_id.format()
 
-    if project_manager.canvas.find_withtag("global_actions1") == ():
-        project_manager.global_action_clocked_button.config(state=tk.NORMAL)
-    else:
-        project_manager.global_action_clocked_button.config(state=tk.DISABLED)
-    if project_manager.canvas.find_withtag("global_actions_combinatorial1") == ():
-        project_manager.global_action_combinatorial_button.config(state=tk.NORMAL)
-    else:
-        project_manager.global_action_combinatorial_button.config(state=tk.DISABLED)
-    if project_manager.canvas.find_withtag("state_actions_default") == ():
-        project_manager.state_action_default_button.config(state=tk.NORMAL)
-    else:
-        project_manager.state_action_default_button.config(state=tk.DISABLED)
-    if project_manager.canvas.find_withtag("reset_entry") == ():
-        project_manager.reset_entry_button.config(state=tk.NORMAL)
-    else:
-        project_manager.reset_entry_button.config(state=tk.DISABLED)
+    _update_window_element_button_states()
+
+
+def _load_condition_action_blocks(
+    design_dictionary: dict[str, Any],
+    condition_action_line_dictionary: dict[str, Any],
+) -> None:
+    """Load condition/action window blocks from design dict."""
+    for definition in design_dictionary["window_condition_action_block"]:
+        coords = definition[0]
+        condition = definition[1]
+        action = definition[2]
+        tags = definition[3]
+        connected_to_reset_entry = any(t == "connected_to_reset_transition" for t in tags)
+        for t in tags:
+            if t.startswith("ca_connection") and t.endswith("_anchor"):
+                ca_connection = t[:-7]
+                line_coords = condition_action_line_dictionary[ca_connection]["coords"]
+                line_tags = condition_action_line_dictionary[ca_connection]["tags"]
+                condition_action_ref = condition_action.ConditionAction(
+                    coords[0],
+                    coords[1],
+                    connected_to_reset_entry,
+                    height=1,
+                    width=8,
+                    padding=1,
+                    tags=tags,
+                    condition=condition,
+                    action=action,
+                    line_coords=line_coords,
+                    line_tags=line_tags,
+                    increment=False,
+                )
+                cond_empty = condition_action_ref.condition_id.get("1.0", tk.END) == "\n"
+                action_empty = condition_action_ref.action_id.get("1.0", tk.END) == "\n"
+                if cond_empty and not action_empty:
+                    condition_action_ref.condition_label.grid_forget()
+                    condition_action_ref.condition_id.grid_forget()
+                if not cond_empty and action_empty:
+                    condition_action_ref.action_label.grid_forget()
+                    condition_action_ref.action_id.grid_forget()
+
+
+def _update_window_element_button_states() -> None:
+    """Enable or disable window element buttons depending on whether certain canvas items exist."""
+    button_mapping = [
+        # (canvas_tag, project_manager_button_attribute)
+        ("global_actions1", "global_action_clocked_button"),
+        ("global_actions_combinatorial1", "global_action_combinatorial_button"),
+        ("state_actions_default", "state_action_default_button"),
+        ("reset_entry", "reset_entry_button"),
+    ]
+
+    for canvas_tag, button_attr_name in button_mapping:
+        element_exists = bool(project_manager.canvas.find_withtag(canvas_tag))
+        button = getattr(project_manager, button_attr_name)
+        # Enable if element is not found on canvas, disable otherwise
+        button_state = tk.DISABLED if element_exists else tk.NORMAL
+        button.config(state=button_state)
 
 
 def get_visible_center_as_string() -> str:
