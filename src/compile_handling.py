@@ -142,9 +142,7 @@ def _replace_file2_var() -> str | None:
             'The compile command uses $file2, but the "1 files mode" is selected, so only $file is allowed).',
         )
         return None
-    file_name = (
-        project_manager.generate_path_value.get() + "/" + project_manager.module_name.get() + "_fsm.vhd"
-    )
+    file_name = project_manager.generate_path_value.get() + "/" + project_manager.module_name.get() + "_fsm.vhd"
     if not exists(file_name):
         messagebox.showerror("Error", "Compile is not possible, as HDL file" + file_name + " does not exist.")
         return None
