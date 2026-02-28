@@ -3,9 +3,8 @@ Methods needed for HDL generation
 """
 
 import os
-import re
-import traceback
 import tkinter as tk
+import traceback
 from datetime import datetime
 from tkinter import messagebox
 
