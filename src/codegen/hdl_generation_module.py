@@ -224,5 +224,5 @@ def _get_reset_edge(reset_condition) -> str:
     if reset_condition_mod.endswith("1'b1"):
         return "posedge"
     raise GenerationError(
-            "Error", "The reset polarity could not be determined from the reset condition: " + reset_condition_mod
-        )
+        "Error", "The reset polarity could not be determined from the reset condition: " + reset_condition_mod
+    )

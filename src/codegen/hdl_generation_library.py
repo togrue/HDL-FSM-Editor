@@ -60,9 +60,7 @@ def create_reset_condition_and_reset_action() -> list:
             ],
         )
     reference_to_reset_condition_custom_text = ref.condition_id
-    condition = reference_to_reset_condition_custom_text.get(
-        "1.0", tk.END + "-1 chars"
-    )  # without "return" at the end
+    condition = reference_to_reset_condition_custom_text.get("1.0", tk.END + "-1 chars")  # without "return" at the end
     all_reset_transition_tags = project_manager.canvas.gettags(reset_transition_tag)
     target_state_name = _get_target_state_name(all_reset_transition_tags)
     action = "state <= " + target_state_name + ";\n"
