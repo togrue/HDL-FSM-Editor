@@ -21,11 +21,11 @@ class CodeEditor(tk.Text):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         # Word-wise cursor movement
-        self.bind("<Control-Left>", lambda event: self.move_word_left())
-        self.bind("<Control-Right>", lambda event: self.move_word_right())
+        self.bind("<Control-Left>", lambda event: self._move_word_left())
+        self.bind("<Control-Right>", lambda event: self._move_word_right())
         # Word selection
-        self.bind("<Shift-Control-Left>", lambda event: self.select_word_left())
-        self.bind("<Shift-Control-Right>", lambda event: self.select_word_right())
+        self.bind("<Shift-Control-Left>", lambda event: self._select_word_left())
+        self.bind("<Shift-Control-Right>", lambda event: self._select_word_right())
         # Shift+arrow: normal selection with correct anchor when switching from word selection
         self.bind("<Shift-Left>", lambda event: self._handle_normal_selection_left())
         self.bind("<Shift-Right>", lambda event: self._handle_normal_selection_right())
@@ -35,15 +35,14 @@ class CodeEditor(tk.Text):
         self.bind("<Up>", lambda event: self._reset_anchor_if_no_selection())
         self.bind("<Down>", lambda event: self._reset_anchor_if_no_selection())
         # Whole word deletion
-        self.bind("<Control-BackSpace>", lambda event: self.delete_word_backward())
-        self.bind("<Control-Delete>", lambda event: self.delete_word_forward())
+        self.bind("<Control-BackSpace>", lambda event: self._delete_word_backward())
+        self.bind("<Control-Delete>", lambda event: self._delete_word_forward())
         # Indent/unindent
         self.bind("<Control-bracketleft>", lambda event: self.unindent_selection())
         self.bind("<Control-bracketright>", lambda event: self.indent_selection())
 
     def format_after_idle(self) -> None:
         """Override in subclass to trigger formatting after indent/unindent. No-op by default."""
-        pass
 
     def _handle_normal_selection(self, direction: str) -> str:
         """
@@ -140,16 +139,16 @@ class CodeEditor(tk.Text):
             return f"{idx} + {m.end()} chars"
         return ""
 
-    def move_word_left(self) -> str:
+    def _move_word_left(self) -> str:
         return self._move_cursor(self._find_token_start_backward)
 
-    def move_word_right(self) -> str:
+    def _move_word_right(self) -> str:
         return self._move_cursor(self._find_token_end_forward)
 
-    def select_word_left(self) -> str:
+    def _select_word_left(self) -> str:
         return self._select_token(self._find_token_start_backward)
 
-    def select_word_right(self) -> str:
+    def _select_word_right(self) -> str:
         return self._select_token(self._find_token_end_forward)
 
     def _delete_token(
@@ -169,39 +168,71 @@ class CodeEditor(tk.Text):
         self.format_after_idle()
         return "break"
 
-    def delete_word_backward(self) -> str:
+    def _delete_word_backward(self) -> str:
         return self._delete_token(self._find_token_start_backward, backward=True)
 
-    def delete_word_forward(self) -> str:
+    def _delete_word_forward(self) -> str:
         return self._delete_token(self._find_token_end_forward, backward=False)
 
-    def _apply_indent_action(self, line_action: Callable[[int], None]) -> str:
+    def _apply_indent_action(self, line_action: Callable[[int], None]) -> None:
         """Apply indent/unindent to selection or current line."""
         sel = self.tag_ranges(tk.SEL)
         if sel:
-            sel_start, sel_end = sel[0], sel[1]
-            start_line = int(str(sel_start).split(".")[0])
-            end_line = int(str(sel_end).split(".")[0])
-            for line_num in range(start_line, end_line + 1):
-                line_action(line_num)
+            start_line, end_line = self._get_start_and_end_line_of_selection(sel)
         else:
-            current_line = int(self.index(tk.INSERT).split(".")[0])
-            line_action(current_line)
+            start_line = int(self.index(tk.INSERT).split(".", maxsplit=1)[0])
+            end_line = start_line
+        for line_num in range(start_line, end_line + 1):
+            line_action(line_num)
         self.format_after_idle()
-        return "break"
 
     def indent_selection(self) -> str:
-        def _indent_line(line_num: int) -> None:
-            self.insert(f"{line_num}.0", "    ")
+        """Indents the line or all lines in the selection by inserting 4 blanks at the beginning of each line."""
 
-        return self._apply_indent_action(_indent_line)
+        def _indent_line(line_num: int) -> None:
+            line_start_index, number_of_leading_blanks = self._get_number_of_leading_blanks(line_num)
+            spaces_to_add = 4 - number_of_leading_blanks if (number_of_leading_blanks % 4 != 0) else 4
+            # The new characters shall be selected if the line is already selected:
+            tags = (tk.SEL) if tk.SEL in self.tag_names(line_start_index) else ()
+            self.insert(line_start_index, " " * spaces_to_add, tags)
+
+        self._apply_indent_action(_indent_line)
+        return "break"
 
     def unindent_selection(self) -> str:
-        def _unindent_line(line_num: int) -> None:
-            line_start = f"{line_num}.0"
-            line_text = self.get(line_start, f"{line_num}.4")
-            spaces_to_remove = min(4, len(line_text) - len(line_text.lstrip()))
-            if spaces_to_remove > 0:
-                self.delete(line_start, f"{line_num}.{spaces_to_remove}")
+        """Unindents the line or all lines in the selection by removing 4 blanks at the beginning of each line."""
 
-        return self._apply_indent_action(_unindent_line)
+        def _unindent_line(line_num: int) -> None:
+            line_start_index, number_of_leading_blanks = self._get_number_of_leading_blanks(line_num)
+            spaces_to_remove = 4 if number_of_leading_blanks % 4 == 0 else number_of_leading_blanks % 4
+            self.delete(line_start_index, f"{line_num}.{spaces_to_remove}")
+
+        if self._unindent_selection_is_allowed():
+            self._apply_indent_action(_unindent_line)
+        return "break"
+
+    def _unindent_selection_is_allowed(self) -> bool:
+        sel = self.tag_ranges(tk.SEL)
+        if sel:
+            # Don't unindent if any of the lines in the selection does not start with blank:
+            start_line, end_line = self._get_start_and_end_line_of_selection(sel)
+            for line_num in range(start_line, end_line + 1):
+                if self.get(f"{line_num}.0") != " ":
+                    return False
+        return True
+
+    def _get_start_and_end_line_of_selection(self, sel) -> tuple[int, int]:
+        sel_start, sel_end = sel[0], sel[1]
+        if str(sel_end).endswith(
+            ".0"
+        ):  # If selection ends at the start of a line, don't include that line in the action.
+            sel_end = self.index(f"{sel_end} - 1 char")
+        start_line = int(str(sel_start).split(".", maxsplit=1)[0])
+        end_line = int(str(sel_end).split(".", maxsplit=1)[0])
+        return start_line, end_line
+
+    def _get_number_of_leading_blanks(self, line_num: int) -> tuple[str, int]:
+        line_start_index = f"{line_num}.0"
+        line_text = self.get(line_start_index, f"{line_num}.end")
+        number_of_leading_blanks = len(line_text) - len(line_text.lstrip())
+        return line_start_index, number_of_leading_blanks

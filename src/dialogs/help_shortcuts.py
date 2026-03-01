@@ -25,7 +25,7 @@ class ShortCutsDialog:
 11. Ctrl-[ unindents the selection or the current line (works only under Linux).
 12. Ctrl-Backspace deletes the word before the insertion cursor.
 13. Ctrl-Delete deletes the word after the insertion cursor.
-14. Tab inserts 4 blanks at the position of the insertion cursor (can be used to indent a line).
-15. Shift-Tab unindents the selection or the current line (works only under Windows).
+14. Tab indents the selection or the current line (independent from the position of the insertion cursor).
+15. Shift-Tab unindents the selection or the current line.
 """
         text_dialog.TextDialog("Keyboard Shortcuts for text editing", content, "1000x260")

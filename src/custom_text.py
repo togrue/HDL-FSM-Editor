@@ -3,6 +3,7 @@ The code was copied and extended from https://stackoverflow.com/questions/406175
 """
 
 import os
+import platform
 import re
 import subprocess
 import tempfile
@@ -85,8 +86,11 @@ class CustomText(CodeEditor):
         self._orig = self._w + "_orig"
         self.tk.call("rename", self._w, self._orig)
         self.tk.createcommand(self._w, self._proxy)
-        self.bind("<Tab>", lambda event: self.replace_tabs_by_blanks())
-        self.bind("<Shift-Tab>", lambda event: self.unindent_selection())
+        self.bind("<Tab>", lambda event: self.indent_selection())
+        if platform.system() == "Windows":
+            self.bind("<Shift-Tab>", lambda event: self.unindent_selection())
+        else:
+            self.bind("<ISO_Left_Tab>", lambda event: self.unindent_selection())
         # Overwrites the default control-o = "insert a new line", needed for opening a new file:
         self.bind("<Control-o>", lambda event: self._open())
         # After pressing a key 2 things happen:
@@ -122,15 +126,14 @@ class CustomText(CodeEditor):
             if command in ("insert", "delete", "replace"):
                 self.event_generate("<<TextModified>>")
             return result
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             return None
 
-    def replace_tabs_by_blanks(self) -> str:
-        self.insert(tk.INSERT, "    ")  # replace the Tab by 4 blanks.
-        self.format_after_idle()
-        return "break"  # This prevents the "Tab" to be inserted in the text.
-
     def edit_in_external_editor(self) -> None:
+        """
+        Loads the text into an external editor, and after closing the editor, the text in the CustomText
+        is replaced by the (possibly) modified text.
+        """
         with tempfile.NamedTemporaryFile(
             suffix=".vhd" if project_manager.language.get() == "VHDL" else ".v",
             delete=False,
@@ -157,6 +160,7 @@ class CustomText(CodeEditor):
             self.format_after_id = self.after(200, self.format)
 
     def format(self) -> None:
+        """Resizes the text box, updates several lists of signals/variables, and updates the highlighting."""
         text = self.get("1.0", tk.END)
         self._update_size_of_text_box(text)
         if self.text_type in ("declarations", "variable", "action"):
@@ -196,7 +200,7 @@ class CustomText(CodeEditor):
         self.update_highlight_tags(project_manager.fontsize, ["control", "datatype", "function"])
         project_manager.highlight_dict_ref.recreate_keyword_list_of_unused_signals()
         # The tags "not_read", "not_written", and "comment" must be updated in all CustomText objects:
-        self.update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment()
+        self._update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment()
 
     def update_highlight_tags(self, fontsize, highlight_tag_name_list) -> None:
         """
@@ -233,7 +237,7 @@ class CustomText(CodeEditor):
         copy_of_text = self.get("1.0", tk.END + "- 1 chars")
         if copy_of_text == "":
             return
-        copy_of_text = self.replace_strings_and_attributes_by_blanks(copy_of_text)
+        copy_of_text = self._replace_strings_and_attributes_by_blanks(copy_of_text)
         while True:
             if highlight_tag_name == "comment":
                 match_object = re.search(
@@ -268,7 +272,7 @@ class CustomText(CodeEditor):
                     match_object = None
                 if not match_object:
                     break
-                match_start, match_end = self.remove_surrounding_characters_from_the_match(
+                match_start, match_end = self._remove_surrounding_characters_from_the_match(
                     match_object, highlight_search_pattern
                 )
                 old_text = copy_of_text
@@ -281,7 +285,7 @@ class CustomText(CodeEditor):
                     highlight_tag_name, "1.0 + " + str(match_start) + " chars", "1.0 + " + str(match_end) + " chars"
                 )
 
-    def replace_strings_and_attributes_by_blanks(self, copy_of_text):
+    def _replace_strings_and_attributes_by_blanks(self, copy_of_text):
         for search_string in ["'image", "'length", '".*?"', "'.*?'"]:
             while True:
                 match_object = re.search(search_string, copy_of_text, flags=re.IGNORECASE)
@@ -296,7 +300,7 @@ class CustomText(CodeEditor):
                     break
         return copy_of_text
 
-    def remove_surrounding_characters_from_the_match(self, match_object, keyword) -> tuple:
+    def _remove_surrounding_characters_from_the_match(self, match_object, keyword) -> tuple:
         if match_object.end() - match_object.start() == len(keyword) + 2:
             return match_object.start() + 1, match_object.end() - 1
         if match_object.end() - match_object.start() == len(keyword) + 1:
@@ -306,14 +310,17 @@ class CustomText(CodeEditor):
         return match_object.start(), match_object.end()
 
     def undo(self) -> None:
+        """Undoes the last action and formats the text."""
         # self.edit_undo() # causes a second "undo", as Ctrl-z automatically starts edit_undo()
         self.format_after_idle()
 
     def redo(self) -> None:
+        """Redoes the last undone action and formats the text."""
         self.edit_redo()
         self.format_after_idle()
 
     def update_custom_text_class_signals_list(self) -> None:
+        """Updates the signals_list and constants_list of this CustomText object."""
         # ["package","generics","ports","variable","condition","generated","action","declarations","log","comment"]
         all_signal_declarations = self.get("1.0", tk.END).lower()
         all_signal_declarations = hdl_generation_library.remove_comments_and_returns(all_signal_declarations)
@@ -327,6 +334,7 @@ class CustomText(CodeEditor):
         self.constants_list = hdl_generation_library.get_all_declared_constant_names(all_signal_declarations)
 
     def update_custom_text_class_ports_list(self) -> None:  # Needed at self==project_manager.interface_ports_text
+        """Updates the port_types_list of this CustomText object, if it is the interface_ports_text"""
         all_port_declarations = self.get("1.0", tk.END).lower()
         self.readable_ports_list = hdl_generation_architecture_state_actions.get_all_readable_ports(
             all_port_declarations, check=False
@@ -337,6 +345,7 @@ class CustomText(CodeEditor):
         self.port_types_list = hdl_generation_architecture_state_actions.get_all_port_types(all_port_declarations)
 
     def update_custom_text_class_generics_list(self) -> None:
+        """Updates the generics_list of this CustomText object, if it is the interface_generics_text"""
         all_generic_declarations = project_manager.interface_generics_text.get("1.0", tk.END).lower()
         self.generics_list = hdl_generation_architecture_state_actions.get_all_generic_names(all_generic_declarations)
 
@@ -783,12 +792,13 @@ class CustomText(CodeEditor):
         return text
 
     def highlight_item(self, _, __, number_of_line) -> None:
+        """Highlights a line. Used when a line is clicked in the "Generated HDL" or "Compile Messages" text box."""
         self.tag_add("highlight", str(number_of_line) + ".0", str(number_of_line + 1) + ".0")
         self.tag_config("highlight", background="orange")
         self.see(str(number_of_line) + ".0")
         self.focus_set()
 
-    def update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment(self) -> None:
+    def _update_highlight_tags_in_all_windows_for_not_read_not_written_and_comment(self) -> None:
         if self.update_highlight_after_id is not None:
             project_manager.root.after_cancel(self.update_highlight_after_id)
         self.update_highlight_after_id = project_manager.root.after(
