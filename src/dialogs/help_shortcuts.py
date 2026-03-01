@@ -27,5 +27,6 @@ class ShortCutsDialog:
 13. Ctrl-Delete deletes the word after the insertion cursor.
 14. Tab indents the selection or the current line (independent from the position of the insertion cursor).
 15. Shift-Tab unindents the selection or the current line.
+16. The Home-Button zooms the diagram to show the entire design (same as "view all").
 """
-        text_dialog.TextDialog("Keyboard Shortcuts for text editing", content, "1000x260")
+        text_dialog.TextDialog("Keyboard Shortcuts for text editing", content, "1000x280")
