@@ -2,8 +2,8 @@
 Copies the generated HDL into the HDL-tab if the HDL is younger than the hfe-file.
 """
 
-import os
 import tkinter as tk
+from pathlib import Path
 from tkinter import messagebox
 
 from codegen import hdl_generation
@@ -54,33 +54,35 @@ class UpdateHdlTab:
             UpdateHdlTab.copy_into_hdl_tab(entity, arch)
 
     def __hdl_is_up_to_date(self, path_name, hdlfilename, hdlfilename_architecture, show_message) -> bool:
-        if not os.path.isfile(path_name):
+        path = Path(path_name)
+        if not path.is_file():
             messagebox.showerror(
                 "Error in HDL-FSM-Editor", "The HDL-FSM-Editor project file " + path_name + " is missing."
             )
             return False
-        if not os.path.isfile(hdlfilename):
+        hdl_path = Path(hdlfilename)
+        if not hdl_path.is_file():
             if show_message:
                 messagebox.showerror("Error in HDL-FSM-Editor", "The file " + hdlfilename + " is missing.")
             return False
-        if hdlfilename_architecture is not None and not os.path.isfile(hdlfilename_architecture):
+        if hdlfilename_architecture is not None and not Path(hdlfilename_architecture).is_file():
             if show_message:
                 messagebox.showerror(
                     "Error in HDL-FSM-Editor",
                     "The entity-file exists, but the architecture file\n" + hdlfilename_architecture + " is missing.",
                 )
             return False
-        self.date_of_hdl_file = os.path.getmtime(hdlfilename)
+        self.date_of_hdl_file = hdl_path.stat().st_mtime
         if hdlfilename_architecture is not None:
-            self.date_of_hdl_file2 = os.path.getmtime(hdlfilename_architecture)
-        if self.date_of_hdl_file < os.path.getmtime(path_name):
+            self.date_of_hdl_file2 = Path(hdlfilename_architecture).stat().st_mtime
+        if self.date_of_hdl_file < path.stat().st_mtime:
             if show_message:
                 messagebox.showerror(
                     "Error in HDL-FSM-Editor",
                     "The file\n" + hdlfilename + "\nis older than\n" + path_name + "\nPlease generate HDL again.",
                 )
             return False
-        if hdlfilename_architecture is not None and self.date_of_hdl_file2 < os.path.getmtime(path_name):
+        if hdlfilename_architecture is not None and self.date_of_hdl_file2 < path.stat().st_mtime:
             if show_message:
                 messagebox.showerror(
                     "Error in HDL-FSM-Editor",
