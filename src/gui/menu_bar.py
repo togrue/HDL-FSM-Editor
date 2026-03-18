@@ -1,8 +1,8 @@
 """This class generates the menu bar of the tool."""
 
-import os
 import sys
 import tkinter as tk
+from pathlib import Path
 from tkinter import messagebox, ttk
 
 import constants
@@ -161,6 +161,7 @@ class MenuBar:
                 # Check if save was successful (current_file is not empty)
                 if project_manager.current_file == "":
                     return
-        if os.path.isfile(project_manager.current_file + ".tmp"):
-            os.remove(project_manager.current_file + ".tmp")
+        tmp_path = Path(project_manager.current_file + ".tmp")
+        if tmp_path.is_file():
+            tmp_path.unlink()
         sys.exit()

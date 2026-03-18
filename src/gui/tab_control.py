@@ -1,8 +1,8 @@
 """Control-panel tab for project configuration (module name, language, paths, etc.)."""
 
 import copy
-import os
 import tkinter as tk
+from pathlib import Path
 from tkinter import ttk
 from tkinter.filedialog import askdirectory, askopenfilename
 
@@ -279,7 +279,7 @@ class TabControl:
         if old_entry != "":
             old_entries = old_entry.split(",")
             path = askopenfilename(
-                title="Select directory of additional sources", initialdir=os.path.dirname(old_entries[0])
+                title="Select directory of additional sources", initialdir=str(Path(old_entries[0]).parent)
             )
         else:
             path = askopenfilename(title="Select directory of additional sources")
