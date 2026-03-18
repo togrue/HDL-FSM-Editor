@@ -2,11 +2,11 @@
 Methods needed for HDL generation
 """
 
-import os
 import re
 import tkinter as tk
 import traceback
 from datetime import datetime
+from pathlib import Path
 from tkinter import messagebox
 
 import file_handling
@@ -106,9 +106,9 @@ class HdlGeneration:
             config, write_to_file, header, entity, architecture, file_name, file_name_architecture
         )
         if write_to_file is True:
-            project_manager.date_of_hdl_file_shown_in_hdl_tab = os.path.getmtime(file_name)
+            project_manager.date_of_hdl_file_shown_in_hdl_tab = Path(file_name).stat().st_mtime
             if file_name_architecture != "":
-                project_manager.date_of_hdl_file2_shown_in_hdl_tab = os.path.getmtime(file_name_architecture)
+                project_manager.date_of_hdl_file2_shown_in_hdl_tab = Path(file_name_architecture).stat().st_mtime
             update_hdl_tab.UpdateHdlTab.copy_into_hdl_tab(ent, arch)
             project_manager.notebook.show_tab(GuiTab.GENERATED_HDL)
             if not is_script_mode:
@@ -246,7 +246,7 @@ class HdlGeneration:
     def _write_hdl_file(
         self, config, write_to_file, header, entity, architecture, path_name, path_name_architecture
     ) -> str:
-        _, name_of_file = os.path.split(path_name)
+        name_of_file = Path(path_name).name
         if config.select_file_number == 1:
             if config.language == "VHDL":
                 comment_string = "--"
@@ -283,7 +283,7 @@ class HdlGeneration:
             project_manager.size_of_file1_line_number = (
                 len(str(HdlGeneration.last_line_number_of_file1)) + 2
             )  # "+2" because of string ": "
-            _, name_of_architecture_file = os.path.split(path_name_architecture)
+            name_of_architecture_file = Path(path_name_architecture).name
             content2 = "-- Filename: " + name_of_architecture_file + "\n"
             content2 += header
             content2 += architecture
