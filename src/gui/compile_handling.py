@@ -9,7 +9,6 @@ import shlex
 import subprocess
 import tkinter as tk
 from datetime import datetime
-from os.path import exists
 from tkinter import messagebox
 
 from constants import GuiTab
@@ -144,16 +143,16 @@ def _get_internal_variables():
         return None
     if len(paths) == 1:
         internal_vars["file"] = paths[0]
-        if not exists(paths[0]):
+        if not pathlib.Path(paths[0]).exists():
             messagebox.showerror("Error", "Compile is not possible, HDL file " + paths[0] + " does not exist.")
             return None
     else:
         internal_vars["file1"] = paths[0]
         internal_vars["file2"] = paths[1]
-        if not exists(paths[0]):
+        if not pathlib.Path(paths[0]).exists():
             messagebox.showerror("Error", "Compile is not possible, as HDL file " + paths[0] + " does not exist.")
             return None
-        if not exists(paths[1]):
+        if not pathlib.Path(paths[1]).exists():
             messagebox.showerror("Error", "Compile is not possible, as HDL file " + paths[1] + " does not exist.")
             return None
 

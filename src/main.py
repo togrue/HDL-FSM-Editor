@@ -4,7 +4,7 @@ HDL-FSM-Editor: A tool for modeling FSMs
 
 import argparse
 import sys
-from os.path import exists
+from pathlib import Path
 from tkinter import messagebox
 
 import constants
@@ -46,7 +46,7 @@ def _parse_and_process_arguments(mainwindow_ref: main_window.MainWindow) -> None
 
     # Handle filename
     if args.filename:
-        if not exists(args.filename):
+        if not Path(args.filename).exists():
             if args.generate_hdl:
                 print("Error: File " + args.filename + " was not found.")
             else:
