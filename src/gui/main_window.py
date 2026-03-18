@@ -147,7 +147,7 @@ class MainWindow:
 
     def _get_resource_path(self, resource_name: str) -> Path:
         """Get the path to a resource file, handling both development and PyInstaller environments."""
-        base_path = Path(sys._MEIPASS) if getattr(sys, "frozen", False) else Path(__file__).parent.parent
+        base_path = Path(sys._MEIPASS) if getattr(sys, "frozen", False) else Path(__file__).parent.parent.parent
 
         return base_path / "rsc" / resource_name
 
