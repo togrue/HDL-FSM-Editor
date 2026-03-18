@@ -2,7 +2,7 @@
 This module contains all method to support "undo" and "redo".
 """
 
-import os
+from pathlib import Path
 
 import file_handling
 import file_handling_load
@@ -75,8 +75,9 @@ class UndoHandling:
                 self.stack_write_pointer == 1
             ):  # 1 is the next free place in the stack, 0 is the empty design, so nothing to undo is left
                 project_manager.undo_button.config(state="disabled")
-                if os.path.isfile(project_manager.current_file + ".tmp"):
-                    os.remove(project_manager.current_file + ".tmp")
+                tmp_path = Path(project_manager.current_file).with_suffix(".tmp")
+                if tmp_path.is_file():
+                    tmp_path.unlink()
             project_manager.redo_button.config(state="enabled")
 
     def _set_diagram_to_version_selected_by_stack_pointer(self) -> None:
