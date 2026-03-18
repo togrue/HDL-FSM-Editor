@@ -3,8 +3,8 @@ This module contains all methods needed for reading and writing from or to a fil
 """
 
 import json
-import os
 import tkinter as tk
+from pathlib import Path
 from tkinter import messagebox
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 
@@ -76,8 +76,8 @@ def save() -> None:
             filetypes=(("HDL-FSM-Editor files", "*.hfe"), ("all files", "*.*")),
         )
     if project_manager.current_file != "":
-        dir_name, file_name = os.path.split(project_manager.current_file)
-        project_manager.root.title(f"{file_name} ({dir_name})")
+        p = Path(project_manager.current_file)
+        project_manager.root.title(f"{p.name} ({p.parent})")
         project_manager.root.after_idle(
             save_in_file, project_manager.current_file
         )  # Wait for the handling of all possible events.
@@ -133,8 +133,8 @@ def save_as() -> None:
         filetypes=(("HDL-FSM-Editor files", "*.hfe"), ("all files", "*.*")),
     )
     if project_manager.current_file not in ((), ""):
-        dir_name, file_name = os.path.split(project_manager.current_file)
-        project_manager.root.title(f"{file_name} ({dir_name})")
+        p = Path(project_manager.current_file)
+        project_manager.root.title(f"{p.name} ({p.parent})")
         save_in_file(project_manager.current_file)
     else:
         project_manager.current_file = project_manager.previous_file
@@ -156,8 +156,10 @@ def save_in_file(save_filename) -> None:  # Called at saving and at every design
     try:
         with open(save_filename, "w", encoding="utf-8") as fileobject:
             json.dump(design_dictionary, fileobject, indent=4, default=str, ensure_ascii=False)
-        if not save_filename.endswith(".tmp") and os.path.isfile(f"{project_manager.previous_file}.tmp"):
-            os.remove(f"{project_manager.previous_file}.tmp")
+        if not save_filename.endswith(".tmp"):
+            prev_tmp = Path(project_manager.previous_file + ".tmp")
+            if prev_tmp.is_file():
+                prev_tmp.unlink()
         project_manager.root.config(cursor=old_cursor)
     except Exception as _:  # pylint: disable=broad-except
         project_manager.root.config(cursor=old_cursor)
@@ -199,7 +201,7 @@ def open_file_with_name(read_filename, is_script_mode) -> None:
 
 
 def _resolve_read_filename(read_filename: str, is_script_mode: bool) -> str:
-    if os.path.isfile(f"{read_filename}.tmp") and not is_script_mode:
+    if Path(read_filename + ".tmp").is_file() and not is_script_mode:
         answer = messagebox.askyesno(
             "HDL-FSM-Editor",
             f"Found BackUp-File\n{read_filename}.tmp\n"
@@ -218,12 +220,13 @@ def _do_load_file(read_filename: str, replaced_read_filename: str, is_script_mod
     design_dictionary = json.loads(data)
     project_manager.write_data_creator_ref.store_as_compare_object(design_dictionary)
     file_handling_load.load_design_from_dict(design_dictionary)
-    if os.path.isfile(f"{read_filename}.tmp") and not is_script_mode:
-        os.remove(f"{read_filename}.tmp")
+    read_tmp = Path(read_filename + ".tmp")
+    if read_tmp.is_file() and not is_script_mode:
+        read_tmp.unlink()
     project_manager.undo_button.config(state="disabled")
     project_manager.root.update()
-    dir_name, file_name = os.path.split(read_filename)
-    project_manager.root.title(f"{file_name} ({dir_name})")
+    p = Path(read_filename)
+    project_manager.root.title(f"{p.name} ({p.parent})")
     if not is_script_mode:
         generate_path = expand_generate_path(
             design_dictionary["generate_path"],
